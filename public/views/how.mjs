@@ -18,32 +18,35 @@ import { SHOW } from '../lib/tree-show.mjs';
 const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', money: 'money' };
 
 // ---- The tree ----
-// A real tree: Orbit at the root, each branch joined to its parent by a
-// curved line. Opening a branch closes its open siblings, so one path stays
-// in view; nodes glide to their new places and the lines follow them (both
-// drawn every frame, the same in WebKit and Chromium).
-const open = new Set();
-let treeBox = null; // the box that scrolls sideways
-let canvas = null; // the nodes and the lines
-let lines = null;
-let detailBox = null;
-let pickBar = null;
+// The whole tree at a glance: Orbit's nine branches in a grid, each naming
+// what's inside it, every part one tap away (on a phone the nine as tiles).
+// A tap opens that branch in place: a strip of all nine along the top with
+// the previous and next beside its name, then its parts as rows that open to
+// show their own parts. The picked part's card sits beside them on a
+// computer and comes up in a sheet on a phone.
+const TOP = ROOT.kids;
+let branch = null; // the open branch's id; null shows the overview
+const open = new Set(); // rows opened inside the branch
 let picked = null;
+let host = null;
+let detailBox = null;
 let openSheet = null;
-const shown = new Map(); // id → { el, path, x, y, o, sx, sy, so, tx, ty, to, gone }
-let anim = 0;
-const PAD = 14;
 
 // Each top branch its own colour, carried down to everything under it.
 const HUE = { apps: 'var(--q-orange)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
 const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
 const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
-// Column step, card width and the height each row of leaves takes.
-const dims = () => (wide() ? { col: 248, w: 212, slot: 64 } : { col: 184, w: 164, slot: 62 });
+const icon = (node, size = 30) => (BRAND[node.id] ? appImg(BRAND[node.id], size) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]));
 
-// Shorter names on the tree itself, so each sits on one line on a phone;
-// the card keeps the full title.
+// Shorter names for the overview and the strip of branches, so each sits
+// on one line; the rows and the card keep the full title.
 const SHORT = {
+  apps: ['九個 App', 'Nine apps'],
+  kit: ['共用零件', 'Shared parts'],
+  pass: ['一張通行證', 'One pass'],
+  cloud: ['雲端小幫手', 'Cloud helper'],
+  store: ['資料放哪裡', 'Storage'],
+  team: ['怎麼做出來', 'Making it'],
   'sports-own': ['自己算得更準', 'Better than the feed'],
   'transit-own': ['自己算得更準', 'Better than the feed'],
   'sports-final': ['照規則判完賽', 'Over by the rules'],
@@ -88,173 +91,103 @@ const SHORT = {
 };
 const shortName = node => t(SHORT[node.id] || node.title).replace(/^Orbit /, '');
 
-function nodeEl(id) {
-  const node = NODES.get(id).node;
-  const n = node.kids?.length || 0;
-  const icon = id === ROOT.id ? appImg(null, 28) : BRAND[id] ? appImg(BRAND[id], 26) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]);
-  return h('button', { class: `sc-tn${id === ROOT.id ? ' root' : ''}${n ? ' has-kids' : ''}`, type: 'button', 'data-id': id, style: `--c:${hue(id)}`, 'aria-expanded': n ? 'false' : null, onclick: () => tap(id) }, [
-    icon,
-    h('span', { class: 'sc-tn-t', text: id === ROOT.id ? t(node.title) : shortName(node) }),
-    n && id !== ROOT.id ? h('span', { class: 'sc-tn-n', 'aria-label': t([`${n} 項`, `${n} inside`]), text: String(n) }) : null
+function overview() {
+  return h(
+    'div',
+    { class: 'sc-ov' },
+    TOP.map(b =>
+      h('section', { class: 'sc-ov-b', style: `--c:${hue(b.id)}` }, [
+        h('button', { class: 'sc-ov-head', type: 'button', onclick: () => tap(b.id) }, [icon(b), h('span', { class: 'sc-ov-t', text: shortName(b) }), h('span', { class: 'sc-ov-n', 'aria-label': t([`${b.kids.length} 項`, `${b.kids.length} inside`]), text: String(b.kids.length) })]),
+        h(
+          'div',
+          { class: 'sc-ov-kids' },
+          b.kids.map(k => h('button', { class: 'sc-ov-k', type: 'button', onclick: () => tap(k.id) }, [BRAND[k.id] ? appImg(BRAND[k.id], 18) : null, shortName(k)]))
+        )
+      ])
+    )
+  );
+}
+
+function branchView(id) {
+  const b = NODES.get(id).node;
+  const i = TOP.indexOf(b);
+  const near = d => TOP[(i + d + TOP.length) % TOP.length];
+  const step = d =>
+    h('button', { class: `sc-bstep ${d < 0 ? 'back' : 'next'}`, type: 'button', 'aria-label': `${t(d < 0 ? ['上一個', 'Previous'] : ['下一個', 'Next'])}：${shortName(near(d))}`, onclick: () => tap(near(d).id) }, [ico('chevron')]);
+  const rows = kids =>
+    kids.map(k => {
+      const n = k.kids?.length || 0;
+      const on = open.has(k.id);
+      return h('div', { class: 'sc-bnode', style: `--c:${hue(k.id)}` }, [
+        h('div', { class: `sc-brow${k.id === picked ? ' on' : ''}` }, [
+          h('button', { class: 'sc-brow-main', type: 'button', 'data-id': k.id, 'aria-expanded': n ? String(on) : null, onclick: () => tap(k.id) }, [
+            icon(k),
+            h('span', { class: 'sc-row-text' }, [h('strong', { text: t(k.title) }), h('small', { text: t(k.line) })]),
+            n ? h('span', { class: 'sc-brow-n' }, [String(n), ico('chevron')]) : null
+          ]),
+        ]),
+        // (a phone reads an opened part from the first line under it)
+        n && on
+          ? h('div', { class: 'sc-bkids' }, [
+              wide() ? null : h('button', { class: 'sc-bread', type: 'button', onclick: () => showSheet(k.id) }, [ico('book'), h('span', { text: t(['讀這一項的說明', 'Read about it']) }), ico('chevron')]),
+              ...rows(k.kids)
+            ])
+          : null
+      ]);
+    });
+  return h('div', { class: 'sc-branch', style: `--c:${hue(id)}` }, [
+    h('nav', { class: 'sc-rail', 'aria-label': t(['全部分支', 'All branches']) }, [
+      h('button', { class: 'sc-rail-b all', type: 'button', title: t(['全部分支', 'All branches']), 'aria-label': t(['全部分支', 'All branches']), onclick: () => tap(ROOT.id) }, [appImg(null, 24)]),
+      ...TOP.map(x => h('button', { class: `sc-rail-b${x === b ? ' on' : ''}`, type: 'button', style: `--c:${hue(x.id)}`, title: shortName(x), 'aria-label': shortName(x), 'aria-current': x === b ? 'true' : null, onclick: () => tap(x.id) }, [ico(x.icon)]))
+    ]),
+    h('header', { class: `sc-bhead${picked === id ? ' on' : ''}` }, [
+      step(-1),
+      h('button', { class: 'sc-bhead-mid', type: 'button', onclick: () => (wide() ? tap(id) : showSheet(id)) }, [h('small', { text: `${i + 1} / ${TOP.length}` }), h('strong', { text: shortName(b) })]),
+      step(1),
+      h('p', { class: 'sc-bhead-line', text: t(b.line) })
+    ]),
+    h('div', { class: 'sc-blist' }, rows(b.kids))
   ]);
 }
 
-// Where every visible node sits: leaves one row each, a parent at the
-// middle of its children (on a phone, level with its first child, so the
-// root and each opened branch stay at the top of the screen), one column per level.
-function layout() {
-  const d = dims();
-  const pos = new Map();
-  let row = 0;
-  (function place(node, depth) {
-    const kids = node === ROOT || open.has(node.id) ? node.kids || [] : [];
-    let y;
-    if (kids.length) {
-      const ys = kids.map(k => place(k, depth + 1));
-      y = wide() ? (ys[0] + ys.at(-1)) / 2 : ys[0];
-    } else y = row++ * d.slot;
-    pos.set(node.id, { x: depth * d.col, y });
-    return y;
-  })(ROOT, 0);
-  return { pos, rows: row, d };
-}
-
-const ease = k => 1 - Math.pow(1 - k, 3);
-let last = null;
-function render() {
-  const { pos, rows, d } = (last = layout());
-  for (const [id, p] of pos) {
-    let e = shown.get(id);
-    if (!e) {
-      const from = shown.get(NODES.get(id).parent) || { x: p.x, y: p.y };
-      e = { el: nodeEl(id), path: document.createElementNS('http://www.w3.org/2000/svg', 'path'), x: from.x, y: from.y, o: 0 };
-      e.path.style.stroke = hue(id);
-      if (id !== ROOT.id) lines.append(e.path);
-      canvas.append(e.el);
-      shown.set(id, e);
-    }
-    Object.assign(e, { tx: p.x, ty: p.y, to: 1, gone: false });
-    e.el.classList.toggle('open', open.has(id));
-    e.el.classList.toggle('on', id === picked);
-    if (e.el.hasAttribute('aria-expanded')) e.el.setAttribute('aria-expanded', String(open.has(id)));
-  }
-  for (const [id, e] of shown) {
-    if (pos.has(id)) continue;
-    let up = NODES.get(id).parent;
-    while (up && !pos.has(up)) up = NODES.get(up).parent;
-    const p = pos.get(up) || { x: 0, y: 0 };
-    Object.assign(e, { tx: p.x, ty: p.y, to: 0, gone: true });
-  }
-  // (a phone gets a column of room past the last, so a scroll to any two columns is never cut short)
-  const width = Math.max(...[...pos.values()].map(p => p.x)) + d.w + PAD * 2 + (wide() ? 0 : d.col);
-  const height = rows * d.slot + PAD * 2;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${Math.max(height, parseFloat(canvas.style.height) || 0)}px`;
-  lines.setAttribute('width', String(width));
-  for (const e of shown.values()) Object.assign(e, { sx: e.x, sy: e.y, so: e.o });
-  cancelAnimationFrame(anim);
-  const t0 = performance.now();
-  const dur = reduced() ? 0 : 460;
-  const frame = now => {
-    const k = dur ? ease(Math.min(1, (now - t0) / dur)) : 1;
-    for (const e of shown.values()) {
-      e.x = e.sx + (e.tx - e.sx) * k;
-      e.y = e.sy + (e.ty - e.sy) * k;
-      e.o = e.so + (e.to - e.so) * k;
-    }
-    draw(d);
-    if (k < 1) anim = requestAnimationFrame(frame);
-    else {
-      for (const [id, e] of shown) if (e.gone) (e.el.remove(), e.path.remove(), shown.delete(id));
-      canvas.style.height = `${height}px`;
-      lines.setAttribute('height', String(height));
-    }
-  };
-  lines.setAttribute('height', canvas.style.height);
-  anim = requestAnimationFrame(frame);
-}
-
-function draw(d) {
-  for (const [id, e] of shown) {
-    const top = PAD + e.y + d.slot / 2;
-    e.el.style.transform = `translate(${PAD + e.x}px, ${top}px) translateY(-50%) scale(${0.7 + 0.3 * e.o})`;
-    e.el.style.opacity = String(e.o);
-    const par = shown.get(NODES.get(id).parent);
-    if (!par) continue;
-    const x1 = PAD + par.x + d.w;
-    const y1 = PAD + par.y + d.slot / 2;
-    const x2 = PAD + e.x;
-    const mid = (x1 + x2) / 2;
-    e.path.setAttribute('d', `M${x1} ${y1}C${mid} ${y1} ${mid} ${top} ${x2} ${top}`);
-    e.path.style.opacity = String(e.o);
-  }
-}
-
-// Open a node and the path to it; its open siblings close.
 function shut(id) {
   open.delete(id);
   for (const k of NODES.get(id).node.kids || []) shut(k.id);
 }
-function openTo(id) {
-  for (const p of pathTo(id).slice(1)) {
-    if (!p.kids?.length) continue;
-    for (const sib of NODES.get(NODES.get(p.id).parent).node.kids) if (sib.id !== p.id && open.has(sib.id)) shut(sib.id);
-    open.add(p.id);
-  }
-}
 
-function tap(id) {
+// A tap: the root goes back to the overview; a branch opens; a part with
+// parts of its own opens or closes them; a phone reads a part in a sheet.
+function tap(id, fromLink = false) {
+  if (!NODES.has(id)) id = ROOT.id;
+  const path = pathTo(id);
+  const top = path[1]?.id || null;
+  if (top !== branch) open.clear();
+  branch = top;
   const node = NODES.get(id).node;
-  if (id === ROOT.id) [...open].forEach(x => open.delete(x));
-  else if (node.kids?.length) {
-    if (open.has(id) && picked === id) shut(id);
-    else openTo(id);
-  } else openTo(NODES.get(id).parent);
-  select(id);
-  history.replaceState(null, '', id === ROOT.id ? '#how/tree' : `#how/${id}`);
-  if (!wide() && !node.kids?.length) showSheet(id);
-}
-
-function select(id) {
+  for (const p of path.slice(2, -1)) open.add(p.id);
+  if (path.length > 2 && node.kids?.length && !fromLink) {
+    if (open.has(id) && (picked === id || !wide())) shut(id);
+    else open.add(id);
+  } else if (path.length > 2 && node.kids?.length) open.add(id);
+  const was = picked;
   picked = id;
-  render();
-  if (wide()) detailBox.replaceChildren(nodeView(id));
-  else barFor(id);
-  focus(id);
+  render(top !== null && was !== null && pathTo(was)[1]?.id !== top);
+  history.replaceState(null, '', id === ROOT.id ? '#how/tree' : `#how/${id}`);
+  if (!wide() && path.length > 2 && (!node.kids?.length || fromLink)) showSheet(id);
 }
 
-// Bring the picked node, and its children when open, into view.
-function focus(id) {
-  const { pos, d } = last;
-  const p = pos.get(id);
-  if (!p || !treeBox.clientWidth) return;
-  const kids = open.has(id) ? NODES.get(id).node.kids || [] : [];
-  // A phone shows two whole columns: the open node and its children, or a
-  // leaf and its parent; a computer centres them. No card is ever cut at the edge.
-  const from = kids.length ? p.x : Math.max(0, p.x - d.col);
-  const left = wide() ? PAD + p.x - Math.max(8, (treeBox.clientWidth - (kids.length ? d.col + d.w : d.w)) / 2) : from ? PAD + from - 12 : 0;
-  treeBox.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
-  const ys = kids.length ? kids.map(k => pos.get(k.id).y) : [p.y];
-  const box = treeBox.getBoundingClientRect();
-  const top = box.top + PAD + Math.min(...ys);
-  const bottom = box.top + PAD + Math.max(...ys) + d.slot;
-  const room = innerHeight - (wide() ? 0 : 150);
-  if (top < 70 || bottom > room) {
-    const want = scrollY + top - Math.max(80, (room - (bottom - top)) / 2);
-    window.scrollTo({ top: Math.max(0, want), behavior: reduced() ? 'auto' : 'smooth' });
+function render(moved = false) {
+  host.replaceChildren(branch ? branchView(branch) : overview());
+  host.closest('.sc-treewrap').classList.toggle('branch', Boolean(branch));
+  // (the card leaves out what's inside when the rows beside it already show it)
+  if (wide() && branch) detailBox.replaceChildren(nodeView(picked, !(picked === branch || open.has(picked))));
+  if (moved) host.firstChild.classList.add('moved');
+  // the picked row in view; a new branch from its top
+  const row = host.querySelector(`.sc-brow-main[data-id="${CSS.escape(picked)}"]`);
+  const box = (row || host).getBoundingClientRect();
+  if (box.top < 70 || (row && box.bottom > innerHeight - (wide() ? 24 : 110))) {
+    window.scrollTo({ top: Math.max(0, scrollY + box.top - (row ? innerHeight / 3 : 90)), behavior: reduced() ? 'auto' : 'smooth' });
   }
-}
-
-// On a phone: the picked node in a bar along the foot, its full card one tap away.
-function barFor(id) {
-  const node = NODES.get(id).node;
-  pickBar.replaceChildren(
-    h('button', { class: 'sc-pickbar-in', type: 'button', onclick: () => showSheet(id) }, [
-      id === ROOT.id ? appImg(null, 34) : mark(node),
-      h('span', { class: 'sc-row-text' }, [h('strong', { text: t(node.title) }), h('small', { text: t(node.line) })]),
-      h('span', { class: 'sc-pickbar-go' }, [t(['說明', 'Read']), ico('chevron')])
-    ])
-  );
 }
 
 function showSheet(id) {
@@ -275,26 +208,7 @@ function showSheet(id) {
   openSheet = s;
 }
 
-// A mouse can drag the tree sideways, like a map.
-function dragPan(box) {
-  let from = null;
-  box.addEventListener('pointerdown', e => {
-    if (e.pointerType !== 'mouse' || e.target.closest('button')) return;
-    from = { x: e.clientX, y: e.clientY, l: box.scrollLeft, t: scrollY };
-    box.classList.add('dragging');
-  });
-  addEventListener('pointermove', e => {
-    if (!from) return;
-    box.scrollLeft = from.l - (e.clientX - from.x);
-    window.scrollTo(0, from.t - (e.clientY - from.y));
-  });
-  addEventListener('pointerup', () => {
-    from = null;
-    box.classList.remove('dragging');
-  });
-}
-
-function nodeView(id) {
+function nodeView(id, inside = true) {
   const at = NODES.get(id);
   const node = at.node;
   const path = pathTo(id);
@@ -323,7 +237,7 @@ function nodeView(id) {
     node.tech
       ? h('details', { class: 'sc-tech' }, [h('summary', {}, [ico('pencil'), t(['技術細節（給好奇的人）', 'Technical details (for the curious)'])]), h('p', { text: t(node.tech) })])
       : null,
-    node.kids?.length
+    inside && node.kids?.length
       ? h('div', { class: 'sc-sub' }, [
           h('h3', { class: 'sc-h3', text: t(['裡面有', 'Inside']) }),
           h(
@@ -346,12 +260,21 @@ function showView(id) {
   const c = hue(id);
   const out = [];
   if (s.flow) {
-    const down = s.flow.length > 4;
+    // Across in one row only while every name fits its column on a 320 px
+    // phone without wrapping (a Chinese character is 1, a Latin letter about
+    // half); otherwise the steps go down the card, a full line each.
+    const room = { 1: 20, 2: 10, 3: 6.5, 4: 4.8 }[s.flow.length] || 0;
+    const width = x => [...x].reduce((w, c) => w + (/[\u2e80-\uffff]/.test(c) ? 1 : 0.55), 0);
+    const down = s.flow.some(([, label]) => said(label).split(/[：:]\s*/).some(part => width(part) > room));
     out.push(
       h(
         'ol',
         { class: `sc-flow${down ? ' down' : ''}`, style: `--n:${s.flow.length}` },
-        s.flow.map(([icon, label], i) => h('li', { class: 'sc-flow-s', style: `--i:${i}` }, [h('span', { class: 'sc-flow-i' }, [ico(icon)]), h('span', { class: 'sc-flow-t', text: said(label) })]))
+        s.flow.map(([icon, label], i) => {
+          // "口袋：記憶體": the name, and under it what it is
+          const [name, what] = said(label).split(/[：:]\s*(.*)/s);
+          return h('li', { class: 'sc-flow-s', style: `--i:${i}` }, [h('span', { class: 'sc-flow-i' }, [ico(icon)]), h('span', { class: 'sc-flow-t' }, [name, what ? h('small', { text: what }) : null])]);
+        })
       )
     );
   }
@@ -363,9 +286,9 @@ function showView(id) {
 }
 
 function search(q) {
-  const out = treeBox.parentElement.querySelector('.sc-found');
+  const out = host.parentElement.querySelector('.sc-found');
   const words = q.trim().toLowerCase();
-  treeBox.hidden = Boolean(words);
+  host.hidden = Boolean(words);
   if (!words) return out.replaceChildren();
   const hits = [...NODES.values()].filter(({ node }) => [node.title, node.line, node.p, node.i, node.r, node.tech].some(x => x && x.join(' ').toLowerCase().includes(words)));
   out.replaceChildren(
@@ -387,41 +310,38 @@ function search(q) {
 }
 
 function buildTree() {
-  lines = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  lines.setAttribute('class', 'sc-tlines');
-  lines.setAttribute('aria-hidden', 'true');
-  canvas = h('div', { class: 'sc-tcanvas' }, [lines]);
-  treeBox = h('div', { class: 'sc-tree', role: 'group', 'aria-label': t(['Orbit 的樹狀圖', 'Orbit as a tree']) }, [canvas]);
-  dragPan(treeBox);
+  host = h('div', { class: 'sc-treebox' });
   detailBox = h('aside', { class: 'sc-detail', 'aria-live': 'polite' });
-  pickBar = h('div', { class: 'sc-pickbar' });
-  const field = h('input', { type: 'search', class: 'sc-search', placeholder: t(['搜尋：例如「颱風」「備份」「YouBike」', 'Search: “typhoon”, “backup”, “YouBike”…']), 'aria-label': t(['搜尋架構', 'Search the structure']) });
+  const field = h('input', { type: 'search', class: 'sc-search', placeholder: t(['搜尋：颱風、備份、YouBike', 'Search: typhoon, backup…']), 'aria-label': t(['搜尋架構', 'Search the structure']) });
   field.addEventListener('input', () => search(field.value));
   let size = wide();
   addEventListener('resize', () => {
-    if (wide() === size || !canvas.isConnected) return;
+    if (wide() === size || !host.isConnected) return;
     size = wide();
-    select(picked || ROOT.id);
+    render();
+  });
+  // ← and → on a keyboard step between branches.
+  addEventListener('keydown', e => {
+    if (!branch || !host.isConnected || host.closest('[hidden]') || e.target.closest?.('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const i = TOP.findIndex(x => x.id === branch);
+    tap(TOP[(i + (e.key === 'ArrowLeft' ? -1 : 1) + TOP.length) % TOP.length].id);
   });
   return h('div', { class: 'sc-treewrap' }, [
     h('div', { class: 'sc-treecol' }, [
-      h('p', { class: 'sc-lede-s', text: t(['整個 Orbit 畫成一棵樹：從左邊的根開始，點一個分支就長出下一層，越往右越細。每一項都寫著遇到什麼問題、怎麼想、結果怎樣。', 'All of Orbit as one tree: start at the root on the left, tap a branch and the next level grows out of it, more detail the further right. Each part says the problem, the idea and the result.']) }),
+      h('p', { class: 'sc-lede-s', text: t(['點一塊打開，用箭頭換下一塊。', 'Tap a part to open it; arrows move on.']) }),
       h('label', { class: 'sc-searchbox' }, [ico('search'), field]),
       h('div', { class: 'sc-found' }),
-      treeBox,
-      pickBar
+      host
     ]),
     detailBox
   ]);
 }
 
-// From the address (#how/<node>): open the path to it; a phone shows its card.
+// From the address (#how/<node>): open the branch and the rows to it; a phone shows its card.
 function pick(id, fromLink) {
-  if (!NODES.has(id)) id = ROOT.id;
-  if (id !== ROOT.id) openTo(NODES.get(id).node.kids?.length ? id : NODES.get(id).parent);
   if (wide()) openSheet?.close();
-  select(id);
-  if (!wide() && fromLink && id !== ROOT.id) showSheet(id);
+  tap(NODES.has(id) ? id : ROOT.id, fromLink);
 }
 
 // ---- The map ----
@@ -461,19 +381,21 @@ function mapView(storyId) {
   const pickers = h(
     'div',
     { class: 'sc-stories' },
-    STORIES.map(s => h('a', { href: `#how/map-${s.id}`, class: `sc-story${s === story ? ' on' : ''}` }, [s.app ? appImg(s.app, 28) : tile(ico(s.icon), '', 'sm'), h('span', { text: t(s.title) })]))
+    STORIES.map(s => h('a', { href: `#how/map-${s.id}`, class: `sc-story${s === story ? ' on' : ''}`, title: t(s.title), 'aria-current': s === story ? 'true' : null }, [s.app ? appImg(s.app, 28) : tile(ico(s.icon), '', 'sm'), h('span', { text: t(s.short) })]))
   );
-  const card = h('div', { class: 'sc-stepcard' }, [h('div', { class: 'sc-step-top' }, [nth, h('span', { class: 'sc-step-track' }, [bar])]), say, h('div', { class: 'sc-step-btns' }, [prev, playBtn, next])]);
+  const card = h('div', { class: 'sc-stepcard' }, [h('strong', { class: 'sc-step-title', text: t(story.title) }), h('div', { class: 'sc-step-top' }, [nth, h('span', { class: 'sc-step-track' }, [bar])]), say, h('div', { class: 'sc-step-btns' }, [prev, playBtn, next])]);
 
   let i = -1;
   let playing = false;
   let timer = 0;
   let anim = 0;
+  // The dot rests tucked under a spot's bottom edge, and the trail runs
+  // beneath the spots, so neither ever covers a word.
   const centre = id => {
     const b = nodes.get(id);
     const box = grid.getBoundingClientRect();
     const r = b.getBoundingClientRect();
-    return [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2];
+    return [r.left - box.left + r.width / 2, r.bottom - box.top];
   };
   const curve = (a, b) => {
     const [mx, my] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];

@@ -59,7 +59,8 @@ const side = h('aside', { class: 'sc-side', 'aria-label': t(['導覽', 'Navigati
   ),
   h('div', { class: 'sc-side-foot' }, [
     h('div', { class: 'sc-side-btns' }, [langBtn(), shareBtn()]),
-    h('p', { text: t(['Jay 的自主學習作品，和 Claude 一起做。', 'Jay’s self-directed learning project, made with Claude.']) })
+    // (two set lines, so neither breaks on its own)
+    h('p', {}, [h('span', { text: t(['Jay 的自主學習作品', 'Jay’s self-directed learning']) }), h('span', { text: t(['和 Claude 一起做', 'project, made with Claude']) })])
   ])
 ]);
 document.body.prepend(side);

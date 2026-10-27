@@ -740,65 +740,6 @@
   font-size: 17px;
 }
 
-/* The tree: nodes placed by the script, lines drawn under them. */
-.sc-tree {
-  margin: 4px -16px 0;
-  padding: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-.sc-tree::-webkit-scrollbar {
-  display: none;
-}
-.sc-tree.dragging {
-  cursor: grabbing;
-  user-select: none;
-}
-.sc-tcanvas {
-  position: relative;
-  min-width: 100%;
-}
-.sc-tlines {
-  position: absolute;
-  inset: 0 auto auto 0;
-  overflow: visible;
-  pointer-events: none;
-}
-.sc-tlines path {
-  fill: none;
-  stroke-width: 2.25;
-  stroke-linecap: round;
-}
-.sc-tn {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-sizing: border-box;
-  width: 164px;
-  min-height: 46px;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--sc-card);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 22%, transparent), 0 2px 8px rgba(0, 0, 0, 0.06);
-  color: var(--q-label);
-  text-align: left;
-  cursor: pointer;
-  transform-origin: left center;
-  will-change: transform, opacity;
-  -webkit-tap-highlight-color: transparent;
-  transition: box-shadow 200ms, background 200ms;
-}
-.sc-tn > img {
-  flex: none;
-  border-radius: 8px;
-}
 .sc-tn-i {
   display: inline-grid;
   flex: none;
@@ -810,61 +751,7 @@
   color: var(--c);
   font-size: 15px;
 }
-.sc-tn-t {
-  display: -webkit-box;
-  flex: 1;
-  min-width: 0;
-  text-wrap: balance;
-  overflow: hidden;
-  font: 600 12.5px/1.22 var(--q-font);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow-wrap: anywhere;
-}
-.sc-tn-n {
-  position: absolute;
-  top: 50%;
-  right: -11px;
-  display: grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 4px;
-  box-sizing: border-box;
-  border-radius: 999px;
-  background: var(--sc-card);
-  box-shadow: 0 0 0 2px var(--c);
-  color: var(--c);
-  font: 700 11px/1 var(--q-font);
-  font-variant-numeric: tabular-nums;
-  transform: translateY(-50%);
-  transition: background 200ms, color 200ms;
-}
-.sc-tn.open .sc-tn-n {
-  background: var(--c);
-  color: #fff;
-}
-.sc-tn.root {
-  box-shadow: 0 0 0 1px var(--q-sep, var(--q-fill-2)), 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-.sc-tn.root .sc-tn-t {
-  font: 800 16px/1.2 var(--q-font);
-}
-.sc-tn.on {
-  background: color-mix(in srgb, var(--c) 14%, var(--sc-card));
-  box-shadow: 0 0 0 2px var(--c), 0 4px 14px rgba(0, 0, 0, 0.1);
-}
-.sc-tn:focus-visible {
-  outline: 3px solid var(--c);
-  outline-offset: 2px;
-}
-@media (hover: hover) {
-  .sc-tn:hover {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 55%, transparent), 0 4px 14px rgba(0, 0, 0, 0.08);
-  }
-}
 
-/* A phone: the picked node in a bar along the foot. */
 /* On a phone the heat map fills its card; the squares only scroll once there
    are too many weeks for them to stay readable. */
 @media (max-width: 899px) {
@@ -887,45 +774,319 @@
     line-height: 1;
   }
 }
-.sc-pickbar {
-  position: sticky;
-  bottom: calc(var(--q-nav, 64px) + 14px);
-  z-index: 3;
-  margin-top: 12px;
+/* The tree at a glance: nine branches, each naming what's inside. */
+.sc-ov {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
-.sc-pickbar-in {
+.sc-ov-b {
+  position: relative;
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  border-radius: 18px;
+  background: var(--sc-card);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--c) 70%, transparent);
+  overflow: hidden;
+}
+.sc-ov-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 4px 12px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-ov-head .sc-tn-i {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 20px;
+}
+.sc-ov-t {
+  max-width: 100%;
+  font: 650 12.5px/1.2 var(--q-font);
+  white-space: nowrap;
+}
+.sc-ov-n {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 18px;
+  padding: 2px 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: var(--c);
+  font: 700 11px/14px var(--q-font);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.sc-ov-kids {
+  display: none;
+}
+.sc-ov-k {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 9%, transparent);
+  color: var(--q-label);
+  font: 500 13px/1.2 var(--q-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sc-ov-k img {
+  border-radius: 5px;
+}
+@media (hover: hover) {
+  .sc-ov-head:hover .sc-ov-t {
+    color: var(--c);
+  }
+  .sc-ov-k:hover {
+    background: color-mix(in srgb, var(--c) 18%, transparent);
+  }
+}
+
+/* One branch open: the nine in a strip, the branch's name between the
+   previous and the next, its parts as rows that open in place. */
+.sc-branch.moved {
+  animation: sc-fade 260ms ease-out;
+}
+.sc-rail {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 4px;
+}
+.sc-rail-b {
+  display: grid;
+  place-items: center;
+  height: 38px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--sc-card);
+  color: var(--c, var(--q-label-2));
+  font-size: 17px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 200ms, color 200ms;
+}
+.sc-rail-b.on {
+  background: var(--c);
+  color: #fff;
+}
+.sc-bhead {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 0 12px;
+}
+.sc-bstep {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sc-card);
+  color: var(--q-label);
+  font-size: 18px;
+  cursor: pointer;
+}
+.sc-bstep.back .sc-ico {
+  transform: rotate(180deg);
+}
+.sc-bhead-mid {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  text-align: center;
+  cursor: pointer;
+}
+.sc-bhead-mid small {
+  color: var(--c);
+  font: 700 12px/1.2 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.sc-bhead-mid strong {
+  max-width: 100%;
+  font: 800 19px/1.25 var(--q-font);
+  white-space: nowrap;
+}
+.sc-bhead-line {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--q-label-2);
+  font: 400 13.5px/1.4 var(--q-font);
+  text-align: center;
+  text-wrap: balance;
+}
+.sc-rail-b.all img {
+  border-radius: 7px;
+}
+.sc-blist,
+.sc-bkids {
+  display: grid;
+  gap: 8px;
+}
+.sc-bkids {
+  margin: 8px 0 0 17px;
+  padding-left: 12px;
+  border-left: 2px solid color-mix(in srgb, var(--c) 35%, transparent);
+  animation: sc-fade 220ms ease-out;
+}
+.sc-brow {
   display: flex;
   align-items: center;
+  min-width: 0;
+  border-radius: 16px;
+  background: var(--sc-card);
+  transition: box-shadow 200ms, background 200ms;
+}
+.sc-brow.on {
+  background: color-mix(in srgb, var(--c) 10%, var(--sc-card));
+  box-shadow: 0 0 0 2px var(--c);
+}
+.sc-brow-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
   gap: 10px;
-  width: 100%;
+  min-width: 0;
   padding: 10px 12px;
   border: 0;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--sc-card) 88%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  backdrop-filter: blur(18px) saturate(1.6);
-  box-shadow: 0 0 0 1px var(--q-sep, var(--q-fill-2)), 0 8px 24px rgba(0, 0, 0, 0.12);
+  background: none;
   color: var(--q-label);
   text-align: left;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.sc-pickbar-in .sc-row-text small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.sc-brow-main .sc-tn-i {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 17px;
 }
-.sc-pickbar-in > img {
+.sc-brow-main > img {
   flex: none;
-  border-radius: 9px;
+  border-radius: 8px;
 }
-.sc-pickbar-go {
+.sc-brow-n {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 2px;
-  color: var(--sc-ac);
-  font: 600 14px/1 var(--q-font);
+  padding: 3px 4px 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 13%, transparent);
+  color: var(--c);
+  font: 700 12px/1.2 var(--q-font);
+  font-variant-numeric: tabular-nums;
 }
+.sc-brow-n .sc-ico {
+  transform: rotate(90deg);
+  transition: transform 200ms;
+}
+[aria-expanded='true'] > .sc-brow-n .sc-ico {
+  transform: rotate(-90deg);
+}
+.sc-bread {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--c) 9%, transparent);
+  color: var(--c);
+  font: 600 13.5px/1.3 var(--q-font);
+  text-align: left;
+  cursor: pointer;
+}
+.sc-bread span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+.sc-brow-main .sc-row-text strong,
+.sc-brow-main .sc-row-text small {
+  text-wrap: balance;
+}
+@media (max-width: 899px) {
+  .sc-bkids {
+    margin-left: 10px;
+    padding-left: 8px;
+  }
+  .sc-bkids .sc-brow-main {
+    gap: 8px;
+    padding: 9px 10px;
+  }
+}
+@media (min-width: 900px) {
+  .sc-ov {
+    gap: 12px;
+  }
+  .sc-ov-head {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 16px 16px 10px;
+  }
+  .sc-ov-head > img,
+  .sc-ov-head .sc-tn-i {
+    width: 34px;
+    height: 34px;
+  }
+  .sc-ov-t {
+    font: 750 16px/1.25 var(--q-font);
+  }
+  .sc-ov-n {
+    top: 18px;
+    right: 14px;
+    font-size: 12px;
+  }
+  .sc-ov-kids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 14px 16px;
+  }
+  .sc-rail {
+    display: flex;
+    gap: 6px;
+  }
+  .sc-rail-b {
+    flex: 1;
+    height: 42px;
+    font-size: 19px;
+  }
+  .sc-bhead-mid strong {
+    font-size: 24px;
+  }
+  .sc-bhead-line {
+    font-size: 15px;
+  }
+}
+
 .sc-found li {
   margin: 0 0 6px;
 }
@@ -960,6 +1121,7 @@
   font: 800 24px/1.2 var(--q-font);
 }
 .sc-detail-head p {
+  text-wrap: balance;
   margin: 4px 0 0;
   color: var(--q-label-2);
   font: 400 15px/1.4 var(--q-font);
@@ -996,26 +1158,24 @@
 
 /* ---- 架構: the map ---- */
 .sc-stories {
-  display: flex;
-  gap: 8px;
-  margin: 0 -16px 14px;
-  padding: 0 16px 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.sc-stories::-webkit-scrollbar {
-  display: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 0;
 }
 .sc-story {
-  display: inline-flex;
-  flex: none;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px 6px 6px;
-  border-radius: 999px;
+  gap: 5px;
+  min-width: 0;
+  padding: 8px 2px 7px;
+  border-radius: 16px;
   background: var(--sc-card);
   color: var(--q-label);
-  font: 600 14px/1.2 var(--q-font);
+  font: 600 12px/1.2 var(--q-font);
+  white-space: nowrap;
   text-decoration: none;
 }
 .sc-story .sc-appicon,
@@ -1108,9 +1268,15 @@
     box-shadow: 0 0 0 14px transparent;
   }
 }
+/* the trail and the dot run beneath the spots and their labels */
+.sc-maprow-l,
+.sc-mapnode {
+  position: relative;
+  z-index: 2;
+}
 .sc-mapsvg {
   position: absolute;
-  z-index: 2;
+  z-index: 1;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -1145,6 +1311,9 @@
   -webkit-backdrop-filter: var(--q-glass-blur);
   backdrop-filter: var(--q-glass-blur);
   box-shadow: var(--q-glass-rim, none), 0 12px 32px -12px rgba(0, 0, 0, 0.3);
+}
+.sc-step-title {
+  font: 700 15px/1.3 var(--q-font);
 }
 .sc-step-top {
   display: flex;
@@ -1789,6 +1958,10 @@
     margin-top: auto;
     padding: 0 8px;
   }
+  .sc-side-foot p span {
+    display: block;
+    white-space: nowrap;
+  }
   .sc-side-foot p {
     margin: 0;
     color: var(--q-label-2);
@@ -1927,11 +2100,14 @@
     margin: 0;
   }
 
-  .sc-treewrap {
+  .sc-treewrap.branch {
     display: grid;
-    grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.85fr);
     gap: 28px;
     align-items: start;
+  }
+  .sc-treewrap:not(.branch) .sc-detail {
+    display: none;
   }
   .sc-detail {
     position: sticky;
@@ -1947,30 +2123,15 @@
   .sc-detail-in {
     animation: sc-fade 260ms ease-out;
   }
-  .sc-pickbar {
-    display: none;
-  }
-  .sc-tree {
-    margin: 4px 0 0;
-    padding: 0;
-    border-radius: var(--sc-r);
-    background: color-mix(in srgb, var(--sc-card) 50%, transparent);
-    cursor: grab;
-  }
-  .sc-tn {
-    width: 212px;
-    min-height: 48px;
-    padding: 7px 10px;
-  }
-  .sc-tn-t {
-    font-size: 14px;
-    -webkit-line-clamp: 2;
-  }
   .sc-stories {
-    flex-wrap: wrap;
-    margin: 0 0 16px;
-    padding: 0;
-    overflow: visible;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .sc-story {
+    flex-direction: row;
+    padding: 6px 16px 6px 6px;
+    font-size: 14px;
   }
   .sc-mapbody {
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -2360,9 +2521,6 @@
   .sc-churn-bar span {
     transition: none;
   }
-}
-.sc-tn.has-kids {
-  padding-right: 14px;
 }
 
 /* A card that opens on a tap. */
@@ -3041,11 +3199,17 @@ html.sc-playing body {
   font-size: 20px;
 }
 .sc-flow-t {
+  display: grid;
   max-width: 100%;
   color: var(--q-label);
   font: 600 12.5px/1.3 var(--q-font);
   text-wrap: balance;
-  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+.sc-flow-t small {
+  color: var(--q-label-2);
+  font: 500 11.5px/1.3 var(--q-font);
+  white-space: nowrap;
 }
 /* the arrow to the next step */
 .sc-flow-s:not(:last-child)::after {
@@ -3085,7 +3249,12 @@ html.sc-playing body {
   font-size: 17px;
 }
 .sc-flow.down .sc-flow-t {
+  display: block;
   font-size: 14.5px;
+}
+.sc-flow.down .sc-flow-t small {
+  margin-left: 6px;
+  font-size: 13px;
 }
 .sc-flow.down .sc-flow-s:not(:last-child)::after {
   top: 36px;
@@ -3138,6 +3307,7 @@ html.sc-playing body {
   gap: 8px;
 }
 .sc-pair > span {
+  text-wrap: balance;
   display: flex;
   align-items: flex-start;
   gap: 6px;
