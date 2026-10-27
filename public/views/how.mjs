@@ -100,7 +100,8 @@ function nodeEl(id) {
 }
 
 // Where every visible node sits: leaves one row each, a parent at the
-// middle of its children, one column per level.
+// middle of its children (on a phone, level with its first child, so the
+// root and each opened branch stay at the top of the screen), one column per level.
 function layout() {
   const d = dims();
   const pos = new Map();
@@ -110,7 +111,7 @@ function layout() {
     let y;
     if (kids.length) {
       const ys = kids.map(k => place(k, depth + 1));
-      y = (ys[0] + ys.at(-1)) / 2;
+      y = wide() ? (ys[0] + ys.at(-1)) / 2 : ys[0];
     } else y = row++ * d.slot;
     pos.set(node.id, { x: depth * d.col, y });
     return y;
