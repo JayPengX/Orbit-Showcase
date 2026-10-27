@@ -414,66 +414,77 @@
   display: grid;
   gap: 20px;
 }
-.sc-phonebox {
+/* The screens, app-store style: a swiped row of cards on the app's colour. */
+.sc-adbox {
   display: grid;
   justify-items: center;
-  gap: 10px;
+  gap: 14px;
+  margin: 0 -16px 22px;
 }
-.sc-phone {
+.sc-adrow {
   position: relative;
-  width: min(290px, 100%);
-  aspect-ratio: 375 / 812;
-  padding: 9px;
-  border-radius: 48px;
-  background: #0b0b0f;
-  box-shadow: 0 0 0 1.5px #2a2a30, 0 30px 60px -20px rgba(0, 0, 0, 0.45);
-}
-.sc-notch {
-  position: absolute;
-  z-index: 2;
-  top: 18px;
-  left: 50%;
-  width: 84px;
-  height: 24px;
-  border-radius: 999px;
-  background: #0b0b0f;
-  transform: translateX(-50%);
-}
-.sc-shots {
-  display: flex;
   width: 100%;
-  height: 100%;
-  border-radius: 39px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  background: var(--q-page);
 }
-.sc-shots::-webkit-scrollbar {
+.sc-ads {
+  display: flex;
+  gap: 12px;
+  padding: 2px 16px 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 16px;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.sc-ads::-webkit-scrollbar {
   display: none;
 }
-.sc-shot {
-  flex: 0 0 100%;
+.sc-ad {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 min(66vw, 250px);
+  aspect-ratio: 9 / 17;
   margin: 0;
+  border-radius: var(--sc-r);
+  background: linear-gradient(160deg, var(--ad-hi) -10%, var(--ad-mid) 45%, var(--ad-lo) 110%);
+  overflow: hidden;
   scroll-snap-align: start;
+  isolation: isolate;
 }
-.sc-shot img {
+.sc-ad figcaption {
+  padding: 18px 16px 14px;
+  color: #fff;
+  font: 700 17px/1.3 var(--q-font);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
+}
+.sc-ad-screen {
+  flex: 1;
+  min-height: 0;
+  margin: 0 14px;
+  border: 5px solid #0b0b0f;
+  border-bottom: 0;
+  border-radius: 30px 30px 0 0;
+  background: #0b0b0f;
+  overflow: hidden;
+  box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.45);
+}
+.sc-ad-screen img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
+  height: auto;
+  border-radius: 25px 25px 0 0;
 }
 .sc-arrow {
   position: absolute;
   z-index: 3;
   top: 50%;
-  display: grid;
+  display: none;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  margin-top: -19px;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
   border: 0;
   border-radius: 50%;
   background: var(--q-glass);
@@ -485,48 +496,21 @@
   cursor: pointer;
 }
 .sc-arrow-l {
-  left: -14px;
+  left: 4px;
 }
 .sc-arrow-l .sc-ico {
   transform: rotate(180deg);
 }
 .sc-arrow-r {
-  right: -14px;
+  right: 4px;
 }
-.sc-dots {
-  display: flex;
-  gap: 4px;
-}
-.sc-dots button {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-}
-.sc-dots button::before {
-  content: '';
-  display: block;
-  width: 8px;
-  height: 8px;
-  margin: auto;
-  border-radius: 50%;
-  background: var(--q-label-3);
-  transition: width 240ms var(--sc-spring), background 240ms;
-}
-.sc-dots button.on::before {
-  width: 20px;
-  border-radius: 4px;
-  background: var(--sc-ac);
-}
-.sc-cap {
-  min-height: 2.8em;
-  max-width: 300px;
-  margin: 0;
-  color: var(--q-label-2);
-  font: 500 14px/1.4 var(--q-font);
-  text-align: center;
+@media (hover: hover) and (pointer: fine) {
+  .sc-arrow {
+    display: grid;
+  }
+  .sc-adrow.fits .sc-arrow {
+    display: none;
+  }
 }
 .sc-appside {
   display: grid;
@@ -543,14 +527,17 @@
 }
 .sc-pir {
   display: grid;
-  gap: 10px;
+  border-radius: var(--sc-r);
+  background: var(--sc-card);
+  overflow: hidden;
 }
 .sc-pir-row {
   display: grid;
   gap: 4px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--sc-card);
+  padding: 14px 16px;
+}
+.sc-pir-row + .sc-pir-row {
+  border-top: 1px solid var(--q-sep, var(--q-fill-2));
 }
 .sc-pir-k {
   display: inline-flex;
@@ -854,6 +841,28 @@
 }
 
 /* A phone: the picked node in a bar along the foot. */
+/* On a phone the heat map fills its card; the squares only scroll once there
+   are too many weeks for them to stay readable. */
+@media (max-width: 899px) {
+  .sc-heatbox .sc-heat {
+    flex: 1;
+    grid-template-rows: repeat(7, auto);
+    grid-auto-columns: minmax(14px, 1fr);
+  }
+  .sc-heatbox .sc-heat .sc-cell {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .sc-heatbox .sc-weekdays {
+    grid-template-rows: repeat(7, 1fr);
+  }
+  .sc-weekdays span {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+  }
+}
 .sc-pickbar {
   position: sticky;
   bottom: calc(var(--q-nav, 64px) + 14px);
@@ -1278,7 +1287,11 @@
   padding: 0;
   list-style: none;
 }
+.sc-births-list li {
+  display: flex;
+}
 .sc-births-list a {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1862,16 +1875,32 @@
   .sc-apphead {
     margin-top: 0;
   }
-  .sc-appbody {
-    grid-template-columns: 310px 1fr;
-    gap: 32px;
+  .sc-appside {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: 28px;
     align-items: start;
   }
-  .sc-arrow-l {
-    left: -19px;
+  .sc-appside > .sc-q {
+    grid-area: 1 / 1;
   }
-  .sc-arrow-r {
-    right: -19px;
+  .sc-appside > .sc-pir {
+    grid-area: 2 / 1 / span 2;
+  }
+  .sc-appside > .sc-facts {
+    grid-area: 1 / 2;
+  }
+  .sc-appside > section {
+    grid-area: 2 / 2;
+  }
+  .sc-adbox {
+    justify-items: start;
+    margin: 0 -16px 28px;
+  }
+  .sc-adbox .sc-try {
+    margin-left: 16px;
+  }
+  .sc-compare {
+    margin: 0;
   }
 
   .sc-treewrap {
@@ -2924,29 +2953,24 @@ html.sc-playing body {
   }
 }
 
-/* The phone frame's way into the demo. */
+/* The way into the demo, under the screens. */
 .sc-try {
-  position: absolute;
-  z-index: 4;
-  left: 50%;
-  bottom: 22px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-height: 46px;
-  padding: 0 20px;
+  padding: 0 22px;
   border: 0;
   border-radius: 999px;
   background: var(--sc-ac);
   color: #fff;
   font: 700 16px/1 var(--q-font);
   box-shadow: 0 10px 30px -8px color-mix(in srgb, var(--sc-ac) 70%, transparent);
-  transform: translateX(-50%);
   cursor: pointer;
   white-space: nowrap;
 }
 .sc-try:active {
-  transform: translateX(-50%) scale(0.96);
+  transform: scale(0.96);
 }
 
 /* 架構 › a tree card's picture (lib/tree-show.mjs): steps, numbers, before → after. */

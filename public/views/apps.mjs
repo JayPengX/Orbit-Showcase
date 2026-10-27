@@ -1,62 +1,38 @@
-// App: each app's real screens in a phone frame (swipe or the arrows), the
+// App: each app's real screens as an app store shows them (swipe), the
 // question it answers, its age and updates from data/stats.json, its first
 // day beside today where that first version still runs (a slider between
 // them), and the parts of the structure tree that explain it.
 import { h, t, ico, appImg, num, fmtDayYear, daysBetween, twToday, link, reveal, reduced, zoom, en } from '../shell.mjs';
+import { BRANDS } from '#kit/brand.mjs';
 import { APPS } from '../lib/apps.mjs';
 import { NODES } from '../lib/tree.mjs';
 import { hasDemo, openDemo } from './demo.mjs';
 
 const shot = f => `./shots/${f}.webp`;
 
-function phone(app) {
-  const track = h('div', { class: 'sc-shots', tabindex: '0', 'aria-label': t(['截圖', 'Screens']) });
-  const cap = h('p', { class: 'sc-cap', 'aria-live': 'polite' });
-  const dots = h('div', { class: 'sc-dots' });
-  app.shots.forEach(([f, c], i) => {
-    track.append(h('figure', { class: 'sc-shot' }, [h('img', { src: shot(f), alt: t(c), loading: i ? 'lazy' : 'eager', decoding: 'async', width: 375, height: 844 })]));
-    dots.append(h('button', { type: 'button', 'aria-label': `${i + 1}`, onclick: () => to(i) }));
-  });
-  let at = 0;
-  const show = i => {
-    at = i;
-    cap.textContent = t(app.shots[i][1]);
-    [...dots.children].forEach((d, j) => d.classList.toggle('on', j === i));
-  };
-  const to = i => {
-    const n = app.shots.length;
-    i = (i + n) % n;
-    track.scrollTo({ left: track.clientWidth * i, behavior: reduced() ? 'auto' : 'smooth' });
-    show(i);
-  };
-  let tick = 0;
-  track.addEventListener(
-    'scroll',
-    () => {
-      cancelAnimationFrame(tick);
-      tick = requestAnimationFrame(() => {
-        const i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
-        if (i !== at) show(i);
-      });
-    },
-    { passive: true }
+// The screens the way an app store shows them: each on the app's own
+// colour under a one-line headline, a row you swipe (the next one peeks in),
+// light and dark mixed as the app looks either way.
+function ads(app) {
+  const [hi, mid, lo] = BRANDS[app.brand].paint;
+  const row = h('div', { class: 'sc-ads', tabindex: '0', 'aria-label': t(['截圖', 'Screens']) });
+  app.shots.forEach(([f, c], i) =>
+    row.append(
+      h('figure', { class: 'sc-ad' }, [
+        h('figcaption', { text: t(c) }),
+        h('div', { class: 'sc-ad-screen' }, [h('img', { src: shot(f), alt: t(c), loading: i > 1 ? 'lazy' : 'eager', decoding: 'async', width: 375, height: 812 })])
+      ])
+    )
   );
-  track.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') to(at + 1);
-    if (e.key === 'ArrowLeft') to(at - 1);
-  });
-  show(0);
-  const arrow = (dir, icon, label) => h('button', { class: `sc-arrow sc-arrow-${dir}`, type: 'button', 'aria-label': t(label), onclick: () => to(at + (dir === 'l' ? -1 : 1)) }, [ico(icon)]);
-  return h('div', { class: 'sc-phonebox' }, [
-    h('div', { class: 'sc-phone' }, [
-      h('div', { class: 'sc-notch' }),
-      track,
-      app.shots.length > 1 ? arrow('l', 'chevron', ['上一張', 'Previous']) : null,
-      app.shots.length > 1 ? arrow('r', 'chevron', ['下一張', 'Next']) : null,
-      hasDemo(app.id) ? h('button', { class: 'sc-try', type: 'button', onclick: () => openDemo(app, t(NODES.get(app.id).node.title)) }, [ico('play'), t(['試玩真的 App', 'Try the real app'])]) : null
-    ]),
-    app.shots.length > 1 ? dots : null,
-    cap
+  const step = dir => row.scrollBy({ left: dir * (row.firstChild.offsetWidth + 12), behavior: reduced() ? 'auto' : 'smooth' });
+  const arrow = (dir, label) => h('button', { class: `sc-arrow sc-arrow-${dir > 0 ? 'r' : 'l'}`, type: 'button', 'aria-label': t(label), onclick: () => step(dir) }, [ico('chevron')]);
+  // The arrows only while there is more to the side.
+  const ends = () => row.parentNode?.classList.toggle('fits', row.scrollWidth <= row.clientWidth + 2);
+  requestAnimationFrame(ends);
+  addEventListener('resize', ends, { passive: true });
+  return h('div', { class: 'sc-adbox', style: `--ad-hi:${hi};--ad-mid:${mid};--ad-lo:${lo}` }, [
+    h('div', { class: 'sc-adrow' }, [row, arrow(-1, ['上一張', 'Previous']), arrow(1, ['下一張', 'Next'])]),
+    hasDemo(app.id) ? h('button', { class: 'sc-try', type: 'button', onclick: () => openDemo(app, t(NODES.get(app.id).node.title)) }, [ico('play'), t(['試玩真的 App', 'Try the real app'])]) : null
   ]);
 }
 
@@ -64,7 +40,7 @@ function phone(app) {
 function thenNow(app) {
   if (!app.then) return null;
   const [f, c] = app.then;
-  const now = app.shots[0][0];
+  const now = app.now || app.shots[0][0];
   const box = h('div', { class: 'sc-compare', style: '--k:50%' }, [
     h('img', { class: 'sc-cmp-now', src: shot(now), alt: t(['現在', 'Now']), loading: 'lazy', decoding: 'async' }),
     h('div', { class: 'sc-cmp-then' }, [h('img', { src: shot(f), alt: t(c), loading: 'lazy', decoding: 'async' })]),
@@ -110,8 +86,8 @@ function detail(app, stats) {
       appImg(app.brand, 64),
       h('div', {}, [h('h2', { text: t(node.title) }), h('p', { text: t(node.line) })])
     ]),
+    ads(app),
     h('div', { class: 'sc-appbody' }, [
-      phone(app),
       h('div', { class: 'sc-appside' }, [
         h('div', { class: 'sc-q' }, [h('small', { text: t(['它回答的問題', 'The question it answers']) }), h('p', { text: `「${t(app.q)}」` })]),
         node.p ? h('div', { class: 'sc-pir' }, pir(node)) : null,
@@ -151,5 +127,5 @@ export function renderApps(panel, stats, id) {
   const on = picker.querySelector('.on');
   if (on) requestAnimationFrame(() => (picker.scrollLeft = on.offsetLeft - (picker.clientWidth - on.offsetWidth) / 2));
   reveal(panel);
-  panel.querySelectorAll('.sc-compare img, .sc-shot img').forEach(img => img.addEventListener('dblclick', () => zoom(img.src, img.alt)));
+  panel.querySelectorAll('.sc-compare img, .sc-ad img').forEach(img => img.addEventListener('dblclick', () => zoom(img.src, img.alt)));
 }
