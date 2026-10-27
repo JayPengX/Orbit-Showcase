@@ -1,20 +1,19 @@
-// 架構: the system diagram (views/system.mjs), the structure tree and the
-// map. The tree is the whole system in plain words, short at the top, deeper
-// as it opens; a node opens its
-// problem → idea → result, its related nodes, and the technical names behind
-// a fold. Beside it on a computer, in a sheet on a phone. The map walks five
-// everyday stories across the system's five rows, a dot travelling between
-// the places each step happens.
-//   #how, #how/sys-<app>  the system diagram
-//   #how/tree       the tree
-//   #how/<node id>  the tree, that node open
+// 架構: the structure tree and the map. The tree is the whole system in
+// plain words, short at the top, deeper as it opens; a node opens a card: a
+// small picture first (steps, big numbers, before → after: lib/tree-show.mjs),
+// then problem → idea → result, what's inside, related nodes, and the
+// technical names behind a fold. Beside it on a computer, in a sheet on a
+// phone. The map walks five everyday stories across the system's five rows,
+// a dot travelling between the places each step happens.
+//   #how, #how/tree  the tree
+//   #how/<node id>   the tree, that node open (an old #how/sys-<app> opens the app)
 //   #how/map[-<story>]  the map
 import { segmented, sheet, tile } from '#kit/ui.mjs';
 import { h, t, ico, appImg, go, reduced, wide, en } from '../shell.mjs';
 import { ROOT, NODES, pathTo } from '../lib/tree.mjs';
 import { ROWS, STORIES } from '../lib/stories.mjs';
 import { pir } from './apps.mjs';
-import { renderSystem, leaveSystem } from './system.mjs';
+import { SHOW } from '../lib/tree-show.mjs';
 
 const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', money: 'money' };
 
@@ -40,7 +39,54 @@ const HUE = { apps: 'var(--q-orange)', kit: 'var(--q-indigo)', pass: 'var(--q-br
 const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
 const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
 // Column step, card width and the height each row of leaves takes.
-const dims = () => (wide() ? { col: 248, w: 212, slot: 64 } : { col: 160, w: 140, slot: 62 });
+const dims = () => (wide() ? { col: 248, w: 212, slot: 64 } : { col: 184, w: 164, slot: 62 });
+
+// Shorter names on the tree itself, so each sits on one line on a phone;
+// the card keeps the full title.
+const SHORT = {
+  'sports-own': ['自己算得更準', 'Better than the feed'],
+  'transit-own': ['自己算得更準', 'Better than the feed'],
+  'sports-final': ['照規則判完賽', 'Over by the rules'],
+  'sports-home-league': ['補上國內聯賽', 'Home league added'],
+  'sports-push': ['兩分鐘內通知', 'Results in 2 min'],
+  'sports-picks': ['今晚看哪場', 'Tonight’s plan'],
+  'sports-breaks': ['中斷倒數', 'Break countdowns'],
+  'sports-kept': ['打完永久保存', 'Finished, kept'],
+  'sports-direct': ['改由手機讀', 'Read by the phone'],
+  'sports-live': ['比分怎麼來', 'How scores arrive'],
+  'transit-nav': ['導航自動前進', 'Navigation moves on'],
+  'transit-bike': ['YouBike 有車', 'YouBike, always'],
+  'transit-caps': ['Google 上限', 'Google’s cap'],
+  'weather-blend': ['多來源混合', 'Sources blended'],
+  'weather-soon': ['快下雨才說', 'Rain soon, only'],
+  'weather-squares': ['同區共用答案', 'Shared squares'],
+  'weather-county': ['颱風一縣一算', 'Once a county'],
+  'class-ai': ['拍照匯入', 'Photo import'],
+  'law-build': ['每天自己建', 'Built every day'],
+  'money-carrier': ['載具發票', 'Carrier invoices'],
+  'kit-brand': ['程式畫的圖示', 'Icons by code'],
+  'kit-dayoff': ['假日和颱風假', 'Days off'],
+  'kit-shared-logic': ['手機雲端同程式', 'One code, two places'],
+  'pass-session': ['一處在用', 'One live place'],
+  'cloud-routes': ['各 App 的路線', 'Each app’s routes'],
+  'cloud-push': ['關著也通知', 'Notices, app closed'],
+  'cloud-relay': ['台灣 AI 中繼', 'Taiwan AI relay'],
+  'store-layers': ['讀取的七層', 'Seven layers'],
+  'store-kv': ['小抽屜 KV', 'Quick drawers'],
+  fast: ['打開很快', 'Opens fast'],
+  'fast-first': ['先用手上的', 'Open on what’s there'],
+  'fast-lift': ['好了才顯示', 'Lifts when ready'],
+  cheap: ['省錢不超額', 'Under limits'],
+  'cheap-share': ['共用答案', 'Shared answers'],
+  'cheap-caps': ['付費都有上限', 'Caps on paid'],
+  'cheap-speeds': ['Jay 定速度', 'Jay sets speeds'],
+  'cheap-plan': ['5 美元方案', 'The $5 plan'],
+  ship: ['怎麼上線', 'How it ships'],
+  'ship-tests': ['測默默的錯', 'Silent-bug tests'],
+  'ship-tools': ['Claude 看畫面', 'Claude sees it'],
+  'team-memory': ['記憶和規則', 'Memory and rules']
+};
+const shortName = node => t(SHORT[node.id] || node.title).replace(/^Orbit /, '');
 
 function nodeEl(id) {
   const node = NODES.get(id).node;
@@ -48,7 +94,7 @@ function nodeEl(id) {
   const icon = id === ROOT.id ? appImg(null, 28) : BRAND[id] ? appImg(BRAND[id], 26) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]);
   return h('button', { class: `sc-tn${id === ROOT.id ? ' root' : ''}${n ? ' has-kids' : ''}`, type: 'button', 'data-id': id, style: `--c:${hue(id)}`, 'aria-expanded': n ? 'false' : null, onclick: () => tap(id) }, [
     icon,
-    h('span', { class: 'sc-tn-t', text: id === ROOT.id ? t(node.title) : t(node.title).replace(/^Orbit /, '') }),
+    h('span', { class: 'sc-tn-t', text: id === ROOT.id ? t(node.title) : shortName(node) }),
     n && id !== ROOT.id ? h('span', { class: 'sc-tn-n', 'aria-label': t([`${n} 項`, `${n} inside`]), text: String(n) }) : null
   ]);
 }
@@ -98,7 +144,8 @@ function render() {
     const p = pos.get(up) || { x: 0, y: 0 };
     Object.assign(e, { tx: p.x, ty: p.y, to: 0, gone: true });
   }
-  const width = Math.max(...[...pos.values()].map(p => p.x)) + d.w + PAD * 2;
+  // (a phone gets a column of room past the last, so a scroll to any two columns is never cut short)
+  const width = Math.max(...[...pos.values()].map(p => p.x)) + d.w + PAD * 2 + (wide() ? 0 : d.col);
   const height = rows * d.slot + PAD * 2;
   canvas.style.width = `${width}px`;
   canvas.style.height = `${Math.max(height, parseFloat(canvas.style.height) || 0)}px`;
@@ -181,8 +228,10 @@ function focus(id) {
   const p = pos.get(id);
   if (!p || !treeBox.clientWidth) return;
   const kids = open.has(id) ? NODES.get(id).node.kids || [] : [];
-  const span = kids.length ? d.col + d.w : d.w;
-  const left = PAD + p.x - Math.max(8, (treeBox.clientWidth - span) / 2);
+  // A phone shows two whole columns: the open node and its children, or a
+  // leaf and its parent; a computer centres them. No card is ever cut at the edge.
+  const from = kids.length ? p.x : Math.max(0, p.x - d.col);
+  const left = wide() ? PAD + p.x - Math.max(8, (treeBox.clientWidth - (kids.length ? d.col + d.w : d.w)) / 2) : from ? PAD + from - 12 : 0;
   treeBox.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
   const ys = kids.length ? kids.map(k => pos.get(k.id).y) : [p.y];
   const box = treeBox.getBoundingClientRect();
@@ -268,13 +317,48 @@ function nodeView(id) {
   return h('div', { class: 'sc-detail-in' }, [
     path.length > 1 ? crumbs : null,
     h('header', { class: 'sc-detail-head' }, [BRAND[node.id] ? appImg(BRAND[node.id], 52) : node.id === 'orbit' ? appImg(null, 52) : tile(ico(node.icon), hue(node.id), ''), h('div', {}, [h('h2', { text: t(node.title) }), h('p', { text: t(node.line) })])]),
+    showView(id),
     node.p || node.i || node.r ? h('div', { class: 'sc-pir' }, pir(node)) : null,
     node.tech
       ? h('details', { class: 'sc-tech' }, [h('summary', {}, [ico('pencil'), t(['技術細節（給好奇的人）', 'Technical details (for the curious)'])]), h('p', { text: t(node.tech) })])
       : null,
-    node.kids?.length ? h('div', { class: 'sc-sub' }, [h('h3', { class: 'sc-h3', text: t(['裡面還有', 'Inside']) }), chipsOf(node.kids)]) : null,
+    node.kids?.length
+      ? h('div', { class: 'sc-sub' }, [
+          h('h3', { class: 'sc-h3', text: t(['裡面有', 'Inside']) }),
+          h(
+            'div',
+            { class: 'sc-inside' },
+            node.kids.map(k => h('a', { class: 'sc-inside-k', href: `#how/${k.id}`, style: `--c:${hue(k.id)}` }, [BRAND[k.id] ? appImg(BRAND[k.id], 34) : h('span', { class: 'sc-tn-i' }, [ico(k.icon)]), h('span', { class: 'sc-row-text' }, [h('strong', { text: t(k.title) }), h('small', { text: t(k.line) })])]))
+          )
+        ])
+      : null,
     related.length ? h('div', { class: 'sc-sub' }, [h('h3', { class: 'sc-h3', text: t(['相關', 'Related']) }), chipsOf(related)]) : null
   ]);
+}
+
+// The card's picture (lib/tree-show.mjs): steps, numbers, before → after,
+// named things, a short checklist.
+const said = x => (Array.isArray(x) ? t(x) : x);
+function showView(id) {
+  const s = SHOW[id];
+  if (!s) return null;
+  const c = hue(id);
+  const out = [];
+  if (s.flow) {
+    const down = s.flow.length > 4;
+    out.push(
+      h(
+        'ol',
+        { class: `sc-flow${down ? ' down' : ''}`, style: `--n:${s.flow.length}` },
+        s.flow.map(([icon, label], i) => h('li', { class: 'sc-flow-s', style: `--i:${i}` }, [h('span', { class: 'sc-flow-i' }, [ico(icon)]), h('span', { class: 'sc-flow-t', text: said(label) })]))
+      )
+    );
+  }
+  if (s.nums) out.push(h('div', { class: 'sc-shownums', style: `--n:${s.nums.length}` }, s.nums.map(([v, label]) => h('div', { class: 'sc-shownum' }, [h('strong', { text: said(v) }), h('span', { text: said(label) })]))));
+  if (s.pairs) out.push(h('div', { class: 'sc-pairs' }, s.pairs.map(([a, b]) => h('div', { class: 'sc-pair' }, [h('span', { class: 'sc-pair-a' }, [ico('x'), said(a)]), h('span', { class: 'sc-pair-b' }, [ico('check'), said(b)])]))));
+  if (s.tags) out.push(h('div', { class: 'sc-tags' }, s.tags.map(([icon, label]) => h('span', { class: 'sc-tag' }, [ico(icon), said(label)]))));
+  if (s.rules) out.push(h('ul', { class: 'sc-rules' }, s.rules.map(r => h('li', {}, [ico('check'), said(r)]))));
+  return h('div', { class: 'sc-show', style: `--c:${c}` }, out);
 }
 
 function search(q) {
@@ -498,34 +582,26 @@ function mapView(storyId) {
 let built = null;
 let seg = null;
 let mode = '';
-let sysApp = null;
 
 export function renderHow(panel, what = '') {
-  const view = !what || what.startsWith('sys') ? 'sys' : what.startsWith('map') ? 'map' : 'tree';
+  if (what.startsWith('sys')) what = what.slice(4);
+  const view = what.startsWith('map') ? 'map' : 'tree';
   if (!built) {
     seg = segmented(
       [
-        { id: 'sys', label: t(['系統圖', 'System']) },
         { id: 'tree', label: t(['樹狀圖', 'Tree']) },
         { id: 'map', label: t(['旅程', 'Journeys']) }
       ],
-      { value: view, onChange: id => go('how', id === 'map' ? 'map' : id === 'sys' ? `sys-${sysApp || 'sports'}` : picked && picked !== ROOT.id ? picked : 'tree') }
+      { value: view, onChange: id => go('how', id === 'map' ? 'map' : picked && picked !== ROOT.id ? picked : 'tree') }
     );
-    built = { sys: h('div', { class: 'sc-sysslot' }), tree: buildTree(), map: h('div', { class: 'sc-mapslot' }) };
-    panel.replaceChildren(h('div', { class: 'sc-how' }, [h('div', { class: 'sc-segbox' }, [seg]), built.sys, built.tree, built.map]));
+    built = { tree: buildTree(), map: h('div', { class: 'sc-mapslot' }) };
+    panel.replaceChildren(h('div', { class: 'sc-how' }, [h('div', { class: 'sc-segbox' }, [seg]), built.tree, built.map]));
   }
   seg.set(view);
-  for (const k of ['sys', 'tree', 'map']) built[k].hidden = k !== view;
+  for (const k of ['tree', 'map']) built[k].hidden = k !== view;
   if (view !== 'map') mapState?.stop();
   if (view !== 'tree') openSheet?.close();
-  if (view !== 'sys') leaveSystem();
   const from = mode;
-  if (view === 'sys') {
-    sysApp = what.slice(4) || sysApp || 'sports';
-    mode = 'sys';
-    renderSystem(built.sys, sysApp);
-    return;
-  }
   if (view === 'map') {
     const storyId = what.slice(4) || STORIES[0].id;
     if (mode !== `map-${storyId}`) {
@@ -544,7 +620,6 @@ export function renderHow(panel, what = '') {
 // Leaving the tab: a phone's open sheet closes, the map stops.
 export function leaveHow() {
   mapState?.stop();
-  leaveSystem();
   if (openSheet) {
     const s = openSheet;
     openSheet = null;

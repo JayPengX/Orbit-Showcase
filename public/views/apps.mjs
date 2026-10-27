@@ -99,7 +99,6 @@ function inside(app) {
       { class: 'sc-chips' },
       (node.kids || []).map(k => link('how', k.id, [ico(k.icon), t(k.title)], 'sc-chip'))
     ),
-    link('how', `sys-${app.id}`, [t(['看它背後的系統', 'See the system behind it']), ico('chevron')], 'sc-more'),
     link('how', app.id, [t(['在樹狀圖裡打開', 'Open it in the tree']), ico('chevron')], 'sc-more')
   ]);
 }

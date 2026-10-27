@@ -1,0 +1,5069 @@
+/* Orbit Transit on the Orbit kit (orbit.css and its Premium layer): the
+   kit's page heads, hero cards, tiles, row cards, tags and rails, the app's
+   green, every colour a kit token so light and dark follow the phone. The
+   app's own pieces are the map and what sits on it (the search, the
+   markers, the card that rises, navigation), the bus strip, a plan's legs
+   and steps, a route's stops. One file, by screen:
+
+     1. Base             tokens, icons, notes, the page
+     2. Shared pieces    hero extras, rows, the bus strip, legs, countdowns
+     3. 地圖              the bar over the map, chips, search, YouBike, markers
+     4. 地圖's card        a station, a stop, a place; plans and their steps
+     5. Navigation       the step card, the arrival bar, the shrunk bar
+     6. 交通              trips, places
+     7. 查時刻            the train search, journeys, buses, the metro map
+     8. 我的              the pass, settings
+     9. Sheets           fields, lists, a route's stops, timetables, trips
+    10. The narrowest phone */
+
+/* ==== 1. Base ==================================================================================== */
+
+:root {
+  --q-status-bg: var(--q-page);
+  --ot-max: 640px;
+  --ot-tabs: var(--q-nav, 0px);
+  --ot-bike: #f5b301;
+  --ot-shadow: 0 18px 44px -20px rgb(0 0 0 / 0.45);
+  --ot-ink-green: #15803d;
+  --ot-ink-amber: #a15c00;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ot-shadow: 0 18px 44px -18px rgb(0 0 0 / 0.9);
+    --ot-ink-green: #4ade80;
+    --ot-ink-amber: #fcd34d;
+  }
+}
+:root[data-theme='dark'] {
+  --ot-shadow: 0 18px 44px -18px rgb(0 0 0 / 0.9);
+  --ot-ink-green: #4ade80;
+  --ot-ink-amber: #fcd34d;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--q-page);
+  color: var(--q-label);
+  font-family: var(--q-font);
+  -webkit-tap-highlight-color: transparent;
+}
+.ot-panel[hidden] {
+  display: none !important;
+}
+.ot-scroll {
+  min-height: calc(100dvh - var(--ot-tabs));
+}
+/* A page: 16 px in, room under its last card for the tab bar. */
+.ot-page {
+  --q-margin: 16px;
+  box-sizing: border-box;
+  padding: 0 16px calc(var(--q-nav, 0px) + 32px);
+}
+.ot-i {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.q-btn .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.ot-note {
+  margin: 12px 4px;
+  color: var(--q-label-2);
+  font: 400 14px/20px var(--q-font);
+}
+.ot-note.bad {
+  color: var(--q-red);
+}
+.ot-note.center {
+  text-align: center;
+}
+.ot-note .ot-i {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+.ot-empty {
+  padding: 40px 20px;
+  color: var(--q-label-2);
+  text-align: center;
+}
+.ot-warn,
+.warn {
+  color: var(--q-orange);
+}
+.ot-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+/* A bar holding a line's place while it's asked for. */
+.ot-skel {
+  display: inline-block;
+  height: 0.75em;
+  border-radius: 5px;
+  background: var(--q-fill-3);
+  vertical-align: -0.05em;
+}
+/* A text link at the foot of a card or a sheet. */
+.ot-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--q-accent);
+  font: 500 15px/20px var(--q-font);
+}
+.ot-link .ot-i {
+  width: 16px;
+  height: 16px;
+}
+/* A chip row that scrolls sideways to the screen's edges. */
+.ot-chip-rail {
+  margin: 12px calc(-1 * var(--q-margin)) 0;
+  padding: 2px var(--q-margin) 4px;
+  scroll-padding-inline: var(--q-margin);
+}
+.ot-wrap-chips {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.q-chip .ot-i {
+  width: 16px;
+  height: 16px;
+}
+.q-chip[aria-pressed='true'] {
+  background: var(--q-accent);
+  color: #fff;
+}
+.q-icon-btn.on {
+  color: var(--ot-bike);
+}
+.q-icon-btn.on .ot-i {
+  fill: currentColor;
+}
+
+/* ==== 2. Shared pieces =========================================================================== */
+
+/* Sections: the 20px head (the kit's spacing, Law's size). */
+.ot-sec {
+  margin-top: 28px;
+}
+.ot-sec .q-section-head h2 {
+  font: 700 20px/25px var(--q-font);
+}
+.ot-sec .q-section-head button {
+  padding: 0;
+  font: 400 16px/22px var(--q-font);
+}
+.ot-sec .q-section-head button[aria-pressed='true'] {
+  color: var(--ot-bike);
+}
+.ot-sec > * + .q-rowcard,
+.ot-sec > * + .q-rail {
+  margin-top: 12px;
+}
+
+/* The hero: the page's one card on the app's colour. */
+.ot-hero {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+button.ot-hero {
+  cursor: pointer;
+}
+.q-hero-card .q-hc-eyebrow {
+  min-width: 0;
+}
+.q-hero-card .q-hc-eyebrow > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-hero .q-hc-title {
+  overflow-wrap: anywhere;
+}
+.q-hero-card .q-tag {
+  background: rgb(255 255 255 / 0.2);
+  color: #fff;
+}
+.q-hero-card .q-tag.green {
+  background: #fff;
+  color: #15803d;
+}
+.q-hero-card .q-tag.red {
+  background: #fff;
+  color: #d70015;
+}
+.q-hero-card .q-tag.orange {
+  background: #fff;
+  color: #c93400;
+}
+.ot-hc-tags {
+  margin: 0;
+}
+.q-hero-card .q-hc-btn .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.q-hero-card .q-hc-btn:disabled {
+  opacity: 0.55;
+}
+/* A field on the hero (Law's ask): the bus search. */
+.ot-hc-field {
+  padding: 0 14px;
+  color: rgb(255 255 255 / 0.85);
+}
+.ot-hc-field .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.ot-hc-field input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: #fff;
+  font: 500 17px/22px var(--q-font);
+}
+.ot-hc-field input::placeholder {
+  color: rgb(255 255 255 / 0.7);
+}
+.ot-hc-field input::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* A countdown: the minutes big and rounded, 分 small after them. */
+.ot-count {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.ot-count small {
+  font: 600 0.45em/1 var(--q-font);
+  opacity: 0.85;
+}
+
+/* Tiles hold the app's own glyphs (or a place's emoji). */
+.q-tile .ot-i {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+.q-tile.sm .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.q-tile.soft {
+  --t: var(--q-accent);
+}
+
+/* Rows. */
+.q-ritem .q-icon-btn {
+  flex: none;
+}
+.q-ritem .q-ritem-value {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ot-add .q-ritem-title {
+  color: var(--q-accent);
+  font-weight: 600;
+}
+/* A row's time on the right: big and rounded, the clock under it. */
+.ot-eta {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  gap: 2px;
+}
+.ot-eta-n {
+  font: 700 22px/24px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-eta small {
+  color: var(--q-label-2);
+  font: 500 12px/14px var(--q-font);
+  white-space: nowrap;
+}
+
+/* A bus route as a row (bus-ui.mjs strip): its number a green tile, the
+   main words over a quiet note, its next bus on the right, big. Words
+   shrink to their room (fitStrips): never a second line, never cut. */
+.ot-strip {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.q-rowcard > .ot-strip + .ot-strip::before,
+.ot-eta-list > .ot-strip + .ot-strip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 76px;
+  right: 0;
+  border-top: var(--q-hairline) solid var(--q-sep);
+}
+.ot-strip-main {
+  display: grid;
+  flex: 1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ot-strip-main:active {
+  background: var(--q-fill-4);
+}
+.ot-strip-no {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 52px;
+  height: 40px;
+  padding: 0 4px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--q-green) 80%, #fff), var(--q-green) 60%);
+  color: #fff;
+  font: 700 15px/1.2 var(--q-font);
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.18);
+}
+/* Still being asked: a grey tile, not a green one with dots in it. */
+.ot-strip-no.wait {
+  background: var(--q-fill-3);
+}
+.ot-strip-no > span {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-align: center;
+}
+/* A long name: two lines, its words over its number, each shrunk to the tile. */
+.ot-no2 {
+  display: grid;
+  font-size: 13px;
+  line-height: 15px;
+}
+.ot-no2 > i {
+  display: block;
+  font-style: normal;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ot-strip-mid {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.ot-strip-what,
+.ot-strip-note {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+}
+.ot-strip-what b {
+  display: inline-block;
+  font: 500 16px/21px var(--q-font);
+  white-space: nowrap;
+}
+.ot-strip-what i:not(.ot-skel) {
+  margin: 0 6px;
+  color: var(--q-label-2);
+  font-style: normal;
+}
+.ot-strip-note small {
+  display: inline-block;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+  white-space: nowrap;
+}
+.ot-strip-eta {
+  display: grid;
+  justify-items: end;
+  min-width: 52px;
+  text-align: right;
+}
+.ot-strip-eta b {
+  font: 700 20px/24px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.ot-strip-eta small {
+  color: var(--q-label-2);
+  font: 400 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+.ot-strip-eta.live b {
+  color: var(--q-green);
+}
+.ot-strip-eta.words b {
+  color: var(--q-label-2);
+  font: 600 14px/20px var(--q-font);
+}
+.ot-strip-eta.live.words b {
+  color: var(--q-green);
+}
+/* 進站中 / 即將進站 breathe: the bus is there. */
+.ot-strip-eta.now b {
+  animation: ot-breathe 1.8s ease-in-out infinite;
+}
+@keyframes ot-breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+.ot-strip-act {
+  flex: none;
+}
+/* A pinned ride's 去程/回程: a tag in its note, a tap turns it round. */
+.ot-strip-dir {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 6px;
+  padding: 1px 7px 1px 5px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: 1px;
+}
+.ot-strip-dir .ot-i {
+  width: 12px;
+  height: 12px;
+}
+
+/* A plan's legs: each ride a chip in its line's colour, a walk its minutes. */
+.ot-legs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 4px;
+}
+.ot-leg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--c, var(--q-gray));
+  color: var(--ink, #fff);
+  font: 600 12.5px/1 var(--q-font);
+  white-space: nowrap;
+}
+.ot-leg .ot-i {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
+}
+.ot-leg.walk {
+  gap: 1px;
+  padding: 0 2px;
+  background: none;
+  color: var(--q-label-2);
+  font-variant-numeric: tabular-nums;
+}
+.ot-leg.bike {
+  gap: 3px;
+  padding: 0 7px 0 6px;
+  background: color-mix(in srgb, var(--c) 22%, transparent);
+  color: var(--ot-ink-amber);
+}
+.ot-leg.bike b {
+  color: var(--q-label);
+}
+.ot-leg-sep {
+  color: var(--q-label-3);
+  font-size: 13px;
+}
+/* A trip with stops: each stretch after its stop's number. */
+.ot-leg-stop {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: 0 4px;
+  border: 2px solid var(--q-accent);
+  border-radius: 50%;
+  font: 800 11px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+/* On the hero: white chips, the line's colour in the ink. */
+.ot-hc-legs .ot-leg {
+  background: #fff;
+  color: var(--c, #333);
+}
+.ot-hc-legs .ot-leg.walk,
+.ot-hc-legs .ot-leg-sep {
+  background: none;
+  color: rgb(255 255 255 / 0.8);
+}
+.ot-hc-legs .ot-leg.bike b {
+  color: #3a2a00;
+}
+
+/* A route's other departures: times to pick, the one shown filled. */
+.ot-plan-deps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  /* The whole day's times in one row, swiped sideways (the owner, 2026-10-21). */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ot-plan-deps::-webkit-scrollbar {
+  display: none;
+}
+.ot-dep-l {
+  flex: none;
+}
+/* The ways under the recommendations: a row each, best first. */
+.ot-plans-more {
+  margin: 14px 4px 6px;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+/* (Its label, once: 下一班, then the times.) */
+.ot-dep-l {
+  margin-right: 2px;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+.ot-dep {
+  flex: none;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.ot-dep small {
+  margin-left: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+.ot-dep.on {
+  background: var(--q-accent);
+  color: #fff;
+}
+.ot-livedot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin: 0 3px 1px;
+  border-radius: 50%;
+  background: var(--q-green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--q-green) 22%, transparent);
+  vertical-align: middle;
+}
+
+/* ==== 3. 地圖 ==================================================================================== */
+
+/* The map the whole column down to the tab bar. */
+.ot-map-panel {
+  position: fixed;
+  inset: 0 var(--q-side, 0px) var(--ot-tabs);
+  overflow: hidden;
+}
+.ot-map {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* the map's own panes (Leaflet's go to 700) stay under the app's buttons */
+  background: var(--q-page);
+}
+/* Taiwan's NLSC map is light: as it is in light mode, turned dark to match in dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .ot-tiles {
+    filter: invert(0.92) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92);
+  }
+}
+:root[data-theme='dark'] .ot-tiles {
+  filter: invert(0.92) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92);
+}
+.leaflet-container {
+  background: var(--q-page);
+  font-family: var(--q-font);
+}
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--q-page) 60%, transparent) !important;
+  color: var(--q-label-2) !important;
+  font-size: 10px;
+}
+
+/* Over the map the glass is nearly solid: the map's pins, busy and bright,
+   would otherwise show through the buttons as if on top of them (they're
+   under: the map is its own layer at z-index 0). */
+body.tab-map {
+  --q-glass: rgba(250, 250, 252, 0.9);
+  --q-glass-strong: rgba(250, 250, 252, 0.95);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) body.tab-map {
+    --q-glass: rgba(34, 34, 37, 0.9);
+    --q-glass-strong: rgba(40, 40, 43, 0.94);
+  }
+}
+:root[data-theme='dark'] body.tab-map {
+  --q-glass: rgba(34, 34, 37, 0.9);
+  --q-glass-strong: rgba(40, 40, 43, 0.94);
+}
+
+/* The bar over the map: only the kit's account buttons now (the search lives
+   in the sheet), the map showing under it and a touch passing through
+   everything but the buttons themselves. */
+.tab-map .q-appbar {
+  position: fixed;
+  top: 0;
+  left: var(--q-side, 0px);
+  right: var(--q-side, 0px);
+  z-index: 40;
+  background: none;
+  box-shadow: none;
+  pointer-events: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.tab-map .q-appbar .q-actions,
+.tab-map .q-appbar #tabs {
+  pointer-events: auto;
+}
+.tab-map .q-brand {
+  display: none;
+}
+/* A YouBike rental timed: its chip at the map's top left, level with the account buttons (amber the last 5 free minutes, red past them). */
+.ot-map-chips {
+  position: absolute;
+  top: calc(var(--q-top, 0px) + 4px);
+  left: var(--q-margin);
+  right: 124px;
+  z-index: 30;
+  display: flex;
+  pointer-events: none;
+}
+.ot-map-chips:empty {
+  display: none;
+}
+.ot-map-chips .q-chip {
+  min-height: 44px;
+  padding: 0 14px;
+  gap: 6px;
+  background: var(--q-glass-strong);
+  font-weight: 600;
+  pointer-events: auto;
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  box-shadow: var(--q-glass-rim), var(--q-glass-drop);
+}
+.ot-rent-chip b {
+  font-variant-numeric: tabular-nums;
+}
+.ot-rent-chip small {
+  color: var(--q-label-2);
+  font-size: 12px;
+}
+.ot-map-chips .ot-rent-chip {
+  box-shadow: inset 0 0 0 1.5px var(--q-accent), var(--q-glass-drop);
+}
+.ot-map-chips .ot-rent-chip.warn {
+  box-shadow: inset 0 0 0 1.5px var(--q-orange), var(--q-glass-drop);
+}
+.ot-map-chips .ot-rent-chip.over {
+  box-shadow: inset 0 0 0 1.5px var(--q-red), var(--q-glass-drop);
+}
+
+/* The round buttons: layers, where I am. At the map's top right under the
+   account buttons, as Maps keeps them; the large sheet covers them. */
+.ot-fabs {
+  position: absolute;
+  top: calc(var(--q-top, 0px) + 62px);
+  right: 14px;
+  z-index: 30;
+  display: grid;
+  gap: 10px;
+  transition: opacity 0.2s;
+}
+.ot-fab {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--q-glass-strong);
+  color: var(--q-label);
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  box-shadow: var(--q-glass-rim), var(--q-glass-drop);
+}
+.ot-fab:active {
+  transform: scale(0.94);
+}
+/* 我的位置 while the map follows you: blue, as iOS Maps'. */
+.ot-fab[aria-pressed='true'] {
+  color: var(--q-blue);
+}
+/* What's on the map hides while a trip, navigation or a pick has it. */
+.ot-map-panel[data-sheet='large'] .ot-fabs,
+.ot-navigating:not(.ot-nav-min) .ot-map-chips,
+.ot-navigating:not(.ot-nav-min) .ot-fabs,
+.ot-picking .ot-map-chips,
+.ot-picking .ot-fabs {
+  opacity: 0;
+  pointer-events: none;
+}
+.tab-map.ot-navigating:not(.ot-nav-min) .q-actions,
+.tab-map.ot-navigating:not(.ot-nav-min) .ot-msheet,
+.tab-map.ot-picking .ot-msheet {
+  display: none;
+}
+/* Navigating: the bar over the map goes, all but the tab bar it holds. */
+.tab-map.ot-navigating:not(.ot-nav-min) .q-appbar {
+  visibility: hidden;
+}
+.tab-map.ot-navigating:not(.ot-nav-min) .q-appbar #tabs {
+  visibility: visible;
+}
+.ot-nav-min #nav {
+  display: none;
+}
+
+/* ---- The sheet over the map (Maps' model): one, persistent, three stops ---- */
+.ot-msheet {
+  --q-surface: var(--q-sheet-cell, var(--q-grouped-2));
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 36;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--ot-max);
+  height: 236px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 28px 28px 0 0;
+  background: var(--q-sheet);
+  box-shadow: var(--q-glass-rim), 0 -14px 44px -18px rgb(0 0 0 / 0.5);
+  transition: transform var(--q-dur-snappy, 0.34s) var(--q-spring-smooth, ease-out);
+  will-change: transform;
+  /* A finger on the sheet is the sheet's: never the map's behind it (rails still go sideways). */
+  touch-action: pan-x;
+  overscroll-behavior: contain;
+}
+.ot-msheet[data-detent='large'] {
+  touch-action: pan-x pan-y;
+}
+.ot-msheet.dragging {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-msheet {
+    transition: none;
+  }
+}
+.ot-ms-head {
+  flex: none;
+  padding: 0 var(--q-margin) 10px;
+  touch-action: none;
+}
+/* The grabber: a 5px pill in a 44px-high target. */
+.ot-ms-grab {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ot-ms-grab::after {
+  content: '';
+  position: absolute;
+  inset: -8px 0 -12px;
+}
+.ot-ms-grab i {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 38px;
+  height: 5px;
+  margin-left: -19px;
+  border-radius: 3px;
+  background: var(--q-fill-1);
+}
+.ot-ms-grab:focus-visible i {
+  background: var(--q-accent);
+}
+.ot-ms-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ot-ms-act {
+  flex: none;
+  min-height: 44px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--q-accent);
+  font: 500 17px/22px var(--q-font);
+}
+.ot-ms-act[hidden] {
+  display: none;
+}
+/* Search Maps: a grey capsule in the sheet. */
+.ot-search {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 8px 0 12px;
+  border-radius: 22px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+}
+.ot-search .ot-i {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.2;
+}
+.ot-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--q-label);
+  font: 400 17px/22px var(--q-font);
+  text-overflow: ellipsis;
+}
+.ot-search input::placeholder {
+  color: var(--q-label-2);
+  text-overflow: ellipsis;
+}
+.ot-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.ot-x {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--q-fill-1);
+  color: var(--q-sheet);
+  font-size: 17px;
+  line-height: 1;
+}
+.ot-x[hidden] {
+  display: none;
+}
+.ot-ms-body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* (24px, and the 40px the sheet runs on below the panel's foot.) */
+  padding: 0 var(--q-margin) calc(64px + var(--ot-kb, 0px));
+  -webkit-overflow-scrolling: touch;
+}
+.ot-msheet[data-detent='peek'] .ot-ms-body {
+  overflow: hidden;
+}
+/* One thing in it at a time: the shelves, the search's results, a card. */
+.ot-msheet[data-shows='results'] .ot-home,
+.ot-msheet[data-shows='card'] .ot-home,
+.ot-msheet[data-shows='card'] .ot-results {
+  display: none;
+}
+.ot-msheet[data-shows='card'] .ot-ms-row {
+  display: none;
+}
+.ot-msheet[data-shows='card'] .ot-ms-head {
+  padding-bottom: 0;
+}
+
+/* Search: the results are rows of one card in the sheet. */
+.ot-msheet .ot-results {
+  margin: 4px 0 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--q-surface);
+}
+.ot-results[hidden] {
+  display: none;
+}
+.ot-msheet .ot-results > .ot-note {
+  margin: 14px 16px;
+}
+.ot-res {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  box-sizing: border-box;
+  padding: 8px 14px 8px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.ot-res + .ot-res::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 64px;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.ot-res:active {
+  background: var(--q-fill-4);
+}
+.ot-res-i {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font-size: 19px;
+}
+.ot-res-i .ot-i {
+  width: 20px;
+  height: 20px;
+}
+.ot-res-t {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ot-res-t b,
+.ot-res-t small {
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+.ot-res-t b {
+  font-weight: 500;
+}
+.ot-res-t small {
+  color: var(--q-label-2);
+  font-size: 12.5px;
+}
+
+/* ---- The shelves (home.mjs): 常用, 建議, 最近, 附近 ---- */
+.ot-home {
+  display: grid;
+  gap: 28px;
+  padding-top: 4px;
+}
+.ot-shelf {
+  min-width: 0;
+}
+.ot-shelf > .q-section-head {
+  margin-bottom: 0;
+}
+.ot-shelf > * + .q-rowcard,
+.ot-shelf > * + .q-rail,
+.ot-shelf > * + .ot-hero {
+  margin-top: 0;
+}
+.ot-shelf > .q-rowcard + .q-rail,
+.ot-sugs > .ot-hero + .q-rowcard {
+  margin-top: 12px;
+}
+
+/* 常用: round tiles in a row to scroll, each its colour, its name and how far. */
+.ot-favs {
+  --q-rail-w: 76px;
+  gap: 6px;
+  padding-top: 4px;
+}
+.ot-fav {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.ot-fav .q-tile {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+}
+.ot-fav .q-tile svg {
+  width: 28px;
+  height: 28px;
+}
+.ot-fav:active .q-tile,
+.ot-fav:active .ot-fav-plus {
+  transform: scale(0.94);
+}
+.ot-fav b {
+  max-width: 100%;
+  font: 600 13px/17px var(--q-font);
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.ot-fav small {
+  color: var(--q-label-2);
+  font: 500 11.5px/14px var(--q-font);
+  white-space: nowrap;
+}
+.ot-fav.ghost .q-tile {
+  position: relative;
+  box-sizing: border-box;
+  border: 1.5px dashed color-mix(in srgb, var(--t) 55%, transparent);
+  background: color-mix(in srgb, var(--t) 8%, transparent);
+  color: color-mix(in srgb, var(--t) 70%, var(--q-label-3));
+  box-shadow: none;
+}
+/* The ＋ badge on its corner: this one waits to be filled in. */
+.ot-fav.ghost .q-tile::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #fff) center / 10px 2px no-repeat, linear-gradient(#fff, #fff) center / 2px 10px no-repeat, var(--q-accent);
+  box-shadow: 0 0 0 2.5px var(--q-sheet);
+}
+.ot-fav.ghost b {
+  color: var(--q-label);
+}
+.ot-fav.ghost small {
+  color: var(--q-accent);
+  font-weight: 600;
+}
+.ot-fav-plus {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--q-accent) 14%, transparent);
+  color: var(--q-accent);
+}
+.ot-fav-plus .ot-i {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.2;
+}
+.ot-fav.add b {
+  color: var(--q-accent);
+}
+
+/* 建議: the best one a big card, the rest rows with their numbers. */
+.ot-sugs > .q-section-head {
+  margin-bottom: 0;
+}
+.ot-sg {
+  width: 100%;
+  min-height: 64px;
+}
+.ot-sg .q-ritem-title {
+  font-weight: 600;
+}
+.ot-eta-n.sm {
+  font-size: 17px;
+  line-height: 22px;
+}
+.q-hero-card .q-hc-big small {
+  margin-left: 4px;
+  font-size: 0.4em;
+  font-weight: 600;
+}
+
+/* 最近: rows, each with its ✕. */
+.ot-rec {
+  padding: 0;
+}
+.ot-rec-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 8px 0 8px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.ot-rec-main:active {
+  background: var(--q-fill-4);
+}
+.ot-rec-i {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+}
+.ot-rec-i .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.ot-rec .q-ritem-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ot-rec .ot-rec-x {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin-right: 2px;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--q-label-2);
+}
+/* A 30px chip in a 44px target: seen at a glance, still the quiet one. */
+.ot-rec .ot-rec-x::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+}
+.ot-rec .ot-rec-x .ot-i {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+.ot-rec.q-ritem + .q-ritem::before,
+.ot-rec + .ot-rec::before {
+  left: 60px;
+}
+
+/* 附近: the next buses, then YouBike's stations as cards with the bikes big. */
+.ot-bikes {
+  --q-rail-w: 168px;
+  gap: 10px;
+}
+.ot-bk {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 14px 12px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--q-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+.ot-bk:active {
+  transform: scale(0.98);
+}
+.ot-bk-name {
+  color: var(--q-label-2);
+  font: 600 13px/17px var(--q-font);
+  overflow-wrap: anywhere;
+}
+.ot-bk-n {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+}
+.ot-bk-n b {
+  color: var(--ot-ink-amber);
+  font: 700 34px/36px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-bk-n em {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: var(--ot-ink-amber);
+  font: 700 15px/1 var(--q-font-rounded);
+  font-style: normal;
+}
+.ot-bk-n em .ot-i {
+  width: 14px;
+  height: 14px;
+}
+.ot-bk.few .ot-bk-n b {
+  color: var(--q-orange);
+}
+.ot-bk.none .ot-bk-n b {
+  color: var(--q-red);
+}
+/* Paused: greyed, one quiet word where the bikes go. */
+.ot-bk.off .ot-bk-n b {
+  color: var(--q-label-3);
+  font-size: 24px;
+}
+.ot-bk.off .ot-bk-name {
+  color: var(--q-label-3);
+}
+.ot-bk-f {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--q-label-2);
+  font: 600 13px/16px var(--q-font-rounded);
+}
+.ot-bk-f i {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-style: normal;
+}
+.ot-bk-f i:first-child {
+  color: var(--q-blue);
+}
+.ot-bk-f .ot-i {
+  width: 14px;
+  height: 14px;
+}
+
+/* A small heading in a sheet (the rental sheet's docks). */
+.ot-res-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 8px 2px;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+
+/* ---- Markers ---- */
+.ot-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.ot-mk {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  will-change: transform;
+}
+.leaflet-marker-icon.ot-mk {
+  border: 0;
+  background: none;
+}
+.ot-mk > * {
+  pointer-events: auto;
+}
+/* YouBike: a yellow pill with its bike and the bikes there (⚡ the 電輔車), a point under it. */
+.ot-mk.bike {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  margin: -12px 0 0 -16px;
+  padding: 0 8px 0 5px;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  background: var(--ot-bike);
+  color: #1a1300;
+  font: 800 12px/1 var(--q-font);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+}
+.ot-mk.bike .ot-i {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+.ot-mk.bike i {
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.ot-mk.bike::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 12px;
+  border: 5px solid transparent;
+  border-top-color: #fff;
+  border-bottom: 0;
+}
+.ot-mk.bike.few {
+  background: #f59e0b;
+}
+.ot-mk.bike.none {
+  background: #6b7280;
+  color: #f3f4f6;
+}
+.ot-mk.bike.off {
+  background: #374151;
+  color: #9ca3af;
+}
+/* On a ride, in the map's own view: the station's bike alone, a round badge. */
+.ot-mk.bike.bare {
+  width: 24px;
+  margin-left: -12px;
+  padding: 0;
+  justify-content: center;
+}
+.ot-mk.bike.bare::after {
+  left: 7px;
+}
+/* A trip's own station: its bikes and its docks, a bar between. */
+.ot-mk.bike.plan s {
+  width: 1px;
+  height: 12px;
+  margin: 0 3px;
+  background: currentColor;
+  opacity: 0.35;
+}
+/* A bus stop: a small round green sign. */
+.ot-mk.bus {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);
+}
+.ot-mk.bus .ot-i {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.6;
+}
+/* A station: its tile and its name beside it. */
+.ot-mk.rail,
+.ot-mk.metro {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--q-label);
+  font: 700 12px/1 var(--q-font);
+  white-space: nowrap;
+  text-shadow: 0 0 3px var(--q-page), 0 0 3px var(--q-page), 0 0 6px var(--q-page);
+}
+.ot-mk.rail {
+  margin: -13px 0 0 -13px;
+}
+.ot-mk.rail .ot-i {
+  box-sizing: border-box;
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  border: 2px solid #fff;
+  border-radius: 9px;
+  background: #0284c7;
+  color: #fff;
+  stroke-width: 2.2;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+}
+.ot-mk.rail.hsr .ot-i {
+  background: #ea580c;
+}
+.ot-mk.metro {
+  margin: -8px 0 0 -8px;
+}
+.ot-mk.metro i {
+  width: 10px;
+  height: 10px;
+  border: 3px solid var(--c);
+  border-radius: 50%;
+  background: #fff;
+}
+/* A pinned place: its icon in a ringed disc, its name on a label tucked under it. */
+.ot-mk.place {
+  display: flex;
+  align-items: center;
+  margin: -14px 0 0 -14px;
+  color: var(--q-label);
+  font: 700 12.5px/1 var(--q-font);
+  white-space: nowrap;
+}
+.ot-mk.place i {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--q-surface);
+  font-size: 15px;
+  font-style: normal;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+}
+.ot-mk.place span {
+  margin-left: -10px;
+  padding: 5px 9px 5px 14px;
+  border-radius: 0 10px 10px 0;
+  background: var(--q-surface);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+}
+/* You: the blue dot. */
+.ot-mk.me {
+  margin: -11px 0 0 -11px;
+}
+.ot-me {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #3b82f6;
+  box-shadow: 0 0 0 7px rgb(59 130 246 / 0.25), 0 2px 6px rgb(0 0 0 / 0.5);
+}
+/* The marker tapped: a size up, rimmed in white whatever its shape. */
+.ot-mk.is-sel {
+  scale: 1.3;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 4px 8px rgb(0 0 0 / 0.5));
+}
+/* (Leaflet places a marker by its own transform, which a scale on it would multiply: the size goes on what is inside.) */
+.leaflet-marker-icon.ot-mk.is-sel {
+  scale: none;
+}
+.leaflet-marker-icon.ot-mk.is-sel > * {
+  scale: 1.3;
+}
+/* A spot's pin, as in Maps: a round red head on a thin stem, its tip on the spot. */
+.ot-mk.sel,
+.ot-mk.sel > * {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ot-mk.sel .ot-drop {
+  position: absolute;
+  top: -42px;
+  left: -14px;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.45);
+}
+.ot-mk.sel .ot-drop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 9px;
+  height: 9px;
+  margin: auto;
+  border-radius: 50%;
+  background: #fff;
+}
+.ot-mk.sel .ot-drop::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 3px;
+  height: 14px;
+  margin: 2px 0 0 -1.5px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(#e6e6e6, #9a9a9a);
+}
+.ot-mk.sel .ot-drop-shadow {
+  position: absolute;
+  top: -2px;
+  left: -6px;
+  width: 12px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.35);
+  filter: blur(1px);
+}
+/* A trip's start, its end (the red pin), where each ride is boarded. */
+.ot-mk.end i {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: -8px 0 0 -8px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--q-accent);
+}
+.ot-mk.dest i {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  background: #ff453a;
+  color: #fff;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.45);
+}
+.ot-mk.dest .ot-i {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.4;
+}
+.ot-mk.board i {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--c);
+  color: #fff;
+}
+.ot-mk.board .ot-i {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+/* A ride's stops on its line, navigating: small dots, where you get off a ring. */
+/* A ride's stops on its line: a white dot ringed in its colour; behind you
+   dimmed, the next one bigger, yours biggest with its name beside it. */
+.ot-mk.stopdot i {
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--c);
+}
+.ot-mk.stopdot.past i {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  background: color-mix(in srgb, var(--c) 35%, #4b5263);
+  box-shadow: 0 0 0 1.5px #4b5263;
+}
+.ot-mk.stopdot.next i {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  box-shadow: 0 0 0 3px var(--c);
+}
+.ot-mk.stopdot.off i {
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  box-shadow: 0 0 0 4px var(--c);
+}
+.ot-mk.stopdot b {
+  position: absolute;
+  left: 12px;
+  top: -11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--c);
+  color: #fff;
+  font: 600 12px/18px var(--q-font);
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+/* A metro map's stations: a dot in the line's colour (a ring at an interchange), names zoomed in. */
+.ot-mk.mstop {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transform-origin: 0 0;
+}
+.ot-mk.mstop i {
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: -5px 0 0 -5px;
+  border: 2.5px solid var(--c);
+  border-radius: 50%;
+  background: #fff;
+}
+.ot-mk.mstop.x i {
+  width: 12px;
+  height: 12px;
+  margin: -7px 0 0 -7px;
+  border-color: #0a0b0f;
+  box-shadow: 0 0 0 2px #fff;
+}
+.ot-mk.mstop.far i {
+  width: 6px;
+  height: 6px;
+  margin: -4px 0 0 -4px;
+  border-width: 2px;
+}
+.ot-mk.mstop.x.far i {
+  width: 8px;
+  height: 8px;
+  margin: -5px 0 0 -5px;
+}
+.ot-mk.mstop span {
+  margin-top: -5px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--q-page) 80%, transparent);
+  color: var(--q-label);
+  font: 600 11.5px/1.3 var(--q-font);
+  white-space: nowrap;
+}
+
+/* Choosing a spot: the map moves under a pin in the middle. */
+.ot-pickbar {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.ot-cross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: var(--q-accent);
+  transform: translate(-50%, -100%);
+}
+.ot-cross .ot-i {
+  width: 40px;
+  height: 40px;
+  fill: color-mix(in srgb, var(--q-accent) 25%, transparent);
+  stroke-width: 2.2;
+}
+.ot-pickbar-box {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  left: 12px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 14px;
+  border-radius: 24px;
+  background: var(--q-glass-strong);
+  pointer-events: auto;
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  box-shadow: var(--q-glass-rim), var(--ot-shadow);
+}
+.ot-pickbar-box p {
+  margin: 0 0 10px;
+  color: var(--q-label-2);
+  font: 500 15px/20px var(--q-font);
+}
+.ot-pickbar-box .ot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ==== 4. 地圖's card: what you tapped, a trip's plans ============================================ */
+
+/* The card is the sheet's content: what you tapped (a stop, a station, a
+   place) or a trip's plans, in the place of the shelves, with its ✕ to go back to them. */
+.ot-card {
+  padding: 2px 0 8px;
+}
+.ot-card[hidden] {
+  display: none;
+}
+.ot-card-head {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ot-card-title {
+  flex: 1;
+  min-width: 0;
+}
+.ot-card-title h2 {
+  margin: 0;
+  font: 700 20px/25px var(--q-font);
+  overflow-wrap: anywhere;
+}
+.ot-card-title p {
+  margin: 2px 0 0;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+}
+.ot-card-title p:empty {
+  display: none;
+}
+.ot-card-tags {
+  margin: 10px 0 0;
+}
+.ot-card-tags:empty {
+  display: none;
+}
+/* Its actions: 路線 first, filled; the rest beside it; ☆ a round one. */
+.ot-card-acts {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.ot-card-acts .q-btn {
+  flex: none;
+  min-height: 44px;
+}
+.ot-card-acts .q-btn.primary {
+  flex: 1;
+}
+.ot-card-acts .q-btn[data-card='pin'],
+.ot-card-acts .q-btn[data-card='edit-pin'] {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+.ot-card-acts .q-btn.on {
+  color: var(--ot-bike);
+}
+.ot-card-acts .q-btn.on .ot-i {
+  fill: currentColor;
+}
+/* To a stop on foot or by bike, or a rental timed: a row of two. */
+.ot-go-there {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ot-go-there .q-btn {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.ot-go-there .ot-i {
+  width: 17px;
+  height: 17px;
+}
+
+/* A YouBike station: its bikes, its 電輔車, its docks, three big numbers. */
+.ot-bike-now {
+  margin-top: 14px;
+}
+.ot-bike-now .q-stat {
+  padding: 12px 14px;
+}
+.ot-bike-now .q-stat strong {
+  font-size: 30px;
+  line-height: 34px;
+}
+.ot-bike-now .q-stat:first-child strong {
+  color: var(--ot-ink-amber);
+}
+.ot-bike-now .q-stat.d strong {
+  color: var(--q-blue);
+}
+
+/* A stop's buses (a bell each) and a station's trains: a card of rows. */
+.ot-eta-list {
+  margin-top: 14px;
+}
+.ot-eta-side {
+  margin: 0;
+  padding: 10px 14px 0;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+.ot-bell {
+  flex: none;
+  margin-right: 4px;
+  color: var(--q-label-3);
+}
+/* In a row: a plain bell inside the card's edge, not a glass button cut by it. */
+.ot-strip > .ot-bell {
+  width: 36px;
+  height: 36px;
+  margin: 0 12px 0 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* (No swell on a press: it would grow out over the row's edge.) */
+.ot-strip > .ot-bell:is(:active, [data-q-press]) {
+  transform: scale(0.94);
+}
+.ot-bell.on {
+  color: var(--ot-bike);
+}
+.ot-bell.on .ot-i {
+  fill: currentColor;
+}
+.ot-board {
+  display: grid;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--q-surface);
+}
+.ot-board-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 14px;
+}
+.ot-board-row + .ot-board-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 14px;
+  border-top: var(--q-hairline) solid var(--q-sep);
+}
+.ot-time {
+  flex: none;
+  width: 58px;
+  font: 700 20px/24px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ot-train {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ot-train b {
+  font: 500 16px/21px var(--q-font);
+}
+.ot-train small {
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+}
+.ot-delay {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+.ot-delay.ok {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.ot-delay.warn {
+  background: color-mix(in srgb, var(--q-orange) 16%, transparent);
+  color: var(--q-orange);
+}
+.ot-delay.bad {
+  background: color-mix(in srgb, var(--q-red) 16%, transparent);
+  color: var(--q-red);
+}
+.ot-times {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  font: 600 15px/1 var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-times b:first-child {
+  color: var(--q-accent);
+}
+.ot-line-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 4px;
+}
+.ot-line-chips span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+  color: var(--q-label);
+  font: 600 13px/16px var(--q-font);
+  box-shadow: inset 3px 0 0 var(--c);
+}
+
+/* ---- Plans: from, to and the stops as one card of fields; when and
+   what to take in a row; each way a card, its length big. ---- */
+.ot-plans-head {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px 36px;
+  grid-template-areas: 'back title star close' 'od od od swap';
+  align-items: center;
+  gap: 8px;
+}
+.ot-plans-head > .q-icon-btn,
+.ot-plans-head > .q-close {
+  width: 36px;
+  min-width: 0;
+  height: 36px;
+  min-height: 0;
+  padding: 0;
+}
+.ot-ph-back {
+  grid-area: back;
+}
+.ot-ph-title {
+  grid-area: title;
+  margin: 0;
+  font: 600 17px/22px var(--q-font);
+  text-align: center;
+}
+.ot-ph-star {
+  grid-area: star;
+}
+.ot-ph-close {
+  grid-area: close;
+}
+.ot-plans-head > .ot-od {
+  grid-area: od;
+  display: grid;
+  min-width: 0;
+}
+/* ⇅ beside the start and the end, halfway down the two (each 44px). */
+.ot-ph-swap {
+  grid-area: swap;
+  align-self: start;
+  margin-top: 26px;
+}
+.ot-od button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--q-surface);
+  color: inherit;
+  font: 400 16px/21px var(--q-font);
+  text-align: left;
+  cursor: pointer;
+}
+/* The fields stack as one card: rounded at its top and its foot, a hairline between. */
+.ot-od > :first-child {
+  border-radius: 14px 14px 0 0;
+}
+.ot-od > :nth-child(2) {
+  position: relative;
+  border-radius: 0 0 14px 14px;
+  box-shadow: inset 0 var(--q-hairline) 0 var(--q-sep);
+}
+.ot-od:has(.ot-od-stop) > :nth-child(2),
+.ot-od-stop:not(:last-of-type) > button:first-child {
+  border-radius: 0;
+}
+.ot-od-stop {
+  position: relative;
+  min-width: 0;
+}
+.ot-od-stop > button:first-child {
+  padding-right: 40px;
+  border-radius: 0;
+  box-shadow: inset 0 var(--q-hairline) 0 var(--q-sep);
+}
+.ot-od-stop:last-of-type > button:first-child {
+  border-radius: 0 0 14px 14px;
+}
+.ot-od button span,
+.ot-od button b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-od button b {
+  font-weight: 600;
+}
+.ot-od button:active {
+  background: var(--q-fill-4);
+}
+.ot-od .ot-od-x {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  width: 32px;
+  min-height: 32px;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--q-label-3);
+  font-size: 20px;
+  transform: translateY(-50%);
+}
+.ot-od .ot-od-add {
+  justify-self: start;
+  width: auto;
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 0 12px 0 8px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  box-shadow: none;
+  color: var(--q-label-2);
+  font-size: 14px;
+}
+.ot-od-add .ot-i {
+  width: 15px;
+  height: 15px;
+}
+.ot-od-n {
+  flex: none;
+  min-width: 12px;
+  color: var(--q-label-2);
+  font: 800 11.5px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-dot {
+  flex: none;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.ot-dot.from {
+  border: 2.5px solid var(--q-accent);
+}
+.ot-dot.to {
+  background: var(--q-accent);
+}
+.ot-dot.stop {
+  border: 2px solid var(--q-accent);
+}
+/* 現在出發, and the ways of moving for this search. */
+.ot-opts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+.ot-when-pick {
+  flex: none;
+  background: var(--q-surface);
+}
+.ot-when-pick .ot-caret {
+  width: 13px;
+  height: 13px;
+  opacity: 0.6;
+}
+.ot-mtogs {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.ot-mtog {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-surface);
+  color: var(--q-label);
+}
+.ot-mtog .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.ot-mtog[aria-pressed='false'] {
+  background: none;
+  color: var(--q-label-3);
+}
+.ot-plans {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ot-plan {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--q-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.ot-plan.on {
+  box-shadow: inset 0 0 0 2px var(--q-accent);
+}
+.ot-plan-wait {
+  display: grid;
+  gap: 10px;
+  min-height: 62px;
+  align-content: center;
+}
+.ot-plan-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ot-plan-dur {
+  font: 700 22px/26px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-plan-time {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 500 13.5px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+}
+.ot-pinned .ot-i {
+  width: 16px;
+  height: 16px;
+  color: var(--ot-bike);
+  fill: currentColor;
+}
+.ot-tag {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+}
+.ot-tag.best {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.ot-tag.live {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.ot-plan .ot-legs {
+  margin: 8px 0 6px;
+}
+.ot-plan-sub {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-plan-sub.warn {
+  color: var(--q-orange);
+}
+.ot-plan .ot-plan-deps {
+  margin: 2px 0 8px;
+}
+.ot-more {
+  width: 100%;
+  margin-top: 8px;
+  justify-content: center;
+}
+/* Another plan open: this one a row, its length over its hours, its lines on the right. */
+.ot-plan.mini {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+  padding: 8px 12px;
+}
+.ot-plan.mini .ot-plan-top {
+  display: grid;
+  gap: 0;
+}
+.ot-plan.mini .ot-plan-dur {
+  font-size: 17px;
+  line-height: 21px;
+}
+.ot-plan.mini .ot-plan-time {
+  font-size: 12px;
+}
+.ot-plan.mini .ot-legs {
+  justify-content: flex-end;
+  margin: 0;
+}
+.ot-plan.mini .ot-leg {
+  height: 22px;
+  font-size: 12px;
+}
+/* The open plan's actions: navigate (when it leaves soon) and pin it. */
+.ot-plan-acts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.ot-plan-acts .q-btn {
+  min-width: 0;
+  justify-content: center;
+  white-space: nowrap;
+}
+.ot-plan-acts .q-btn.on {
+  color: var(--ot-bike);
+}
+.ot-plan-acts .q-btn.on .ot-i {
+  fill: currentColor;
+}
+.ot-nav-later {
+  align-self: center;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+
+/* A plan's steps (and a journey's): the time, the leg's colour on a line, what to do. */
+.ot-steps {
+  display: grid;
+  margin: 12px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+.ot-steps li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 6px 0 8px;
+}
+.ot-steps li::before {
+  content: '';
+  position: absolute;
+  top: 34px;
+  bottom: -6px;
+  left: 66.5px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--c, var(--q-fill-2));
+  opacity: 0.8;
+}
+.ot-steps li.end::before,
+.ot-steps li:last-child::before {
+  display: none;
+}
+.ot-step-time {
+  padding-top: 5px;
+  color: var(--q-label-2);
+  font: 700 13px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-step-time .ot-livedot {
+  margin-left: 4px;
+}
+.ot-step-i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--c, var(--q-fill-3));
+  color: #fff;
+}
+.ot-step-i .ot-i {
+  width: 16px;
+  height: 16px;
+}
+.ot-steps li.stop .ot-step-i,
+.ot-steps li.end .ot-step-i {
+  border-radius: 50%;
+}
+.ot-steps li.stop .ot-step-i {
+  box-sizing: border-box;
+  border: 2px solid var(--q-accent);
+  background: none;
+  color: var(--q-label);
+  font: 800 13px/1 var(--q-font);
+}
+.ot-steps li.end .ot-step-i {
+  background: #ff453a;
+}
+.ot-step-what {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font: 400 15px/21px var(--q-font);
+}
+.ot-step-what small {
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+}
+.ot-step-line {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-step-dur {
+  color: var(--q-label-2);
+}
+.ot-live {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--q-orange);
+  font: 700 12.5px/18px var(--q-font);
+  white-space: nowrap;
+}
+.ot-live:empty {
+  display: none;
+}
+.ot-live .ot-i {
+  width: 14px;
+  height: 14px;
+}
+/* A walk or a ride of your own: the maps app's navigation, a pill. */
+.ot-step-gm {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  margin: 3px 0 1px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 600 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+.ot-step-gm .ot-i {
+  width: 13px;
+  height: 13px;
+}
+/* A YouBike step's ends: 借 / 還, the station's name whole, its counts as tags. */
+.ot-bike-end {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 8px;
+  margin-top: 6px;
+}
+.ot-bike-k {
+  color: var(--q-label-2);
+  font: 700 12px/20px var(--q-font);
+  font-style: normal;
+}
+.ot-bike-at {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.ot-bike-name {
+  display: block;
+  font: 600 14px/20px var(--q-font);
+  white-space: nowrap;
+}
+.ot-bike-tags {
+  display: flex;
+  gap: 6px;
+}
+.ot-bike-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+.ot-bike-tag .ot-i {
+  width: 13px;
+  height: 13px;
+}
+.ot-bike-tag b {
+  color: var(--q-label);
+  font-variant-numeric: tabular-nums;
+}
+.ot-bike-tag.none b {
+  color: var(--q-label-2);
+}
+/* A name in a step's title stays whole: the line breaks around it. */
+.ot-nw {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: top;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ==== 5. Navigation ============================================================================== */
+
+/* The map the whole screen; on top the step you're on (a band in its line's
+   colour: what to do, the big number), how you're doing under it; at the
+   foot when you'll be there and every step. Glass, as the kit's bars. */
+.ot-nav {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+}
+.ot-nav[hidden] {
+  display: none;
+}
+.ot-nav-top,
+.ot-nav-bottom {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  max-width: 560px;
+  margin: 0 auto;
+  pointer-events: auto;
+  background: var(--q-glass-strong);
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  box-shadow: var(--q-glass-rim), var(--q-glass-drop);
+  color: var(--q-label);
+}
+.ot-nav-top {
+  --band: color-mix(in srgb, var(--c) 80%, #0b1020);
+  top: calc(8px + env(safe-area-inset-top));
+  overflow: hidden;
+  border-radius: 24px;
+}
+.ot-nav-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 12px 14px;
+  background: linear-gradient(135deg, var(--band), color-mix(in srgb, var(--c) 52%, #0b1020));
+  color: #fff;
+}
+.ot-nav-i {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: rgb(255 255 255 / 0.2);
+  color: #fff;
+}
+.ot-nav-i .ot-i {
+  width: 26px;
+  height: 26px;
+}
+.ot-nav-text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.ot-nav-text b {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 700 19px/24px var(--q-font);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.ot-nav-text small {
+  color: rgb(255 255 255 / 0.8);
+  font: 500 13px/18px var(--q-font);
+}
+.ot-nav-big {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  line-height: 1;
+}
+.ot-nav-big b,
+.ot-nav-big.ot-count {
+  font: 700 32px/34px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.ot-nav-big small {
+  margin-top: 2px;
+  color: rgb(255 255 255 / 0.8);
+  font: 600 12px/14px var(--q-font);
+}
+/* (The top card's grip is its last row, under the band or what follows it.) */
+.ot-nav-top .ot-nav-grip {
+  height: 14px;
+}
+/* Fold a card for more map: the kit's grabber with room for a thumb. */
+.ot-nav-grip {
+  display: block;
+  width: 100%;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.ot-nav-grip::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--q-fill-1);
+}
+.ot-nav-pace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 10px 16px;
+  color: var(--q-label-2);
+  font: 500 14px/19px var(--q-font);
+}
+.ot-nav-pace .ot-i {
+  flex: none;
+  width: 17px;
+  height: 17px;
+}
+.ot-nav-pace.good {
+  color: var(--ot-ink-green);
+}
+.ot-nav-pace.warn {
+  color: var(--q-orange);
+}
+.ot-nav-pace.bad {
+  color: var(--q-red);
+}
+.ot-nav-pt {
+  display: inline-flex;
+  flex-wrap: wrap;
+  column-gap: 0.5em;
+  min-width: 0;
+}
+.ot-nav-pt > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ot-nav-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: 0 4.5px;
+  border-radius: 50%;
+  background: var(--q-green);
+  animation: ot-nav-ping 1.8s ease-out infinite;
+  --ping: var(--q-green);
+}
+.ot-nav-gm {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 6px 12px 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 600 13px/16px var(--q-font);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ot-nav-gm .ot-i {
+  width: 14px;
+  height: 14px;
+}
+.ot-nav-pace.bad .ot-nav-gm {
+  background: var(--q-red);
+  color: #fff;
+}
+.ot-nav-bikes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 0 16px 12px;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+.ot-nav-bikes span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ot-nav-bikes .ot-i {
+  width: 15px;
+  height: 15px;
+  color: var(--ot-bike);
+}
+.ot-nav-bikes .bad {
+  color: var(--q-red);
+}
+.ot-nav-bikes .note {
+  flex-basis: 100%;
+  align-items: flex-start;
+  white-space: normal;
+}
+.ot-nav-bikes .note.warn {
+  color: var(--q-orange);
+}
+.ot-nav-bikes .ot-nav-gm {
+  margin-left: 0;
+}
+/* The YouBike timer on a bike's step. */
+.ot-nav-rent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px 0;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-nav-rent .ot-i {
+  width: 15px;
+  height: 15px;
+  color: var(--ot-bike);
+}
+.ot-nav-rent.warn {
+  color: var(--q-orange);
+}
+.ot-nav-rent.over {
+  color: var(--q-red);
+}
+
+/* Waiting: the last stops before yours on a rail, the bus or train on it. */
+.ot-track {
+  padding: 10px 16px 12px;
+}
+.ot-track-say {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+.ot-track-say span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-track-say b {
+  flex: none;
+  color: var(--q-label);
+  font-variant-numeric: tabular-nums;
+}
+.ot-track-line {
+  position: relative;
+  height: 28px;
+  margin: 6px 14px 0;
+}
+.ot-track-line::before,
+.ot-track-lit {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+}
+.ot-track-line::before {
+  content: '';
+  left: 0;
+  background: var(--q-fill-2);
+}
+.ot-track-lit {
+  background: var(--c);
+  transition: left 0.9s var(--q-spring-smooth);
+}
+.ot-track-line i {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--q-fill-1);
+}
+.ot-track-line i.past {
+  background: var(--q-fill-1);
+}
+.ot-track-line i.you {
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 4px solid var(--c);
+  box-sizing: border-box;
+}
+.ot-track-car {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border-radius: 50%;
+  background: var(--c);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--q-surface), 0 3px 10px rgb(0 0 0 / 0.3);
+  transition: left 0.9s var(--q-spring-smooth);
+  --ping: var(--c);
+}
+.ot-track-car .ot-i {
+  width: 17px;
+  height: 17px;
+}
+.ot-track-car.there {
+  animation: ot-nav-ping 1.4s ease-out infinite;
+}
+
+/* On board: the stops still to go down a line in the ride's colour. */
+.ot-stops {
+  display: grid;
+  margin: 0;
+  padding: 6px 16px 10px;
+  list-style: none;
+}
+.ot-stops li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  color: var(--q-label-2);
+  font: 400 15px/20px var(--q-font);
+}
+.ot-stops li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5.5px;
+  width: 3px;
+  background: color-mix(in srgb, var(--c) 55%, transparent);
+}
+.ot-stops li:first-child::before {
+  top: 50%;
+}
+.ot-stops li:last-child::before {
+  bottom: 50%;
+}
+.ot-stops li.more::before {
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--c) 55%, transparent) 0 3px, transparent 3px 7px);
+}
+.ot-stops i {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 3px solid var(--q-surface);
+  border-radius: 50%;
+  background: var(--c);
+}
+.ot-stops li.more {
+  min-height: 26px;
+  color: var(--q-label-3);
+  font-size: 13px;
+}
+.ot-stops li.more i {
+  visibility: hidden;
+}
+.ot-stops span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-stops em {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+  color: var(--q-label);
+  font: 700 12px/16px var(--q-font);
+  font-style: normal;
+}
+.ot-stops time {
+  flex: none;
+  min-width: 3.2em;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.ot-stops li.next span,
+.ot-stops li.you span {
+  color: var(--q-label);
+  font-weight: 600;
+}
+.ot-stops li.you i {
+  width: 18px;
+  height: 18px;
+  margin: 0 -2px;
+  border: 4px solid var(--c);
+  background: #fff;
+}
+.ot-stops li.you em {
+  background: var(--c);
+  color: #fff;
+}
+/* After you get off, a quiet row; off a ride a moment ago, a green one. */
+.ot-nav-then,
+.ot-nav-off {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  font: 500 13px/18px var(--q-font);
+}
+.ot-nav-then {
+  border-top: 0.5px solid var(--q-sep);
+  color: var(--q-label-2);
+}
+.ot-nav-then small {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: var(--q-fill-3);
+  font: 600 12px/16px var(--q-font);
+}
+.ot-nav-off {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--ot-ink-green);
+  font-weight: 600;
+}
+.ot-nav-then .ot-i,
+.ot-nav-off .ot-i {
+  width: 15px;
+  height: 15px;
+}
+.ot-nav-then span,
+.ot-nav-off span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* Off its way, or a later way that still makes it: a question, one tap. */
+.ot-nav-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 16px;
+  background: color-mix(in srgb, var(--q-orange) 16%, transparent);
+  color: var(--q-orange);
+  font: 600 13px/18px var(--q-font);
+}
+.ot-nav-ask span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-nav-ask button {
+  flex: none;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-orange);
+  color: #fff;
+  font: 600 13px/16px var(--q-font);
+}
+.ot-nav-ask button.x {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+.ot-nav-ask button.x .ot-i {
+  width: 16px;
+  height: 16px;
+}
+.ot-nav-late span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: normal;
+}
+.ot-nav-late b {
+  white-space: nowrap;
+}
+.ot-nav-late small {
+  color: var(--q-label);
+  font: 500 12px/16px var(--q-font);
+}
+/* The bus pulling in: the band green, breathing; yours next: orange, ringing. */
+.ot-nav-top.coming {
+  --band: color-mix(in srgb, var(--q-green) 80%, #0b1020);
+  --c: var(--q-green);
+}
+.ot-nav-top.coming .ot-nav-i {
+  animation: ot-nav-ping 1.4s ease-out infinite;
+  --ping: #fff;
+}
+.ot-nav-top.alert {
+  --band: color-mix(in srgb, var(--q-orange) 88%, #0b1020);
+  --c: var(--q-orange);
+  animation: ot-nav-ping 1.6s ease-out infinite;
+  --ping: var(--q-orange);
+}
+.ot-nav-top.alert .ot-nav-i .ot-i {
+  animation: ot-nav-ring 1.6s ease-in-out infinite;
+  transform-origin: 50% 15%;
+}
+.ot-nav-top.folded .ot-nav-main {
+  padding-bottom: 14px;
+}
+
+/* The foot: when you'll be there, then every step (a tap shows one). */
+.ot-nav-bottom {
+  bottom: 10px;
+  padding: 12px;
+  border-radius: 24px;
+}
+.ot-nav-eta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 4px;
+}
+.ot-nav-eta > span {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  min-width: 0;
+}
+.ot-nav-eta b {
+  font: 700 26px/30px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-nav-eta small {
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+  white-space: nowrap;
+}
+/* Late or early: in the same line as what's left, its colour alone (one baseline, one size: the owner, 2026-10-22). */
+.ot-nav-eta em {
+  font-style: normal;
+  font-weight: 700;
+}
+.ot-nav-eta em.good {
+  color: var(--ot-ink-green);
+}
+.ot-nav-eta em.bad {
+  color: var(--q-red);
+}
+.ot-nav-end {
+  flex: none;
+  background: var(--q-red);
+  color: #fff;
+}
+.ot-nav-bottom .ot-nav-grip {
+  height: 12px;
+  margin-bottom: 2px;
+}
+.ot-nav-bottom.folded .ot-nav-chips {
+  display: none;
+}
+/* The steps: one row, scrolled sideways (kept on the step you're at); the
+   steps behind you shrink to their icon. */
+.ot-nav-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin: 10px -12px 0;
+  padding: 0 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
+.ot-nav-chips::-webkit-scrollbar {
+  display: none;
+}
+.ot-nav-chip {
+  flex: none;
+}
+.ot-nav-chip.done {
+  padding: 0 9px;
+}
+.ot-nav-chip.done span {
+  display: none;
+}
+.ot-nav-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 11px 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 500 13px/16px var(--q-font);
+  white-space: nowrap;
+}
+.ot-nav-chip .ot-i {
+  width: 16px;
+  height: 16px;
+  color: var(--c);
+}
+.ot-nav-chip.done {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.ot-nav-chip.on {
+  background: var(--c);
+  color: #fff;
+  font-weight: 600;
+}
+.ot-nav-chip.on .ot-i {
+  color: #fff;
+}
+
+/* Shrunk, or on another tab: one glass bar above the tab bar. */
+.ot-nav-mini {
+  display: none;
+}
+body.ot-navigating:not(.tab-map) .ot-nav-mini,
+body.ot-navigating.ot-nav-min .ot-nav-mini {
+  position: fixed;
+  left: calc(var(--q-side, 0px) + 10px);
+  right: calc(var(--q-side, 0px) + 10px);
+  bottom: calc(var(--q-nav, 0px) + 8px);
+  z-index: 60;
+  display: block;
+}
+.ot-nav-mini-b {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 58px;
+  padding: 7px 16px 7px 7px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-glass-strong);
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  box-shadow: var(--q-glass-rim), var(--q-glass-drop);
+  color: var(--q-label);
+  font: inherit;
+  text-align: left;
+  transition: transform var(--q-dur-snappy) var(--q-spring-snappy);
+}
+.ot-nav-mini-b:active {
+  transform: scale(0.98);
+}
+.ot-nav-mini-b .ot-nav-i {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.ot-nav-mini-b .ot-nav-i .ot-i {
+  width: 22px;
+  height: 22px;
+}
+.ot-nav-mini-b.alert .ot-nav-i {
+  background: var(--q-orange);
+}
+.ot-nav-mini-b.coming .ot-nav-i {
+  background: var(--q-green);
+}
+.ot-nav-mini-t {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ot-nav-mini-t b,
+.ot-nav-mini-t small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-nav-mini-t b {
+  font: 600 15px/20px var(--q-font);
+}
+.ot-nav-mini-t small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--q-label-2);
+  font: 500 12px/16px var(--q-font);
+}
+.ot-nav-mini-t small .ot-nav-dot {
+  margin: 0;
+}
+.ot-nav-mini-big {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  line-height: 1;
+}
+.ot-nav-mini-big b,
+.ot-nav-mini-big.ot-count {
+  font: 700 22px/24px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-nav-mini-big small {
+  margin-top: 2px;
+  color: var(--q-label-2);
+  font: 600 11px/13px var(--q-font);
+}
+/* The sheet stands above that bar. */
+body.tab-map.ot-navigating.ot-nav-min .ot-msheet {
+  bottom: 74px;
+}
+body.ot-navigating:not(.tab-map) .ot-scroll::after {
+  content: '';
+  display: block;
+  height: 72px;
+}
+/* The ⋯ sheet, 改下車站, 改搭別班: rows, one tap each. */
+.ot-nav-menu {
+  margin-top: 8px;
+}
+.ot-nav-menu .q-ritem {
+  color: var(--q-label);
+  text-decoration: none;
+}
+@keyframes ot-nav-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ping) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--ping) 0%, transparent);
+  }
+}
+@keyframes ot-nav-ring {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0);
+  }
+  10%,
+  30% {
+    transform: rotate(14deg);
+  }
+  20%,
+  40% {
+    transform: rotate(-14deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-nav-dot,
+  .ot-track-car.there,
+  .ot-nav-top.coming .ot-nav-i,
+  .ot-nav-top.alert,
+  .ot-nav-top.alert .ot-nav-i .ot-i {
+    animation: none;
+  }
+  .ot-track-lit,
+  .ot-track-car {
+    transition: none;
+  }
+}
+
+/* ==== 6. 交通 ==================================================================================== */
+
+/* Your places: a rail of small cards under the hero, an emoji each. */
+.ot-places {
+  margin-top: 16px;
+}
+.ot-place {
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ot-place {
+  gap: 4px;
+}
+.ot-place .q-tile {
+  margin-bottom: 6px;
+}
+.ot-place strong {
+  overflow: hidden;
+  font: 600 16px/21px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-place small {
+  color: var(--q-label-2);
+  font: 500 13px/17px var(--q-font);
+}
+.ot-bikes,
+.q-rowcard.ot-near-bikes {
+  margin-top: 12px;
+}
+/* A trip: its head, then a row for each ride (the time big, the legs), a foot. */
+.ot-trip {
+  overflow: hidden;
+  border-radius: var(--q-r-card, 20px);
+  background: var(--q-surface);
+}
+.ot-trip + .ot-trip {
+  margin-top: 12px;
+}
+.ot-trip-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 6px 4px 16px;
+}
+.ot-trip-head .q-icon-btn {
+  background: none;
+  box-shadow: none;
+  color: var(--q-label-2);
+}
+.ot-trip-hd {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ot-trip-hd b,
+.ot-trip-hd small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-trip-hd b {
+  font: 600 17px/22px var(--q-font);
+}
+.ot-trip-hd small {
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+}
+.ot-ride {
+  position: relative;
+  display: grid;
+}
+.ot-ride + .ot-ride::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  border-top: 0.5px solid var(--q-sep);
+}
+.ot-ride > .ot-plan-deps {
+  padding: 0 16px 12px;
+}
+/* A ride: the time big with when it arrives and how long (one row), under it its legs, full width. */
+.ot-ride-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 58px 12px 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ot-ride-main:active {
+  background: var(--q-fill-4);
+}
+.ot-ride-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  min-width: 0;
+}
+.ot-ride-when {
+  display: grid;
+  flex: none;
+  min-width: 56px;
+}
+.ot-ride-n {
+  color: var(--q-label);
+  font: 700 28px/32px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.ot-ride-n small {
+  margin-left: 2px;
+  font-size: 15px;
+}
+.ot-ride-when small {
+  color: var(--q-label-2);
+  font: 500 12px/15px var(--q-font);
+  white-space: nowrap;
+}
+.ot-ride-top .q-tags {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.ot-ride-main .ot-warn {
+  font: 500 13px/17px var(--q-font);
+}
+/* The pin: a 36px icon button beside the time (a 44px target). */
+.ot-star {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  color: var(--q-label-3);
+}
+.ot-star::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.ot-star svg {
+  width: 20px;
+  height: 20px;
+}
+.ot-star.on {
+  color: var(--q-orange);
+}
+.ot-trip-note {
+  margin: 4px 16px 10px;
+  color: var(--q-label-2);
+  font: 400 14px/19px var(--q-font);
+}
+.ot-trip-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-top: 0.5px solid var(--q-sep);
+}
+.ot-trip-foot,
+.ot-trip-foot button {
+  align-items: center;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  background: none;
+  color: var(--q-accent);
+  font: 500 15px/20px var(--q-font);
+}
+button.ot-trip-foot {
+  width: 100%;
+  cursor: pointer;
+}
+.ot-trip-foot button {
+  display: inline-flex;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+}
+.ot-trip-foot button:last-child {
+  margin-left: auto;
+}
+.ot-trip-foot .ot-i {
+  width: 16px;
+  height: 16px;
+}
+.ot-train-row .q-tags {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+/* The place sheet: buses, YouBike, then 怎麼去. */
+.ot-place-sheet .q-rowcard {
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.ot-place-sheet .q-sheet-h {
+  margin-left: 4px;
+}
+
+/* ==== 7. 查時刻 =================================================================================== */
+
+.ot-times-seg {
+  margin-top: 4px;
+}
+.ot-times-seg + * {
+  margin-top: 16px;
+}
+#panel-train,
+#times-bus,
+#panel-metro {
+  margin-top: 16px;
+}
+/* 火車: the search as an iOS list: 出發 over 抵達 (⇅ beside them), then the
+   time and which railways. Any change asks at once. */
+.ot-tq {
+  display: grid;
+  gap: 10px;
+}
+.ot-tq-pair {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--q-surface);
+}
+.ot-tq-st {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 14px 64px 14px 16px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ot-tq-st + .ot-tq-st {
+  background: linear-gradient(var(--q-sep), var(--q-sep)) 16px 0 / calc(100% - 80px) 0.5px no-repeat;
+}
+.ot-tq-st small {
+  flex: none;
+  color: var(--q-label-2);
+  font: 500 15px/22px var(--q-font);
+}
+.ot-tq-st b {
+  min-width: 0;
+  font: 600 19px/24px var(--q-font);
+  overflow-wrap: anywhere;
+}
+.ot-tq-st b.muted {
+  color: var(--q-label-3);
+  font-weight: 500;
+}
+.ot-tq-swap {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+  color: var(--q-accent);
+  cursor: pointer;
+}
+.ot-tq-swap .ot-i {
+  width: 18px;
+  height: 18px;
+}
+.ot-tq-when {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ot-tq-sys {
+  flex: 1;
+  min-width: 0;
+}
+.ot-tq-pill {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+}
+.ot-tq-pill .ot-i {
+  width: 16px;
+  height: 16px;
+  color: var(--q-label-2);
+}
+.ot-tq-pill input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 52px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: inherit;
+  font: 600 16px/36px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-tq-pill input::-webkit-date-and-time-value {
+  text-align: left;
+}
+/* (The browser's own picker icon: the whole pill, unseen.) */
+.ot-tq-pill input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  opacity: 0;
+}
+/* The journeys: a card each, the times big, its trains as chips, a mark only for what changes the choice. */
+.ot-jny {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--q-r-card, 20px);
+  background: var(--q-surface);
+  color: var(--q-label);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ot-jny + .ot-jny {
+  margin-top: 8px;
+}
+.ot-jny.on {
+  box-shadow: inset 0 0 0 2px var(--q-blue);
+}
+.ot-jny-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ot-jny-top b {
+  font: 700 24px/28px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-jny-top i {
+  flex: 0 1 36px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--q-fill-1);
+}
+.ot-jny-dur {
+  margin-left: auto;
+  color: var(--q-label-2);
+  font: 500 14px/18px var(--q-font);
+  white-space: nowrap;
+}
+.ot-jny-legs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.ot-jny-legs .q-tags {
+  margin-left: auto;
+}
+.ot-jny-maybe {
+  color: var(--q-orange);
+  font: 600 13px/16px var(--q-font);
+}
+.ot-train-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: #0ea5e9;
+  color: #fff;
+  font: 600 13px/16px var(--q-font);
+  white-space: nowrap;
+}
+.ot-train-chip.hsr {
+  background: #f97316;
+}
+.ot-train-chip.local {
+  background: color-mix(in srgb, #0ea5e9 16%, transparent);
+  color: #0369a1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .ot-train-chip.local {
+    background: color-mix(in srgb, #0ea5e9 22%, transparent);
+    color: #7dd3fc;
+  }
+}
+:root[data-theme='dark'] .ot-train-chip.local {
+  background: color-mix(in srgb, #0ea5e9 22%, transparent);
+  color: #7dd3fc;
+}
+.ot-jny .ot-steps {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--q-sep);
+}
+.ot-pin-train {
+  margin-left: 6px;
+  color: var(--q-accent);
+  font-weight: 600;
+}
+.ot-sys {
+  margin: 4px 0 12px;
+}
+/* 公車: nearby stops, their routes as small green buttons. */
+.ot-stop-row {
+  align-items: flex-start;
+}
+.ot-stop-row .q-ritem-text {
+  min-width: 0;
+}
+/* One row of routes, a rail when there are many (never a wall of buttons). */
+.ot-bus-nos {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin-top: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+}
+.ot-bus-nos::-webkit-scrollbar {
+  display: none;
+}
+.ot-bus-no {
+  flex: none;
+  min-width: 40px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--q-green) 15%, transparent);
+  color: var(--ot-ink-green);
+  font: 700 14px/18px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+/* 捷運: the city's metro map in a rounded card (our own drawing, or 實景 the real map), its lines' chips along the bottom. */
+.ot-metro-view {
+  --mm-bg: var(--q-surface);
+  position: relative;
+  margin-top: 12px;
+  overflow: hidden;
+  height: max(380px, calc(100svh - var(--q-nav, 0px) - var(--q-top, 0px) - 250px));
+  border-radius: var(--q-r-card, 20px);
+  background: var(--mm-bg);
+}
+.ot-metro-view .ot-map,
+.mm-box {
+  position: absolute;
+  inset: 0;
+}
+.mm-box {
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.mm-box[hidden],
+.ot-metro-view .ot-map[hidden] {
+  display: none;
+}
+.mm-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mm-line {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 0.2s;
+}
+.mm-st {
+  fill: var(--mm-bg);
+  stroke: var(--c);
+  stroke-width: 3;
+}
+.mm-x {
+  fill: var(--mm-bg);
+  stroke: var(--q-label);
+  stroke-width: 3.2;
+}
+.mm-name {
+  fill: var(--q-label);
+  font: 500 12px var(--q-font);
+  dominant-baseline: central;
+  paint-order: stroke;
+  stroke: var(--mm-bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  transition: opacity 0.2s;
+}
+.mm-name.big {
+  font-weight: 700;
+}
+/* Far out: the interchanges' and the ends' names only. */
+.mm-far .mm-name:not(.big, .end) {
+  display: none;
+}
+/* One line forward. */
+.mm-focus .mm-line:not(.on) {
+  opacity: 0.16;
+}
+.mm-focus :is(.mm-st, .mm-x, .mm-name):not(.on) {
+  opacity: 0.3;
+}
+.mm-train rect {
+  fill: var(--c);
+  stroke: var(--mm-bg);
+  stroke-width: 2;
+}
+.mm-train path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mm-you {
+  fill: var(--q-blue);
+  stroke: var(--mm-bg);
+  stroke-width: 2.5;
+}
+.mm-you-ring {
+  fill: color-mix(in srgb, var(--q-blue) 18%, transparent);
+}
+/* 路線圖 or 實景, and the nearest station, over the map's top. */
+.mm-tools {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.mm-tools > * {
+  pointer-events: auto;
+}
+.ot-metro-legend > * {
+  background: var(--q-surface);
+  box-shadow: 0 0 0 0.5px var(--q-glass-edge), var(--q-glass-drop);
+}
+.mm-mode,
+.mm-fab {
+  background: var(--q-glass-strong);
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  box-shadow: var(--q-glass-drop);
+}
+.mm-mode {
+  display: flex;
+  padding: 3px;
+  border-radius: 999px;
+}
+.mm-mode button {
+  min-width: 64px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--q-label-2);
+  font: 600 13px/1 var(--q-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mm-mode button[aria-pressed='true'] {
+  background: var(--q-label);
+  color: var(--mm-bg);
+}
+.mm-fab {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--q-blue);
+  cursor: pointer;
+}
+.mm-fab svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.ot-metro-legend {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  z-index: 500;
+  display: flex;
+  gap: 6px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ot-metro-legend::-webkit-scrollbar {
+  display: none;
+}
+.ot-metro-legend:empty {
+  display: none;
+}
+.ot-metro-legend > * {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--q-label);
+  font: 600 13px/1 var(--q-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ot-metro-legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--c, var(--q-blue));
+}
+.ot-metro-legend > [aria-pressed='true'] {
+  background: var(--c);
+  color: var(--ink, #fff);
+}
+.ot-metro-legend > [aria-pressed='true'] i {
+  background: var(--ink, #fff);
+}
+.ot-metro-msg {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  z-index: 500;
+  max-width: calc(100% - 20px);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--q-glass-strong);
+  -webkit-backdrop-filter: var(--q-glass-blur);
+  backdrop-filter: var(--q-glass-blur);
+  font: 500 13px/18px var(--q-font);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.ot-metro-msg:empty {
+  display: none;
+}
+
+/* A metro station: its line codes as its signs show them, the next trains counting down, first and last, exits. */
+.mm-codes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 4px;
+}
+.mm-code {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  font: 600 13px/1 var(--q-font);
+  white-space: nowrap;
+}
+.mm-code b {
+  padding: 6px 7px;
+  background: var(--c);
+  color: var(--ink, #fff);
+  font: 800 13px/1 var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.mm-code span {
+  padding: 0 9px 0 7px;
+  color: var(--q-label);
+}
+.mb-board .q-ritem,
+.mm-sheet .mb-row {
+  --q-ritem-sep: 28px;
+}
+.mb-bar {
+  flex: none;
+  align-self: stretch;
+  width: 5px;
+  margin: 4px 0;
+  border-radius: 3px;
+  background: var(--c);
+}
+.mb-count {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  min-width: 52px;
+  justify-content: flex-end;
+  color: var(--q-label);
+  font: 700 24px/1 var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mb-count small {
+  color: var(--q-label-2);
+  font: 600 13px/1 var(--q-font);
+}
+.mb-now {
+  color: var(--q-green);
+  font-size: 20px;
+}
+.mb-every {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font: 700 20px/1 var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mb-every small {
+  color: var(--q-label-2);
+  font: 600 13px/1 var(--q-font);
+}
+.mb-none {
+  color: var(--q-label-3);
+  font: 600 20px/1 var(--q-font-rounded);
+}
+.mb-live {
+  flex: none;
+  display: grid;
+  color: var(--q-green);
+}
+.mb-live svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.mb-fl {
+  flex: none;
+  display: flex;
+  gap: 14px;
+}
+.mb-fl > span {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+.mb-fl small {
+  color: var(--q-label-2);
+  font: 500 11px/1 var(--q-font);
+}
+.mb-fl b {
+  font: 700 16px/1 var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.mb-exit {
+  --q-ritem-sep: 54px;
+}
+.mb-exit-no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--q-fill-3);
+  font: 800 14px/1 var(--q-font-rounded);
+  white-space: nowrap;
+}
+.mm-sheet #mex:not(:empty) {
+  margin-top: 16px;
+}
+
+/* ==== 8. 我的 ==================================================================================== */
+
+/* A select over its row (or over the TPASS card): the row's look, the phone's picker. */
+.ot-pass,
+.ot-pick-row {
+  position: relative;
+}
+.ot-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+.ot-pass .q-hc-row {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ==== 9. Sheets ================================================================================== */
+
+.ot-sheet .q-sheet-head h2 {
+  margin: 0;
+}
+.ot-sheet-sub {
+  margin: 2px 0 0;
+  color: var(--q-label-2);
+  font: 400 14px/19px var(--q-font);
+}
+.ot-sheet-tile {
+  justify-content: flex-start;
+  gap: 12px;
+}
+.ot-sheet-tile > div {
+  flex: 1;
+  min-width: 0;
+}
+.ot-sheet-go {
+  margin-top: 20px;
+}
+.ot-sheet-acts {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+.ot-tall-sheet {
+  min-height: 70vh;
+}
+.ot-wide {
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
+}
+/* Fields: a quiet label over a filled box. */
+.ot-field {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0;
+}
+.ot-field > span {
+  padding-left: 4px;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+.ot-field input,
+.ot-name-in,
+.ot-sheet select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--q-sheet-cell, var(--q-fill-3));
+  color: var(--q-label);
+  font: 500 17px/48px var(--q-font);
+}
+.ot-field input:focus,
+.ot-name-in:focus,
+.ot-sheet select:focus {
+  outline: 0;
+  box-shadow: 0 0 0 2px var(--q-accent);
+}
+.ot-field input::placeholder {
+  color: var(--q-label-3);
+}
+.ot-field input[type='time'],
+.ot-field input[type='date'] {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.ot-field input::-webkit-date-and-time-value {
+  text-align: left;
+}
+.ot-sheet select {
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.ot-field .ot-row {
+  display: flex;
+  gap: 8px;
+}
+.ot-field .ot-row .q-btn {
+  flex: none;
+}
+.ot-search-in {
+  margin: 10px 0;
+}
+.ot-pick-form {
+  margin: 4px 0 8px;
+}
+.ot-results.ot-pick {
+  position: static;
+  max-height: 55vh;
+  overflow: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+/* Lists of rows to tap. */
+.ot-list {
+  display: grid;
+  gap: 8px;
+}
+.ot-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--q-sheet-cell, var(--q-surface));
+  color: var(--q-label);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ot-row-btn > span {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ot-row-btn b {
+  font: 600 16px/21px var(--q-font);
+}
+.ot-row-btn small {
+  color: var(--q-label-2);
+  font: 400 13px/17px var(--q-font);
+}
+.ot-row-btn > .ot-i {
+  color: var(--q-accent);
+}
+.ot-row-btn:disabled {
+  opacity: 0.5;
+}
+.ot-row-btn.on {
+  box-shadow: inset 0 0 0 2px var(--q-accent);
+}
+.ot-row-btn time {
+  flex: none;
+  color: var(--q-label-2);
+  font: 600 15px/20px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ot-edit-row + .ot-edit-row {
+  margin-top: 8px;
+}
+.ot-edit-row .ot-row-btn {
+  flex: 1;
+  min-width: 0;
+}
+/* Ordering: a group's name to edit, its stops with up, down, remove. */
+.ot-manage {
+  margin: 12px 0;
+  padding: 6px 6px 6px 14px;
+  border-radius: 18px;
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.ot-order-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 48px;
+  border-bottom: 0.5px solid var(--q-sep);
+}
+.ot-order-row:last-child {
+  border-bottom: 0;
+}
+.ot-order-row > span {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font: 400 15px/20px var(--q-font);
+}
+.ot-order-row small {
+  color: var(--q-label-2);
+  font: 400 12px/16px var(--q-font);
+}
+.ot-order-row > b {
+  flex: none;
+  font: 600 15px/20px var(--q-font);
+}
+.ot-order-row.head .ot-name-in {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 10px;
+  background: var(--q-fill-3);
+  font-weight: 600;
+  line-height: 40px;
+}
+.ot-list > .ot-order-row {
+  padding: 0 14px;
+  border-radius: 14px;
+  border-bottom: 0;
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+/* Station grid (火車's picker). */
+.ot-st-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.ot-st-btn {
+  position: relative;
+  min-height: 46px;
+  padding: 6px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--q-sheet-cell, var(--q-surface));
+  color: var(--q-label);
+  font: 600 15px/20px var(--q-font);
+  cursor: pointer;
+}
+.ot-st-btn.more {
+  color: var(--q-accent);
+}
+.ot-st-btn i {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--q-accent);
+}
+
+/* A bus route: its number and direction stay on top while its stops scroll. */
+.ot-route-sheet {
+  padding-top: 0;
+}
+.ot-rt-top {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin: 0 calc(-1 * var(--q-margin));
+  padding: 0 var(--q-margin) 8px;
+  border-bottom: 0.5px solid var(--q-sep);
+  background: var(--q-sheet);
+}
+.ot-rt-top .q-sheet-head {
+  position: static;
+  margin: 0;
+  padding: 14px 0 8px;
+  background: none;
+}
+.ot-rt-id {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.ot-rt-id > div {
+  min-width: 0;
+}
+.ot-rt-id h2 {
+  overflow: hidden;
+  font: 700 18px/23px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-rt-no {
+  flex: none;
+  min-width: 52px;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border-radius: 13px;
+  background: var(--q-green);
+  color: #fff;
+  font: 700 22px/26px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.ot-dir,
+.ot-view {
+  margin: 8px 0 0;
+}
+.ot-ride-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 8px 10px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--q-green) 14%, transparent);
+}
+.ot-ride-pick > div {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ot-ride-pick b {
+  overflow: hidden;
+  color: var(--ot-ink-green);
+  font: 600 15px/20px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-ride-pick small {
+  color: var(--q-label-2);
+  font: 400 13px/17px var(--q-font);
+}
+.ot-ride-pick .q-btn {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+.ot-note.ot-off-note {
+  margin: 8px 4px;
+  color: var(--ot-ink-green);
+  font-weight: 600;
+}
+.ot-route-stops {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ot-route-stops li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px 30px minmax(0, 1fr) 40px;
+  align-items: center;
+  min-height: 54px;
+}
+.ot-route-stops li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 89px;
+  width: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--q-green) 45%, transparent);
+}
+.ot-route-stops li:first-child::before {
+  top: 50%;
+}
+.ot-route-stops li:last-child::before {
+  bottom: 50%;
+}
+.ot-rs-eta {
+  justify-self: end;
+  min-width: 0;
+  padding: 3px 8px;
+  border-radius: 8px;
+  color: var(--q-label);
+  font: 700 15px/20px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ot-rs-eta.now {
+  background: var(--q-red);
+  color: #fff;
+}
+.ot-rs-eta.soon {
+  background: color-mix(in srgb, var(--q-orange) 16%, transparent);
+  color: var(--q-orange);
+}
+.ot-rs-eta.wait {
+  color: var(--q-label-2);
+}
+.ot-rs-eta.off {
+  color: var(--q-label-3);
+  font: 600 12px/16px var(--q-font);
+}
+.ot-rs-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  margin-left: 8px;
+  border: 3px solid var(--q-green);
+  border-radius: 50%;
+  background: var(--q-sheet);
+}
+.ot-route-stops li.at .ot-rs-dot {
+  width: 26px;
+  height: 26px;
+  margin-left: 2px;
+  border: 0;
+  background: var(--q-red);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--q-red) 22%, transparent);
+  color: #fff;
+}
+.ot-rs-dot .ot-i {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+.ot-rs-bus {
+  position: absolute;
+  top: 0;
+  left: 91px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--q-red);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--q-red) 22%, transparent);
+  color: #fff;
+  transform: translate(-50%, -50%);
+}
+.ot-rs-bus .ot-i {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.2;
+}
+.ot-rs-name {
+  display: grid;
+  min-width: 0;
+  padding: 8px 4px 8px 6px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.ot-rs-name b {
+  overflow: hidden;
+  font: 500 16px/21px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-rs-name small {
+  margin-top: 1px;
+  color: var(--q-label-2);
+  font: 400 12px/16px var(--q-font);
+}
+.ot-rs-name small .ot-i {
+  width: 11px;
+  height: 11px;
+  vertical-align: -1px;
+}
+.ot-rs-star {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--q-label-3);
+}
+.ot-rs-star.on {
+  color: var(--ot-bike);
+}
+.ot-rs-star.on .ot-i {
+  fill: currentColor;
+}
+.ot-route-stops li.mine,
+.ot-route-stops li.on-here {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--q-green) 11%, transparent);
+}
+.ot-route-stops li.mine .ot-rs-name b,
+.ot-route-stops li.on-here .ot-rs-name small {
+  color: var(--ot-ink-green);
+}
+.ot-route-stops li.before {
+  opacity: 0.35;
+}
+.ot-route-stops li.can-off {
+  cursor: pointer;
+}
+.ot-route-stops li.can-off:active {
+  background: color-mix(in srgb, var(--q-green) 14%, transparent);
+}
+/* A route's timetable: the week as a strip of days, the hours as rows. */
+.ot-tt-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 6px 4px 10px;
+}
+.ot-tt-head small {
+  flex: none;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+}
+.ot-tt-stop {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.ot-tt-stop b {
+  overflow: hidden;
+  font: 600 18px/23px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-tt-stop .ot-i {
+  width: 16px;
+  height: 16px;
+  color: var(--q-label-2);
+}
+.ot-tt-stop select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 0;
+  opacity: 0;
+  font-size: 16px;
+}
+.ot-timetable {
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.ot-tt-hour {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  min-height: 40px;
+  border-bottom: 0.5px solid var(--q-sep);
+}
+.ot-tt-hour:last-child {
+  border-bottom: 0;
+}
+.ot-tt-hour > b {
+  display: grid;
+  align-self: stretch;
+  place-items: center;
+  background: var(--q-fill-4);
+  color: var(--q-label-2);
+  font: 600 14px/18px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-tt-hour > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  padding: 6px 10px;
+}
+.ot-tt-hour i {
+  min-width: 30px;
+  padding: 3px 4px;
+  border-radius: 7px;
+  font: 600 16px/20px var(--q-font-rounded);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.ot-tt-hour .past {
+  opacity: 0.35;
+  font-weight: 400;
+}
+.ot-tt-hour .next {
+  background: var(--q-green);
+  color: #fff;
+}
+/* 到站前 N 分: six round numbers. */
+.ot-alert-min {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+.ot-alert-min button {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 14px;
+  background: var(--q-sheet-cell, var(--q-fill-3));
+  color: var(--q-label);
+  font: inherit;
+  cursor: pointer;
+}
+.ot-alert-min b {
+  font: 700 22px/26px var(--q-font-rounded);
+}
+.ot-alert-min small {
+  color: var(--q-label-2);
+  font: 500 11px/13px var(--q-font);
+}
+.ot-alert-min button[aria-pressed='true'] {
+  background: var(--q-orange);
+  color: #fff;
+}
+.ot-alert-min button[aria-pressed='true'] small {
+  color: inherit;
+}
+/* When: now, leave at, arrive by; then the day and the time. */
+.ot-when-menu {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0;
+}
+.ot-field.ot-when-time input[type='time'] {
+  min-height: 60px;
+  font: 600 26px/60px var(--q-font-rounded);
+  text-align: center;
+}
+.ot-when-time input::-webkit-date-and-time-value {
+  text-align: center;
+}
+.ot-when-go {
+  min-height: 52px;
+  margin-top: 8px;
+}
+/* A saved trip's days and times. */
+.ot-weekdays {
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+.ot-weekdays .q-chip {
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: 0;
+}
+.ot-weekdays.small .q-chip {
+  flex: 0 0 34px;
+  min-height: 32px;
+}
+.ot-quick {
+  margin-top: 8px;
+}
+.ot-quick .q-chip {
+  min-height: 30px;
+  font-size: 13px;
+}
+.ot-field .ot-times {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ot-field .ot-times + .ot-times {
+  margin-top: 8px;
+}
+.ot-field .ot-times select {
+  flex: 0 0 96px;
+}
+.ot-times-l {
+  flex: none;
+  color: var(--q-label-2);
+  font: 500 14px/18px var(--q-font);
+}
+.ot-times-l.wide {
+  width: 96px;
+  text-align: center;
+}
+.ot-alt {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.ot-alt > * {
+  min-width: 0;
+}
+.ot-alt-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ot-alt-top .ot-weekdays {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+.ot-alt .ot-times input {
+  min-height: 42px;
+  padding: 0 8px;
+  font-size: 15px;
+  line-height: 42px;
+}
+/* YouBike timer: the time big, then 換了一台 / 已還車. */
+.ot-rent-now {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 8px 4px 12px;
+}
+.ot-rent-now b {
+  font: 700 40px/44px var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
+}
+.ot-rent-now span {
+  color: var(--q-label-2);
+  font: 500 15px/20px var(--q-font);
+}
+.ot-rent-acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ==== 10. The narrowest phone ===================================================================== */
+
+@media (max-width: 360px) {
+  .ot-ride-n {
+    font-size: 26px;
+  }
+  .ot-nav-text b {
+    font-size: 17px;
+    line-height: 22px;
+  }
+  .ot-nav-big b,
+  .ot-nav-big.ot-count {
+    font-size: 28px;
+  }
+  .ot-alert-min {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ot-route-stops li {
+    grid-template-columns: 68px 30px minmax(0, 1fr) 40px;
+  }
+  .ot-route-stops li::before {
+    left: 81px;
+  }
+  .ot-rs-bus {
+    left: 83px;
+  }
+}
+
+/* 我的: addresses, route lines and tags stay on one line */
+.ot-page .q-ritem-text small,
+.ot-page .q-ritem-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ot-page .q-ritem-text .q-tags {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.ot-page .q-ritem-text .q-tags > * {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* A stop's board rows at phone width: the direction keeps one line (ellipsis)
+   and fewer next times show, rather than the name breaking a character a line. */
+.ot-board-row .ot-train { flex: 1 1 96px; }
+.ot-board-row .ot-train b,
+.ot-board-row .ot-train small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+@media (max-width: 400px) { .ot-board-row .ot-times b:nth-child(n+4) { display: none; } }
+@media (max-width: 350px) { .ot-board-row .ot-times b:nth-child(n+3) { display: none; } }
+
+/* A saved trip's schedule: plain tokens (抵達 08:00, 平日, 回程 16:45) that wrap whole, never cut. */
+/* A saved trip's times (我的): 去 and 回 side by side, each a label, its time, the days that differ as chips. */
+.ot-tt {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 0 22px;
+  margin-top: 6px;
+}
+.ot-tt-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.ot-tt-col > small {
+  color: var(--q-label-2);
+  font: 500 12px/16px var(--q-font);
+}
+.ot-tt-col > b {
+  color: var(--q-label);
+  font: 700 20px/26px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-tt-alt {
+  margin-top: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 600 12px/18px var(--q-font);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ot-pass-price {
+  margin-left: 4px;
+  color: var(--q-label-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.ot-tt-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ot-tt-name > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ot-tt-name > .ot-trip-when {
+  flex: none;
+  width: auto;
+  margin: 0;
+}
+
+/* A place search's field takes typing and pasting inside a sheet (iOS's selection, never switched off). */
+.ot-pick-form, .ot-pick-form * { -webkit-user-select: text; user-select: text; }
+.ot-pick-form .q-search-clear { -webkit-user-select: none; user-select: none; }
+.ot-pick-form input { pointer-events: auto; touch-action: manipulation; }
+
+/* The pass list's tick: the app's colour. */
+.ot-tpass-sheet .ot-tick {
+  color: var(--q-accent);
+}
+.ot-tpass-sheet .ot-tick .ot-i {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.6;
+}
+
+/* A route's many ways (5 to 10 on some): chips to scroll, bleeding to the sheet's edges. */
+.ot-dir-chips {
+  position: relative;
+  margin: 8px -16px 0;
+  padding: 2px 16px 4px;
+  scroll-padding-inline: 16px;
+}
+.ot-dir-chips::after {
+  content: '';
+  flex: none;
+  width: 1px;
+}
+
+/* 查時刻's and 我的's large titles sit straight in their panel: the page's margin is theirs to bring. */
+#panel-times > .q-nav-title,
+#panel-me > .q-nav-title {
+  box-sizing: border-box;
+  padding-inline: 16px;
+}
+/* 交通's large title sits in the page's own margin (the kit's title brings one too: not twice). */
+.ot-page > .q-nav-title {
+  padding-inline: 0;
+}
+
+/* A marker's name that would run into another's: hidden (map.mjs declutter), its icon stays. */
+.ot-mk > span {
+  transition: opacity 0.2s;
+}
+.ot-mk.ot-lb-hide > span {
+  opacity: 0;
+}
+
+
+/* What isn't running today (look.mjs noticesHtml): a row each, opened for the notice. */
+.ot-notices {
+  margin: 12px 0 16px;
+}
+.ot-notice > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.ot-notice > summary::-webkit-details-marker {
+  display: none;
+}
+.ot-notice > summary .q-ritem-text small {
+  display: block;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  text-wrap: pretty;
+  -webkit-line-clamp: unset;
+}
+.ot-notice.stop > summary .q-ritem-text small {
+  color: var(--q-red);
+}
+.ot-notice + .ot-notice {
+  border-top: var(--q-hairline) solid var(--q-sep);
+}
+.ot-notice-body {
+  padding: 0 16px 12px 60px;
+  color: var(--q-label-2);
+  font: 400 14px/20px var(--q-font);
+}
+.ot-notice-body p {
+  margin: 8px 0 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.ot-m-notice .ot-notices {
+  margin: 12px 0 0;
+}
+/* What's said about a route today (bus-ui.mjs saidHtml): its two words, the notice's first line, the notice a tap away. */
+/* A route's status in its sheet's head: a small chip, the notice a tap away. */
+.ot-rt-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 8px;
+  padding: 1px 6px 1px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 600 13px/19px var(--q-font);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.ot-rt-flag.off {
+  background: color-mix(in srgb, var(--q-red) 16%, transparent);
+  color: var(--q-red);
+}
+.ot-rt-flag .ot-i {
+  width: 13px;
+  height: 13px;
+}
+.ot-sheet-sub > .ot-rt-flag:first-child {
+  margin-left: 0;
+}
+.ot-said {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+.ot-said-row {
+  border-radius: 12px;
+  background: var(--q-fill-4);
+}
+.ot-said-row > summary {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 8px 12px;
+  list-style: none;
+  cursor: pointer;
+  font: 400 14px/20px var(--q-font);
+}
+.ot-said-row > summary::-webkit-details-marker {
+  display: none;
+}
+.ot-said-row > summary b {
+  flex: none;
+  color: var(--q-orange);
+  font-weight: 600;
+}
+.ot-said-row.off > summary b {
+  color: var(--q-red);
+}
+/* (A notice's first line said whole: a long one takes a second line, never cut.) */
+.ot-said-row > summary span {
+  min-width: 0;
+  color: var(--q-label-2);
+  overflow-wrap: anywhere;
+}
+/* Open: the whole notice below, so the line above isn't said twice. */
+.ot-said-row[open] > summary span {
+  visibility: hidden;
+}
+.ot-said-row > p {
+  margin: 0;
+  padding: 0 12px 10px;
+  color: var(--q-label-2);
+  font: 400 13px/19px var(--q-font);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+/* A bus not running today (今日停駛, 可能停駛): said in red. */
+.ot-strip-eta.stopped b,
+.ot-rs-eta.stopped {
+  color: var(--q-red);
+}

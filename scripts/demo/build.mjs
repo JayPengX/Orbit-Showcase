@@ -82,7 +82,7 @@ for (const id of ids) {
     }
     const name = `${createHash('sha1').update(body).digest('hex').slice(0, 16)}.${EXT[type] || 'bin'}`;
     if (!existsSync(join(site, '_x', name))) writeFileSync(join(site, '_x', name), body);
-    if (/^image\//.test(type) && g.method === 'GET') pics[url] = `../_x/${name}`;
+    if (/^image\/|^text\/css|javascript/.test(type) && g.method === 'GET') pics[url] = `../_x/${name}`;
     answers.push([g.method, url, g.post || '', g.status, g.type, `../_x/${name}`]);
     const single = new URL(url);
     if (g.status === 200 && /\/sports-proxy$/.test(single.pathname) && single.searchParams.get('url')) {

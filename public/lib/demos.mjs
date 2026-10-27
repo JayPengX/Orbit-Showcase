@@ -9,10 +9,18 @@ export const DEMOS = {
   words: { repo: 'Orbit-Words' },
   sports: { repo: 'Orbit-Sports', real: true },
   securities: { repo: 'Orbit-Securities', real: true },
-  class: { repo: 'Orbit-Class' }
+  class: { repo: 'Orbit-Class' },
+  transit: { repo: 'Orbit-Transit' }
 };
 
 export const TOURS = {
+  transit: [
+    { say: ['地圖上是附近的 YouBike：每個站還有幾台可借，閃電是電輔車。', 'The map shows the YouBike stations nearby: bikes to borrow at each, the bolt for e-bikes.'] },
+    { tap: '.q-tab[data-tab="go"]', say: ['點「交通」：附近的公車、火車和 YouBike 排在一起。', 'Tap “Transit”: the buses, trains and YouBike nearby, side by side.'] },
+    { tap: '.ot-strip-main', say: ['點一路公車，看它現在開到哪、幾分鐘後到。', 'Tap a bus route to see where it is now and when it arrives.'] },
+    { tap: '.q-close', say: ['每一站幾分鐘到、車子在哪裡，都在這條線上。看完按 × 關掉。', 'Every stop’s minutes and where the buses are, along one line. Close it with the ×.'] },
+    { tap: '.q-tab[data-tab="times"]', say: ['「查時刻」：火車、高鐵和公車的時刻表，不用打開別的 App。', '“Times”: train, high-speed rail and bus timetables, without opening another app.'] }
+  ],
   class: [
     { say: ['上課時，最上面就是現在這節：哪一科、哪位老師、在哪間教室，還有幾分鐘下課。數字每秒都在倒數。', 'In class, the top shows the period now: the subject, the teacher, the room and the minutes left, counting down every second.'] },
     { tap: '.q-chip.day[data-day="2026-10-29"]', say: ['點「明天」，看明天要上什麼。', 'Tap “Tomorrow” to see tomorrow’s classes.'] },
