@@ -62,10 +62,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: The shared kit (Shared-Proxy/kit), for the tests
+      - name: The shared kit (Orbit-Core/kit), for the tests
         uses: actions/checkout@v4
         with:
-          repository: JayPengX/Shared-Proxy
+          repository: JayPengX/Orbit-Core
           path: .shared
           sparse-checkout: kit
       - run: ln -sfn .shared/kit .kit
@@ -76,7 +76,7 @@ jobs:
         run: |
           mkdir -p .family && ln -sfn "$PWD" .family/Orbit-Showcase
           ok=1
-          for r in Shared-Proxy Orbit-Sports Orbit-Transit Orbit-Weather Orbit-Class Orbit-Words Orbit-Beats Orbit-Law Orbit-Securities Orbit-Money; do
+          for r in Orbit-Core Orbit-Sports Orbit-Transit Orbit-Weather Orbit-Class Orbit-Words Orbit-Beats Orbit-Law Orbit-Securities Orbit-Money; do
             git clone --quiet "https://github.com/JayPengX/$r.git" ".family/$r" || ok=0
           done
           if [ "$ok" = 1 ] && TZ=Asia/Taipei node scripts/stats.mjs .family > /tmp/stats.json; then

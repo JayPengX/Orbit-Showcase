@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 
 const [repos, clock] = process.argv.slice(2);
 const { emptyBooks, put, encodeBooks } = await import(pathToFileURL(`${repos}/Orbit-Money/public/lib/books.mjs`).href);
-const { addDays } = await import(pathToFileURL(`${repos}/Shared-Proxy/kit/format.mjs`).href);
+const { addDays } = await import(pathToFileURL(`${repos}/Orbit-Core/kit/format.mjs`).href);
 
 const b = emptyBooks();
 const now = Date.parse(clock);

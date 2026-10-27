@@ -3,7 +3,7 @@
 //                           folder, but for big media folders: only the files
 //                           the recording used), index.html with the demo's
 //                           data and sandbox put first
-//   demo/Shared-Proxy/kit/  the kit, as it was (the apps load it from ../)
+//   demo/Orbit-Core/kit/  the kit, as it was (the apps load it from ../)
 //   demo/_x/                every outside answer and picture, one file each
 //   demo/_demo/<id>.js      the demo's data: its clock, place and answers
 //   demo/_demo/shim.js      the sandbox (written by hand, not built)
@@ -23,14 +23,14 @@ const TOKEN = 'eyJkIjoiMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWYifQ.preview';
 const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'image/gif': 'gif', 'application/json': 'json', 'text/javascript': 'js', 'text/css': 'css', 'audio/mpeg': 'mp3' };
 
 // The kit, once, from the same repos the recordings were made with.
-rmSync(join(site, 'Shared-Proxy'), { recursive: true, force: true });
-cpSync(join(repos, 'Shared-Proxy/kit'), join(site, 'Shared-Proxy/kit'), { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|stamp-app\.mjs$|\.md$/.test(p) });
+rmSync(join(site, 'Orbit-Core'), { recursive: true, force: true });
+cpSync(join(repos, 'Orbit-Core/kit'), join(site, 'Orbit-Core/kit'), { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|stamp-app\.mjs$|\.md$/.test(p) });
 // The demos run as recorded, on workers.dev and the repos' own paths, wherever the showcase is served.
-const domain = join(site, 'Shared-Proxy/kit/domain.mjs');
+const domain = join(site, 'Orbit-Core/kit/domain.mjs');
 writeFileSync(domain, readFileSync(domain, 'utf8').replace(/^export const DOMAIN = '[^']*';/m, "export const DOMAIN = '';"));
 mkdirSync(join(site, '_x'), { recursive: true });
 // No betting anywhere in the showcase (Jay): Money's help names the betting app beside Securities.
-const help = join(site, 'Shared-Proxy/kit/help.mjs');
+const help = join(site, 'Orbit-Core/kit/help.mjs');
 writeFileSync(help, readFileSync(help, 'utf8').replace('和 Securities、Longshot 的遊戲錢', '和 Securities 的遊戲錢').replace('play money in Securities and Longshot.', 'play money in Securities.'));
 
 for (const id of ids) {
@@ -61,7 +61,7 @@ for (const id of ids) {
       if (path === '/__ext') url = new URL(url).searchParams.get('u');
       else {
         // The app's and kit's own files: a big folder's file the recording used.
-        const file = path.startsWith('/Shared-Proxy/') ? join(site, path) : join(to, path.replace(/^\/[^/]+\//, ''));
+        const file = path.startsWith('/Orbit-Core/') ? join(site, path) : join(to, path.replace(/^\/[^/]+\//, ''));
         if (!existsSync(file) && g.status === 200) (mkdirSync(dirname(file), { recursive: true }), writeFileSync(file, body));
         continue;
       }

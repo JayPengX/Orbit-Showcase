@@ -1,5 +1,5 @@
 // Records one app for its demo: serves it signed in with made-up answers
-// (Shared-Proxy/tools/preview.mjs --serve), opens it on a phone-sized page
+// (Orbit-Core/tools/preview.mjs --serve), opens it on a phone-sized page
 // at a fixed clock, walks the steps in scripts/demo/apps.mjs, and keeps
 // every answer the page got. build.mjs turns the record into the frozen copy
 // under public/demo/. Run with the family's repos beside each other:
@@ -38,7 +38,7 @@ if (demo.payload) {
   writeFileSync(payload, execFileSync(process.execPath, [new URL(`../../${demo.payload}`, import.meta.url).pathname, repos, demo.clock]));
 }
 const port = 8300 + Object.keys(DEMOS).indexOf(id);
-const serveArgs = [join(repos, 'Shared-Proxy/tools/preview.mjs'), demo.app, '--serve', '--port', String(port), '--root', repos, ...(payload ? ['--payload', payload] : []), ...(demo.serve || [])];
+const serveArgs = [join(repos, 'Orbit-Core/tools/preview.mjs'), demo.app, '--serve', '--port', String(port), '--root', repos, ...(payload ? ['--payload', payload] : []), ...(demo.serve || [])];
 const server = spawn(process.execPath, serveArgs, { stdio: ['ignore', 'pipe', 'inherit'] });
 await new Promise((ok, no) => {
   server.stdout.on('data', d => /serving/.test(String(d)) && ok());

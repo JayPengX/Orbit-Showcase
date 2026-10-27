@@ -38,9 +38,9 @@ The Orbit family of apps, shown the way a page does better than a PDF: the struc
 | Layer | What |
 | --- | --- |
 | Site | Plain JavaScript (ES modules), HTML and CSS; no framework, no build step |
-| Look | The kit in [Shared-Proxy](https://github.com/JayPengX/Shared-Proxy) plus `showcase.css` |
+| Look | The kit in [Orbit-Core](https://github.com/JayPengX/Orbit-Core) plus `showcase.css` |
 | Numbers | `scripts/stats.mjs` counts commits, lines, tests and days from every Orbit repo's git history |
-| Demos | Recorded with Playwright through Shared-Proxy's preview tool, then frozen into `public/demo/` |
+| Demos | Recorded with Playwright through Orbit-Core's preview tool, then frozen into `public/demo/` |
 | Hosting | GitHub Pages, served at jaypengx.com by a Cloudflare Worker |
 | Tests | `node --test` (`tests/content.test.mjs` checks the content rules) |
 
@@ -81,7 +81,7 @@ MAP.md                   how it works
 ## Getting started
 
 ```bash
-git clone https://github.com/JayPengX/Shared-Proxy.git
+git clone https://github.com/JayPengX/Orbit-Core.git
 git clone https://github.com/JayPengX/Orbit-Showcase.git
 cd Orbit-Showcase
 npm test
@@ -93,10 +93,10 @@ Count the numbers yourself, with the family's repos cloned side by side:
 TZ=Asia/Taipei node scripts/stats.mjs .. > public/data/stats.json
 ```
 
-To preview, serve a folder that holds `Orbit-Showcase` (pointing at `public/`) and `Shared-Proxy` side by side, then open `/Orbit-Showcase/`:
+To preview, serve a folder that holds `Orbit-Showcase` (pointing at `public/`) and `Orbit-Core` side by side, then open `/Orbit-Showcase/`:
 
 ```bash
-mkdir -p /tmp/site && ln -sfn "$PWD/public" /tmp/site/Orbit-Showcase && ln -sfn "$PWD/../Shared-Proxy" /tmp/site/Shared-Proxy
+mkdir -p /tmp/site && ln -sfn "$PWD/public" /tmp/site/Orbit-Showcase && ln -sfn "$PWD/../Orbit-Core" /tmp/site/Orbit-Core
 npx --yes http-server /tmp/site -p 8080 -c-1   # http://localhost:8080/Orbit-Showcase/
 ```
 
@@ -119,6 +119,6 @@ Push to `main`. GitHub Actions recounts the numbers, runs the tests, stamps ever
 | [Orbit Beats](https://github.com/JayPengX/Orbit-Beats) | Endless music and your own beats |
 | [Orbit Law](https://github.com/JayPengX/Orbit-Law) | Laws, rulings and bills, linked |
 | [Orbit Money](https://github.com/JayPengX/Orbit-Money) | Your own books |
-| [Shared-Proxy](https://github.com/JayPengX/Shared-Proxy) | The kit, the Orbit Pass and the Workers behind them all |
+| [Orbit-Core](https://github.com/JayPengX/Orbit-Core) | The kit, the Orbit Pass and the Workers behind them all |
 
 How it was all built, in pictures and numbers: [jaypengx.com/showcase](https://jaypengx.com/showcase/).
