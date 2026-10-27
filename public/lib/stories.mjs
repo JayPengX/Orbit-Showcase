@@ -1,7 +1,8 @@
 // The map: the whole system in five rows (the phone, GitHub, Cloudflare,
 // cloud storage, the outside world), and five everyday stories walked
 // across it one step at a time. Every step names the map spot it happens at
-// and, where there is one, the tree node that explains it.
+// and, where there is one, the tree node that explains it. `short` names a
+// story on its button (all five sit in one row, even on a phone).
 
 export const ROWS = [
   { id: 'phone', label: ['你的手機', 'Your phone'], nodes: [
@@ -35,6 +36,7 @@ export const STORIES = [
   {
     id: 'open', app: 'match', icon: 'ball',
     title: ['打開 Orbit Sports', 'Opening Orbit Sports'],
+    short: ['打開', 'Open'],
     steps: [
       ['phone', ['你點了主畫面上的 Sports。', 'You tap Sports on your home screen.']],
       ['sw', ['手機先拿出存好的檔案，馬上開始畫，不等網路。', 'The phone starts drawing from files it kept, without waiting for the network.']],
@@ -49,6 +51,7 @@ export const STORIES = [
   {
     id: 'ask', app: 'law', icon: 'shield',
     title: ['問 Orbit Law 一個問題', 'Asking Orbit Law a question'],
+    short: ['問 AI', 'Ask AI'],
     steps: [
       ['phone', ['你問：「房東不還押金怎麼辦？」AI 只在你按下送出才會跑。', 'You ask: “My landlord won’t return my deposit.” The AI runs only when you tap send.']],
       ['gate', ['確認 Pass；每人每天最多 30 次，費用不會失控。', 'Your Pass is checked; 30 questions a day each keeps costs in hand.']],
@@ -63,6 +66,7 @@ export const STORIES = [
   {
     id: 'order', app: 'stock', icon: 'chart',
     title: ['掛一張股票的單', 'Placing a share order'],
+    short: ['下單', 'Order'],
     steps: [
       ['phone', ['你在 Securities 掛了一張限價買單，然後關掉 App。', 'You place a limit buy order in Securities and close the app.']],
       ['proxy', ['雲端第一次看到這張單，就記下它的條件和時間；之後手機不能改，也不能假裝更早下單。', 'The first time the cloud sees the order it notes its terms and time; the phone can’t change it or pretend it was placed earlier.']],
@@ -76,6 +80,7 @@ export const STORIES = [
   {
     id: 'bus', app: 'transit', icon: 'bus',
     title: ['App 關著也提醒你公車快到了', 'A bus alert with the app closed'],
+    short: ['公車提醒', 'Bus alert'],
     steps: [
       ['phone', ['你在 Transit 設定「公車快到時提醒我」，然後鎖上手機。', 'In Transit you ask to be told when the bus is near, then lock the phone.']],
       ['push', ['這個提醒交給雲端記著。', 'The cloud keeps that reminder.']],
@@ -88,6 +93,7 @@ export const STORIES = [
   {
     id: 'fix', app: null, icon: 'camera',
     title: ['Jay 發現一個問題', 'Jay spots a problem'],
+    short: ['修問題', 'A fix'],
     steps: [
       ['phone', ['Jay 在 iPhone 上截圖：「這個名字被切掉了」。', 'Jay screenshots it on his iPhone: “this name is cut off”.']],
       ['repo', ['Claude 找出真正的原因、修改程式，並在 iPhone 的 Safari 引擎上截圖確認。', 'Claude finds the real cause, changes the code and checks a screenshot in iPhone’s Safari engine.']],
