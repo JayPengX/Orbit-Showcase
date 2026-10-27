@@ -26,9 +26,15 @@ function ads(app) {
   );
   const step = dir => row.scrollBy({ left: dir * (row.firstChild.offsetWidth + 12), behavior: reduced() ? 'auto' : 'smooth' });
   const arrow = (dir, label) => h('button', { class: `sc-arrow sc-arrow-${dir > 0 ? 'r' : 'l'}`, type: 'button', 'aria-label': t(label), onclick: () => step(dir) }, [ico('chevron')]);
-  // The arrows only while there is more to the side.
-  const ends = () => row.parentNode?.classList.toggle('fits', row.scrollWidth <= row.clientWidth + 2);
+  // Each arrow only while there is more on its side.
+  const ends = () => {
+    const box = row.parentNode;
+    if (!box) return;
+    box.classList.toggle('at-start', row.scrollLeft < 4);
+    box.classList.toggle('at-end', row.scrollLeft + row.clientWidth > row.scrollWidth - 4);
+  };
   requestAnimationFrame(ends);
+  row.addEventListener('scroll', ends, { passive: true });
   addEventListener('resize', ends, { passive: true });
   return h('div', { class: 'sc-adbox', style: `--ad-hi:${hi};--ad-mid:${mid};--ad-lo:${lo}` }, [
     h('div', { class: 'sc-adrow' }, [row, arrow(-1, ['上一張', 'Previous']), arrow(1, ['下一張', 'Next'])]),
