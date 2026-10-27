@@ -4,9 +4,10 @@
 // every answer the page got. build.mjs turns the record into the frozen copy
 // under public/demo/. Run with the family's repos beside each other:
 //   node scripts/demo/record.mjs <app> [--repos dir] [--shots dir]
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { DEMOS } from './apps.mjs';
 
@@ -30,8 +31,14 @@ const playwright = (() => {
   }
 })();
 
+// The app's saved data to open on: written by the demo's own script (made up, never real).
+let payload = '';
+if (demo.payload) {
+  payload = join(mkdtempSync(join(tmpdir(), 'demo-')), 'payload.txt');
+  writeFileSync(payload, execFileSync(process.execPath, [new URL(`../../${demo.payload}`, import.meta.url).pathname, repos, demo.clock]));
+}
 const port = 8300 + Object.keys(DEMOS).indexOf(id);
-const serveArgs = [join(repos, 'Shared-Proxy/tools/preview.mjs'), demo.app, '--serve', '--port', String(port), '--root', repos, ...(demo.payload ? ['--payload', resolve(demo.payload)] : []), ...(demo.serve || [])];
+const serveArgs = [join(repos, 'Shared-Proxy/tools/preview.mjs'), demo.app, '--serve', '--port', String(port), '--root', repos, ...(payload ? ['--payload', payload] : []), ...(demo.serve || [])];
 const server = spawn(process.execPath, serveArgs, { stdio: ['ignore', 'pipe', 'inherit'] });
 await new Promise((ok, no) => {
   server.stdout.on('data', d => /serving/.test(String(d)) && ok());
