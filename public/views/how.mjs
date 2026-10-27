@@ -14,45 +14,231 @@ import { ROWS, STORIES } from '../lib/stories.mjs';
 import { pir } from './apps.mjs';
 
 const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', money: 'money' };
-const count = node => (node.kids || []).reduce((n, k) => n + 1 + count(k), 0);
 
 // ---- The tree ----
+// A real tree: Orbit at the root, each branch joined to its parent by a
+// curved line. Opening a branch closes its open siblings, so one path stays
+// in view; nodes glide to their new places and the lines follow them (both
+// drawn every frame, the same in WebKit and Chromium).
 const open = new Set();
-let treeBox = null;
+let treeBox = null; // the box that scrolls sideways
+let canvas = null; // the nodes and the lines
+let lines = null;
 let detailBox = null;
+let pickBar = null;
 let picked = null;
 let openSheet = null;
+const shown = new Map(); // id → { el, path, x, y, o, sx, sy, so, tx, ty, to, gone }
+let anim = 0;
+const PAD = 14;
 
 // Each top branch its own colour, carried down to everything under it.
 const HUE = { apps: 'var(--q-orange)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
-const hue = id => HUE[pathTo(id)[1]?.id] || '';
-const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : tile(ico(node.icon), hue(node.id), 'sm'));
+const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
+const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
+// Column step, card width and the height each row of leaves takes.
+const dims = () => (wide() ? { col: 248, w: 212, slot: 64 } : { col: 160, w: 140, slot: 62 });
 
-function branch(node, depth) {
-  const kids = node.kids || [];
-  const li = h('li', { class: `sc-node${kids.length ? ' has-kids' : ''}`, 'data-id': node.id, 'data-depth': String(depth) });
-  const toggle = kids.length
-    ? h('button', { class: 'sc-toggle', type: 'button', 'aria-expanded': 'false', 'aria-label': t(['展開', 'Expand']), onclick: () => flip(node.id) }, [ico('chevron')])
-    : h('span', { class: 'sc-toggle sc-leaf', 'aria-hidden': 'true' });
-  const main = h('button', { class: 'sc-row-main', type: 'button', onclick: () => go('how', node.id) }, [
-    mark(node),
-    h('span', { class: 'sc-row-text' }, [h('strong', { text: t(node.title) }), h('small', { text: t(node.line) })]),
-    kids.length ? h('span', { class: 'sc-row-n', text: String(count(node)) }) : null
+function nodeEl(id) {
+  const node = NODES.get(id).node;
+  const n = node.kids?.length || 0;
+  const icon = id === ROOT.id ? appImg(null, 28) : BRAND[id] ? appImg(BRAND[id], 26) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]);
+  return h('button', { class: `sc-tn${id === ROOT.id ? ' root' : ''}${n ? ' has-kids' : ''}`, type: 'button', 'data-id': id, style: `--c:${hue(id)}`, 'aria-expanded': n ? 'false' : null, onclick: () => tap(id) }, [
+    icon,
+    h('span', { class: 'sc-tn-t', text: id === ROOT.id ? t(node.title) : t(node.title).replace(/^Orbit /, '') }),
+    n && id !== ROOT.id ? h('span', { class: 'sc-tn-n', 'aria-label': t([`${n} 項`, `${n} inside`]), text: String(n) }) : null
   ]);
-  li.append(h('div', { class: 'sc-row' }, [toggle, main]));
-  if (kids.length) li.append(h('div', { class: 'sc-kids', inert: '' }, [h('ul', {}, kids.map(k => branch(k, depth + 1)))]));
-  return li;
 }
 
-function flip(id, on = !open.has(id)) {
-  if (on) open.add(id);
-  else open.delete(id);
-  const li = treeBox?.querySelector(`[data-id="${id}"]`);
-  if (!li) return;
-  li.classList.toggle('open', on);
-  li.querySelector(':scope > .sc-row > .sc-toggle')?.setAttribute('aria-expanded', String(on));
-  const kids = li.querySelector(':scope > .sc-kids');
-  if (kids) kids.inert = !on;
+// Where every visible node sits: leaves one row each, a parent at the
+// middle of its children, one column per level.
+function layout() {
+  const d = dims();
+  const pos = new Map();
+  let row = 0;
+  (function place(node, depth) {
+    const kids = node === ROOT || open.has(node.id) ? node.kids || [] : [];
+    let y;
+    if (kids.length) {
+      const ys = kids.map(k => place(k, depth + 1));
+      y = (ys[0] + ys.at(-1)) / 2;
+    } else y = row++ * d.slot;
+    pos.set(node.id, { x: depth * d.col, y });
+    return y;
+  })(ROOT, 0);
+  return { pos, rows: row, d };
+}
+
+const ease = k => 1 - Math.pow(1 - k, 3);
+let last = null;
+function render() {
+  const { pos, rows, d } = (last = layout());
+  for (const [id, p] of pos) {
+    let e = shown.get(id);
+    if (!e) {
+      const from = shown.get(NODES.get(id).parent) || { x: p.x, y: p.y };
+      e = { el: nodeEl(id), path: document.createElementNS('http://www.w3.org/2000/svg', 'path'), x: from.x, y: from.y, o: 0 };
+      e.path.style.stroke = hue(id);
+      if (id !== ROOT.id) lines.append(e.path);
+      canvas.append(e.el);
+      shown.set(id, e);
+    }
+    Object.assign(e, { tx: p.x, ty: p.y, to: 1, gone: false });
+    e.el.classList.toggle('open', open.has(id));
+    e.el.classList.toggle('on', id === picked);
+    if (e.el.hasAttribute('aria-expanded')) e.el.setAttribute('aria-expanded', String(open.has(id)));
+  }
+  for (const [id, e] of shown) {
+    if (pos.has(id)) continue;
+    let up = NODES.get(id).parent;
+    while (up && !pos.has(up)) up = NODES.get(up).parent;
+    const p = pos.get(up) || { x: 0, y: 0 };
+    Object.assign(e, { tx: p.x, ty: p.y, to: 0, gone: true });
+  }
+  const width = Math.max(...[...pos.values()].map(p => p.x)) + d.w + PAD * 2;
+  const height = rows * d.slot + PAD * 2;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${Math.max(height, parseFloat(canvas.style.height) || 0)}px`;
+  lines.setAttribute('width', String(width));
+  for (const e of shown.values()) Object.assign(e, { sx: e.x, sy: e.y, so: e.o });
+  cancelAnimationFrame(anim);
+  const t0 = performance.now();
+  const dur = reduced() ? 0 : 460;
+  const frame = now => {
+    const k = dur ? ease(Math.min(1, (now - t0) / dur)) : 1;
+    for (const e of shown.values()) {
+      e.x = e.sx + (e.tx - e.sx) * k;
+      e.y = e.sy + (e.ty - e.sy) * k;
+      e.o = e.so + (e.to - e.so) * k;
+    }
+    draw(d);
+    if (k < 1) anim = requestAnimationFrame(frame);
+    else {
+      for (const [id, e] of shown) if (e.gone) (e.el.remove(), e.path.remove(), shown.delete(id));
+      canvas.style.height = `${height}px`;
+      lines.setAttribute('height', String(height));
+    }
+  };
+  lines.setAttribute('height', canvas.style.height);
+  anim = requestAnimationFrame(frame);
+}
+
+function draw(d) {
+  for (const [id, e] of shown) {
+    const top = PAD + e.y + d.slot / 2;
+    e.el.style.transform = `translate(${PAD + e.x}px, ${top}px) translateY(-50%) scale(${0.7 + 0.3 * e.o})`;
+    e.el.style.opacity = String(e.o);
+    const par = shown.get(NODES.get(id).parent);
+    if (!par) continue;
+    const x1 = PAD + par.x + d.w;
+    const y1 = PAD + par.y + d.slot / 2;
+    const x2 = PAD + e.x;
+    const mid = (x1 + x2) / 2;
+    e.path.setAttribute('d', `M${x1} ${y1}C${mid} ${y1} ${mid} ${top} ${x2} ${top}`);
+    e.path.style.opacity = String(e.o);
+  }
+}
+
+// Open a node and the path to it; its open siblings close.
+function shut(id) {
+  open.delete(id);
+  for (const k of NODES.get(id).node.kids || []) shut(k.id);
+}
+function openTo(id) {
+  for (const p of pathTo(id).slice(1)) {
+    if (!p.kids?.length) continue;
+    for (const sib of NODES.get(NODES.get(p.id).parent).node.kids) if (sib.id !== p.id && open.has(sib.id)) shut(sib.id);
+    open.add(p.id);
+  }
+}
+
+function tap(id) {
+  const node = NODES.get(id).node;
+  if (id === ROOT.id) [...open].forEach(x => open.delete(x));
+  else if (node.kids?.length) {
+    if (open.has(id) && picked === id) shut(id);
+    else openTo(id);
+  } else openTo(NODES.get(id).parent);
+  select(id);
+  history.replaceState(null, '', id === ROOT.id ? '#how' : `#how/${id}`);
+  if (!wide() && !node.kids?.length) showSheet(id);
+}
+
+function select(id) {
+  picked = id;
+  render();
+  if (wide()) detailBox.replaceChildren(nodeView(id));
+  else barFor(id);
+  focus(id);
+}
+
+// Bring the picked node, and its children when open, into view.
+function focus(id) {
+  const { pos, d } = last;
+  const p = pos.get(id);
+  if (!p || !treeBox.clientWidth) return;
+  const kids = open.has(id) ? NODES.get(id).node.kids || [] : [];
+  const span = kids.length ? d.col + d.w : d.w;
+  const left = PAD + p.x - Math.max(8, (treeBox.clientWidth - span) / 2);
+  treeBox.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
+  const ys = kids.length ? kids.map(k => pos.get(k.id).y) : [p.y];
+  const box = treeBox.getBoundingClientRect();
+  const top = box.top + PAD + Math.min(...ys);
+  const bottom = box.top + PAD + Math.max(...ys) + d.slot;
+  const room = innerHeight - (wide() ? 0 : 150);
+  if (top < 70 || bottom > room) {
+    const want = scrollY + top - Math.max(80, (room - (bottom - top)) / 2);
+    window.scrollTo({ top: Math.max(0, want), behavior: reduced() ? 'auto' : 'smooth' });
+  }
+}
+
+// On a phone: the picked node in a bar along the foot, its full card one tap away.
+function barFor(id) {
+  const node = NODES.get(id).node;
+  pickBar.replaceChildren(
+    h('button', { class: 'sc-pickbar-in', type: 'button', onclick: () => showSheet(id) }, [
+      id === ROOT.id ? appImg(null, 34) : mark(node),
+      h('span', { class: 'sc-row-text' }, [h('strong', { text: t(node.title) }), h('small', { text: t(node.line) })]),
+      h('span', { class: 'sc-pickbar-go' }, [t(['說明', 'Read']), ico('chevron')])
+    ])
+  );
+}
+
+function showSheet(id) {
+  if (openSheet) {
+    const was = openSheet;
+    openSheet = null;
+    was.close();
+  }
+  const s = sheet({
+    title: '',
+    body: [nodeView(id)],
+    cls: 'sc-nodesheet',
+    closeLabel: t(['關閉', 'Close']),
+    onClose: () => {
+      if (openSheet === s) openSheet = null;
+    }
+  });
+  openSheet = s;
+}
+
+// A mouse can drag the tree sideways, like a map.
+function dragPan(box) {
+  let from = null;
+  box.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.target.closest('button')) return;
+    from = { x: e.clientX, y: e.clientY, l: box.scrollLeft, t: scrollY };
+    box.classList.add('dragging');
+  });
+  addEventListener('pointermove', e => {
+    if (!from) return;
+    box.scrollLeft = from.l - (e.clientX - from.x);
+    window.scrollTo(0, from.t - (e.clientY - from.y));
+  });
+  addEventListener('pointerup', () => {
+    from = null;
+    box.classList.remove('dragging');
+  });
 }
 
 function nodeView(id) {
@@ -113,54 +299,41 @@ function search(q) {
 }
 
 function buildTree() {
-  treeBox = h('ul', { class: 'sc-tree' }, (ROOT.kids || []).map(k => branch(k, 0)));
+  lines = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  lines.setAttribute('class', 'sc-tlines');
+  lines.setAttribute('aria-hidden', 'true');
+  canvas = h('div', { class: 'sc-tcanvas' }, [lines]);
+  treeBox = h('div', { class: 'sc-tree', role: 'group', 'aria-label': t(['Orbit 的樹狀圖', 'Orbit as a tree']) }, [canvas]);
+  dragPan(treeBox);
   detailBox = h('aside', { class: 'sc-detail', 'aria-live': 'polite' });
+  pickBar = h('div', { class: 'sc-pickbar' });
   const field = h('input', { type: 'search', class: 'sc-search', placeholder: t(['搜尋：例如「颱風」「備份」「YouBike」', 'Search: “typhoon”, “backup”, “YouBike”…']), 'aria-label': t(['搜尋架構', 'Search the structure']) });
   field.addEventListener('input', () => search(field.value));
+  let size = wide();
+  addEventListener('resize', () => {
+    if (wide() === size || !canvas.isConnected) return;
+    size = wide();
+    select(picked || ROOT.id);
+  });
   return h('div', { class: 'sc-treewrap' }, [
     h('div', { class: 'sc-treecol' }, [
-      h('p', { class: 'sc-lede-s', text: t(['整個 Orbit 拆成一棵樹：最上面很簡單，點開越來越細。每一項都寫著遇到什麼問題、怎麼想、結果怎樣。', 'All of Orbit as one tree: simple at the top, more detail as you open it. Each part says the problem, the idea and the result.']) }),
+      h('p', { class: 'sc-lede-s', text: t(['整個 Orbit 畫成一棵樹：從左邊的根開始，點一個分支就長出下一層，越往右越細。每一項都寫著遇到什麼問題、怎麼想、結果怎樣。', 'All of Orbit as one tree: start at the root on the left, tap a branch and the next level grows out of it, more detail the further right. Each part says the problem, the idea and the result.']) }),
       h('label', { class: 'sc-searchbox' }, [ico('search'), field]),
       h('div', { class: 'sc-found' }),
-      treeBox
+      treeBox,
+      pickBar
     ]),
     detailBox
   ]);
 }
 
-function pick(id) {
+// From the address (#how/<node>): open the path to it; a phone shows its card.
+function pick(id, fromLink) {
   if (!NODES.has(id)) id = ROOT.id;
-  picked = id;
-  for (const p of pathTo(id).slice(1, -1)) flip(p.id, true);
-  treeBox.querySelectorAll('.sc-row.on').forEach(r => r.classList.remove('on'));
-  const row = treeBox.querySelector(`[data-id="${id}"] > .sc-row`);
-  row?.classList.add('on');
-  if (wide()) {
-    if (openSheet) openSheet.close();
-    detailBox.replaceChildren(nodeView(id));
-    if (row && id !== ROOT.id) {
-      const r = row.getBoundingClientRect();
-      if (r.top < 80 || r.bottom > innerHeight) row.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' });
-    }
-    return;
-  }
-  if (id === ROOT.id) return openSheet?.close();
-  if (openSheet) {
-    const was = openSheet;
-    openSheet = null;
-    was.close();
-  }
-  const s = sheet({
-    title: '',
-    body: [nodeView(id)],
-    cls: 'sc-nodesheet',
-    closeLabel: t(['關閉', 'Close']),
-    onClose: () => {
-      if (openSheet === s) openSheet = null;
-      if (location.hash === `#how/${id}`) history.replaceState(null, '', '#how');
-    }
-  });
-  openSheet = s;
+  if (id !== ROOT.id) openTo(NODES.get(id).node.kids?.length ? id : NODES.get(id).parent);
+  if (wide()) openSheet?.close();
+  select(id);
+  if (!wide() && fromLink && id !== ROOT.id) showSheet(id);
 }
 
 // ---- The map ----
@@ -350,8 +523,10 @@ export function renderHow(panel, what = '') {
     return;
   }
   mapState?.stop();
+  const from = mode;
   mode = 'tree';
-  pick(what || ROOT.id);
+  if (what && what === picked && from === 'tree') return;
+  requestAnimationFrame(() => pick(what || ROOT.id, Boolean(what)));
 }
 
 // Leaving the tab: a phone's open sheet closes, the map stops.

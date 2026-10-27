@@ -93,7 +93,7 @@ function prompts() {
           h('span', { class: 'sc-over', text: fmtDayYear(x.date) }),
           h('span', { class: 'sc-ask-tag' }, [ico(by[x.tag].icon), t(by[x.tag].title)])
         ]),
-        h('blockquote', { lang: 'en' }, [h('p', { text: x.said })]),
+        h('div', { class: 'sc-ask-said' }, [h('small', { text: t(['他的要求', 'What he asked']) }), h('p', { text: t(x.asked) })]),
         h('p', { class: 'sc-ask-gist', text: t(x.gist) }),
         h('p', { class: 'sc-ask-then' }, [ico('chevron'), h('span', { text: t(x.then) })])
       ])
@@ -111,7 +111,7 @@ function prompts() {
   pick('all');
   return h('section', { class: 'sc-block sc-prompts' }, [
     h('h2', { class: 'sc-h2 sc-rise', text: t(['Jay 怎麼跟 AI 說話', 'How Jay asks']) }),
-    h('p', { class: 'sc-lede-s sc-rise', text: t(['Jay 的訊息很短、打得很快，常常中英夾雜，也有錯字，不是什麼完美的「提示詞」。但它們像一個產品負責人的聲音：直接從手機上用的感受出發，說清楚要什麼、好到什麼程度。下面是他的原話，和後來做出來的東西。', 'Jay’s messages are short, quick, mixed Chinese and English, typos and all: no textbook prompts. But they read like a product owner: straight from using the app on his phone, clear about what he wants and how good it must be. Below are his own words and what came of them.']) }),
+    h('p', { class: 'sc-lede-s sc-rise', text: t(['Jay 不寫程式，他像產品負責人一樣提要求：從手機上實際用的感受出發，說清楚要什麼、要好到什麼程度。下面是幾個他提出的要求，和後來做出來的東西。', 'Jay doesn’t write the code; he asks like a product owner: straight from using the app on his phone, clear about what he wants and how good it must be. Here are some of his requests and what came of them.']) }),
     h('div', { class: 'sc-rise' }, [chips, line]),
     list,
     h('div', { class: 'sc-card sc-learned sc-rise' }, [
@@ -119,7 +119,7 @@ function prompts() {
       h('ul', {}, LEARNED.map(x => h('li', { text: t(x) }))),
       h('p', { class: 'sc-note', text: t(['整理自 Jay 實際的做法，不是他的原話。', 'Drawn from how Jay works, not his exact words.']) })
     ]),
-    h('p', { class: 'sc-note sc-rise', text: t(['引用的都是 Jay 傳給 Claude 的原話，只修了拼字；[ ] 裡是補上的說明。', 'Quotes are Jay’s own messages to Claude with only spelling fixed; [brackets] are added for clarity.']) })
+    h('p', { class: 'sc-note sc-rise', text: t(['每個要求都整理自 Jay 傳給 Claude 的訊息，意思不變。', 'Each request is summarised from Jay’s messages to Claude, with the meaning kept.']) })
   ]);
 }
 
