@@ -8,12 +8,16 @@ import { APPS } from '../lib/apps.mjs';
 import { NODES } from '../lib/tree.mjs';
 import { hasDemo, openDemo } from './demo.mjs';
 
-const shot = f => `./shots/${f}.webp`;
+// An app's screens in the reader's language: a set taken with the app in
+// Chinese (`zh: true`, files N.zh.webp) on the Chinese page, English otherwise.
+let zhSet = false;
+const shot = f => `./shots/${f}${zhSet && !en && !f.startsWith('then-') ? '.zh' : ''}.webp`;
 
 // The screens the way an app store shows them: each on the app's own
 // colour under a one-line headline, a row you swipe (the next one peeks in),
 // light and dark mixed as the app looks either way.
 function ads(app) {
+  zhSet = !!app.zh;
   const [hi, mid, lo] = BRANDS[app.brand].paint;
   const row = h('div', { class: 'sc-ads', tabindex: '0', 'aria-label': t(['截圖', 'Screens']) });
   app.shots.forEach(([f, c], i) =>
