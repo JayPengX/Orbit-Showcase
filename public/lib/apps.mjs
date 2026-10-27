@@ -4,7 +4,8 @@
 // `now`, the light one the day-one picture is compared with, what it is in
 // one line, the question it answers, its tree branch, and how it looked on its
 // first day where that first version still runs. `brand` is the kit's BRANDS
-// id, `repo` matches scripts/stats.mjs.
+// id, `repo` matches scripts/stats.mjs. In the family's order (Orbit-Core
+// kit/brand.mjs APP_ORDER): the everyday apps first, Securities last.
 export const APPS = [
   {
     id: 'sports', brand: 'match', repo: 'Orbit-Sports', zh: true,
@@ -59,6 +60,18 @@ export const APPS = [
     then: ['then-class', ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use']]
   },
   {
+    id: 'money', brand: 'money', repo: 'Orbit-Money', zh: true,
+    q: ['這個月的錢花到哪裡去了？', 'Where did this month’s money go?'],
+    shots: [
+      ['money/1', ['一整個月的收支', 'Your month on a calendar']],
+      ['money/2', ['幾秒就記一筆', 'Log spending in seconds']],
+      ['money/3', ['所有帳戶一起看', 'Every account together']],
+      ['money/4', ['錢花去哪裡', 'Where the money goes']],
+      ['money/5', ['分類統計', 'Spending by category']],
+      ['money/6', ['發票整理好', 'Invoices, sorted']]
+    ]
+  },
+  {
     id: 'words', brand: 'vocab', repo: 'Orbit-Words', zh: true,
     q: ['今天該背哪些字，才記得住？', 'Which words today, so they stick?'],
     shots: [
@@ -111,17 +124,5 @@ export const APPS = [
     ],
     now: 'securities/2',
     then: ['then-securities', ['第一天叫 Stock Study：開一個模擬帳戶', 'Day one was Stock Study: open a practice account']]
-  },
-  {
-    id: 'money', brand: 'money', repo: 'Orbit-Money', zh: true,
-    q: ['這個月的錢花到哪裡去了？', 'Where did this month’s money go?'],
-    shots: [
-      ['money/1', ['一整個月的收支', 'Your month on a calendar']],
-      ['money/2', ['幾秒就記一筆', 'Log spending in seconds']],
-      ['money/3', ['所有帳戶一起看', 'Every account together']],
-      ['money/4', ['錢花去哪裡', 'Where the money goes']],
-      ['money/5', ['分類統計', 'Spending by category']],
-      ['money/6', ['發票整理好', 'Invoices, sorted']]
-    ]
   }
 ];
