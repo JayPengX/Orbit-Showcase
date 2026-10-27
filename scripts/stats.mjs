@@ -11,7 +11,7 @@ import { join, resolve } from 'node:path';
 
 // The family, in the order the showcase lists it; `app` is the brand id.
 export const REPOS = [
-  { repo: 'Shared-Proxy', app: null },
+  { repo: 'Orbit-Core', app: null },
   { repo: 'Orbit-Sports', app: 'match' },
   { repo: 'Orbit-Transit', app: 'transit' },
   { repo: 'Orbit-Weather', app: 'weather' },

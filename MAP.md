@@ -24,7 +24,7 @@ no betting, open to all) that orbit-site serves at https://jaypengx.com/. It lin
 showcase and GitHub.
 
 The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share. The look is the kit's
-(`Shared-Proxy/kit`), with the showcase's own `public/showcase.css`.
+(`Orbit-Core/kit`), with the showcase's own `public/showcase.css`.
 
 ## Keeping it true
 
@@ -44,5 +44,5 @@ npm test
 TZ=Asia/Taipei node scripts/stats.mjs <folder with the family repos> > public/data/stats.json
 ```
 
-To preview, serve a folder that holds `Orbit-Showcase -> public` and `Shared-Proxy` side by side,
+To preview, serve a folder that holds `Orbit-Showcase -> public` and `Orbit-Core` side by side,
 then open `/Orbit-Showcase/`.

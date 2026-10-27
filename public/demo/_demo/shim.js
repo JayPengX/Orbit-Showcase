@@ -183,7 +183,7 @@
     const method = String(init.method || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
     if (url.origin === location.origin) {
       if (/\/version\.json$/.test(url.pathname)) {
-        const kit = /\/Shared-Proxy\/kit\//.test(url.pathname);
+        const kit = /\/Orbit-Core\/kit\//.test(url.pathname);
         const v = kit ? 'local' : document.querySelector('meta[name="build-version"]')?.content || 'dev';
         return new Response(JSON.stringify({ version: v }), { headers: { 'content-type': 'application/json' } });
       }

@@ -11,8 +11,8 @@ import { pathToFileURL } from 'node:url';
 
 const version = process.argv[2];
 if (!version) throw new Error('usage: node scripts/stamp-version.mjs <version> [site folder]');
-const kitDir = [new URL('../.kit/', import.meta.url).pathname, new URL('../../Shared-Proxy/kit/', import.meta.url).pathname].find(d => existsSync(`${d}stamp-app.mjs`));
-if (!kitDir) throw new Error('the kit (.kit or ../Shared-Proxy/kit) is missing');
+const kitDir = [new URL('../.kit/', import.meta.url).pathname, new URL('../../Orbit-Core/kit/', import.meta.url).pathname].find(d => existsSync(`${d}stamp-app.mjs`));
+if (!kitDir) throw new Error('the kit (.kit or ../Orbit-Core/kit) is missing');
 const { stampApp } = await import(pathToFileURL(`${kitDir}stamp-app.mjs`).href);
 // The demos (demo/) are frozen copies of the apps with their own kit: kept
 // out of the stamp, so they stay byte for byte what was recorded.

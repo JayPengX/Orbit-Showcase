@@ -18,7 +18,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
   p: ['每個 App 各寫一份按鈕、視窗、日期選擇，改一個地方要改九次，而且長得都不一樣。', 'Each app had its own buttons, sheets and date pickers: nine copies to fix, and none alike.'],
   i: ['兩個以上 App 會用到的東西都放進同一個「零件盒」，每個 App 打開時直接從那裡拿，不複製。', 'Anything two apps use goes in one kit; every app loads it from there, never copies it.'],
   r: ['改一次，九個 App 同時變好，而且看起來是同一家。', 'Fix it once and nine apps improve together, looking like one family.'],
-  tech: ['Shared-Proxy/kit/，放在 GitHub Pages 上；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Shared-Proxy/kit/ on GitHub Pages; each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
+  tech: ['Orbit-Core/kit/，放在 GitHub Pages 上；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Orbit-Core/kit/ on GitHub Pages; each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
   kids: [
     n('kit-look', 'spark', ['外觀設計系統', 'One design system'], ['像 iPhone 原生 App', 'Looks native on an iPhone'], {
       p: ['網頁看起來就是網頁，不像 App。', 'Web pages look like web pages.'],
@@ -73,7 +73,7 @@ const pass = n('pass', 'key', ['一張通行證', 'One pass'], ['Orbit Pass：�
   p: ['九個 App 要九組帳號密碼，資料也分散。', 'Nine apps would mean nine logins and scattered data.'],
   i: ['一組 10 個字的通行碼，由 Jay 發給朋友；登入任何一個 App，其他的也都登入了，資料存在雲端。', 'One 10-character pass that Jay hands out; sign in to one app and the rest follow, data kept in the cloud.'],
   r: ['換手機也什麼都不會少。', 'A new phone loses nothing.'],
-  tech: ['Shared-Proxy eco.js（/eco）；D1 資料庫 orbit-store。', 'Shared-Proxy eco.js (/eco); the D1 database orbit-store.'],
+  tech: ['Orbit-Core eco.js（/eco）；D1 資料庫 orbit-store。', 'Orbit-Core eco.js (/eco); the D1 database orbit-store.'],
   kids: [
     n('pass-code', 'lock', ['通行碼不會外洩', 'The code never leaks'], ['伺服器只存指紋', 'The server keeps only a fingerprint'], {
       p: ['密碼存在伺服器上，被看到就完了。', 'A stored password is a leak waiting to happen.'],
@@ -301,7 +301,7 @@ const ship = n('ship', 'send', ['改好之後怎麼到你手機', 'From a change
       links: ['fast-hash']
     }),
     n('ship-workers', 'cloud', ['伺服器自動部署', 'The server deploys itself'], ['Cloudflare Workers', 'Cloudflare Workers'], {
-      tech: ['Shared-Proxy deploy.yml 部署代理和 AI 中繼站；deploy-guard.yml 部署成本警衛；pages.yml 部署共用零件和家族首頁。金鑰只放在 GitHub 或 Cloudflare 的秘密設定裡，從不放進程式碼。', 'Shared-Proxy deploy.yml ships the proxy and the AI relay; deploy-guard.yml the guard; pages.yml the kit and the family page. Secrets live only in GitHub or Cloudflare secrets, never in code.']
+      tech: ['Orbit-Core deploy.yml 部署代理和 AI 中繼站；deploy-guard.yml 部署成本警衛；pages.yml 部署共用零件和家族首頁。金鑰只放在 GitHub 或 Cloudflare 的秘密設定裡，從不放進程式碼。', 'Orbit-Core deploy.yml ships the proxy and the AI relay; deploy-guard.yml the guard; pages.yml the kit and the family page. Secrets live only in GitHub or Cloudflare secrets, never in code.']
     }),
     n('ship-order', 'list', ['先零件，再 App', 'The kit first, then the apps'], ['順序錯了會壞', 'The wrong order breaks things'], {
       tech: ['共用零件的改動先推，等它上線，再推用到新零件的 App；App 用新零件一定要有後備（kit.x?.()）。', 'Kit changes go first and must be live before apps that use them; an app always calls a new kit export with a fallback (kit.x?.()).'],
@@ -315,7 +315,7 @@ const ship = n('ship', 'send', ['改好之後怎麼到你手機', 'From a change
       p: ['Claude 看不到 Jay 的 iPhone。', 'Claude can’t see Jay’s iPhone.'],
       i: ['一個工具在雲端用 Safari 的引擎打開任何 App、用真實資料、iPhone 的大小截圖，並自動找出換行、被切掉、會橫向捲動的地方；品質關卡在 320 和 390 寬、深淺色下點遍每個按鈕。', 'A tool opens any app with real data at iPhone size in Safari’s engine, screenshots it and flags wraps, cut text and sideways scrolling; the quality gate taps every button at 320 and 390 px, light and dark.'],
       r: ['2026-10-20 所有 App 跑完整關卡：50 次、0 個問題。', '2026-10-20: every app passed the full gate, 50 runs, 0 faults.'],
-      tech: ['Shared-Proxy tools/preview.mjs（--live、--webkit、--width、--dark）、tools/gate.mjs。', 'Shared-Proxy tools/preview.mjs (--live, --webkit, --width, --dark), tools/gate.mjs.'],
+      tech: ['Orbit-Core tools/preview.mjs（--live、--webkit、--width、--dark）、tools/gate.mjs。', 'Orbit-Core tools/preview.mjs (--live, --webkit, --width, --dark), tools/gate.mjs.'],
       links: ['team-loop']
     }),
     n('ship-update', 'live', ['手機自己換新版', 'Phones update themselves'], ['只重新載入一次', 'One reload'], {

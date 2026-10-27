@@ -418,7 +418,7 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
       p: ['一般 AI 回答法律問題會亂編條文。', 'A general AI makes up articles.'],
       i: ['先在 App 自己的資料裡找出最多 14 條相關條文，加上類似判決、釋字、行政規則、最新公告；AI 只能用這些回答，每一點的引用都被檢查過，還要判斷誰可能有理、罰則和下一步。', 'First find up to 14 articles in the app’s own data, plus similar rulings, 釋字, agency rules and notices; the AI may answer only from these, every cite is checked, and it must judge who is likely right, penalties and next steps.'],
       r: ['每一點都能點開原文。', 'Every point opens its source.'],
-      tech: ['Shared-Proxy law-chat.js（計畫用 flash-lite、回答用 Flash）、law-ground.js、law-more.js；每人每天 30 次；只有點了才問。', 'Shared-Proxy law-chat.js (plan on flash-lite, answer on Flash), law-ground.js, law-more.js; 30 a day a Pass; only on a tap.'],
+      tech: ['Orbit-Core law-chat.js（計畫用 flash-lite、回答用 Flash）、law-ground.js、law-more.js；每人每天 30 次；只有點了才問。', 'Orbit-Core law-chat.js (plan on flash-lite, answer on Flash), law-ground.js, law-more.js; 30 a day a Pass; only on a tap.'],
       links: ['cloud-relay', 'cheap-caps']
     }),
     n('law-live', 'tv', ['立法院直播', 'The legislature live'], ['真的在播才說直播中', 'Live only when it really is'], {
