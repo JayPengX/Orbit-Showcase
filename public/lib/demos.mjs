@@ -7,10 +7,23 @@ export const DEMOS = {
   weather: { repo: 'Orbit-Weather' },
   money: { repo: 'Orbit-Money' },
   words: { repo: 'Orbit-Words' },
-  sports: { repo: 'Orbit-Sports', real: true }
+  sports: { repo: 'Orbit-Sports', real: true },
+  securities: { repo: 'Orbit-Securities', real: true }
 };
 
 export const TOURS = {
+  securities: [
+    { tap: '.q-stock', say: ['這幾檔是今天台股漲跌最多的，價格是錄下那一刻的真實行情。點第一檔。', 'Today’s biggest Taiwan movers, at real prices from the moment this was recorded. Tap the first.'] },
+    { tap: '[data-action="chart-style"][data-v="candle"]', say: ['切成 K 線圖，看每天的開盤、最高、最低和收盤。', 'Switch to candles: each day’s open, high, low and close.'] },
+    { tap: '.q-btn.trade.buy', say: ['按「買進」。用的是 App 裡的練習資金，不是真錢。', 'Press Buy. It uses the app’s practice money, not real money.'] },
+    { tap: '[data-action="qty"][data-qty="100"]', say: ['台股可以買零股，選 100 股。', 'Taiwan shares can be bought in odd lots: pick 100 shares.'] },
+    { tap: '[data-action="otype"][data-otype="limit"]', say: ['零股跟真的一樣只能掛限價：點「限價」，價格會先幫你填好。', 'Odd lots take limit orders only, as on a real exchange: tap Limit, and the price is filled in for you.'] },
+    { tap: '[data-action="place"]', say: ['按「送出買單」。手續費和稅都已經算進總額。', 'Press Send. Fees and tax are already in the total.'] },
+    { tap: '.q-ask-actions .q-btn.primary', say: ['再確認一次就送出。規則跟真的券商一樣：休市時，委託會等開盤再成交。', 'Confirm, and it goes in. The rules are a real broker’s: when the market is closed, the order waits for the open.'] },
+    { tap: '.q-close', say: ['買單送出了。按 × 關掉這一檔。', 'The order is in. Close this stock with the ×.'] },
+    { tap: '.q-tab[data-tab="portfolio"]', say: ['「資產」分頁：持股、現金和整體的損益；剛才的買單先圈存了錢，等成交。', 'The Portfolio tab: holdings, cash and overall gain or loss; the order’s money is held until it fills.'] },
+    { tap: '.q-tab[data-tab="history"]', say: ['「紀錄」分頁：錢的進出和每一張委託，剛才那張在「委託」裡。', 'The History tab: money in and out, and every order; the one you just placed is under Orders.'] }
+  ],
   sports: [
     { tap: '.sport-card', say: ['先選你看的運動，例如足球。', 'First pick a sport you watch, say football.'] },
     { tap: '.sp-done', say: ['按「完成」。首頁馬上變成你的觀賽計畫。', 'Press Done: home turns into your watching plan.'] },
