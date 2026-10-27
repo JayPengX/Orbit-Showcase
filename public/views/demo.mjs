@@ -30,6 +30,7 @@ export function openDemo(app, title) {
   let accent = '';
   let fade = 0;
 
+  const body = h('div', { class: 'sc-player-body' });
   const stage = h('div', { class: 'sc-player-stage' });
   const screen = h('div', { class: 'sc-player-screen' });
   if (full) stage.append(screen);
@@ -79,25 +80,34 @@ export function openDemo(app, title) {
   const freeCard = h('div', { class: 'sc-player-card' }, [h('p', { class: 'sc-player-say', text: t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']) })]);
   const box = h('div', { class: `sc-player${full ? ' full' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': t(['試玩', 'Try it']) }, [
     head,
-    h('div', { class: 'sc-player-body' }, full ? [stage] : [stage, tour.length ? card : freeCard])
+    (body.append(...(full ? [stage] : [stage, tour.length ? card : freeCard])), body)
   ]);
   if (full) stage.append(coach);
 
-  // A computer: the app at a phone's size, scaled to the room there is.
+  // A computer: the app at a phone's width (390), scaled up to fill the
+  // window's height, as big as a real phone or bigger; on a short window the
+  // phone gets shorter (down to an iPhone SE's 667) before its text gets
+  // smaller. The phone and the tour card sit side by side, centred together.
   // A phone: the app at the screen's own size.
+  const SHORT = 667;
   function fit() {
     if (!frame) return;
-    const room = stage.getBoundingClientRect();
     if (full) {
+      const room = stage.getBoundingClientRect();
       Object.assign(screen.style, { width: `${room.width}px`, height: `${room.height}px` });
       Object.assign(frame.style, { width: `${room.width}px`, height: `${room.height}px`, transform: 'none' });
       return;
     }
-    // less the phone's 6 px rim on each side
-    const k = Math.min((room.width - 12) / W, (room.height - 12) / H, 1.15);
+    const cs = getComputedStyle(body);
+    const px = k => parseFloat(cs[k]) || 0;
+    // (less the phone's 6 px rim on each side, and the card and the gap beside it)
+    const tall = body.clientHeight - px('paddingTop') - px('paddingBottom') - 12;
+    const across = body.clientWidth - px('paddingLeft') - px('paddingRight') - (body.children[1]?.offsetWidth || 0) - px('columnGap') - 12;
+    const k = Math.min(across / W, 1.3, Math.max(tall / H, Math.min(1, tall / SHORT)));
+    const high = Math.min(H, Math.max(SHORT, tall / k));
     screen.style.width = `${W * k}px`;
-    screen.style.height = `${H * k}px`;
-    frame.style.transform = `scale(${k})`;
+    screen.style.height = `${high * k}px`;
+    Object.assign(frame.style, { width: `${W}px`, height: `${high}px`, transform: `scale(${k})` });
   }
 
   function load() {
@@ -251,7 +261,7 @@ export function openDemo(app, title) {
   document.documentElement.classList.add('sc-playing');
   requestAnimationFrame(() => box.classList.add('in'));
   const sized = new ResizeObserver(fit);
-  sized.observe(stage);
+  sized.observe(full ? stage : body);
   addEventListener('keydown', key);
   history.pushState({ scDemo: true }, '', location.href);
   addEventListener('popstate', popped);
