@@ -24,5 +24,6 @@ export const DEMOS = {
   sports: { app: 'sports', repo: 'Orbit-Sports', clock: 'now', geo: [25.034, 121.565], tour: steps('sports'), explore: [], settle: 9000,
     built: { 'nba-elta.json': 'https://jaypengx.github.io/Orbit-Sports/nba-elta.json' },
     // No betting anywhere in the showcase (Jay): the win chance cards come from betting prices, so they stay hidden.
-    css: '.q-card:has(.wp){display:none!important}' }
+    css: '.q-card:has(.wp){display:none!important}' },
+  securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-symbol="^TWII"]' }], settle: 9000 }
 };
