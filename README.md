@@ -16,8 +16,8 @@
 The Orbit family of apps, shown the way a page does better than a PDF: the structure, the numbers, and the apps themselves running. Open to everyone, on phones and computers, with no sign-in.
 
 <p align="center">
-  <img src="docs/screenshots/apps-desktop.webp" width="620" alt="An app running inside the showcase, on a computer">
-  <img src="docs/screenshots/numbers-phone.webp" width="200" alt="The numbers, on a phone">
+  <img src="docs/screenshots/apps-desktop.webp" width="71%" alt="An app running inside the showcase, on a computer">
+  <img src="docs/screenshots/numbers-phone.webp" width="19%" alt="The numbers, on a phone">
 </p>
 
 ## Features
