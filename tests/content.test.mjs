@@ -113,3 +113,15 @@ test('nothing about betting anywhere in the showcase', () => {
     assert.doesNotMatch(text, BANNED, f);
   }
 });
+
+test('every demo is a frozen copy behind the sandbox, with a tour that says both languages', async () => {
+  const { DEMOS, TOURS } = await import('../public/lib/demos.mjs');
+  for (const [id, d] of Object.entries(DEMOS)) {
+    const html = readFileSync(new URL(`../public/demo/${d.repo}/index.html`, import.meta.url), 'utf8');
+    assert.ok(html.indexOf(`../_demo/${id}.js`) > 0 && html.indexOf('../_demo/shim.js') > html.indexOf(`../_demo/${id}.js`), `${id}: the sandbox comes first`);
+    assert.ok(html.indexOf('../_demo/shim.js') < html.search(/<script(?![^>]*_demo)/), `${id}: before any of the app's scripts`);
+    assert.ok(existsSync(new URL(`../public/demo/_demo/${id}.js`, import.meta.url)), `${id}: its recorded answers`);
+    assert.ok(!existsSync(new URL(`../public/demo/${d.repo}/sw.js`, import.meta.url)), `${id}: no service worker of its own`);
+    for (const s of TOURS[id] || []) assert.ok(s.say?.length === 2 && s.say.every(Boolean), `${id}: ${s.tap}`);
+  }
+});

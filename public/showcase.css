@@ -2614,3 +2614,168 @@
     grid-row: auto;
   }
 }
+
+/* The demo player: the real app on a phone, its tour beside it. */
+html.sc-playing,
+html.sc-playing body {
+  overflow: hidden;
+}
+.sc-player {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--q-page);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.sc-player.in {
+  opacity: 1;
+}
+.sc-player-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
+}
+.sc-player-head > img {
+  flex: none;
+  border-radius: 9px;
+}
+.sc-player-head > div {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.sc-player-head strong {
+  font: 700 16px/1.25 var(--q-font);
+}
+.sc-player-head small {
+  color: var(--q-label-2);
+  font: 400 12px/1.35 var(--q-font);
+}
+.sc-player-head .sc-btn {
+  flex: none;
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+@media (max-width: 399px) {
+  .sc-player-again {
+    display: none;
+  }
+  .sc-player-head .sc-btn {
+    width: 38px;
+    padding: 0;
+  }
+}
+.sc-player-head .sc-btn.sc-icon {
+  width: 38px;
+  padding: 0;
+}
+.sc-player-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  padding: 0 12px calc(env(safe-area-inset-bottom) + 12px);
+  gap: 10px;
+}
+.sc-player-stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: hidden;
+}
+.sc-player-phone {
+  padding: 6px;
+  border-radius: 34px;
+  background: #0b0b0f;
+  box-shadow: 0 0 0 1.5px #2a2a30, 0 24px 50px -18px rgba(0, 0, 0, 0.45);
+}
+.sc-player-screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--q-page);
+}
+.sc-player-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 390px;
+  height: 844px;
+  border: 0;
+  transform-origin: 0 0;
+}
+.sc-player-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--sc-card);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+.sc-player-n {
+  color: var(--sc-ac);
+  font: 700 13px/1.3 var(--q-font);
+}
+.sc-player-say {
+  margin: 0;
+  font: 500 16px/1.5 var(--q-font);
+}
+.sc-player-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.sc-player-btns .sc-icon .sc-ico {
+  transform: rotate(180deg);
+}
+@media (min-width: 900px) {
+  .sc-player-body {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: center;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 10px 32px 32px;
+    gap: 40px;
+  }
+  .sc-player-stage {
+    height: 100%;
+  }
+  .sc-player-card {
+    padding: 22px;
+  }
+  .sc-player-say {
+    font-size: 18px;
+  }
+}
+
+/* The phone frame's way into the demo. */
+.sc-try {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sc-ac);
+  color: #fff;
+  font: 700 16px/1 var(--q-font);
+  box-shadow: 0 10px 30px -8px color-mix(in srgb, var(--sc-ac) 70%, transparent);
+  transform: translateX(-50%);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sc-try:active {
+  transform: translateX(-50%) scale(0.96);
+}

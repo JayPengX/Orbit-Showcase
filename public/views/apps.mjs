@@ -5,6 +5,7 @@
 import { h, t, ico, appImg, num, fmtDayYear, daysBetween, twToday, link, reveal, reduced, zoom, en } from '../shell.mjs';
 import { APPS } from '../lib/apps.mjs';
 import { NODES } from '../lib/tree.mjs';
+import { hasDemo, openDemo } from './demo.mjs';
 
 const shot = f => `./shots/${f}.webp`;
 
@@ -47,7 +48,13 @@ function phone(app) {
   show(0);
   const arrow = (dir, icon, label) => h('button', { class: `sc-arrow sc-arrow-${dir}`, type: 'button', 'aria-label': t(label), onclick: () => to(at + (dir === 'l' ? -1 : 1)) }, [ico(icon)]);
   return h('div', { class: 'sc-phonebox' }, [
-    h('div', { class: 'sc-phone' }, [h('div', { class: 'sc-notch' }), track, app.shots.length > 1 ? arrow('l', 'chevron', ['上一張', 'Previous']) : null, app.shots.length > 1 ? arrow('r', 'chevron', ['下一張', 'Next']) : null]),
+    h('div', { class: 'sc-phone' }, [
+      h('div', { class: 'sc-notch' }),
+      track,
+      app.shots.length > 1 ? arrow('l', 'chevron', ['上一張', 'Previous']) : null,
+      app.shots.length > 1 ? arrow('r', 'chevron', ['下一張', 'Next']) : null,
+      hasDemo(app.id) ? h('button', { class: 'sc-try', type: 'button', onclick: () => openDemo(app, t(NODES.get(app.id).node.title)) }, [ico('play'), t(['試玩真的 App', 'Try the real app'])]) : null
+    ]),
     app.shots.length > 1 ? dots : null,
     cap
   ]);
