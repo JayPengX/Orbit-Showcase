@@ -236,7 +236,7 @@ const fast = n('fast', 'flame', ['為什麼打開很快', 'Why it opens fast'], 
       r: ['少一次來回，在慢網路上差很多。', 'One round trip fewer, which matters on a slow link.'],
       tech: ['orbit-token READ_GRACE_MS；kit s.readToken。', 'orbit-token READ_GRACE_MS; the kit’s s.readToken.']
     }),
-    n('fast-lift', 'spark', ['載入畫面準備好才拿掉', 'The loading screen lifts once, onto a finished screen'], ['之後什麼都不會跳出來', 'Nothing pops in after'], {
+    n('fast-lift', 'spark', ['載入畫面準備好才拿掉', 'Loading lifts on a finished page'], ['之後什麼都不會跳出來', 'Nothing pops in after'], {
       p: ['畫面先出現一半，內容再一塊一塊跳進來，很廉價。', 'Half a screen that fills in piece by piece feels cheap.'],
       i: ['載入畫面等第一個畫面的內容和圖片都好了才拿掉（最多等 1.5 秒圖片），之後的更新都在原地淡入。', 'The loading screen lifts once the first screen and its pictures are ready (waiting up to 1.5 s for pictures); later updates fade in place.'],
       r: ['打開就是完整的畫面。', 'It opens onto a finished screen.'],

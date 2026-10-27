@@ -104,7 +104,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
           r: ['任何一節的數據和每一圈都還打得開。', 'Every session’s data and laps still open.'],
           tech: ['builders/f1kept.js（每小時 :06、:26、:46）；取消的賽段跳過。', 'builders/f1kept.js (:06, :26, :46); called-off sessions skipped.']
         }),
-        n('sports-direct', 'swap', ['被擋的來源改由手機讀', 'Blocked sources read from the phone'], ['中職賽程照樣讀得到', 'CPBL schedules still come through'], {
+        n('sports-direct', 'swap', ['被擋的來源改由手機讀', 'Phone reads blocked sources'], ['中職賽程照樣讀得到', 'CPBL schedules still come through'], {
           p: ['TheSportsDB 的免費額度對雲端伺服器（很多人共用的位址）一問就拒絕。', 'TheSportsDB’s free key refuses cloud servers, which share addresses with many others.'],
           i: ['改由每支手機自己去讀，結果記在手機上；ESPN 的另一個資料介面也一樣直接由手機讀。', 'Each phone reads it itself and keeps the result; ESPN’s other data API is read from the phone too.'],
           r: ['中華職棒的賽程不會因為雲端被擋而消失。', 'CPBL schedules don’t vanish when the cloud is refused.'],

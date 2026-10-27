@@ -76,7 +76,7 @@ test('how Jay asks and where it went wrong: real dates, a habit each, both langu
   for (const x of PROMPTS) {
     assert.match(x.date, /^2026-\d\d-\d\d$/);
     assert.ok(tags.has(x.tag), x.tag);
-    assert.ok(typeof x.said === 'string' && x.said.length > 20 && pair(x.gist) && pair(x.then), x.said);
+    assert.ok(pair(x.asked) && pair(x.gist) && pair(x.then) && !('said' in x), x.date);
     if (x.app) assert.ok(APPS.some(a => a.id === x.app), x.app);
   }
   for (const p of PATTERNS) assert.ok(PROMPTS.some(x => x.tag === p.id), `a message for ${p.id}`);
