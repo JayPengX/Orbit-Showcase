@@ -5,7 +5,7 @@
 // then a feel of how the work goes: the loop, a calendar of every day's
 // updates and the hours they happen (data/stats.json, counted from git),
 // three real days, and the complaints that became rules.
-import { h, t, ico, appImg, fmtDay, fmtDayYear, num, reveal, zoom, en } from '../shell.mjs';
+import { h, t, ico, appImg, fmtDay, fmtDayYear, num, reveal, zoom, fold, en } from '../shell.mjs';
 import { ORIGIN, TOOLS, DECISIONS, SETUP, PATTERNS, PROMPTS, LEARNED, SETBACKS, CHANGES, BIRTHS, LOOP, DAYS, RULES } from '../lib/history.mjs';
 import { APPS } from '../lib/apps.mjs';
 import { NODES } from '../lib/tree.mjs';
@@ -63,9 +63,8 @@ function decisions() {
       'ol',
       { class: 'sc-decisions' },
       DECISIONS.map(d =>
-        h('li', { class: 'sc-card sc-decision sc-rise' }, [
-          h('span', { class: 'sc-badge' }, [ico(d.icon)]),
-          h('div', {}, [h('p', { class: 'sc-over', text: fmtDayYear(d.date) }), h('h3', { text: t(d.title) }), h('p', { text: t(d.d) })])
+        h('li', { class: 'sc-rise' }, [
+          fold('sc-decision', [h('span', { class: 'sc-badge' }, [ico(d.icon)]), h('span', { class: 'sc-fold-t' }, [h('small', { class: 'sc-over', text: fmtDayYear(d.date) }), h('strong', { text: t(d.title) })])], [h('p', { text: t(d.d) })])
         ])
       )
     ),
@@ -94,7 +93,6 @@ function prompts() {
           h('span', { class: 'sc-ask-tag' }, [ico(by[x.tag].icon), t(by[x.tag].title)])
         ]),
         h('div', { class: 'sc-ask-said' }, [h('small', { text: t(['他的要求', 'What he asked']) }), h('p', { text: t(x.asked) })]),
-        h('p', { class: 'sc-ask-gist', text: t(x.gist) }),
         h('p', { class: 'sc-ask-then' }, [ico('chevron'), h('span', { text: t(x.then) })])
       ])
     )
@@ -147,16 +145,20 @@ function setbacks(stats) {
       'ol',
       { class: 'sc-setback-list' },
       SETBACKS.map(x =>
-        h('li', { class: 'sc-card sc-setback sc-rise' }, [
-          h('div', { class: 'sc-setback-head' }, [h('span', { class: 'sc-badge' }, [ico(x.icon)]), h('div', {}, [h('p', { class: 'sc-over', text: fmtDayYear(x.date) }), h('h3', { text: t(x.title) })])]),
-          h(
-            'div',
-            { class: 'sc-pir' },
+        h('li', { class: 'sc-rise' }, [
+          fold(
+            'sc-setback',
+            [h('span', { class: 'sc-badge' }, [ico(x.icon)]), h('span', { class: 'sc-fold-t' }, [h('small', { class: 'sc-over', text: fmtDayYear(x.date) }), h('strong', { text: t(x.title) }), h('span', { class: 'sc-fold-sub', text: t(x.wrong) })])],
             [
-              ['x', ['出了什麼錯', 'What went wrong'], x.wrong],
-              ['send', ['Jay 怎麼說', 'How Jay pushed back'], x.push],
-              ['check', ['後來', 'What came of it'], x.rule]
-            ].map(([icon, label, v]) => h('div', { class: 'sc-pir-row' }, [h('span', { class: 'sc-pir-k' }, [ico(icon), t(label)]), h('p', { text: t(v) })]))
+              h(
+                'div',
+                { class: 'sc-pir' },
+                [
+                  ['send', ['Jay 怎麼說', 'How Jay pushed back'], x.push],
+                  ['check', ['後來', 'What came of it'], x.rule]
+                ].map(([icon, label, v]) => h('div', { class: 'sc-pir-row' }, [h('span', { class: 'sc-pir-k' }, [ico(icon), t(label)]), h('p', { text: t(v) })]))
+              )
+            ]
           )
         ])
       )
@@ -209,7 +211,11 @@ function changes() {
           h('div', { class: 'sc-card sc-change-card' }, [
             h('p', { class: 'sc-over' }, [fmtDayYear(c.date), ...(c.apps || []).map(a => appImg(BRAND[a], 18, 'sc-inline-app'))]),
             h('h3', { text: t(c.title) }),
-            h('dl', { class: 'sc-pid' }, [h('dt', {}, [ico('target'), t(['問題', 'Problem'])]), h('dd', { text: t(c.p) }), h('dt', {}, [ico('spark'), t(['想法', 'Idea'])]), h('dd', { text: t(c.i) }), h('dt', {}, [ico('check'), t(['結果', 'Result'])]), h('dd', { text: t(c.r) })]),
+            h('p', { class: 'sc-change-r', text: t(c.r) }),
+            h('details', { class: 'sc-why' }, [
+              h('summary', {}, [t(['為什麼這樣做', 'Why']), ico('chevron')]),
+              h('dl', { class: 'sc-pid' }, [h('dt', {}, [ico('target'), t(['問題', 'Problem'])]), h('dd', { text: t(c.p) }), h('dt', {}, [ico('spark'), t(['想法', 'Idea'])]), h('dd', { text: t(c.i) })])
+            ]),
             c.ba ? h('figure', { class: 'sc-ba' }, [pic(c.ba, `${t(c.title)}：${t(['之前和之後', 'before and after'])}`), h('figcaption', { text: t(['之前 → 之後（點一下放大）', 'Before → after (tap to enlarge)']) })]) : null,
             c.node && NODES.has(c.node) ? h('a', { class: 'sc-more', href: `#how/${c.node}` }, [t(['在架構圖裡看', 'See it in the structure']), ico('chevron')]) : null
           ])
@@ -279,23 +285,62 @@ function howIWork(stats) {
       LOOP.map(([icon, title, line], k) => h('li', { style: `--d:${k * 120}ms` }, [h('span', { class: 'sc-badge' }, [ico(icon)]), h('strong', { text: t(title) }), h('small', { text: t(line) })]))
     ),
     stats?.days ? h('div', { class: 'sc-two' }, [heatmap(stats), hours(stats)]) : null,
-    h('h3', { class: 'sc-h3 sc-rise', text: t(['三個真實的日子', 'Three real days']) }),
-    h(
-      'div',
-      { class: 'sc-days' },
-      DAYS.map(d => h('div', { class: 'sc-card sc-day sc-rise' }, [h('span', { class: 'sc-badge' }, [ico(d.icon)]), h('p', { class: 'sc-over', text: fmtDayYear(d.date) }), h('h4', { text: t(d.title) }), h('p', { text: t(d.line) })]))
-    ),
-    h('h3', { class: 'sc-h3 sc-rise', text: t(['抱怨變成全家族的規矩', 'Complaints that became family rules']) }),
-    h('p', { class: 'sc-lede-s sc-rise', text: t(['Jay 每抱怨一次，就寫成一條九個 App 都要遵守、而且會被自動檢查的規矩。', 'Each time Jay complained, it became a rule all nine apps follow, checked automatically.']) }),
-    h(
-      'ul',
-      { class: 'sc-rules' },
-      RULES.map(([icon, text]) => h('li', { class: 'sc-rise' }, [ico(icon), h('span', { text: t(text) })]))
-    )
+    h('div', { class: 'sc-folds sc-rise' }, [
+      fold('', [h('span', { class: 'sc-badge' }, [ico('calendar')]), h('span', { class: 'sc-fold-t' }, [h('strong', { text: t(['三個真實的日子', 'Three real days']) })])], [
+        h('div', { class: 'sc-days' }, DAYS.map(d => h('div', { class: 'sc-day' }, [h('p', { class: 'sc-over', text: fmtDayYear(d.date) }), h('h4', { text: t(d.title) }), h('p', { text: t(d.line) })])))
+      ]),
+      fold('', [h('span', { class: 'sc-badge' }, [ico('flag')]), h('span', { class: 'sc-fold-t' }, [h('strong', { text: t(['抱怨變成全家族的規矩', 'Complaints that became family rules']) })])], [
+        h('p', { class: 'sc-lede-s', text: t(['Jay 每抱怨一次，就寫成一條九個 App 都要遵守、而且會被自動檢查的規矩。', 'Each time Jay complained, it became a rule all nine apps follow, checked automatically.']) }),
+        h('ul', { class: 'sc-rules' }, RULES.map(([icon, text]) => h('li', {}, [ico(icon), h('span', { text: t(text) })])))
+      ])
+    ])
   ]);
 }
 
-export function renderStory(panel, stats) {
-  panel.replaceChildren(origin(), tools(stats), decisions(), prompts(), setbacks(stats), births(stats), changes(), howIWork(stats));
+// The story in six chapters, one at a time: #story shows the six, and
+// #story/<chapter> one of them with the way on to the next.
+const CHAPTERS = [
+  { id: 'begin', icon: 'school', title: ['起點', 'Where it began'], line: ['一個課表 App，怎麼變成九個', 'How one timetable app became nine'], parts: s => [origin(), tools(s), births(s)] },
+  { id: 'calls', icon: 'target', title: ['Jay 的決定', 'Jay’s calls'], line: ['做什麼、做多好、什麼不做', 'What to build, how good, what to leave out'], parts: () => [decisions()] },
+  { id: 'asks', icon: 'send', title: ['怎麼提要求', 'How he asks'], line: ['他提的要求，和後來做出來的', 'His requests and what came of them'], parts: () => [prompts()] },
+  { id: 'bumps', icon: 'flag', title: ['不順的地方', 'The bumps'], line: ['做錯、重做，和學到的規矩', 'What went wrong, and the rules it left'], parts: s => [setbacks(s)] },
+  { id: 'changes', icon: 'history', title: ['大改變', 'The big changes'], line: ['真正改變方向的十幾個時刻', 'The moments that changed direction'], parts: () => [changes()] },
+  { id: 'days', icon: 'calendar', title: ['每天怎麼做', 'Day to day'], line: ['用、挑毛病、修好、上線', 'Use, pick at it, fix, ship'], parts: s => [howIWork(s)] }
+];
+
+function chapterCard(c, k) {
+  return h('a', { class: 'sc-card sc-chapter sc-rise', href: `#story/${c.id}`, style: `--d:${k * 70}ms` }, [
+    h('span', { class: 'sc-chapter-n', text: String(k + 1) }),
+    h('span', { class: 'sc-badge' }, [ico(c.icon)]),
+    h('span', { class: 'sc-fold-t' }, [h('strong', { text: t(c.title) }), h('small', { text: t(c.line) })]),
+    ico('chevron', 'sc-chapter-go')
+  ]);
+}
+
+export function renderStory(panel, stats, what = '') {
+  const at = CHAPTERS.findIndex(c => c.id === what);
+  if (at < 0) {
+    panel.replaceChildren(
+      h('div', { class: 'sc-chapters-intro' }, [
+        h('p', { class: 'sc-lede sc-rise', text: t(['Orbit 怎麼從一個課表 App 長成九個：六個短篇，一次讀一篇。', 'How Orbit grew from one timetable app into nine: six short chapters, one at a time.']) }),
+        h('div', { class: 'sc-chapters' }, CHAPTERS.map(chapterCard))
+      ])
+    );
+    return reveal(panel);
+  }
+  const c = CHAPTERS[at];
+  const next = CHAPTERS[at + 1];
+  const nav = h(
+    'nav',
+    { class: 'sc-chapnav', 'aria-label': t(['章節', 'Chapters']) },
+    CHAPTERS.map((x, k) => h('a', { href: `#story/${x.id}`, class: x === c ? 'on' : '', 'aria-current': x === c ? 'true' : null }, [h('span', { text: String(k + 1) }), t(x.title)]))
+  );
+  panel.replaceChildren(
+    nav,
+    h('div', { class: 'sc-chapter-body' }, c.parts(stats)),
+    next ? h('a', { class: 'sc-card sc-next', href: `#story/${next.id}` }, [h('small', { text: t(['下一章', 'Next']) }), h('strong', { text: t(next.title) }), ico('chevron')]) : h('a', { class: 'sc-card sc-next', href: '#story' }, [h('small', { text: t(['讀完了', 'The end']) }), h('strong', { text: t(['回到章節目錄', 'Back to the chapters']) }), ico('chevron')])
+  );
+  const on = nav.querySelector('.on');
+  if (on) requestAnimationFrame(() => (nav.scrollLeft = on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2));
   reveal(panel);
 }

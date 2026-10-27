@@ -94,3 +94,7 @@ export function zoom(src, alt = '') {
   document.body.append(box);
   box.querySelector('button').focus({ preventScroll: true });
 }
+
+// A card that shows its head and opens to the rest on a tap.
+export const fold = (cls, head, body) =>
+  h('details', { class: `sc-card sc-fold ${cls}`.trim() }, [h('summary', {}, [...head, h('span', { class: 'sc-fold-mark', 'aria-hidden': 'true' }, [ico('chevron')])]), h('div', { class: 'sc-fold-body' }, body)]);
