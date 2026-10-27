@@ -11,12 +11,12 @@ export const APPS = [
     id: 'sports', brand: 'match', repo: 'Orbit-Sports', zh: true,
     q: ['今晚有什麼比賽值得看？在哪一台？', 'Which games tonight are worth it, and on which channel?'],
     shots: [
-      ['sports/1', ['每場比賽，完整呈現', 'Every game, in full']],
-      ['sports/2', ['數據一目了然', 'Box scores and stats']],
-      ['sports/3', ['聯盟排行即時更新', 'League leaders, live']],
-      ['sports/4', ['各聯盟積分榜', 'Standings for every league']],
-      ['sports/5', ['先看你追的球隊', 'Your teams come first']],
-      ['sports/6', ['季後賽對戰圖', 'The whole playoff bracket']]
+      ['sports/1', ['F1 每一站完整結果', 'F1, race by race']],
+      ['sports/2', ['開賽前就有先發名單', 'Line-ups before tip-off']],
+      ['sports/3', ['誰比較有機會贏', 'Who is likely to win']],
+      ['sports/4', ['每場比賽完整數據', 'Every stat, every game']],
+      ['sports/5', ['台灣電視轉播一次看', 'What’s on TV in Taiwan']],
+      ['sports/6', ['F1 車手積分榜', 'The championship race']]
     ]
   },
   {
@@ -40,7 +40,7 @@ export const APPS = [
       ['weather/3', ['重要細節一次看', 'Every detail that matters']],
       ['weather/4', ['附近空氣品質', 'The air around you']],
       ['weather/5', ['一週預報', 'The week ahead']],
-      ['weather/6', ['今天的貼心提醒', 'Advice for your day']]
+      ['weather/6', ['明天的貼心建議', 'Advice for tomorrow']]
     ],
     now: 'weather/1',
     then: ['then-weather', ['第一天：一個簡單的預報頁（這張截圖的位置是伺服器所在地）', 'Day one: a simple forecast page (placed where the screenshot server is)']]
@@ -49,14 +49,14 @@ export const APPS = [
     id: 'class', brand: 'orbit', repo: 'Orbit-Class', zh: true,
     q: ['現在上什麼課？下一節去哪？', 'Which class is it now, and what’s next?'],
     shots: [
-      ['class/1', ['現在、下一節與倒數', 'Now, next, and how long']],
-      ['class/2', ['整週課表', 'Your whole week']],
-      ['class/3', ['每一節課點開就有', 'Every class, one tap']],
-      ['class/4', ['大考倒數', 'Count down to the big exam']],
+      ['class/1', ['匯入你的課表', 'Bring in your timetable']],
+      ['class/2', ['拍下課表，AI 幫你讀', 'Snap it, AI reads it']],
+      ['class/3', ['單雙週課表', 'Odd and even weeks']],
+      ['class/4', ['現在、下一節與剩餘時間', 'Now, next, and time left']],
       ['class/5', ['調課幾秒完成', 'Swap a class in seconds']],
-      ['class/6', ['上課實用小工具', 'Handy tools for school']]
+      ['class/6', ['大考倒數', 'Count down to the big exam']]
     ],
-    now: 'class/1',
+    now: 'class/3',
     then: ['then-class', ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use']]
   },
   {
@@ -64,18 +64,18 @@ export const APPS = [
     q: ['這個月的錢花到哪裡去了？', 'Where did this month’s money go?'],
     shots: [
       ['money/1', ['一整個月的收支', 'Your month on a calendar']],
-      ['money/2', ['幾秒就記一筆', 'Log spending in seconds']],
-      ['money/3', ['所有帳戶一起看', 'Every account together']],
-      ['money/4', ['錢花去哪裡', 'Where the money goes']],
-      ['money/5', ['分類統計', 'Spending by category']],
-      ['money/6', ['發票整理好', 'Invoices, sorted']]
+      ['money/2', ['發票自動對獎', 'Invoices checked for prizes']],
+      ['money/3', ['發票品項一清二楚', 'Every item on the receipt']],
+      ['money/4', ['統計與預算', 'Stats and budgets']],
+      ['money/5', ['悠遊卡自動加值', 'EasyCard tops itself up']],
+      ['money/6', ['幾秒就記一筆', 'Log spending in seconds']]
     ]
   },
   {
     id: 'words', brand: 'vocab', repo: 'Orbit-Words', zh: true,
     q: ['今天該背哪些字，才記得住？', 'Which words today, so they stick?'],
     shots: [
-      ['words/1', ['每天一小輪', 'A quick round a day']],
+      ['words/1', ['容易混淆的選項', 'Tricky choices that teach']],
       ['words/2', ['每個單字都有解說', 'Every word, explained']],
       ['words/3', ['在對的時間複習', 'Review at the right time']],
       ['words/4', ['看見自己進步', 'Watch yourself improve']],
@@ -89,25 +89,25 @@ export const APPS = [
     id: 'beats', brand: 'beats', repo: 'Orbit-Beats', zh: true,
     q: ['來點好聽、不會重複的音樂', 'Something good to hear that never repeats'],
     shots: [
-      ['beats/1', ['用你的節拍做出新歌', 'New songs from your beats']],
-      ['beats/2', ['選個心情就播放', 'Pick a mood and play']],
-      ['beats/3', ['調出你要的聲音', 'Shape every sound']],
-      ['beats/4', ['一起即興', 'Jam along']],
-      ['beats/5', ['自己創作', 'Make your own']],
-      ['beats/6', ['整天播不停', 'Keeps playing all day']]
+      ['beats/1', ['每首歌都能玩節奏遊戲', 'A rhythm game for any song']],
+      ['beats/2', ['各種心情的音樂', 'Music for any mood']],
+      ['beats/3', ['用打擊墊即興', 'Jam on the pads']],
+      ['beats/4', ['在樂器室做節拍', 'Make beats in the studio']],
+      ['beats/5', ['每天新的精選', 'Fresh picks every day']],
+      ['beats/6', ['用你的方式創作', 'Create your way']]
     ],
-    now: 'beats/1',
+    now: 'beats/4',
     then: ['then-beats', ['第一天叫 Passion Beats：用錄音切成的節拍做歌', 'Day one was Passion Beats: songs from a recording cut into beats']]
   },
   {
     id: 'law', brand: 'law', repo: 'Orbit-Law', zh: true,
     q: ['我遇到的事，法律怎麼說？', 'What does the law say about what happened to me?'],
     shots: [
-      ['law/1', ['台灣法律一次看懂', 'Taiwan’s law, made clear']],
+      ['law/1', ['用白話問法律', 'Ask the law in plain words']],
       ['law/2', ['每一條條文都能點', 'Every article, every link']],
       ['law/3', ['判決隨手查', 'Court rulings, searchable']],
       ['law/4', ['法案走到哪一步', 'Bills, stage by stage']],
-      ['law/5', ['所有法規一處找', 'Every law in one place']],
+      ['law/5', ['每個政黨怎麼投票', 'How every party voted']],
       ['law/6', ['重要大法官解釋', 'Landmark interpretations']]
     ]
   },
@@ -115,12 +115,12 @@ export const APPS = [
     id: 'securities', brand: 'stock', repo: 'Orbit-Securities', zh: true,
     q: ['在不花真錢的情況下，學會台灣的股市規則', 'Learn Taiwan’s market rules without spending real money'],
     shots: [
-      ['securities/1', ['真實報價，模擬交易', 'Real prices, play money']],
-      ['securities/2', ['個股資訊完整', 'Every stock, in depth']],
-      ['securities/3', ['市場動態一目了然', 'Markets at a glance']],
+      ['securities/1', ['真實台股規則、手續費與稅', 'Real TWSE rules, fees and tax']],
+      ['securities/2', ['真實報價與 K 線', 'Real prices, real charts']],
+      ['securities/3', ['你的績效對上大盤', 'You against the market']],
       ['securities/4', ['投資組合總覽', 'Your whole portfolio']],
-      ['securities/5', ['全球市場', 'Markets worldwide']],
-      ['securities/6', ['換匯也能練習', 'Exchange currencies']]
+      ['securities/5', ['台股、美股、基金一次看', 'Taiwan, US, funds and more']],
+      ['securities/6', ['用銀行匯率換匯', 'Exchange at bank rates']]
     ],
     now: 'securities/2',
     then: ['then-securities', ['第一天叫 Stock Study：開一個模擬帳戶', 'Day one was Stock Study: open a practice account']]
