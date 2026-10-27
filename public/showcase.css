@@ -531,7 +531,8 @@
   .sc-arrow {
     display: grid;
   }
-  .sc-adrow.fits .sc-arrow {
+  .sc-adrow.at-start .sc-arrow-l,
+  .sc-adrow.at-end .sc-arrow-r {
     display: none;
   }
 }
