@@ -1,5 +1,5 @@
 // The made-up timetable the Class demo opens on: a senior-high week with
-// made-up teachers and rooms, in the shape Class keeps (its README's
+// made-up teachers and rooms, in the shape Class keeps (its MAP.md's
 // classFocusData). Never anyone's real timetable.
 const T = (subject, teacher, room) => ({ subject, teacher, room });
 const SUBJECTS = {
