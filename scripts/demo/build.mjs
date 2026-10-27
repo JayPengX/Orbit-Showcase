@@ -25,6 +25,9 @@ const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'im
 // The kit, once, from the same repos the recordings were made with.
 rmSync(join(site, 'Shared-Proxy'), { recursive: true, force: true });
 cpSync(join(repos, 'Shared-Proxy/kit'), join(site, 'Shared-Proxy/kit'), { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|stamp-app\.mjs$|\.md$/.test(p) });
+// The demos run as recorded, on workers.dev and the repos' own paths, wherever the showcase is served.
+const domain = join(site, 'Shared-Proxy/kit/domain.mjs');
+writeFileSync(domain, readFileSync(domain, 'utf8').replace(/^export const DOMAIN = '[^']*';/m, "export const DOMAIN = '';"));
 mkdirSync(join(site, '_x'), { recursive: true });
 // No betting anywhere in the showcase (Jay): Money's help names the betting app beside Securities.
 const help = join(site, 'Shared-Proxy/kit/help.mjs');
