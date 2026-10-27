@@ -1,0 +1,1369 @@
+/* Orbit Weather on the Orbit kit (orbit.css: tokens, tab bar, sheets,
+   lists, the premium layer). Organised by screen: the frame, 今天 (the sky,
+   the next hours, the advice), 預報 (the indicators, the days), 地點, then
+   the sheets, the graphs and the pictures. Light and dark come from the
+   kit's tokens; the sky card stays a sky in both. */
+
+/* ==== The frame ==== */
+body {
+  margin: 0;
+  background: var(--q-page);
+  color: var(--q-label);
+}
+/* A page: 16 px in. */
+.wx-panel {
+  --q-margin: 16px;
+  padding: 0 var(--q-margin) calc(var(--q-nav, 0px) + 32px);
+}
+.wx-panel > .q-section,
+.wx-panel > .q-rowcard + .q-section {
+  margin-top: 28px;
+}
+.wx-panel .q-section-head {
+  margin-bottom: 10px;
+}
+.wx-panel .q-section-head h2 {
+  font: 700 20px/26px var(--q-font);
+}
+.wx-panel .q-section-head button {
+  font-size: 17px;
+}
+.wx-foot {
+  margin: 8px 16px 0;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+
+/* A tab's head: the place (a button: it opens 地點). */
+.wx-head h1 {
+  min-width: 0;
+}
+.wx-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.wx-title span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wx-title .wx-g {
+  margin-top: 4px;
+  color: var(--q-label-3);
+  stroke-width: 2.4;
+}
+.wx-title:active {
+  opacity: 0.6;
+}
+
+/* ==== 今天: the sky ==== */
+.wx-hero {
+  --sky-glow: rgba(255, 255, 255, 0.26);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 16px 18px 14px;
+  border-radius: 24px;
+  color: #fff;
+  background: radial-gradient(110% 90% at 100% 0%, var(--sky-glow), transparent 62%), var(--sky);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 22px 40px -24px rgba(20, 50, 120, 0.7);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s ease;
+}
+.wx-hero[data-day] {
+  cursor: pointer;
+}
+.wx-hero[data-day]:active {
+  transform: scale(0.985);
+}
+.wx-hero:focus-visible {
+  outline: 2px solid var(--q-accent);
+  outline-offset: 3px;
+}
+.sky-clear.sky-day {
+  --sky: linear-gradient(165deg, #174fb8 0%, #2c78e0 55%, #5aa2ee 100%);
+  --sky-glow: rgba(255, 226, 140, 0.5);
+}
+.sky-part.sky-day {
+  --sky: linear-gradient(165deg, #264e94 0%, #4676ba 55%, #7898c6 100%);
+}
+.sky-cloud.sky-day {
+  --sky: linear-gradient(165deg, #414d64 0%, #5e6b84 58%, #8090a8 100%);
+}
+.sky-rain {
+  --sky: linear-gradient(165deg, #172235 0%, #263a57 60%, #375377 100%);
+  --sky-glow: rgba(150, 180, 255, 0.22);
+}
+.sky-storm {
+  --sky: linear-gradient(165deg, #161126 0%, #2b224b 60%, #45367a 100%);
+  --sky-glow: rgba(150, 180, 255, 0.22);
+}
+.sky-clear.sky-night,
+.sky-part.sky-night {
+  --sky: linear-gradient(165deg, #060a22 0%, #131d52 62%, #2b2f78 100%);
+  --sky-glow: rgba(120, 130, 255, 0.28);
+}
+.sky-cloud.sky-night {
+  --sky: linear-gradient(165deg, #0f1218 0%, #1d232d 62%, #2d3441 100%);
+  --sky-glow: rgba(120, 130, 255, 0.2);
+}
+
+/* The sky's moving layer: each <i> placed by --x, --y and timed by --d, --s. */
+.wx-fx {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.wx-fx i {
+  position: absolute;
+  display: block;
+}
+.sky-clear.sky-day .wx-fx i:first-child {
+  top: -90px;
+  right: -80px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 232, 150, 0.6), rgba(255, 205, 100, 0.18) 55%, transparent);
+  animation: wx-glow 7s ease-in-out infinite alternate;
+}
+.sky-part .wx-fx i,
+.sky-cloud .wx-fx i,
+.sky-clear.sky-day .wx-fx i:not(:first-child) {
+  top: calc(var(--y) * 1%);
+  left: -40%;
+  width: 70%;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.2), transparent);
+  animation: wx-drift calc(var(--s) * 40s) linear infinite;
+  animation-delay: calc(var(--d) * 12s);
+}
+.sky-clear.sky-day .wx-fx i:not(:first-child) {
+  opacity: 0.5;
+}
+.sky-night.sky-clear .wx-fx i,
+.sky-night.sky-part .wx-fx i {
+  top: calc(var(--y) * 1%);
+  left: calc(var(--x) * 1%);
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  animation: wx-twinkle calc(var(--s) * 3s) ease-in-out infinite;
+  animation-delay: calc(var(--d) * 3s);
+}
+.sky-rain .wx-fx i,
+.sky-storm .wx-fx i {
+  top: -30px;
+  left: calc(var(--x) * 1%);
+  width: 1.5px;
+  height: 18px;
+  border-radius: 1px;
+  background: linear-gradient(transparent, rgba(200, 225, 255, 0.55));
+  animation: wx-rain calc(0.7s + var(--s) * 0.5s) linear infinite;
+  animation-delay: calc(var(--d) * 1s);
+}
+.sky-storm .wx-fx::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(220, 210, 255, 0.35);
+  opacity: 0;
+  animation: wx-flash 9s linear infinite;
+}
+@keyframes wx-glow {
+  to {
+    transform: scale(1.12);
+    opacity: 0.8;
+  }
+}
+@keyframes wx-drift {
+  to {
+    transform: translateX(220%);
+  }
+}
+@keyframes wx-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes wx-rain {
+  to {
+    transform: translate(-40px, 420px);
+  }
+}
+@keyframes wx-flash {
+  0%,
+  93%,
+  95.5%,
+  100% {
+    opacity: 0;
+  }
+  94%,
+  96.5% {
+    opacity: 1;
+  }
+}
+@keyframes wx-float {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* The sky's words: where, now, the day's high and low. */
+.wx-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  font: 600 13px/18px var(--q-font);
+  letter-spacing: 0.02em;
+}
+.wx-eyebrow > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wx-relocate {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  min-height: 26px;
+  margin-left: auto;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font: 600 12px/1 var(--q-font);
+  cursor: pointer;
+}
+.wx-now {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+.wx-temp {
+  font: 300 88px/1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -4px;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.16);
+}
+.wx-icon {
+  flex: none;
+  line-height: 0;
+}
+.wx-icon .wx-art-i {
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.22));
+  animation: wx-float 6s ease-in-out infinite;
+}
+.wx-cond {
+  margin: 2px 0 0;
+  font: 700 20px/26px var(--q-font);
+}
+.wx-pills {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+.wx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.86);
+  font: 600 12.5px/1 var(--q-font);
+  white-space: nowrap;
+}
+.wx-pill b {
+  color: #fff;
+  font: 700 14px/1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+}
+/* The rain heads-up under the numbers (cards.mjs soonLine). */
+.wx-soon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px 0 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font: 600 13.5px/18px var(--q-font);
+  white-space: nowrap;
+}
+.wx-soon svg {
+  flex: none;
+}
+.wx-soon-stop {
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 500;
+}
+.wx-hero-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.8);
+  font: 500 12.5px/18px var(--q-font);
+}
+.wx-more {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-weight: 650;
+}
+/* An old copy (cards.mjs heroHtml): what it is, said plainly in the
+   更新於 line's place, its "now" faded so it isn't read as now. */
+.wx-stale {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin: -4px 0;
+  padding: 4px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.32);
+  color: #fff;
+  font: 13px/18px var(--q-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.wx-stale b {
+  font-weight: 700;
+}
+.wx-stale-age {
+  color: rgba(255, 255, 255, 0.78);
+}
+.wx-stale .wx-spin {
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: wx-spin 0.8s linear infinite;
+}
+.wx-stale .wx-spin,
+.wx-stale .wx-stale-busy,
+.is-loading .wx-stale .wx-stale-failed {
+  display: none;
+}
+.is-loading .wx-stale .wx-stale-busy {
+  display: inline;
+}
+.is-loading .wx-stale .wx-spin {
+  display: inline-block;
+}
+.wx-stale.failed {
+  background: rgba(160, 30, 30, 0.55);
+}
+.is-loading .wx-stale.failed {
+  background: rgba(0, 0, 0, 0.32);
+}
+.wx-old .wx-temp,
+.wx-old .wx-cond,
+.wx-old .wx-pills {
+  opacity: 0.42;
+  transition: opacity 0.3s;
+}
+@keyframes wx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==== 今天: the next 24 hours, a rail of small cards ==== */
+.wx-say {
+  margin: -2px 0 12px;
+  color: var(--q-label-2);
+  font: var(--q-t-subhead);
+}
+.wx-rail {
+  --q-rail-w: 64px;
+  gap: 8px;
+}
+.wx-hr {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 0 8px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--q-surface);
+  color: var(--q-label);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.wx-hr.is-now {
+  background: var(--q-accent);
+  color: #fff;
+}
+.wx-hr-t {
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+.wx-hr.is-newday .wx-hr-t {
+  color: var(--q-accent);
+}
+.wx-hr.is-now .wx-hr-t {
+  color: rgba(255, 255, 255, 0.9);
+}
+.wx-hr-v {
+  margin-top: 6px;
+  font: 700 17px/22px var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+}
+.wx-hr-p {
+  min-height: 15px;
+  color: var(--q-blue);
+  font: 700 11px/15px var(--q-font);
+}
+.wx-hr.is-now .wx-hr-p {
+  color: #fff;
+}
+
+/* ==== 今天: the advice, rows with colour tiles (also in the sheets) ==== */
+/* The tile, the name with its tag beside it, what to do across the row. */
+.wx-life {
+  display: grid;
+  grid-template-columns: 40px auto minmax(0, 1fr);
+  grid-template-areas: 'tile title tag' 'tile text text';
+  align-items: center;
+  gap: 2px 10px;
+  min-height: 60px;
+  padding: 10px 12px;
+}
+.wx-life > .q-tile {
+  grid-area: tile;
+}
+.wx-life .q-ritem-text {
+  display: contents;
+}
+.wx-life .q-ritem-title {
+  grid-area: title;
+}
+.wx-life .q-ritem-text small {
+  grid-area: text;
+}
+.wx-life > .q-tag {
+  grid-area: tag;
+  justify-self: start;
+}
+.wx-life .q-ritem-title {
+  font: 600 16px/21px var(--q-font);
+}
+.wx-life .q-ritem-text small {
+  display: block;
+  font: var(--q-t-subhead);
+  overflow-wrap: anywhere;
+}
+
+/* ==== 今天: the typhoon day off (an advice row; the chance on its right) ==== */
+.wx-dayoff {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-areas: 'tile title tag' 'tile text tag';
+}
+.wx-dayoff > .wx-dayoff-p {
+  grid-area: tag;
+  color: var(--c);
+  font: 600 26px/1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.wx-dayoff > .wx-dayoff-p small {
+  margin-left: 1px;
+  font-size: 15px;
+}
+.wx-dayoff > .q-tag {
+  justify-self: end;
+}
+/* (A notice: its tag beside the place, its day and hour the row's whole width.) */
+.wx-dayoff-note {
+  grid-template-areas: 'tile title tag' 'tile text text';
+}
+
+/* ==== 預報: the indicators, a rail of stat cards ==== */
+.wx-stats {
+  --q-rail-w: 150px;
+}
+.wx-stat {
+  gap: 2px;
+  padding: 14px 14px 10px;
+  border: 0;
+  font: inherit;
+  text-align: left;
+}
+button.wx-stat {
+  cursor: pointer;
+}
+.wx-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.wx-lv {
+  min-width: 0;
+  overflow: hidden;
+}
+.wx-stat-val {
+  font: 700 30px/34px var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.wx-stat-val small {
+  margin-left: 2px;
+  color: var(--q-label-2);
+  font: 600 13px/1 var(--q-font);
+  letter-spacing: 0;
+}
+.wx-stat-sub {
+  min-height: 16px;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 12px/16px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wx-spark {
+  display: block;
+  width: 100%;
+  height: 30px;
+  margin-top: 6px;
+}
+.wx-compass {
+  display: inline-grid;
+  transform: rotate(calc(var(--d) + 135deg));
+}
+
+/* ==== 預報: the days, a row each; the whole row opens the day ==== */
+.wx-day {
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px 28px 40px 28px minmax(24px, 1fr) 30px 20px;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  min-height: 58px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.wx-day + .wx-day::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.wx-day:active {
+  background: var(--q-fill-4);
+}
+.wx-dname {
+  display: grid;
+  font: 600 15px/19px var(--q-font);
+  white-space: nowrap;
+}
+.wx-dname small {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 500 11px/14px var(--q-font);
+  text-overflow: ellipsis;
+}
+.wx-dicon {
+  display: grid;
+  justify-items: center;
+  line-height: 0;
+}
+.wx-dpop {
+  display: grid;
+  gap: 3px;
+}
+.wx-dpop b {
+  color: var(--q-blue);
+  font: 700 13px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.wx-dpop i {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--q-blue) var(--p), var(--q-fill-3) var(--p));
+}
+.wx-dlo,
+.wx-dhi {
+  font: 600 15px/1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+}
+.wx-dlo {
+  color: var(--q-label-2);
+  text-align: right;
+}
+.wx-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--q-fill-3);
+}
+.wx-bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #5ac8fa, #ffd43b, #ff9f0a);
+}
+.wx-duv {
+  border-radius: 7px;
+  background: var(--c);
+  color: #111;
+  font: 750 11px/20px var(--q-font);
+  text-align: center;
+}
+.wx-duv:empty {
+  background: none;
+}
+
+/* ==== 地點: the places, the settings ==== */
+.wx-place-row {
+  cursor: pointer;
+}
+.wx-place-row:active {
+  background: var(--q-fill-4);
+  transition-duration: 0s;
+}
+.wx-place-row .q-ritem-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wx-on {
+  flex: none;
+  color: var(--q-accent);
+  stroke-width: 2.6;
+}
+.wx-place-now {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+.wx-place-now b {
+  min-width: 34px;
+  font: 600 20px/1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.wx-place-row.is-still {
+  cursor: default;
+  opacity: 0.45;
+}
+@media (max-width: 359px) {
+  .wx-place-now .wx-art-i {
+    display: none;
+  }
+}
+.wx-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.wx-head-btn {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--q-accent);
+  font: 400 17px/1 var(--q-font);
+  cursor: pointer;
+}
+.wx-add .q-ritem-title {
+  color: var(--q-accent);
+}
+.wx-brief {
+  cursor: default;
+}
+.wx-brief .q-ritem-text {
+  flex: none;
+}
+.wx-brief .wx-time {
+  min-width: 0;
+  margin-left: auto;
+}
+.wx-time {
+  flex: none;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: var(--q-t-body);
+}
+
+/* ==== Sheets: a day, a metric, the advice, a pin, the layout ==== */
+.wx-sheet .q-rowcard {
+  margin-top: 4px;
+}
+.q-sheet-head h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* A day: the kit's strip of the forecast's days (swiped too), its read-out, its charts, its advice, its halves. */
+.wx-day-sheet {
+  touch-action: pan-y;
+}
+.wx-day-sheet .q-sheet-head h2 {
+  gap: 6px;
+  font-size: 17px;
+}
+.wx-day-icon {
+  line-height: 0;
+}
+.wx-dayg {
+  margin-top: 4px;
+  padding: 8px 10px 10px;
+  border-radius: 18px;
+  background: var(--q-surface);
+}
+.wx-scrub {
+  display: grid;
+  gap: 6px;
+  padding: 6px 4px 8px;
+  border-bottom: 0.5px solid var(--q-sep);
+}
+.wx-scrub-time {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.wx-scrub-time b {
+  font: 700 20px/1.1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+}
+.wx-scrub-time span {
+  color: var(--q-label-2);
+  font-size: 13px;
+}
+.wx-scrub-vals {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.wx-scrub-vals.is-sum {
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+}
+.wx-scrub-vals div {
+  display: grid;
+  min-width: 0;
+}
+.wx-scrub-vals span,
+.wx-scrub-vals small {
+  color: var(--q-label-2);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.wx-scrub-vals b {
+  font: 700 16px/1.3 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.wx-dayg-plot {
+  position: relative;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.wx-dch {
+  margin-top: 6px;
+}
+.wx-dch-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 2px 0;
+  font: 700 13px/18px var(--q-font);
+}
+.wx-dch-h span {
+  color: var(--q-label-2);
+  font-size: 11.5px;
+  font-weight: 550;
+}
+.wx-dch-h span::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.wx-dch-h > span:first-of-type {
+  margin-left: auto;
+}
+.wx-dch-h .l-feels::before {
+  background: repeating-linear-gradient(90deg, var(--q-label-3) 0 4px, transparent 4px 7px);
+}
+.wx-dch-h .l-mm::before {
+  width: 26px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #a9d3fb, #3b8cea 45%, #1f5fd6 75%, #5b3fd6);
+}
+.wx-dch-h .wx-dch-note {
+  color: var(--q-label);
+  font-size: 13px;
+  font-weight: 650;
+}
+.wx-dch-h .wx-dch-note::before {
+  display: none;
+}
+.wx-dch.is-dry {
+  margin-top: 10px;
+  padding: 10px 2px 2px;
+  border-top: 0.5px solid var(--q-sep);
+}
+.wx-dch.is-dry .wx-dch-h {
+  margin: 0;
+}
+.wx-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--q-surface);
+}
+.wx-half {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.wx-half > svg {
+  grid-row: 1 / span 3;
+}
+.wx-half > :not(svg) {
+  grid-column: 2;
+}
+.wx-half span,
+.wx-half small {
+  color: var(--q-label-2);
+  font-size: 12px;
+}
+.wx-half b {
+  font-size: 16px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+/* 更多資訊 (today's sheet): a row each, the value on the right. */
+.wx-info-row .q-ritem-title {
+  white-space: nowrap;
+}
+.wx-info-row .q-ritem-text {
+  flex: 1 1 auto;
+}
+.wx-info-row .q-ritem-text small {
+  display: block;
+  font-size: 12px;
+}
+.wx-info-row .q-ritem-value {
+  flex: 0 1 auto;
+  color: var(--q-label);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* A metric (降雨, 紫外線, 空氣): the line, its number, the day tabs, the graph. */
+.wx-card-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.wx-card-head .wx-ic,
+.wx-card-title h3 {
+  display: none;
+}
+.wx-card-title p {
+  margin: 0;
+  font: var(--q-t-subhead);
+}
+.wx-big {
+  color: var(--c, var(--q-label));
+  font: 700 32px/1 var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.wx-big small {
+  margin-left: 3px;
+  font: 650 13px/1 var(--q-font);
+}
+.wx-air .wx-big small {
+  display: block;
+  margin: 4px 0 0;
+}
+.wx-rain-big {
+  color: var(--q-blue);
+}
+.wx-tabs {
+  margin-top: 14px;
+}
+.wx-card-title p {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wx-card-title p.is-on {
+  color: var(--q-label);
+  font-weight: 650;
+}
+.wx-graphbox {
+  position: relative;
+  margin: 14px -4px 0;
+  padding: 12px 8px 4px;
+  border-radius: 20px;
+  background: var(--q-surface);
+  touch-action: pan-y;
+}
+/* Under a graph: its colour key and one number, small. */
+.wx-key {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 10px 0 0;
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.l-mm::before {
+  content: '';
+  display: inline-block;
+  width: 26px;
+  height: 8px;
+  margin-right: 5px;
+  vertical-align: -0.5px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #a9d3fb, #3b8cea 45%, #1f5fd6 75%, #5b3fd6);
+}
+
+/* A pin's sheet and the layout: the kit's lists, fields, switches, buttons. */
+.wx-cell-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--q-label);
+  font: var(--q-t-body);
+  text-align: right;
+}
+.wx-week {
+  flex: 1 1 auto;
+  justify-content: space-between;
+  gap: 4px;
+  overflow: visible;
+}
+.wx-week .q-chip {
+  min-width: 36px;
+  padding: 0;
+  justify-content: center;
+}
+.wx-here {
+  margin-top: 12px;
+}
+.wx-list {
+  max-height: 260px;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+.wx-list:empty {
+  display: none;
+}
+.wx-actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+.q-cell > .q-cell-text:first-child:not(.wx-order-name) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.q-cell:has(> .wx-cell-input) > .q-cell-text,
+.q-cell:has(> .wx-time) > .q-cell-text {
+  flex: none;
+  white-space: nowrap;
+}
+.wx-order-row {
+  gap: 8px;
+  padding-inline: 12px;
+}
+.wx-order-row .q-cell-icon {
+  --q-cell-tint: var(--q-accent);
+}
+.wx-order-name small {
+  white-space: nowrap;
+}
+.wx-order-row.is-off .wx-order-name {
+  color: var(--q-label-2);
+  text-decoration: line-through;
+}
+.wx-mini {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 600 15px/1 var(--q-font);
+}
+.wx-mini:disabled {
+  opacity: 0.25;
+}
+.wx-reset {
+  margin: 4px 0 0 16px;
+}
+
+/* ==== The graphs (lib/graph.mjs): one frame, fitted to the width ==== */
+svg.ch {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.ch text {
+  font-family: var(--q-font);
+}
+.ch-grid {
+  stroke: color-mix(in srgb, var(--q-label) 7%, transparent);
+  stroke-width: 1;
+}
+.ch-base {
+  stroke: color-mix(in srgb, var(--q-label) 14%, transparent);
+  stroke-width: 1;
+}
+.ch-line,
+.ch-tline {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ch-area.ch-fc {
+  opacity: 0.5;
+}
+.ch-line.ch-fc {
+  stroke-dasharray: 5 5;
+  stroke-width: 2.5;
+}
+.ch-fline {
+  fill: none;
+  stroke: var(--q-label-3);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+}
+.ch-pt {
+  fill: var(--q-label);
+  stroke: var(--q-surface);
+  stroke-width: 2;
+}
+.ch-hl {
+  fill: var(--q-label);
+  stroke: var(--q-surface);
+  stroke-width: 2.5;
+}
+.ch-val {
+  fill: var(--q-label);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--q-surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.ch-big {
+  font-size: 13px;
+  font-weight: 750;
+}
+.ch-now {
+  stroke: var(--q-accent);
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+.ch-t {
+  fill: var(--q-label-2);
+  font-size: 11px;
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+}
+.ch-strong {
+  fill: var(--q-accent);
+  font-weight: 700;
+}
+.ch-ax {
+  fill: var(--q-label-3);
+  font-size: 10px;
+  text-anchor: end;
+  font-variant-numeric: tabular-nums;
+}
+.ch-date {
+  fill: var(--q-label-2);
+  font-size: 11px;
+  font-weight: 650;
+}
+.ch-day {
+  stroke: color-mix(in srgb, var(--q-label) 12%, transparent);
+  stroke-width: 1;
+}
+.ch-move {
+  stroke: var(--q-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.ch-place {
+  fill: var(--q-accent);
+  font-size: 12px;
+  font-weight: 750;
+}
+/* The crosshair over a graph: HTML moved by transform, no redraw. */
+.ch-xh,
+.ch-dh {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+.ch-xh {
+  width: 0;
+  border-left: 1px solid color-mix(in srgb, var(--q-label) 45%, transparent);
+}
+.ch-dh {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2.5px solid var(--q-surface);
+  border-radius: 50%;
+  background: var(--q-label);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.ch-xh[hidden],
+.ch-dh[hidden] {
+  display: none;
+}
+/* Hours that stay dry: the words instead of a graph. */
+.wx-dry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  aspect-ratio: 340 / 218;
+  margin: 0;
+  color: var(--q-label-2);
+  font: 650 15px/1 var(--q-font);
+}
+
+/* ==== Pictures and glyphs (lib/icons.mjs) ==== */
+.wx-g,
+.wx-art-i,
+.wx-moon {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+}
+.q-tile .wx-g {
+  color: #fff;
+  stroke-width: 2;
+}
+
+/* ==== Before the forecast: each tab's shape, shimmering ==== */
+.sk {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(100deg, var(--q-fill-3) 30%, var(--q-fill-4) 50%, var(--q-fill-3) 70%) 0 0 / 300% 100%;
+  animation: wx-sk 1.4s ease-in-out infinite;
+}
+.wx-hero .sk {
+  background-image: linear-gradient(100deg, rgba(255, 255, 255, 0.1) 30%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 70%);
+}
+@keyframes wx-sk {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+.sk-temp {
+  width: 132px;
+  height: 72px;
+  margin: 8px 0;
+  border-radius: 18px;
+}
+.sk-cond {
+  width: 72px;
+  height: 22px;
+}
+.sk-pill {
+  width: 76px;
+  height: 32px;
+  border-radius: 999px;
+}
+.wx-skel-hero.wx-pills {
+  margin-bottom: 42px;
+}
+.sk-head {
+  width: 120px;
+  height: 22px;
+}
+.wx-skel-card {
+  display: grid;
+  gap: 10px;
+  min-height: 112px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--q-surface);
+}
+.sk-ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+.sk-h {
+  width: 60%;
+  height: 22px;
+}
+.sk-line {
+  width: 80%;
+  height: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wx-fx i,
+  .wx-fx::after,
+  .wx-icon .wx-art-i,
+  .sk,
+  .wx-day-sheet > * {
+    animation: none !important;
+  }
+}
+
+/* ==== 今天 (round 4): the places shelf ==== */
+.wx-pcards {
+  --q-rail-w: 112px;
+}
+.wx-place-card {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 14px;
+  border: 0;
+  border-radius: 22px;
+  font: inherit;
+  text-align: left;
+}
+.wx-place-card.is-on {
+  box-shadow: inset 0 0 0 2px var(--q-accent);
+}
+.wx-pc-temp {
+  font: 700 28px/32px var(--q-font-rounded, var(--q-font));
+}
+.wx-pc-art {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+.wx-place-card {
+  position: relative;
+}
+.wx-place-card small {
+  max-width: 100%;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+  overflow-wrap: anywhere;
+}
+.wx-section .q-sh-more {
+  margin-left: auto;
+}
+
+/* 今日數據 in the kit's panels: the sparkline sits beside the number and never takes its room. */
+.q-panels .q-panel-art { min-width: 0; }
+.q-panels .q-panel-art .wx-spark { width: 72px; height: 26px; }
+@media (max-width: 359px) {
+  .q-panels .q-panel-art .wx-spark { width: 52px; }
+}
+

@@ -1,0 +1,386 @@
+// Every sport and league Orbit covers, once (from the kit): Orbit Sports
+// builds its view of it (lib/leagues.mjs), the proxy's builders read it.
+//
+//   sport   one of SPORTS
+//   kind    'match' two sides; 'field' a race weekend
+//   data    where its schedule and scores come from: 'espn' (espn path),
+//           'kambi' (kambi path), 'asia' (the leagues' own sites, through the
+//           sports proxy: asiaMonth below). Orbit Sports shows only the leagues on ELTA.tv
+//           or Apple TV in Taiwan (its lib/broadcast.mjs).
+//   bet     the league's key for its logos and team names (logos.mjs, names.mjs)
+//   espn / kambi   the paths on each source
+//   standings  a cup with a table ESPN keeps (a league phase, groups):
+//           its table shown and each game's group said
+
+export const SPORTS = {
+  soccer: { zh: '足球', en: 'Soccer', icon: '⚽' },
+  baseball: { zh: '棒球', en: 'Baseball', icon: '⚾' },
+  basketball: { zh: '籃球', en: 'Basketball', icon: '🏀' },
+  football: { zh: '美式足球', en: 'Football', icon: '🏈' },
+  hockey: { zh: '冰球', en: 'Hockey', icon: '🏒' },
+  racing: { zh: '賽車', en: 'Racing', icon: '🏎️' }
+};
+
+
+const espn = (sport, path, zh, en, bet, extra = {}) => ({ sport, kind: 'match', data: 'espn', espn: path, zh, en, bet, ...extra });
+const soccer = (path, zh, en, bet, extra = {}) => espn('soccer', `soccer/${path}`, zh, en, bet, extra);
+
+export const CATALOG = {
+  // Baseball
+  mlb: espn('baseball', 'baseball/mlb', 'MLB 美國職棒', 'MLB', 'mlb', { top: true, kambi: 'baseball/mlb' }),
+  npb: { sport: 'baseball', kind: 'match', data: 'asia', asia: 'npb', homeFirst: true, kambi: 'baseball/japan/npb', zh: '日本職棒', en: 'NPB', bet: 'npb', icon: '⚾', badge: 'lk85rg1575038781' },
+  kbo: { sport: 'baseball', kind: 'match', data: 'asia', asia: 'kbo', kambi: 'baseball/south_korea/kbo_league', zh: '韓國職棒', en: 'KBO', bet: 'kbo', icon: '⚾', badge: 'qfr1hx1589707979' },
+  cpbl: { sport: 'baseball', kind: 'match', data: 'asia', asia: 'cpbl', kambi: 'baseball/taiwan/chinese_professional_baseball', zh: '中華職棒', en: 'CPBL', bet: 'cpbl', top: true, icon: '⚾', badge: 'c3vetj1655924198' },
+  // Basketball
+  nba: espn('basketball', 'basketball/nba', 'NBA', 'NBA', 'nba', { top: true, kambi: 'basketball/nba' }),
+  wnba: espn('basketball', 'basketball/wnba', 'WNBA', 'WNBA', 'wnba', { kambi: 'basketball/wnba' }),
+  nbl: espn('basketball', 'basketball/nbl', '澳洲職籃', 'NBL', 'nbl', { kambi: 'basketball/australia/nbl', homeFirst: true }),
+  euroleague: { sport: 'basketball', kind: 'match', data: 'kambi', homeFirst: true, kambi: 'basketball/euroleague', zh: '歐洲籃球聯賽', en: 'EuroLeague', bet: 'euroleague', icon: '🏀', badge: '7xjtuy1554397263' },
+  // Football
+  nfl: espn('football', 'football/nfl', 'NFL', 'NFL', 'nfl', { top: true, kambi: 'american_football/nfl' }),
+  ncaaf: espn('football', 'football/college-football', '美國大學美式足球', 'College Football', 'ncaaf', { kambi: 'american_football/ncaaf', icon: '🏈' }),
+  // Hockey
+  nhl: espn('hockey', 'hockey/nhl', 'NHL', 'NHL', 'nhl', { kambi: 'ice_hockey/nhl' }),
+  // Soccer
+  epl: soccer('eng.1', '英超', 'Premier League', 'epl', { top: true, logo: 23, kambi: 'football/england/premier_league' }),
+  laliga: soccer('esp.1', '西甲', 'LaLiga', 'laliga', { top: true, logo: 15, kambi: 'football/spain/la_liga' }),
+  seriea: soccer('ita.1', '義甲', 'Serie A', 'seriea', { logo: 12, kambi: 'football/italy/serie_a' }),
+  bundesliga: soccer('ger.1', '德甲', 'Bundesliga', 'bundesliga', { logo: 10, kambi: 'football/germany/bundesliga' }),
+  ligue1: soccer('fra.1', '法甲', 'Ligue 1', 'ligue1', { logo: 9, kambi: 'football/france/ligue_1' }),
+  ucl: soccer('uefa.champions', '歐冠', 'Champions League', 'ucl', { top: true, cup: true, logo: 2, kambi: 'football/champions_league', standings: true }),
+  uel: soccer('uefa.europa', '歐霸', 'Europa League', 'uel', { cup: true, logo: 2310, kambi: 'football/europa_league', standings: true }),
+  uecl: soccer('uefa.europa.conf', '歐協聯', 'Conference League', 'uecl', { cup: true, logo: 20296, kambi: 'football/conference_league', standings: true }),
+  scotland: soccer('sco.1', '蘇超', 'Scottish Premiership', 'scotland', { logo: 45, kambi: 'football/scotland/scottish_premiership' }),
+  mls: soccer('usa.1', '美職足', 'MLS', 'mls', { logo: 19, kambi: 'football/usa/mls' }),
+  // Korea's K League 1: not on ESPN, Kambi's schedule and prices (three-way).
+  kleague: { sport: 'soccer', kind: 'match', data: 'kambi', kambi: 'football/south_korea/k-league_1', zh: '韓國職業足球聯賽', en: 'K League 1', bet: 'kleague', icon: '⚽' },
+  jleague: soccer('jpn.1', '日職聯', 'J1 League', 'jleague', { logo: 2199 }),
+  championship: soccer('eng.2', '英冠', 'Championship', 'championship', { logo: 24, kambi: 'football/england/the_championship' }),
+  eredivisie: soccer('ned.1', '荷甲', 'Eredivisie', 'eredivisie', { logo: 11, kambi: 'football/netherlands/eredivisie' }),
+  ligamx: soccer('mex.1', '墨超', 'Liga MX', 'ligamx', { logo: 22, kambi: 'football/mexico/liga_mx' }),
+  brasileirao: soccer('bra.1', '巴甲', 'Brasileirão', 'brasileirao', { logo: 85, kambi: 'football/brazil/brasileirao_serie_a' }),
+  facup: soccer('eng.fa', '英足總盃', 'FA Cup', 'facup', { cup: true, logo: 40, kambi: 'football/england/fa_cup' }),
+  // The big tournaments: every few years, the board fills when one is on.
+  worldcup: soccer('fifa.world', '世界盃', 'FIFA World Cup', 'worldcup', { cup: true, logo: 4, standings: true }),
+  nationsleague: soccer('uefa.nations', '歐國聯', 'Nations League', 'nationsleague', { cup: true, logo: 2395, kambi: 'football/uefa_nations_league', standings: true }),
+  // Racing
+  f1: { sport: 'racing', kind: 'field', data: 'espn', espn: 'racing/f1', zh: 'F1 一級方程式', en: 'Formula 1', bet: 'f1', top: true, standings: true }
+};
+
+// A sport's family (its own name: Orbit Sports groups by it).
+export const familyOfSport = sport => sport;
+
+// The sports shown home side first, as their own broadcasts show them:
+// soccer (and rugby, handball, volleyball). Every US-style sport (baseball,
+// basketball, American football, hockey) lists the visitors first ("Lakers
+// @ Celtics"), and so does anything not known here. A league that goes its
+// own way says so (`homeFirst`): EuroLeague and Australia's NBL, as Europe
+// and Australia list games; Japan's NPB (巨人－阪神 is the Giants at home).
+// The CPBL and the KBO keep the visitors first, as their broadcasts do.
+const HOME_FIRST = new Set(['soccer', 'rugby', 'handball', 'volleyball']);
+
+// A game's two sides in the order to show them: [first, second]. `game` has
+// `home` and `away` (a team, a name or a score: whatever the screen draws)
+// and the league key as `sport` (or the sport itself as `family`).
+export function sidesInOrder(game) {
+  const family = game?.family || CATALOG[game?.sport]?.sport || game?.sport;
+  return (CATALOG[game?.sport]?.homeFirst ?? HOME_FIRST.has(family)) ? [game?.home, game?.away] : [game?.away, game?.home];
+}
+
+// ESPN's site API (scoreboards, summaries, teams) and its dates (YYYYMMDD, UTC).
+export const ESPN_SITE = 'https://site.api.espn.com/apis/site/v2/sports';
+export const yyyymmdd = date => date.toISOString().slice(0, 10).replaceAll('-', '');
+
+// ---- Asian baseball (NPB, KBO, CPBL) -------------------------------------------------
+//
+// The sports proxy gathers these from the leagues' own sites (Shared-Proxy's
+// asia-baseball.js) and answers as if from this host, by month: { league,
+// month, games: [{ id, start, home: { en, zh }, away, homeScore, awayScore,
+// state: 'pre' | 'in' | 'post' | 'void', venue }] }. `getJson(url)` is the
+// app's proxied fetch.
+export const ASIA_URL = 'https://asia-baseball.orbit';
+export const asiaMonthUrl = (league, ym) => `${ASIA_URL}/${league}/${ym}.json`;
+// "2026-09" for a date (Asia's own calendar: UTC+8 is close enough for all three).
+export const asiaMonthOf = ms => new Date(ms + 8 * 3_600_000).toISOString().slice(0, 7);
+// The month's games. CPBL's own site has stopped answering, and the proxy's
+// fallback (TheSportsDB) can refuse the proxy: a CPBL month the proxy can't
+// read (its 502) comes from TheSportsDB's day lists straight from the device (they
+// allow any site), the days from two weeks back to two weeks ahead.
+// Nothing read anywhere (the proxy and every day on the device refused) is
+// an error, never a month with no games: Sports said 沒有比賽 for 中華職棒
+// while both were down (2026-10-18).
+export async function asiaMonth(getJson, league, ym, { now = Date.now(), fetchJson = directJson, seriesJson = wikiJson } = {}) {
+  let down = null;
+  const data = await getJson(asiaMonthUrl(league, ym)).catch(error => ((down = error), null));
+  const games = Array.isArray(data?.games) ? data.games : [];
+  if (!down && !Array.isArray(data?.games)) down = new Error(`${league} ${ym}: no list`);
+  if (league !== 'cpbl') {
+    if (down) throw down;
+    return games;
+  }
+  return withCpblSeries(await cpblMonth(data, games, down, ym, now, fetchJson), ym, { fetchJson: seriesJson });
+}
+async function cpblMonth(data, games, down, ym, now, fetchJson) {
+  // (The proxy's answer, games or none, is the month: it answers an empty
+  // one only when it read the days, a 502 when it couldn't. An empty
+  // off-season month read again here was TheSportsDB's days two at a time on
+  // every opening, 2-3 s on a phone's link.)
+  // Read in part (days TheSportsDB turned the proxy away, and not yet in its
+  // nightly whole copy): the missing days of the last two weeks and the next
+  // two from here.
+  if (!down && Array.isArray(data.read) && !data.whole) {
+    const missing = tsdbDays(ym, now).filter(d => !data.read.includes(d));
+    const extra = (await Promise.all(missing.map(d => fetchJson(`${TSDB_DAY}?d=${d}&l=${TSDB_CPBL}`).then(x => parseTsdbDay(x, now)).catch(() => [])))).flat();
+    const day = g => new Date(Date.parse(g.start) + 8 * 3_600_000).toISOString().slice(0, 10);
+    const have = new Set(games.map(g => g.id));
+    return cpblFresh([...games, ...extra.filter(g => !have.has(g.id) && missing.includes(day(g)))].sort((x, y) => x.start.localeCompare(y.start)), now, fetchJson);
+  }
+  if (!down) return cpblFresh(games, now, fetchJson);
+  const days = tsdbDays(ym, now);
+  let failed = 0;
+  const lists = await Promise.all(days.map(d => fetchJson(`${TSDB_DAY}?d=${d}&l=${TSDB_CPBL}`).then(x => parseTsdbDay(x, now)).catch(() => (failed++, []))));
+  if (down && failed === days.length) throw down;
+  return lists.flat().sort((x, y) => x.start.localeCompare(y.start));
+}
+
+// CPBL's play-offs as Wikipedia's pages for them have them (its {{ts}}
+// table: each game's date, park, sides, score; each game's own section its
+// start). TheSportsDB is edited by hand and lags them: 台灣大賽 G5 put off by
+// a typhoon from 10/23 to 10/25 was never moved, G6 and G7 never listed
+// (2026-10-26), and cpbl.com.tw answers no server. The month's play-off
+// games are Wikipedia's, a game TheSportsDB has the same day of the same
+// two clubs keeping its id (and its score while it's on); one called off
+// kept (延期 on its day). Games not needed once a series is won left off.
+// Its pages unread, or no play-off game in the month: the month as it was.
+const CPBL_SHORT = { 中信: 'CTBC Brothers', 統一: 'Uni-President Lions', 樂天: 'Rakuten Monkeys', 富邦: 'Fubon Guardians', 味全: 'Wei Chuan Dragons', 台鋼: 'TSG Hawks' };
+// The parks as the pages shorten them.
+const CPBL_PARK = { 大巨蛋: '臺北大巨蛋', 天母: '天母棒球場', 新莊: '新莊棒球場', 洲際: '臺中洲際棒球場', 亞太主: '臺南亞太棒球場', 台南: '臺南棒球場', 澄清湖: '澄清湖棒球場', 樂天桃園: '樂天桃園棒球場', 斗六: '斗六棒球場', 花蓮: '花蓮棒球場' };
+const CN_NUM = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7 };
+export const cpblSeriesUrl = page => `https://zh.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(page)}&prop=wikitext&format=json&formatversion=2&origin=*`;
+export const cpblSeriesPages = year => [[`${year}年中華職棒季後挑戰賽`, 'challenge'], [`${year}年台灣大賽`, 'final']];
+export function parseCpblSeries(wikitext, year, kind) {
+  const w = String(wikitext || '');
+  const ts = /\{\{ts\|([\s\S]*?)\n\}\}/.exec(w)?.[1] || '';
+  const field = Object.fromEntries([...ts.matchAll(/\|\s*([^=|]+?)\s*=([^|\n]*)/g)].map(m => [m[1], m[2].trim()]));
+  const club = short => {
+    const en = CPBL_SHORT[short];
+    return en ? { en, zh: CPBL_CLUBS.find(c => c[0] === en)[1] } : null;
+  };
+  // Each game's start (Taipei) from its section (=== 第五場（10月25日） === … |開始時間=17:05).
+  const at = {};
+  for (const m of w.matchAll(/===\s*第(.)場[\s\S]*?\|開始時間=\s*(\d{1,2}:\d{2})/g)) at[CN_NUM[m[1]]] ??= m[2];
+  const num = x => (x === '' || x == null || !Number.isFinite(Number(x)) ? null : Number(x));
+  const games = [];
+  for (let n = 1; field[`G${n}日期`]; n++) {
+    const [mo, d] = field[`G${n}日期`].split('/').map(Number);
+    const [home, away] = [club(field[`G${n}主隊`]), club(field[`G${n}客隊`])];
+    if (!mo || !d || !home || !away) continue;
+    const [hh, mm] = (at[n] || '18:35').split(':').map(Number);
+    const start = new Date(Date.UTC(year, mo - 1, d, hh - 8, mm)).toISOString();
+    const said = field[`G${n}情況`] || '';
+    const [homeScore, awayScore] = [num(field[`G${n}主隊得分`]), num(field[`G${n}客隊得分`])];
+    const state = /延|取消|保留/.test(said) ? 'void' : said === '已賽' && homeScore != null && awayScore != null ? 'post' : 'pre';
+    games.push({ id: `cpbl-wiki-${year}-${kind}-${n}`, start, home, away, homeScore: state === 'post' ? homeScore : null, awayScore: state === 'post' ? awayScore : null, state, venue: CPBL_PARK[field[`G${n}球場`]] || field[`G${n}球場`] || '', playoff: kind });
+  }
+  // Won: the games after it left off (the challenge's given win, 保, counted).
+  const need = kind === 'final' ? 4 : 3;
+  const wins = {};
+  if (field['保'] && CPBL_SHORT[field['保']]) wins[CPBL_SHORT[field['保']]] = 1;
+  const out = [];
+  for (const g of games) {
+    if (Math.max(0, ...Object.values(wins)) >= need) break;
+    out.push(g);
+    if (g.state === 'post' && g.homeScore !== g.awayScore) {
+      const w = g.homeScore > g.awayScore ? g.home.en : g.away.en;
+      wins[w] = (wins[w] || 0) + 1;
+    }
+  }
+  return out;
+}
+// Wikipedia's pages read apart from TheSportsDB's queue (its refusals hold
+// that a minute: the series went unread with it), each kept 10 minutes.
+const wikiCache = new Map();
+function wikiJson(url) {
+  const hit = wikiCache.get(url);
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit.p;
+  const p = fetch(url).then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))));
+  wikiCache.set(url, { at: Date.now(), p });
+  p.catch(() => wikiCache.delete(url));
+  return p;
+}
+export async function withCpblSeries(games, ym, { fetchJson = wikiJson } = {}) {
+  const [y, m] = ym.split('-').map(Number);
+  // (Only a month with a play-off game TheSportsDB knows of: September's
+  // regular season isn't read twice on every opening.)
+  if (m < 9 || m > 11 || !games.some(g => g.playoff)) return games;
+  const day = g => new Date(Date.parse(g.start) + 8 * 3_600_000).toISOString().slice(0, 10);
+  const series = (await Promise.all(cpblSeriesPages(y).map(([page, kind]) => fetchJson(cpblSeriesUrl(page)).then(x => parseCpblSeries(x?.parse?.wikitext, y, kind), () => [])))).flat().filter(g => day(g).startsWith(ym));
+  if (!series.length) return games;
+  const pair = g => [g.home.en, g.away.en].sort().join('|');
+  const pairs = new Set(series.map(pair));
+  const key = g => `${day(g)}|${pair(g)}`;
+  const theirs = new Map(games.filter(g => g.state !== 'void' && pairs.has(pair(g))).map(g => [key(g), g]));
+  const mine = series.map(g => {
+    const t = theirs.get(key(g));
+    if (!t) return g;
+    const live = g.state !== 'post' && (t.state === 'in' || t.state === 'post');
+    return { ...g, id: t.id, ...(live ? { homeScore: t.homeScore, awayScore: t.awayScore, state: t.state } : {}) };
+  });
+  const kept = games.filter(g => !(g.playoff && pairs.has(pair(g)) && g.state !== 'void') && !(g.state === 'void' && series.some(s => key(s) === key(g))));
+  return [...kept, ...mine].sort((a, b) => a.start.localeCompare(b.start));
+}
+
+// The proxy's copy can lag a game (台灣大賽 G1 still "pre" the day after,
+// 2026-10-18): a game three hours past its start and not over (nor called
+// off) has its day read again from TheSportsDB on the device, its score and
+// state taken from there.
+async function cpblFresh(games, now, fetchJson) {
+  const old = g => (g.state === 'pre' || g.state === 'in') && now - Date.parse(g.start) > 3 * 3_600_000 && now - Date.parse(g.start) < 14 * 86_400_000;
+  const days = [...new Set(games.filter(old).map(g => new Date(Date.parse(g.start) + 8 * 3_600_000).toISOString().slice(0, 10)))];
+  if (!days.length) return games;
+  const fresh = (await Promise.all(days.map(d => fetchJson(`${TSDB_DAY}?d=${d}&l=${TSDB_CPBL}`).then(x => parseTsdbDay(x, now)).catch(() => [])))).flat();
+  const key = g => `${g.start.slice(0, 10)}|${[g.home.en, g.away.en].sort().join('|')}`;
+  const byKey = new Map(fresh.filter(g => g.state === 'post' || g.state === 'void').map(g => [key(g), g]));
+  return games.map(g => {
+    const f = old(g) && byKey.get(key(g));
+    return f ? { ...g, homeScore: f.homeScore, awayScore: f.awayScore, state: f.state } : g;
+  });
+}
+
+// ---- CPBL from TheSportsDB (the proxy's fallback, and the device's) ---------------
+//
+// Its free key answers a day's games a request (3 at most, CPBL's most in a
+// day). Clubs as the proxy names them (asia-baseball.js).
+export const TSDB_DAY = 'https://www.thesportsdb.com/api/v1/json/123/eventsday.php';
+export const TSDB_CPBL = '5111';
+// A CPBL day list's address, exactly (the relay's door for it, gemini-relay.js).
+export const tsdbCpblDay = url => typeof url === 'string' && url.startsWith(`${TSDB_DAY}?d=`) && new RegExp(`^\\?d=\\d{4}-\\d{2}-\\d{2}&l=${TSDB_CPBL}$`).test(url.slice(TSDB_DAY.length));
+export const CPBL_CLUBS = [
+  ['CTBC Brothers', '中信兄弟'],
+  ['Uni-President Lions', '統一7-ELEVEn獅'],
+  ['Rakuten Monkeys', '樂天桃猿'],
+  ['Fubon Guardians', '富邦悍將'],
+  ['Wei Chuan Dragons', '味全龍'],
+  ['TSG Hawks', '台鋼雄鷹']
+];
+const CPBL_BY_EN = Object.fromEntries(CPBL_CLUBS.map(([en, zh]) => [en.toLowerCase(), { en, zh }]));
+const tsdbClub = name => CPBL_BY_EN[String(name || '').toLowerCase().replace(/ 7-eleven/, '')] ?? { en: name, zh: name };
+const tsdbNum = x => (x === '' || x == null || !Number.isFinite(Number(x)) ? null : Number(x));
+// A game past its start and not marked over counts as on for this long.
+const TSDB_LONGEST = 5 * 3_600_000;
+export function parseTsdbDay(data, now = Date.now()) {
+  return (data?.events || []).map(e => {
+    // UTC unless the timestamp names its own zone (Z, +00:00).
+    const stamp = String(e.strTimestamp || `${e.dateEvent}T${e.strTime || '10:35:00'}`);
+    const start = new Date(/(Z|[+-]\d\d:?\d\d)$/i.test(stamp) ? stamp : `${stamp}Z`).toISOString();
+    const status = String(e.strStatus || '').toUpperCase();
+    // A side held scoreless is left empty (Brothers None, Lions 1, final):
+    // once either side has a score, the other's is 0.
+    let homeScore = tsdbNum(e.intHomeScore);
+    let awayScore = tsdbNum(e.intAwayScore);
+    if ((homeScore == null) !== (awayScore == null)) (homeScore ??= 0), (awayScore ??= 0);
+    const t = Date.parse(start);
+    const state = /^(POST|PPD|CANC|ABD|AWD)/.test(status)
+      ? 'void'
+      : /^(FT|AOT|AET)/.test(status)
+        ? 'post'
+        : status && status !== 'NS'
+          ? 'in'
+          : now < t
+            ? 'pre'
+            : now - t < TSDB_LONGEST
+              ? 'in'
+              : homeScore != null && awayScore != null
+                ? 'post'
+                : 'pre';
+    // A play-off game: round 0 (the regular season's are its rounds, 1 on).
+    const round = tsdbNum(e.intRound);
+    return { id: `cpbl-tsdb-${e.idEvent}`, start, home: tsdbClub(e.strHomeTeam), away: tsdbClub(e.strAwayTeam), homeScore, awayScore, state, venue: e.strVenue || '', ...(round === 0 ? { playoff: true } : {}) };
+  });
+}
+// The month's days (Taiwan's calendar) from two weeks back to two weeks ahead.
+export function tsdbDays(ym, now = Date.now()) {
+  const days = [];
+  for (let d = -14; d <= 14; d++) {
+    const day = new Date(now + d * 86_400_000 + 8 * 3_600_000).toISOString().slice(0, 10);
+    if (day.startsWith(ym)) days.push(day);
+  }
+  return days;
+}
+// Plain fetch, each answer kept 10 minutes in memory. Two at a time, and
+// after a refusal none for a minute: a month's days asked at once (a few
+// months, 80-odd) drew TheSportsDB's 429 (2026-10-17).
+const directCache = new Map();
+const DIRECT_AT_ONCE = 2;
+const DIRECT_HOLD_MS = 60_000;
+let directBusy = 0;
+let directHeldUntil = 0;
+const directQueue = [];
+const directNext = () => {
+  while (directBusy < DIRECT_AT_ONCE && directQueue.length) directQueue.shift()();
+};
+function directRead(url) {
+  return new Promise((resolve, reject) => {
+    directQueue.push(() => {
+      if (Date.now() < directHeldUntil) return reject(new Error('held'));
+      directBusy++;
+      fetch(url)
+        .then(r => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.json();
+        })
+        .then(resolve, error => {
+          directHeldUntil = Date.now() + DIRECT_HOLD_MS;
+          reject(error);
+        })
+        .finally(() => (directBusy--, directNext()));
+    });
+    directNext();
+  });
+}
+// Each answer also kept on the device (the kit's data cache): a day two or
+// more back, final, is read from there at any age; a nearer one when it's
+// under 10 minutes old; any copy when TheSportsDB refuses. CPBL's month on
+// a phone was 14 day lists two at a time at every opening (3 s and more on
+// a phone's link, the proxy refused all October).
+const DEVICE_CACHE = 'orbit-data-v1';
+const deviceKey = url => `https://orbit.data/${encodeURIComponent(url)}`;
+async function deviceCopy(url) {
+  try {
+    const hit = await (await caches.open(DEVICE_CACHE)).match(deviceKey(url));
+    return hit ? { at: Number(hit.headers.get('x-at')) || 0, data: await hit.json() } : null;
+  } catch {
+    return null;
+  }
+}
+function keepOnDevice(url, data) {
+  caches
+    .open(DEVICE_CACHE)
+    .then(c => c.put(deviceKey(url), new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json', 'x-at': String(Date.now()) } })))
+    .catch(() => {});
+}
+const settledDay = url => {
+  const d = /[?&]d=(\d{4}-\d{2}-\d{2})/.exec(url)?.[1];
+  return Boolean(d && d < new Date(Date.now() + 8 * 3_600_000 - 2 * 86_400_000).toISOString().slice(0, 10));
+};
+async function directKept(url) {
+  const onDevice = typeof caches !== 'undefined' && typeof Response !== 'undefined';
+  const saved = onDevice ? await deviceCopy(url) : null;
+  if (saved && (settledDay(url) || Date.now() - saved.at < 10 * 60_000)) return saved.data;
+  try {
+    const data = await directRead(url);
+    if (onDevice) keepOnDevice(url, data);
+    return data;
+  } catch (error) {
+    if (saved) return saved.data;
+    throw error;
+  }
+}
+function directJson(url) {
+  const hit = directCache.get(url);
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit.p;
+  const p = directKept(url);
+  directCache.set(url, { at: Date.now(), p });
+  p.catch(() => directCache.delete(url));
+  return p;
+}
