@@ -4,7 +4,7 @@
 // structure tree and the journey map) and 歷程 (how it grew). Phones get the
 // kit's tab bar; a computer gets a side bar and a wide layout, the one
 // exception to the family's phones-only rule.
-//   #home  #apps/<app>  #how[/<node> | /map[-<story>]]  #story
+//   #home  #apps/<app>  #how[/<node> | /map[-<story>]]  #story[/<chapter>]
 import * as kitUI from '#kit/ui.mjs';
 import { tabBar, watchUpdates, keepOffline } from '#kit/orbit.mjs';
 import { h, t, ico, appImg, en, go } from './shell.mjs';
@@ -79,7 +79,11 @@ function route() {
   if (tab === 'home' && !drawn.home) renderHome(panel, stats);
   if (tab === 'apps' && (changed || what || !drawn.apps)) renderApps(panel, stats, what);
   if (tab === 'how') renderHow(panel, what);
-  if (tab === 'story' && !drawn.story) renderStory(panel, stats);
+  if (tab === 'story' && (changed || drawn.storyAt !== what || !drawn.story)) {
+    renderStory(panel, stats, what);
+    drawn.storyAt = what;
+    if (!changed) window.scrollTo(0, 0);
+  }
   drawn[tab] = true;
   if (tab !== 'home' && !panel.querySelector(':scope > .sc-pagetitle')) panel.prepend(h('h1', { class: 'sc-pagetitle', text: TITLES[tab] }));
 }
