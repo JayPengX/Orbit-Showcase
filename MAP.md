@@ -19,6 +19,10 @@ computers (the one exception to the family's phones-only rule), in Safari and Ch
 Jay 2026-10-27: the showcase is structure, numbers and demos only. The story of how it was made
 (requests, decisions, setbacks) is kept privately for Jay, not on the site.
 
+Jay's own homepage lives here too: `public/home/index.html`, one self-contained file (no kit,
+no betting, open to all) that orbit-site serves at https://jaypengx.com/. It links Orbit, the
+showcase and GitHub.
+
 The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share. The look is the kit's
 (`Shared-Proxy/kit`), with the showcase's own `public/showcase.css`.
 

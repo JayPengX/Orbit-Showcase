@@ -91,10 +91,11 @@ test('stats.json has what the pages read', () => {
   assert.ok(s.repos.every(r => typeof r.repo === 'string'));
 });
 
-// Jay 2026-10-27: betting is his personal thing and stays out of the showcase.
+// Jay 2026-10-27: betting is his personal thing and stays out of the showcase
+// (and out of his homepage, public/home/).
 test('nothing about betting anywhere in the showcase', () => {
   const BANNED = /longshot|sportsbook|betting|\bbets?\b|\bodds\b|lottery|polymarket|kambi|draftkings|運彩|彩券|樂透|刮刮樂|賠率|盤口|下注|投注|博弈/i;
-  const files = ['public/app.mjs', 'public/shell.mjs', 'public/index.html', 'public/demo/Shared-Proxy/kit/help.mjs', ...['public/lib', 'public/views'].flatMap(d => readdirSync(new URL(`../${d}/`, import.meta.url)).map(f => `${d}/${f}`))];
+  const files = ['public/app.mjs', 'public/shell.mjs', 'public/index.html', 'public/home/index.html', 'public/demo/Shared-Proxy/kit/help.mjs', ...['public/lib', 'public/views'].flatMap(d => readdirSync(new URL(`../${d}/`, import.meta.url)).map(f => `${d}/${f}`))];
   for (const f of files) {
     const text = readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
     assert.doesNotMatch(text, BANNED, f);
