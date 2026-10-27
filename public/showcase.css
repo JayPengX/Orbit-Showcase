@@ -2793,20 +2793,21 @@ html.sc-playing body {
   transform: rotate(180deg);
 }
 @media (min-width: 900px) {
+  /* the phone and the tour card, one group in the middle of the window */
   .sc-player-body {
-    grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: minmax(0, 1fr) 340px;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    max-width: 1100px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 10px 32px 32px;
-    gap: 40px;
+    column-gap: 56px;
+    padding: 0 32px 24px;
   }
   .sc-player-stage {
-    height: 100%;
+    flex: none;
+    overflow: visible;
   }
   .sc-player-card {
+    flex: none;
+    width: clamp(280px, 26vw, 360px);
     padding: 22px;
   }
   .sc-player-say {
