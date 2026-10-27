@@ -8,10 +8,17 @@ export const DEMOS = {
   money: { repo: 'Orbit-Money' },
   words: { repo: 'Orbit-Words' },
   sports: { repo: 'Orbit-Sports', real: true },
-  securities: { repo: 'Orbit-Securities', real: true }
+  securities: { repo: 'Orbit-Securities', real: true },
+  class: { repo: 'Orbit-Class' }
 };
 
 export const TOURS = {
+  class: [
+    { say: ['上課時，最上面就是現在這節：哪一科、哪位老師、在哪間教室，還有幾分鐘下課。數字每秒都在倒數。', 'In class, the top shows the period now: the subject, the teacher, the room and the minutes left, counting down every second.'] },
+    { tap: '.q-chip.day[data-day="2026-10-29"]', say: ['點「明天」，看明天要上什麼。', 'Tap “Tomorrow” to see tomorrow’s classes.'] },
+    { tap: '.q-tab[data-tab="week"]', say: ['「課表」分頁：整週的課，一眼看完。', 'The Timetable tab: the whole week at a glance.'] },
+    { tap: '.q-tab[data-tab="tools"]', say: ['「工具」分頁：改課表、考試倒數，還有拍一張照片就讓 AI 填好課表。', 'The Tools tab: edit the timetable, exam countdowns, and a photo that AI turns into a timetable.'] }
+  ],
   securities: [
     { tap: '.q-stock', say: ['這幾檔是今天台股漲跌最多的，價格是錄下那一刻的真實行情。點第一檔。', 'Today’s biggest Taiwan movers, at real prices from the moment this was recorded. Tap the first.'] },
     { tap: '[data-action="chart-style"][data-v="candle"]', say: ['切成 K 線圖，看每天的開盤、最高、最低和收盤。', 'Switch to candles: each day’s open, high, low and close.'] },

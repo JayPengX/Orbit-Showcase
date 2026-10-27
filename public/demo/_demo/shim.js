@@ -19,7 +19,10 @@
 
   // ---- The clock ----
   const RealDate = Date;
-  const shift = D.at - RealDate.now();
+  // An app that reads the phone's own clock hands (Class: the bells are
+  // local times) sees Taiwan's, wherever the visitor is.
+  const away = D.wall ? (new RealDate(D.at).getTimezoneOffset() + 480) * 60_000 : 0;
+  const shift = D.at + away - RealDate.now();
   class DemoDate extends RealDate {
     constructor(...a) {
       if (a.length) super(...a);
@@ -101,6 +104,11 @@
 
   // ---- On the home screen, where it was recorded ----
   define(Navigator.prototype, 'standalone', true);
+  // An app that checks for a phone by its name (Class's phones-only screen) is told it's on one.
+  if (D.ua) {
+    define(Navigator.prototype, 'userAgent', D.ua);
+    define(Navigator.prototype, 'maxTouchPoints', 5);
+  }
   const where = () => ({ coords: { latitude: D.geo[0], longitude: D.geo[1], accuracy: 20, altitude: null, altitudeAccuracy: null, heading: null, speed: null }, timestamp: DemoDate.now() });
   define(navigator, 'geolocation', {
     getCurrentPosition: ok => setTimeout(() => ok(where()), 120),
