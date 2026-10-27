@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-Hant" data-app="transit">
+<head><script src="../_demo/transit.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
+<meta name="build-version" content="dev" />
+<!-- brand: Shared-Proxy/brand/generate.mjs writes this block -->
+<title>Orbit Transit</title>
+<meta name="description" content="台灣大眾運輸：地圖與路線導航、公車到站、火車與高鐵轉乘、捷運路網，加上 YouBike。" />
+<meta name="application-name" content="Orbit Transit" />
+<meta name="apple-mobile-web-app-title" content="Transit" />
+<link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="./icons/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Orbit" />
+<meta property="og:title" content="Orbit Transit" />
+<meta property="og:description" content="台灣大眾運輸：地圖與路線導航、公車到站、火車與高鐵轉乘、捷運路網，加上 YouBike。" />
+<meta property="og:url" content="https://jaypengx.github.io/Orbit-Transit/" />
+<meta property="og:locale" content="zh_TW" />
+<meta property="og:locale:alternate" content="en_US" />
+<meta property="og:image" content="https://jaypengx.github.io/Orbit-Transit/share/og.jpg?v=10117474" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Orbit Transit — 全台公車、火車、捷運與 YouBike，一次規劃" />
+<meta property="og:image" content="https://jaypengx.github.io/Orbit-Transit/share/square.jpg?v=4aa0b572" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="1200" />
+<meta property="og:image:alt" content="Orbit Transit — 全台公車、火車、捷運與 YouBike，一次規劃" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Orbit Transit" />
+<meta name="twitter:description" content="台灣大眾運輸：地圖與路線導航、公車到站、火車與高鐵轉乘、捷運路網，加上 YouBike。" />
+<meta name="twitter:image" content="https://jaypengx.github.io/Orbit-Transit/share/x.jpg?v=f650e036" />
+<meta name="twitter:image:alt" content="Orbit Transit — 全台公車、火車、捷運與 YouBike，一次規劃" />
+<!-- /brand -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="preconnect" href="https://orbit-workers-proxy.pengzjay.workers.dev" crossorigin />
+<!-- kit:head: where the app's stylesheets end, before any module. The kit
+     comes from one place for every app (Shared-Proxy's GitHub Pages, same
+     site as the apps), each file at the hash this device last saw (orbit.kit
+     and orbit.kitFiles, noted from the kit's version.json by boot.js and
+     orbit.mjs kitLatest; on a first visit the hashes the app's deploy
+     baked in, the `null` at the end), so a change to the kit is one push
+     to Shared-Proxy and a phone downloads only the files it changed. A kit
+     file newer than the app's deploy (not in its list) is mapped from those
+     hashes too, never left at a bare address the browser keeps 10 minutes. -->
+<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['brand.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','f1live.mjs','format.mjs','gov.mjs','help.mjs','holidays.mjs','lang.mjs','loan.mjs','logos.mjs','mirror.mjs','names.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Shared-Proxy/kit/',null)</script>
+<!-- /kit:head -->
+<link rel="stylesheet" href="./transit.css" />
+<!-- The map's library, asked as the page opens (the provider kept from the
+     last opening: map.mjs loadGoogle / loadLeaflet take it over), not a second later
+     once the app's code has loaded; and its tiles' servers connected to. -->
+<script>!function(c,g,s){try{c=(JSON.parse(localStorage.getItem('orbit-transit.v1')||'{}').cfg||{}).map||{}}catch(e){c={}}s=document.createElement('script');s.async=true;(c.provider==='google'&&c.key?['https://maps.googleapis.com','https://maps.gstatic.com']:['https://wmts.nlsc.gov.tw']).forEach(function(h){var p=document.createElement('link');p.rel='preconnect';p.href=h;p.crossOrigin='';document.head.appendChild(p)});if(c.provider==='google'&&c.key){window.__otMapsEarly=new Promise(function(r){window.__otMaps=r});s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(c.key)+'&v=weekly&language=zh-TW&region=TW&loading=async&callback=__otMaps'}else{g='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';var l=document.createElement('link');l.rel='stylesheet';l.href=g+'leaflet.min.css';document.head.appendChild(l);window.__otLeafletEarly=new Promise(function(r,j){s.onload=r;s.onerror=j});s.src=g+'leaflet.min.js'}document.head.appendChild(s)}()</script>
+</head>
+<body class="tab-map">
+<div id="loading" data-title="Orbit Transit"></div>
+<!-- kit:boot: right after <div id="loading">. -->
+<script>document.write('<script src="'+ORBIT_KIT.url('boot.js')+'"><\/script>')</script>
+<!-- /kit:boot -->
+<header class="q-appbar">
+  <div class="q-appbar-inner">
+    <div class="q-brand">
+      <img class="q-brand-logo" src="./favicon.svg" alt="" width="34" height="34" />
+      <div class="q-brand-text">
+        <h1 id="title">Orbit Transit</h1>
+      </div>
+    </div>
+    <nav id="tabs" class="q-tabbar" aria-label="分頁"></nav>
+    <div id="top-actions" class="q-actions"></div>
+  </div>
+</header>
+<main id="main">
+  <section id="panel-map" class="ot-panel ot-map-panel" role="tabpanel" aria-labelledby="tab-map">
+    <div id="map" class="ot-map" aria-label="地圖"></div>
+    <div id="map-chips" class="ot-map-chips"></div>
+    <div class="ot-fabs">
+      <button id="fab-layers" class="ot-fab" type="button" aria-label="圖層"></button>
+      <button id="fab-locate" class="ot-fab" type="button" aria-label="我的位置"></button>
+    </div>
+    <!-- The one sheet over the map (Maps' model): search, the shelves, a result's card, a trip's plans. Never a dialog. -->
+    <aside id="msheet" class="ot-msheet" aria-label="地圖">
+      <div id="ms-head" class="ot-ms-head">
+        <button id="ms-grab" class="ot-ms-grab" type="button" role="slider" aria-label="面板高度" aria-valuemin="0" aria-valuemax="2"><i></i></button>
+        <div class="ot-ms-row">
+          <form id="map-search" class="ot-search" role="search" autocomplete="off">
+            <svg class="ot-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5"/></svg>
+            <input id="q" type="search" enterkeyhint="search" placeholder="搜尋地點" aria-label="搜尋地點" />
+            <button id="q-clear" class="ot-x" type="button" aria-label="清除" hidden>×</button>
+          </form>
+          <button id="q-cancel" class="ot-ms-act" type="button" hidden>取消</button>
+        </div>
+      </div>
+      <div id="ms-body" class="ot-ms-body">
+        <div id="home" class="ot-home"></div>
+        <div id="results" class="ot-results" hidden></div>
+        <div id="card" class="ot-card" hidden></div>
+      </div>
+    </aside>
+    <div id="nav" class="ot-nav" hidden></div>
+  </section>
+  <section id="panel-go" class="ot-panel ot-scroll" role="tabpanel" aria-labelledby="tab-go" hidden></section>
+  <section id="panel-times" class="ot-panel ot-scroll" role="tabpanel" aria-labelledby="tab-times" hidden>
+    <div class="ot-page">
+      <nav id="times-seg" class="q-seg ot-times-seg" aria-label="查時刻"><button type="button" data-view="train">火車</button><button type="button" data-view="bus">公車</button><button type="button" data-view="metro">捷運</button></nav>
+      <div id="panel-train"></div>
+      <div id="times-bus" hidden></div>
+      <div id="panel-metro" class="ot-metro" hidden></div>
+    </div>
+  </section>
+  <section id="panel-me" class="ot-panel ot-scroll" role="tabpanel" aria-labelledby="tab-me" hidden>
+    <div id="me-main"></div>
+  </section>
+</main>
+<!-- Navigating, shrunk or on another tab: the step you're on, a tap goes back (nav.mjs). -->
+<div id="nav-mini" class="ot-nav-mini"></div>
+<script type="module" src="./app.mjs" onerror="window.__fxFail()"></script>
+</body>
+</html>

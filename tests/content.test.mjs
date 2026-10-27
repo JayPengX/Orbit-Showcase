@@ -1,5 +1,5 @@
 // The showcase's content holds together: every id is unique, every link,
-// story step, change and app points at something real, every picture is
+// story step and app points at something real, every picture is
 // on disk, every icon is one the kit draws, and the counts file has the
 // shape the pages read. Plus Jay's rule (2026-10-27): nothing about betting.
 import { test } from 'node:test';
@@ -10,7 +10,8 @@ import { ICONS } from '#kit/orbit.mjs';
 import { ROOT, NODES } from '../public/lib/tree.mjs';
 import { APPS } from '../public/lib/apps.mjs';
 import { ROWS, STORIES } from '../public/lib/stories.mjs';
-import { ORIGIN, TOOLS, DECISIONS, SETUP, PATTERNS, PROMPTS, LEARNED, SETBACKS, CHANGES, BIRTHS, LOOP, DAYS, RULES } from '../public/lib/history.mjs';
+import { BIRTHS } from '../public/lib/births.mjs';
+import { SHOW } from '../public/lib/tree-show.mjs';
 
 const shot = f => new URL(`../public/shots/${f}.webp`, import.meta.url);
 const pair = x => Array.isArray(x) && x.length === 2 && x.every(s => typeof s === 'string' && s.trim());
@@ -52,38 +53,24 @@ test('map: every step at a spot on the map, every spot opens a tree node', () =>
   }
 });
 
-test('history: dates in order, nodes real, pictures on disk', () => {
-  const day = /^2026-\d\d-\d\d$/;
-  for (const [f] of ORIGIN.steps) assert.ok(existsSync(shot(f)), f);
-  for (const list of [CHANGES, BIRTHS, DECISIONS]) {
-    const dates = list.map(x => x.date);
-    assert.ok(dates.every(d => day.test(d)));
-    assert.deepEqual(dates, [...dates].sort(), 'oldest first');
-  }
-  for (const c of CHANGES) {
-    assert.ok(pair(c.title) && pair(c.p) && pair(c.i) && pair(c.r), c.date);
-    if (c.node) assert.ok(NODES.has(c.node), c.node);
-    if (c.ba) assert.ok(existsSync(shot(c.ba)), c.ba);
-    for (const a of c.apps) assert.ok(NODES.has(a), a);
-  }
+test('births: real dates, oldest first, real apps', () => {
+  const dates = BIRTHS.map(x => x.date);
+  assert.ok(dates.every(d => /^2026-\d\d-\d\d$/.test(d)));
+  assert.deepEqual(dates, [...dates].sort(), 'oldest first');
   for (const b of BIRTHS) assert.ok(APPS.some(a => a.id === b.id), b.id);
-  for (const x of [...TOOLS.map(t => t.icon), ...DECISIONS.map(d => d.icon), ...CHANGES.map(c => c.icon), ...DAYS.map(d => d.icon), ...LOOP.map(l => l[0]), ...SETUP.map(s => s[0]), ...RULES.map(r => r[0])]) assert.ok(icons[x], `icon ${x}`);
 });
 
-test('how Jay asks and where it went wrong: real dates, a habit each, both languages', () => {
-  const tags = new Set(PATTERNS.map(p => p.id));
-  for (const p of PATTERNS) assert.ok(pair(p.title) && pair(p.line) && icons[p.icon], p.id);
-  for (const x of PROMPTS) {
-    assert.match(x.date, /^2026-\d\d-\d\d$/);
-    assert.ok(tags.has(x.tag), x.tag);
-    assert.ok(pair(x.asked) && pair(x.gist) && pair(x.then) && !('said' in x), x.date);
-    if (x.app) assert.ok(APPS.some(a => a.id === x.app), x.app);
+test('tree cards: every picture on a real node, both languages, icons drawn', () => {
+  const said = x => typeof x === 'string' ? x.trim() : pair(x);
+  for (const [id, s] of Object.entries(SHOW)) {
+    assert.ok(NODES.has(id), `picture for missing node ${id}`);
+    for (const [icon, label] of [...(s.flow || []), ...(s.tags || [])]) assert.ok(icons[icon] && said(label), `${id}: ${icon}`);
+    for (const [v, label] of s.nums || []) assert.ok(said(v) && pair(label), `${id} number`);
+    for (const [a, b] of s.pairs || []) assert.ok(pair(a) && pair(b), `${id} pair`);
+    for (const r of s.rules || []) assert.ok(pair(r), `${id} rule`);
+    assert.ok((s.nums || []).length <= 3, `${id}: three numbers at most`);
   }
-  for (const p of PATTERNS) assert.ok(PROMPTS.some(x => x.tag === p.id), `a message for ${p.id}`);
-  assert.ok(LEARNED.every(pair));
-  const dates = SETBACKS.map(x => x.date);
-  assert.deepEqual(dates, [...dates].sort(), 'oldest first');
-  for (const x of SETBACKS) assert.ok(pair(x.title) && pair(x.wrong) && pair(x.push) && pair(x.rule) && icons[x.icon], x.date);
+  for (const [id, { node }] of NODES) if (!node.kids?.length) assert.ok(SHOW[id], `${id}: a leaf card needs a picture`);
 });
 
 test('the tab bar draws its icons', () => {

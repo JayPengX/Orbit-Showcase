@@ -215,18 +215,25 @@
   };
   define(navigator, 'sendBeacon', () => true);
 
-  // ---- Outside pictures from the kept copies ----
+  // ---- Outside pictures, scripts and stylesheets from the kept copies ----
   const pics = new Map(Object.entries(D.pics || {}));
   const kept = u => {
     if (typeof u !== 'string' || !/^https?:/.test(u)) return u;
     const f = pics.get(u);
     return f ? new URL(f, here).href : u;
   };
-  const src = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
-  Object.defineProperty(HTMLImageElement.prototype, 'src', { configurable: true, get() { return src.get.call(this); }, set(v) { src.set.call(this, kept(v)); } });
+  // (and outside scripts and stylesheets an app adds, like Transit's map library)
+  const swap = (proto, prop) => {
+    const d = Object.getOwnPropertyDescriptor(proto, prop);
+    Object.defineProperty(proto, prop, { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, kept(v)); } });
+  };
+  swap(HTMLImageElement.prototype, 'src');
+  swap(HTMLScriptElement.prototype, 'src');
+  swap(HTMLLinkElement.prototype, 'href');
   const setAttr = Element.prototype.setAttribute;
+  const linked = (el, name) => (el instanceof HTMLImageElement || el instanceof HTMLScriptElement ? name === 'src' : el instanceof HTMLLinkElement && name === 'href');
   Element.prototype.setAttribute = function (name, value) {
-    return setAttr.call(this, name, this instanceof HTMLImageElement && String(name).toLowerCase() === 'src' ? kept(value) : value);
+    return setAttr.call(this, name, linked(this, String(name).toLowerCase()) ? kept(value) : value);
   };
   new MutationObserver(list => {
     for (const m of list) for (const n of m.addedNodes) if (n.nodeType === 1) for (const img of n.tagName === 'IMG' ? [n] : n.querySelectorAll?.('img') || []) { const a = img.getAttribute('src'); const b = kept(a); if (b !== a) setAttr.call(img, 'src', b); }

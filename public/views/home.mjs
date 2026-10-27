@@ -32,7 +32,7 @@ function hero(stats) {
         : null,
       h('div', { class: 'sc-ctas' }, [
         link('apps', '', [ico('grid'), t(['看 App', 'See the apps'])], 'sc-btn sc-btn-main'),
-        link('story', '', [ico('history'), t(['它怎麼長大', 'How it grew'])], 'sc-btn')
+        link('how', '', [ico('list'), t(['看它怎麼運作', 'See how it works'])], 'sc-btn')
       ])
     ])
   ]);
