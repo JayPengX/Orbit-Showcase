@@ -127,7 +127,8 @@ export function openDemo(app, title) {
           coach.hidden = true;
           if (ring) ring.hidden = true;
           cancelAnimationFrame(watch);
-          setTimeout(() => step(at + 1), s.after || 700);
+          const typing = s.type ? typeInto(e.target.closest(s.tap), s.type) : 0;
+          setTimeout(() => step(at + 1), typing + (s.after || 700));
         }
       };
       doc.addEventListener('click', onTap, true);
@@ -140,6 +141,23 @@ export function openDemo(app, title) {
         step(tour.length ? 0 : -1);
       }, 400);
     });
+  }
+
+  // A step with words to type (`type`): once its box is tapped, the words go
+  // in one letter at a time, as if typed (the app hears them once, whole, as
+  // recorded); returns how long that takes.
+  function typeInto(el, text) {
+    const box = el?.matches?.('input, textarea') ? el : el?.querySelector?.('input, textarea');
+    if (!box) return 0;
+    const win = frame.contentWindow;
+    const set = Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, 'value').set;
+    [...text].forEach((c, i) =>
+      setTimeout(() => {
+        set.call(box, box.value + c);
+        if (i === text.length - 1) box.dispatchEvent(new win.Event('input', { bubbles: true }));
+      }, 250 + i * 160)
+    );
+    return 250 + text.length * 160;
   }
 
   // The bubble beside the target, its tip pointing at it; above the target

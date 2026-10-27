@@ -11,7 +11,10 @@
 // - the phone is where it was recorded, and chance plays out the same way
 //   each time (Math.random from a fixed seed, as while recording);
 // - every call outside the site is answered from the recording (nothing
-//   goes out live), and pictures from outside come from the copies kept.
+//   goes out live), and pictures from outside come from the copies kept;
+//   the one exception is a map like the real app's (D.liveMap: Transit's
+//   Google map, its key asked of the proxy and its tiles from Google, live),
+//   NLSC's recorded map whenever that isn't given.
 (() => {
   const D = window.__DEMO;
   if (!D) return;
@@ -178,6 +181,21 @@
     const res = await realFetch(new URL(file, here).href);
     return new Response(status === 204 || status === 304 ? null : await res.arrayBuffer(), { status, headers: { 'content-type': type } });
   };
+  // The recorded settings, with the map the proxy gives the showcase now
+  // (a short wait at most; the recorded one on any failure).
+  const withMap = async hit => {
+    const res = await answer(hit);
+    const cfg = await res.json().catch(() => null);
+    if (!cfg) return answer(hit);
+    // (once Google has turned the map down here, the recorded one: see gm_authFailure below)
+    if (/[?&]nogmap\b/.test(location.search)) return answer(hit);
+    const live = await Promise.race([realFetch(D.liveMap).then(r => (r.ok ? r.json() : null)), new Promise(r => setTimeout(r, 3000, null))]).catch(() => null);
+    if (live?.map?.provider === 'google' && live.map.key) cfg.map = live.map;
+    return new Response(JSON.stringify(cfg), { status: res.status, headers: { 'content-type': 'application/json' } });
+  };
+  // Google turning the map down (a key not allowed here): the page again,
+  // on the recorded map.
+  if (D.liveMap) window.gm_authFailure = () => location.replace(`${location.pathname}${location.search ? `${location.search}&` : '?'}nogmap${location.hash}`);
   window.fetch = async (input, init = {}) => {
     const url = new URL(typeof input === 'string' || input instanceof URL ? String(input) : input.url, location.href);
     const method = String(init.method || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
@@ -206,9 +224,11 @@
       const b = target && (await one(trim ? `${trim}!${target}` : target));
       if (b) return new Response(b, { headers: { 'content-type': 'application/json' } });
     }
+    if (D.liveMap && /^maps\.(googleapis|gstatic)\.com$/.test(url.hostname)) return realFetch(input, init);
     const body = typeof init.body === 'string' ? init.body : '';
     const k = `${method} ${clean(url.href)}`;
     const hit = byKey.get(`${k}\n${body}`) || byUrl.get(k);
+    if (hit && D.liveMap && /\/transit\/config$/.test(url.pathname)) return withMap(hit);
     if (hit) return answer(hit);
     console.warn('[demo] not recorded:', method, url.href);
     return new Response('{}', { status: 503, headers: { 'content-type': 'application/json' } });

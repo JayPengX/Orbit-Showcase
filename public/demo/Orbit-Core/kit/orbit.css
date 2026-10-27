@@ -8,11 +8,29 @@
    every movement (SwiftUI's smooth, snappy and bouncy, as CSS linear()).
    Apps build on these tokens and the q- components (kit/ui.mjs makes the
    ones that move); they don't restyle them. */
+/* Chinese inside a rounded number line ("3 張", a title in the focal
+   spot): iPhone's rounded face (ui-rounded) has no Chinese and falls to an
+   odd heavy face for it (Money's 更多 title came out garbled, Jay 10-27).
+   This face takes only the Chinese characters and draws them in PingFang (Noto
+   elsewhere); digits and Latin go on to ui-rounded. Put first in
+   --q-font-rounded; where no listed font is there it is skipped. */
+@font-face {
+  font-family: 'Q Han';
+  src: local('PingFangTC-Regular'), local('PingFang TC'), local('Noto Sans TC'), local('Noto Sans CJK TC');
+  font-weight: 100 549;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3100-31FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: 'Q Han';
+  src: local('PingFangTC-Semibold'), local('PingFang TC Semibold'), local('Noto Sans TC Bold'), local('NotoSansCJKtc-Bold');
+  font-weight: 550 1000;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3100-31FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
 :root {
   /* San Francisco (and PingFang for Chinese) on Apple's devices; the
      nearest system face elsewhere. Rounded for big numbers. */
   --q-font: -apple-system, BlinkMacSystemFont, system-ui, 'SF Pro Text', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', 'Segoe UI', sans-serif;
-  --q-font-rounded: ui-rounded, 'SF Pro Rounded', var(--q-font);
+  --q-font-rounded: 'Q Han', ui-rounded, 'SF Pro Rounded', var(--q-font);
   --q-font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* The iOS 26/27 palette, light. */
@@ -1482,6 +1500,22 @@ dialog.q-sheet.q-full {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+.q-cell-act {
+  flex: none;
+  min-height: 34px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--q-accent);
+  font: var(--q-t-body);
+  cursor: pointer;
+}
+.q-cell-act.danger {
+  color: var(--q-red);
+}
+.q-cell-act:disabled {
+  opacity: 0.4;
+}
 .q-cell.chevron::after,
 .q-row-btn.chevron::after {
   content: '';
@@ -1792,7 +1826,7 @@ input[type='checkbox'][switch] {
 .q-fig b,
 .q-fig .num {
   display: block;
-  font: 700 20px/26px var(--q-font-rounded);
+  font: 600 20px/26px var(--q-font-rounded);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2465,6 +2499,70 @@ dialog.q-moved::backdrop {
   outline: 2px solid var(--q-accent);
   outline-offset: 1px;
 }
+/* The pass as a password: dots, with 顯示 at its end; the username a
+   password manager files it under is there but never seen. */
+.q-pass-field {
+  position: relative;
+}
+.q-pass-field .q-pass-input {
+  padding: 0 64px;
+}
+.q-pass-eye {
+  position: absolute;
+  inset: 0 6px 0 auto;
+  margin: auto 0;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--q-accent);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+.q-pass-user {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+}
+/* Or a passkey: under the form, as Sign in with Apple sits under a login. */
+.q-gate-or {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+.q-gate-or-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--q-muted);
+  font-size: 12.5px;
+}
+.q-gate-or-line::before,
+.q-gate-or-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--q-border);
+}
+.q-passkey-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.q-passkey-btn svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
 .q-gate-error {
   min-height: 1em;
   margin: 0;
@@ -2664,33 +2762,38 @@ dialog.q-moved::backdrop {
   text-align: start;
   margin-bottom: 6px;
   cursor: pointer;
-  background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--q-accent) 45%, transparent) 0%, transparent 60%), linear-gradient(135deg, #0f172a, color-mix(in srgb, var(--q-accent) 55%, #0f172a));
-  box-shadow: var(--q-shadow);
+  /* (A card you hold: one deep colour lit from the top, no glow; docs/DESIGN.md §3.) */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--q-accent) 34%, #0f172a), #0f172a);
+  box-shadow: none;
 }
 .q-pc-top { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .q-pc-face { position: relative; flex: none; display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; overflow: hidden; }
 .q-pc-face.q-framed { background: linear-gradient(#0f172a, #0f172a) padding-box, var(--q-frame) border-box; border-width: 3px; }
 .q-pc-face img { display: block; width: 100%; height: 100%; border-radius: 50%; }
 .q-pc-id { display: grid; gap: 2px; min-width: 0; }
-.q-pc-brand { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; opacity: 0.75; }
-.q-pc-big { font-size: 21px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
+.q-pc-brand { font: 500 13px/18px var(--q-font); opacity: 0.7; }
+.q-pc-big { font: 700 22px/28px var(--q-font); white-space: nowrap; }
 .q-pc-no { font-size: 12.5px; opacity: 0.7; letter-spacing: 0.04em; white-space: nowrap; }
-.q-pc-ms { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; }
-.q-pc-ms img { display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; filter: grayscale(0.6); opacity: 0.45; }
-.q-pc-ms img.got { filter: none; opacity: 1; box-shadow: 0 0 0 1.5px #fbbf24; }
+.q-pc-ms { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+.q-pc-ms img { display: block; width: 100%; max-width: 40px; aspect-ratio: 1; border-radius: 50%; }
+.q-pc-ms img.dim { opacity: 0.4; }
 /* Milestone frames: the app's colours with gold, turning. */
-.q-frame-ms-pass { --q-frame: conic-gradient(from var(--q-spin), #2dd4bf, #7dd3fc, #a5b4fc, #6ee7b7, #fbbf24, #fdba74, #f0abfc, #f9a8d4, #2dd4bf); box-shadow: 0 0 10px rgba(251, 191, 36, 0.55); animation: q-spin 8s linear infinite; }
-.q-frame-ms-stock { --q-frame: conic-gradient(from var(--q-spin), #2dd4bf, #fbbf24, #0f3d5c, #fde68a, #2dd4bf); box-shadow: 0 0 9px rgba(45, 212, 191, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-orbit { --q-frame: conic-gradient(from var(--q-spin), #7dd3fc, #fbbf24, #0c4a6e, #fde68a, #7dd3fc); box-shadow: 0 0 9px rgba(14, 165, 233, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-weather { --q-frame: conic-gradient(from var(--q-spin), #a5b4fc, #fbbf24, #312e81, #fde68a, #a5b4fc); box-shadow: 0 0 9px rgba(99, 102, 241, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-transit { --q-frame: conic-gradient(from var(--q-spin), #6ee7b7, #fbbf24, #064e3b, #fde68a, #6ee7b7); box-shadow: 0 0 9px rgba(16, 185, 129, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-match { --q-frame: conic-gradient(from var(--q-spin), #fdba74, #fbbf24, #9a3412, #fde68a, #fdba74); box-shadow: 0 0 9px rgba(234, 88, 12, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-beats { --q-frame: conic-gradient(from var(--q-spin), #f0abfc, #fbbf24, #701a75, #fde68a, #f0abfc); box-shadow: 0 0 9px rgba(192, 38, 211, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-law { --q-frame: conic-gradient(from var(--q-spin), #818cf8, #fbbf24, #1e1b4b, #fde68a, #818cf8); box-shadow: 0 0 9px rgba(79, 70, 229, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-vocab { --q-frame: conic-gradient(from var(--q-spin), #f9a8d4, #fbbf24, #831843, #fde68a, #f9a8d4); box-shadow: 0 0 9px rgba(219, 39, 119, 0.5); animation: q-spin 9s linear infinite; }
-.q-frame-ms-money { --q-frame: conic-gradient(from var(--q-spin), #fde047, #fbbf24, #713f12, #fef3c7, #fde047); box-shadow: 0 0 9px rgba(161, 98, 7, 0.5); animation: q-spin 9s linear infinite; }
+.q-frame-ms-pass { --q-frame: conic-gradient(from var(--q-spin), #2dd4bf, #7dd3fc, #a5b4fc, #6ee7b7, #fbbf24, #fdba74, #f0abfc, #f9a8d4, #2dd4bf); animation: q-spin 8s linear infinite; }
+.q-frame-ms-stock { --q-frame: conic-gradient(from var(--q-spin), #2dd4bf, #fbbf24, #0f3d5c, #fde68a, #2dd4bf); animation: q-spin 9s linear infinite; }
+.q-frame-ms-orbit { --q-frame: conic-gradient(from var(--q-spin), #7dd3fc, #fbbf24, #0c4a6e, #fde68a, #7dd3fc); animation: q-spin 9s linear infinite; }
+.q-frame-ms-weather { --q-frame: conic-gradient(from var(--q-spin), #a5b4fc, #fbbf24, #312e81, #fde68a, #a5b4fc); animation: q-spin 9s linear infinite; }
+.q-frame-ms-transit { --q-frame: conic-gradient(from var(--q-spin), #6ee7b7, #fbbf24, #064e3b, #fde68a, #6ee7b7); animation: q-spin 9s linear infinite; }
+.q-frame-ms-match { --q-frame: conic-gradient(from var(--q-spin), #fdba74, #fbbf24, #9a3412, #fde68a, #fdba74); animation: q-spin 9s linear infinite; }
+.q-frame-ms-beats { --q-frame: conic-gradient(from var(--q-spin), #f0abfc, #fbbf24, #701a75, #fde68a, #f0abfc); animation: q-spin 9s linear infinite; }
+.q-frame-ms-law { --q-frame: conic-gradient(from var(--q-spin), #818cf8, #fbbf24, #1e1b4b, #fde68a, #818cf8); animation: q-spin 9s linear infinite; }
+.q-frame-ms-vocab { --q-frame: conic-gradient(from var(--q-spin), #f9a8d4, #fbbf24, #831843, #fde68a, #f9a8d4); animation: q-spin 9s linear infinite; }
+/* A milestone's frame in its tier's metal: bronze and silver still, gold
+   the app's own colours turning (above). */
+.q-framed.q-ms-t1 { --q-frame: linear-gradient(135deg, #7c2d12, #fdba74, #b45309, #fed7aa); animation: none; }
+.q-framed.q-ms-t2 { --q-frame: linear-gradient(135deg, #64748b, #f8fafc, #94a3b8, #e2e8f0); animation: none; }
+.q-frame-ms-money { --q-frame: conic-gradient(from var(--q-spin), #fde047, #fbbf24, #713f12, #fef3c7, #fde047); animation: q-spin 9s linear infinite; }
 .q-notice-sub {
-  font: 400 12.5px/1.4 var(--q-font);
+  font: var(--q-t-footnote);
   color: var(--q-muted);
 }
 
@@ -2757,10 +2860,8 @@ dialog.q-newpass::backdrop { background: var(--q-page); }
 .q-notice-app {
   margin: 0;
   padding: 12px 16px 2px;
-  font: 800 11px/1.2 var(--q-font);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--q-muted);
+  font: 600 15px/20px var(--q-font);
+  color: var(--q-label-2);
 }
 .q-notice-row {
   display: flex;
@@ -2784,11 +2885,11 @@ dialog.q-newpass::backdrop { background: var(--q-page); }
   min-width: 0;
 }
 .q-notice-text strong {
-  font: 650 15px/1.3 var(--q-font);
+  font: 400 17px/22px var(--q-font);
   color: var(--q-text);
 }
 .q-notice-sub {
-  font: 400 12.5px/1.4 var(--q-font);
+  font: var(--q-t-footnote);
   color: var(--q-muted);
 }
 
@@ -2818,8 +2919,7 @@ dialog {
 }
 .q-pass-title { display: flex; align-items: center; gap: 10px; }
 .q-pass-title img { border-radius: 8px; }
-.q-pass-tabs { position: sticky; top: -1px; z-index: 2; margin: 0 calc(-1 * var(--q-margin)) 12px; padding: 8px var(--q-margin); background: var(--q-sheet); overflow-x: auto; flex-wrap: nowrap; }
-.q-pass-tabs .q-chip[aria-selected='true'] { background: var(--accent-wash); color: var(--accent); }
+.q-pass-tabs { position: sticky; top: -1px; z-index: 2; margin: 0 calc(-1 * var(--q-margin)) var(--q-s-4); padding: var(--q-s-2) var(--q-margin); background: var(--q-sheet); }
 .q-pass-body { display: grid; gap: 4px; }
 .q-pass .q-section { margin-top: 14px; }
 .q-pass .q-section-head h2 { font-size: 17px; font-weight: 800; margin: 0 0 8px; }
@@ -2832,7 +2932,7 @@ dialog {
 .q-pass .q-card + .q-card { margin-top: 12px; }
 .q-pass .q-card.list { padding: 0; overflow: hidden; }
 .q-pass .section-sub { color: var(--q-muted); font-size: 13px; margin: -6px 0 10px; }
-.q-pass .two-btn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.q-pass .two-btn { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 10px; margin-top: 12px; }
 .q-pass .q-btn.ghost { background: none; border-color: transparent; }
 .q-pass .q-btn.block { width: 100%; }
 .q-pass .q-chips.small .q-chip { min-height: 30px; padding: 0 12px; font-size: 13px; }
@@ -2846,23 +2946,39 @@ dialog {
 
 
 .q-pass .looks { display: grid; gap: 10px; }
-.q-pass .ms-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.q-pass .ms-tile { display: grid; justify-items: center; align-content: start; gap: 5px; min-width: 0; padding: 12px 4px 10px; border: 1.5px solid var(--q-border); border-radius: 14px; background: var(--q-surface); color: inherit; font: inherit; cursor: default; }
-.q-pass .ms-tile.got { cursor: pointer; }
-.q-pass .ms-tile.on { border-color: var(--accent); background: var(--accent-wash); }
-.q-pass .ms-look { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; }
-.q-pass .ms-tile:not(.got) .ms-look { --q-frame: var(--q-border); box-shadow: none; animation: none; }
-.q-pass .ms-tile:not(.got) .av-face { filter: grayscale(0.45); opacity: 0.6; }
-.q-pass .ms-lock { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--q-surface); color: var(--q-muted); box-shadow: 0 0 0 1.5px var(--q-border); }
-.q-pass .ms-lock svg { width: 12px; height: 12px; }
-.q-pass .ms-tile strong { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.q-pass .ms-prog { display: grid; gap: 4px; width: 100%; padding: 0 6px; box-sizing: border-box; }
-.q-pass .ms-bar { display: block; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--q-text) 12%, transparent); overflow: hidden; }
-.q-pass .ms-bar i { display: block; min-width: 5px; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.q-pass .ms-prog small { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: var(--q-muted); white-space: nowrap; }
-.q-pass .ms-prog small img { border-radius: 3px; flex: none; }
-.q-pass .ms-state { font-size: 11.5px; font-weight: 700; color: #f59e0b; }
-.q-pass .ms-tile.on .ms-state { color: var(--accent); }
+/* 里程碑: the next medal open on the page (the focal number, a bar, the
+   medal it earns), then one row each in a list. */
+.q-pass .ms-got { margin-left: auto; color: var(--q-label-2); font: var(--q-t-footnote); }
+.q-pass .ms-next { display: flex; align-items: center; gap: 16px; margin: 4px 0 24px; }
+.q-pass .ms-next-text { display: grid; gap: 4px; flex: 1 1 auto; min-width: 0; }
+.q-pass .ms-next-text small { color: var(--q-label-2); font: var(--q-t-subhead); }
+.q-pass .ms-next-n { font: var(--q-t-focal); letter-spacing: -0.02em; white-space: nowrap; }
+.q-pass .ms-next-n span { color: var(--q-label-2); font: var(--q-t-figure); }
+.q-pass .ms-next-look { flex: none; display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; }
+.q-pass .ms-next-look .av-face { width: 100%; height: 100%; border-radius: 50%; }
+.q-pass .ms-bar { display: block; height: 4px; margin: 4px 0 2px; border-radius: 2px; background: var(--q-fill-3, color-mix(in srgb, var(--q-text) 12%, transparent)); overflow: hidden; }
+.q-pass .ms-bar i { display: block; min-width: 4px; height: 100%; border-radius: 2px; background: var(--accent); }
+.q-pass .ms-list { --q-sep-left: 68px; }
+.q-pass .ms-row { width: 100%; min-width: 0; min-height: 64px; }
+.q-pass .ms-row:not(.got) { cursor: default; }
+.q-pass .ms-look { flex: none; display: block; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; }
+.q-pass .ms-look .av-face { display: block; width: 100%; height: 100%; }
+.q-pass .ms-look.icon { border-radius: 10px; opacity: 0.85; }
+.q-pass .ms-name { display: flex; align-items: baseline; gap: 8px; }
+.q-pass .ms-name em { color: var(--accent); font: var(--q-t-footnote); font-style: normal; }
+.q-pass .ms-row.on .ms-look { box-shadow: 0 0 0 2px var(--q-surface), 0 0 0 4px var(--accent); }
+.q-pass .ms-row .q-cell-text small { white-space: normal; text-wrap: pretty; }
+.q-pass .ms-side { flex: none; display: grid; justify-items: end; gap: 6px; }
+.q-pass .ms-side small { color: var(--q-label-2); font: var(--q-t-footnote); white-space: nowrap; }
+.q-pass .ms-pips { display: flex; gap: 4px; }
+.q-pass .ms-pips i { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--q-sep); }
+.q-pass .ms-pips i.on { box-shadow: none; }
+.q-pass .ms-pips i.t1.on { background: #c2410c; }
+.q-pass .ms-pips i.t2.on { background: #94a3b8; }
+.q-pass .ms-pips i.t3.on { background: #f59e0b; }
+.q-pass .ms-pips i.t1.next { box-shadow: inset 0 0 0 1.5px #c2410c; }
+.q-pass .ms-pips i.t2.next { box-shadow: inset 0 0 0 1.5px #94a3b8; }
+.q-pass .ms-pips i.t3.next { box-shadow: inset 0 0 0 1.5px #f59e0b; }
 
 .q-pass .lv-h { color: var(--q-muted); font-size: 12.5px; font-weight: 700; }
 .q-pass .av-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
@@ -2887,12 +3003,6 @@ dialog {
 .q-pass .app-name small, .q-pass .app-last { font-size: 12px; }
 .q-pass .app-last { white-space: nowrap; }
 .q-pass .pass-guide { margin-top: 18px; }
-.q-pass-tabs .q-chip { padding: 0 13px; flex: none; }
-/* A narrow phone: the five tabs share the row (說明/Help was off its end at 320 px). */
-@media (max-width: 380px) {
-  .q-pass-tabs { gap: 6px; }
-  .q-pass-tabs .q-chip { flex: 1 0 auto; justify-content: center; padding: 0 8px; }
-}
 
 /* 除錯紀錄: its buttons under the switch, and a small red dot at the top while recording. */
 .q-rec-acts {
@@ -3170,11 +3280,11 @@ html[data-q-turn] dialog[open] {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--t) 82%, #fff), var(--t) 60%);
+  /* (One flat colour: the tile says which kind, nothing more. docs/DESIGN.md §3) */
+  background: var(--t);
   color: #ffffff;
   font-size: 20px;
   line-height: 1;
-  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18);
 }
 .q-tile svg {
   width: 22px;
@@ -3306,6 +3416,17 @@ div.q-ritem {
   color: var(--q-label-2);
   font: 600 12px/1 var(--q-font);
   white-space: nowrap;
+}
+/* A plain tag (no colour, nothing of the app's on it) is a fact: grey text,
+   no capsule (docs/DESIGN.md §6). The coloured ones, the exceptions, keep theirs. */
+.q-tag:is([class='q-tag'], [class='q-tag '], [class='q-tag num'], .gray) {
+  min-height: 0;
+  padding: 0;
+  background: none;
+  font: 500 13px/18px var(--q-font);
+  /* A fact is text: a long one wraps instead of running off the screen. */
+  white-space: normal;
+  max-width: 100%;
 }
 .q-tag:is(.green, .red, .orange, .indigo, .blue, .tint) {
   background: color-mix(in srgb, var(--t) 16%, transparent);
@@ -3484,7 +3605,7 @@ div.q-ritem {
   gap: 6px;
   min-width: 0;
   padding: 14px 16px;
-  border-radius: 20px;
+  border-radius: var(--q-r-card);
   background: var(--q-surface);
   color: var(--q-label);
   text-decoration: none;
@@ -3804,7 +3925,7 @@ div.q-ritem {
   margin: 4px 0 16px;
   padding: 16px;
   border-radius: 20px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--t) 92%, #000), color-mix(in srgb, var(--t) 70%, #fff));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--t) 86%, #0b1020), color-mix(in srgb, var(--t) 74%, #0b1020));
   color: #ffffff;
 }
 .q-sh-logos {
@@ -4413,7 +4534,7 @@ button.q-cal-d {
   gap: 4px;
   min-width: 0;
   padding: 14px 16px;
-  border-radius: 20px;
+  border-radius: var(--q-r-card);
   background: var(--q-surface);
   color: var(--q-label);
 }
@@ -4573,20 +4694,18 @@ button.q-cal-d {
   font-weight: 500;
 }
 .q-panel-lv {
+  /* (A level is a fact: grey text, no capsule; up/down colour it with meaning. docs/DESIGN.md §6) */
   flex: none;
   margin-inline-start: auto;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--t) 16%, transparent);
-  color: var(--t);
-  font: var(--q-t-caption2);
-  font-weight: 600;
+  color: var(--q-label-2);
+  font: var(--q-t-caption);
+  font-weight: 500;
 }
 .q-panel-lv.up {
-  --t: var(--q-up);
+  color: var(--q-up);
 }
 .q-panel-lv.down {
-  --t: var(--q-down);
+  color: var(--q-down);
 }
 .q-panel-row {
   display: flex;
@@ -4925,17 +5044,20 @@ html.q-kb .q-kb-docked {
 /* A menu over a sheet: solid, so its rows never mix with what's under them (Money's 付款方式 over the keypad). */
 dialog[open] .q-menu { background: var(--q-sheet); }
 
-/* ---- The focal point, open on the page (docs/DESIGN.md) ----
+/* ---- The focal point, on its card (docs/DESIGN.md) ----
    A screen's one answer: a quiet label, the number, one line under it, a
-   thin bar if there's a limit, and at most three figures beside it. No card,
-   no colour: size and the space around it make it the focus.
+   thin bar if there's a limit, and at most three figures beside it, on a
+   plain card (Jay 2026-10-27: open on the page read as bare text). The card
+   is flat, the surface every card uses; size and space still make the focus.
    .q-focus > .q-focus-label, .q-focus-value, .q-focus-bar > i,
    .q-focus-sub, .q-focus-figs > div > small + b (.in / .out on b: meaning). */
 .q-focus {
   display: grid;
   gap: var(--q-s-1);
   min-width: 0;
-  padding: var(--q-s-2) 4px var(--q-s-2);
+  padding: var(--q-s-4) 18px 18px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
 }
 .q-focus-label {
   color: var(--q-label-2);
@@ -4949,6 +5071,18 @@ dialog[open] .q-menu { background: var(--q-sheet); }
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   white-space: nowrap;
+}
+/* The rest of a value ("/ 6,169", a unit): smaller and grey beside it. */
+.q-focus-value.q-words {
+  /* (A focal line in words, not a number: the text face, which reads better.) */
+  font-family: var(--q-font);
+  letter-spacing: -0.01em;
+}
+.q-focus-value .dim {
+  color: var(--q-label-2);
+  font-size: 0.5em;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 .q-focus-bar {
   height: 4px;
@@ -5007,4 +5141,136 @@ dialog[open] .q-menu { background: var(--q-sheet); }
 }
 .q-section:has(> .q-list-head) + .q-section:has(> .q-list-head) {
   margin-top: var(--q-s-5);
+}
+
+/* ---- The share sheet (kit/share.mjs): the code is the focus, open on the
+   sheet; its style below as rows (a label, then a segmented choice). ---- */
+.q-share-top {
+  display: grid;
+  justify-items: center;
+  gap: var(--q-s-2);
+  padding-top: var(--q-s-2);
+}
+.q-share-qr {
+  width: clamp(150px, 27vh, 228px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--q-r-cell);
+  box-shadow: 0 0 0 var(--q-hairline) var(--q-sep);
+}
+.q-share-qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.q-share-warn {
+  margin: 0;
+  color: var(--q-warn);
+  font: var(--q-t-footnote);
+  text-align: center;
+}
+.q-share-warn:empty {
+  display: none;
+}
+.q-share-actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--q-s-2);
+  width: 100%;
+  margin-top: var(--q-s-1);
+}
+.q-share-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--q-s-3);
+  min-height: 46px;
+  padding: 6px 12px 6px 16px;
+}
+.q-share-row + .q-share-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  height: var(--q-hairline);
+  background: var(--q-sep);
+}
+.q-share-row > span {
+  flex: none;
+  font: var(--q-t-body);
+}
+.q-share-row > .q-seg {
+  flex: 0 1 216px;
+  min-width: 0;
+}
+.q-share-swatches,
+.q-share-colours {
+  display: flex;
+  gap: var(--q-s-2);
+}
+.q-share-swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sw);
+  cursor: pointer;
+}
+.q-share-swatch.custom {
+  background: conic-gradient(var(--q-red), var(--q-orange), var(--q-green), var(--q-cyan), var(--q-indigo), var(--q-pink), var(--q-red));
+}
+.q-share-row[hidden] {
+  display: none;
+}
+.q-share-swatch[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px var(--q-sheet), 0 0 0 4px var(--q-accent);
+}
+.q-share-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px 0 4px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  font: 500 14px/1 var(--q-font);
+  cursor: pointer;
+}
+.q-share-color input {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.q-share-color input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.q-share-color input::-webkit-color-swatch {
+  border: var(--q-hairline) solid var(--q-sep);
+  border-radius: 50%;
+}
+.q-share-color input::-moz-color-swatch {
+  border: var(--q-hairline) solid var(--q-sep);
+  border-radius: 50%;
+}
+.q-share-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--q-s-2);
+}
+/* On a computer (the showcase's wide layout): a card in the middle, not a strip across the screen. */
+@media (min-width: 700px) {
+  dialog.q-sheet.q-share {
+    width: 480px;
+    margin: auto;
+  }
 }

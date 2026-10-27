@@ -29,10 +29,11 @@
 // that one live; the one left behind stops refreshing and says so, with a
 // button to continue there. Links between the apps carry the sign-in along.
 
-import { BRANDS, FAMILY, pathOf, appIcon, familyMark } from './brand.mjs';
+import { BRANDS, FAMILY, pathOf, homeOf, appIcon, familyMark } from './brand.mjs';
 import { DEV, cleanDev } from './brand.mjs';
-import { API, SITE as HOME, PAGES, isApi } from './domain.mjs';
-import { icons, tile, pullToRefresh, setSheetDetent, h as node } from './ui.mjs';
+import { API, SITE as HOME, isApi } from './domain.mjs';
+import { passkeyHere, passkeyName, deviceName, makePasskey, usePasskey, forgetPasskey, cancelled } from './passkey.mjs';
+import { icons, tile, pullToRefresh, setSheetDetent, toast, h as node } from './ui.mjs';
 
 export const ECO_URL = `${API}/eco`;
 export const PROXY_URL = `${API}/sports-proxy`;
@@ -190,39 +191,57 @@ export const FRAMES = [
   'pearl', 'matcha', 'milktea', 'sunset', 'midnight', 'forest', 'candy', 'lava', 'skylantern'
 ].map(id => ({ id }));
 
-// Milestones: one for each app and one for the family, each reached once
-// and kept for good, each earning its own avatar and frame (`ms-<id>`, both).
-// Broad on purpose: a goal anyone gets to by using the app. How far along:
-// - what the wallet shows already: every app opened (`pass`), what the
-//   account is worth (`stock`, worthOf);
+// Milestones: one for each app and one for the family, each in three tiers
+// (銅, 銀, 金), every tier reached once and kept for good. Earning the
+// first wears the milestone's avatar and frame (`ms-<id>`, both), drawn in
+// the metal of the highest tier reached. Broad on purpose: goals anyone
+// gets to by using the app. How far along:
+// - what the wallet shows already: apps opened (`pass`), what the account
+//   is worth (`stock`, worthOf);
 // - `days`: the Taiwan days the app was opened, counted by the kit;
 // - the rest: a count the app reports with milestone(s, id, n), or adds one
 //   to with milestone(s, id).
 // Kept on the pass as the wallet setting `ms.<id>`: { n, d (the last day
-// counted), done }. Once done, always done.
+// counted), t (the tier reached), done (any tier: what an older kit reads) }.
+// Before tiers there was one goal; a `done` from then is tier `was`.
+export const TIERS = [
+  { id: 'bronze', zh: '銅', en: 'Bronze' },
+  { id: 'silver', zh: '銀', en: 'Silver' },
+  { id: 'gold', zh: '金', en: 'Gold' }
+];
+const APP_COUNT = Object.keys(APPS).length;
 export const MILESTONES = [
-  { id: 'pass', goal: Object.keys(APPS).length, zh: '用遍 Orbit', en: 'All of Orbit', unit: { zh: 'App', en: 'apps' } },
-  { id: 'stock', goal: 1_000_000, money: true, zh: '百萬身價', en: 'Millionaire', unit: { zh: '', en: '' } },
-  { id: 'vocab', goal: 500, zh: '五百字', en: '500 words', unit: { zh: '字', en: '' } },
-  { id: 'beats', goal: 10, zh: '十首歌', en: '10 songs', unit: { zh: '首', en: '' } },
-  { id: 'transit', goal: 10, zh: '十趟旅程', en: '10 trips', unit: { zh: '趟', en: '' } },
-  { id: 'law', goal: 10, zh: '十個問題', en: '10 questions', unit: { zh: '問', en: '' } },
-  { id: 'match', goal: 30, days: true, zh: '鐵粉', en: 'Superfan', unit: { zh: '天', en: 'days' } },
-  { id: 'weather', goal: 30, days: true, zh: '看天的人', en: 'Sky watcher', unit: { zh: '天', en: 'days' } },
-  { id: 'orbit', goal: 30, days: true, zh: '全勤', en: 'Attendance', unit: { zh: '天', en: 'days' } },
-  { id: 'money', goal: 30, days: true, zh: '天天記帳', en: 'Daily books', unit: { zh: '天', en: 'days' } }
+  { id: 'pass', goals: [3, 6, APP_COUNT], was: 3, zh: 'Orbit 旅人', en: 'Explorer', unit: { zh: '個 App', en: 'apps' }, do: { zh: '用過 {n} 個 App', en: 'Use {n} Orbit apps' } },
+  { id: 'stock', goals: [300_000, 1_000_000, 10_000_000], was: 2, money: true, zh: '身價', en: 'Net worth', unit: { zh: '', en: '' }, do: { zh: '身價到 {n}', en: 'Reach {n}' } },
+  { id: 'vocab', goals: [100, 500, 2000], was: 2, zh: '單字量', en: 'Vocabulary', unit: { zh: '字', en: 'words' }, do: { zh: '熟記 {n} 個單字', en: 'Master {n} words' } },
+  { id: 'beats', goals: [3, 10, 50], was: 2, zh: '歌單', en: 'Songbook', unit: { zh: '首', en: 'songs' }, do: { zh: '收藏 {n} 首歌', en: 'Keep {n} songs' } },
+  { id: 'transit', goals: [3, 10, 50], was: 2, zh: '旅程', en: 'Journeys', unit: { zh: '趟', en: 'trips' }, do: { zh: '跟著導航抵達 {n} 趟', en: 'Finish {n} trips' } },
+  { id: 'law', goals: [3, 10, 50], was: 2, zh: '好奇心', en: 'Curious mind', unit: { zh: '問', en: 'asked' }, do: { zh: '問 {n} 個法律問題', en: 'Ask {n} law questions' } },
+  { id: 'match', goals: [7, 30, 100], was: 2, days: true, zh: '鐵粉', en: 'Superfan', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天打開 Sports', en: 'Open Sports on {n} days' } },
+  { id: 'weather', goals: [7, 30, 100], was: 2, days: true, zh: '看天的人', en: 'Sky watcher', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天看天氣', en: 'Check the weather on {n} days' } },
+  { id: 'orbit', goals: [7, 30, 100], was: 2, days: true, zh: '全勤', en: 'Attendance', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天打開課表', en: 'Open Class on {n} days' } },
+  { id: 'money', goals: [7, 30, 100], was: 2, days: true, zh: '天天記帳', en: 'Daily books', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天記帳', en: 'Keep the books on {n} days' } }
 ];
 const MS_FRAMES = MILESTONES.map(m => ({ id: `ms-${m.id}`, ms: m.id }));
 const msKept = (wallet, id) => setting(wallet, `ms.${id}`, null) || {};
-// { n, goal, done } for one milestone (n never past the goal).
+const keptTier = (m, kept) => Math.min(3, kept.t != null ? Math.floor(finiteOr0(kept.t)) : kept.done ? m.was : 0);
+const tierAt = (m, n) => m.goals.filter(g => n >= g).length;
+// { n, tier (0 none … 3 gold), goal (the next tier's, or gold's), from (the
+// tier before's goal), done (a tier reached), max (gold) } for one
+// milestone; n never past gold.
 export function milestoneOf(wallet, m) {
   const kept = msKept(wallet, m.id);
   const n = m.id === 'pass' ? Object.keys(APPS).filter(a => wallet?.apps?.[a]).length : m.id === 'stock' ? Math.max(0, worthOf(wallet)) : finiteOr0(kept.n);
-  return { n: Math.min(n, m.goal), goal: m.goal, done: Boolean(kept.done) || n >= m.goal };
+  const tier = Math.max(keptTier(m, kept), tierAt(m, n));
+  return { n: Math.min(n, m.goals[2]), tier, goal: m.goals[Math.min(tier, 2)], from: tier ? m.goals[Math.min(tier, 3) - 1] : 0, done: tier > 0, max: tier === 3 };
 }
 export const earned = (wallet, id) => {
   const m = MILESTONES.find(x => x.id === id);
   return Boolean(m && wallet && milestoneOf(wallet, m).done);
+};
+const tierOf = (wallet, id) => {
+  const m = MILESTONES.find(x => x.id === id);
+  return m && wallet ? milestoneOf(wallet, m).tier : 0;
 };
 // What may be worn: the free ones, and an earned one.
 const wearable = (wallet, x) => (x ? (x.ms || x.app ? earned(wallet, x.ms || x.app) : true) : false);
@@ -230,25 +249,40 @@ const worn = (wallet, key, list) => {
   const x = list.find(y => y.id === setting(wallet, key, null)?.id);
   return wearable(wallet, x) ? x : null;
 };
-export const avatarOf = wallet => worn(wallet, 'avatar', [...AVATARS, ...MEDAL_AVATARS]);
-export const frameOf = wallet => worn(wallet, 'frame', [...FRAMES, ...MS_FRAMES]);
+// A milestone's avatar comes back as `ms-<id>.<tier>`, the tier's drawing
+// (avatarSrc), and its frame with `tier`, for frameClass.
+export const avatarOf = wallet => {
+  const x = worn(wallet, 'avatar', [...AVATARS, ...MEDAL_AVATARS]);
+  return x?.app ? { ...x, id: `${x.id}.${tierOf(wallet, x.app)}` } : x;
+};
+export const frameOf = wallet => {
+  const x = worn(wallet, 'frame', [...FRAMES, ...MS_FRAMES]);
+  return x?.ms ? { ...x, tier: tierOf(wallet, x.ms) } : x;
+};
+// The classes that draw a frame (a milestone's in its tier's metal).
+export const frameClass = f => (f ? `q-framed q-frame-${f.id}${f.tier ? ` q-ms-t${f.tier}` : ''}` : '');
 
 // An app's count toward its milestone: `n` the count now, or none to add
-// one. Written to the pass only as it moves a tenth of the way (or gets
-// there), so a count reported often costs nothing.
+// one. Written to the pass only as it moves a tenth of the way to the next
+// tier (or gets there), so a count reported often costs nothing.
 const msWriting = new Set();
 export function milestone(s, id, n = null) {
   const m = MILESTONES.find(x => x.id === id);
   const w = s?.wallet;
   if (!m || !w || msWriting.has(id)) return;
   const kept = msKept(w, id);
-  if (kept.done) return;
+  const st = milestoneOf(w, m);
+  if (st.max) return;
   const was = finiteOr0(kept.n);
   const now = n == null ? was + 1 : Math.max(was, Math.floor(finiteOr0(n)));
-  const step = x => Math.floor((x / m.goal) * 10);
-  if (now === was || (n != null && now < m.goal && step(now) === step(was))) return;
-  msWrite(s, id, { ...kept, n: now, done: now >= m.goal || undefined });
+  const step = x => Math.floor((x / st.goal) * 10);
+  if (now === was || (n != null && now < st.goal && step(now) === step(was))) return;
+  msWrite(s, id, msValue(m, kept, now));
 }
+const msValue = (m, kept, n) => {
+  const t = Math.max(keptTier(m, kept), tierAt(m, n));
+  return { ...kept, n, t: t || undefined, done: t > 0 || undefined };
+};
 function msWrite(s, id, value) {
   msWriting.add(id);
   s.write?.({ wallet: settingPatch(`ms.${id}`, JSON.parse(JSON.stringify(value))) })
@@ -256,8 +290,8 @@ function msWrite(s, id, value) {
     .finally(() => msWriting.delete(id));
 }
 // Each time the wallet arrives: today counted for this app (once a Taiwan
-// day), and a milestone the wallet shows reached kept as done (worth can
-// fall again; the milestone stays).
+// day), and a tier the wallet shows reached kept (worth can fall again;
+// the tier stays).
 function msTick(s) {
   const w = s.wallet;
   if (!w || !s.pass) return;
@@ -265,12 +299,14 @@ function msTick(s) {
   const own = MILESTONES.find(m => m.days && m.id === s.app);
   if (own) {
     const kept = msKept(w, own.id);
-    if (kept.d !== day && !msWriting.has(own.id)) {
-      const n = finiteOr0(kept.n) + 1;
-      msWrite(s, own.id, { ...kept, n, d: day, done: kept.done || n >= own.goal || undefined });
-    }
+    if (kept.d !== day && !msWriting.has(own.id)) msWrite(s, own.id, { ...msValue(own, kept, finiteOr0(kept.n) + 1), d: day });
   }
-  for (const m of MILESTONES) if ((m.id === 'pass' || m.id === 'stock') && !msKept(w, m.id).done && milestoneOf(w, m).done && !msWriting.has(m.id)) msWrite(s, m.id, { done: true });
+  for (const m of MILESTONES) {
+    if (m.id !== 'pass' && m.id !== 'stock') continue;
+    const kept = msKept(w, m.id);
+    const t = milestoneOf(w, m).tier;
+    if (t > keptTier(m, kept) && !msWriting.has(m.id)) msWrite(s, m.id, { ...kept, t, done: true });
+  }
 }
 
 // ---- Language ------------------------------------------------------------------------
@@ -1037,7 +1073,12 @@ function segThumbs() {
         if (m.type === 'attributes') {
           const seg = m.target.parentElement;
           if (seg?.classList.contains('q-seg')) fit(seg);
-        } else m.addedNodes.forEach(scan);
+        } else {
+          // Its options drawn anew inside the same control (the Pass sheet's
+          // tabs): the control itself never arrives, so it's fitted here.
+          if (m.target.classList?.contains('q-seg')) fit(m.target);
+          m.addedNodes.forEach(scan);
+        }
       }
     }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-pressed', 'aria-selected'] });
   };
@@ -1532,6 +1573,13 @@ function makeSession(app, { lang, heartbeat }) {
     });
   // A device code: sign in on another device within 10 minutes, once.
   s.deviceCode = () => withToken(qt => call('POST', '', { op: 'pair-create', qt }));
+  // Passkeys (passkey.mjs makes and uses them; the Worker checks): a
+  // challenge first (fetched ahead of the tap), then the key's answer.
+  s.passkeyBegin = () => call('POST', '', { op: 'passkey-begin' });
+  s.passkeyLogin = (challenge, credential) => signIn({ op: 'passkey-login', challenge, credential });
+  s.passkeyAddBegin = () => withToken(qt => call('POST', '', { op: 'passkey-add-begin', qt }));
+  s.passkeyAdd = (challenge, credential) => withToken(qt => call('POST', '', { op: 'passkey-add', qt, challenge, credential, device: deviceName() })).then(absorb);
+  s.passkeyRemove = id => withToken(qt => call('POST', '', { op: 'passkey-remove', qt, id })).then(absorb);
   // (The heartbeat's read every 2 minutes: the whole wallet, up to hundreds
   // of KB, came back each time, and every app redrew for it.)
   // (`since`: the updateTime of the app's data held here; while it's still
@@ -1598,7 +1646,7 @@ function makeSession(app, { lang, heartbeat }) {
     // home screen only (installGate, its page covered and nothing started),
     // then a Orbit Pass (signInGate below). An app that asked first is
     // covered once.
-    if (typeof document !== 'undefined' && ((stillOnPages() && (await moveHome(s))) || installGate(app, lang))) return new Promise(() => {});
+    if (typeof document !== 'undefined' && installGate(app, lang)) return new Promise(() => {});
     started = true;
     let first = null;
     try {
@@ -1615,7 +1663,8 @@ function makeSession(app, { lang, heartbeat }) {
     }
     if (!first) first = await signInGate(s);
     s.first = first;
-    movedNotice(app, lang);
+    // A while after opening signed in: the one-time passkey offer.
+    if (!first?.offline) setTimeout(() => passkeyOffer(s).catch(() => {}), 12_000);
     // The loading screen's line (boot.js): signed in, the app's data next.
     globalThis.__bootStep?.('', 0.8);
     loop();
@@ -1664,55 +1713,6 @@ function makeSession(app, { lang, heartbeat }) {
     globalThis.location.assign(target);
   };
   return s;
-}
-
-// ---- The family's own domain (kit/domain.mjs) ----
-// Once it's set, a page still on GitHub Pages moves there. In a browser it
-// goes at once to the same page on the domain, signed in (a handoff). An old
-// home-screen icon can't move (its icon and storage belong to github.io): it
-// keeps working and says, once a day, where the new one is. Both only once
-// the domain answers, so a domain not up yet sends nobody to it.
-const stillOnPages = () => HOME !== PAGES && globalThis.location?.origin === PAGES;
-async function newHomeUp() {
-  try {
-    return (await fetch(`${HOME}/Orbit-Core/kit/version.json`, { cache: 'no-store', signal: AbortSignal.timeout(5000) })).ok;
-  } catch {
-    return false;
-  }
-}
-async function moveHome(s) {
-  if (!stillOnPages() || isStandalone() || !(await newHomeUp())) return false;
-  const loc = globalThis.location;
-  const parts = loc.hash.slice(1).split('&').filter(Boolean);
-  if (storedAccount())
-    try {
-      parts.push(`qh=${(await s.op('handoff')).handoff}`);
-    } catch {}
-  loc.replace(`${HOME}${loc.pathname}${loc.search}${parts.length ? `#${parts.join('&')}` : ''}`);
-  return true;
-}
-async function movedNotice(app, lang) {
-  const key = 'orbit.moved.asked';
-  if (!stillOnPages() || !isStandalone() || readStore(key) === twDay(Date.now())) return;
-  if (!(await newHomeUp())) return;
-  writeStore(key, twDay(Date.now()));
-  const en = lang === 'en';
-  const url = `${HOME}${APPS[app]?.path || '/'}`;
-  const host = url.replace(/^https:\/\//, '');
-  const copy = await ask({
-    icon: 'home',
-    title: en ? 'Orbit has a new address' : 'Orbit 搬到新網址了',
-    points: en
-      ? [{ icon: 'share', text: `Open ${host} in Safari` }, { icon: 'plus', text: 'Add it to your home screen' }, { icon: 'trash', text: 'Then delete this old icon' }]
-      : [{ icon: 'share', text: `在 Safari 打開 ${host}` }, { icon: 'plus', text: '加入主畫面' }, { icon: 'trash', text: '再刪掉這個舊圖示' }],
-    ok: en ? 'Copy the link' : '複製連結',
-    cancel: en ? 'Later' : '稍後',
-    lang
-  });
-  if (copy)
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {}
 }
 
 export function appUrl(app, hash = '') {
@@ -1912,12 +1912,35 @@ export { node as el };
 const typedPass = text => cleanCode(text).replace(/[^2-9A-HJ-NP-Z]/g, '').slice(0, 10);
 // No maxlength: a pass is copied as ABCDE-23456 (11 characters), and a
 // maxlength of 10 cut its last character off before the dash was taken out.
-function passInput(label) {
-  const input = node('input', { class: 'q-pass-input', type: 'text', inputmode: 'text', autocomplete: 'off', autocapitalize: 'characters', autocorrect: 'off', spellcheck: 'false', placeholder: 'ABCDE23456', 'aria-label': label });
+// `save`: the field a password manager keeps the pass from ('current-password'
+// to sign in, 'new-password' for a new one), with the keyboard's passkey
+// suggestion beside it where there are passkeys; without, a plain field
+// (other passes typed in to merge).
+let passIds = 0;
+function passInput(label, { save = '' } = {}) {
+  const input = node('input', { class: 'q-pass-input', id: `q-pass-${++passIds}`, type: save ? 'password' : 'text', inputmode: 'text', autocomplete: save ? `${save}${save === 'current-password' && passkeyHere() ? ' webauthn' : ''}` : 'off', autocapitalize: 'characters', autocorrect: 'off', spellcheck: 'false', placeholder: 'ABCDE23456', 'aria-label': label, ...(save ? { name: 'password' } : {}) });
   input.addEventListener('input', () => {
     input.value = typedPass(input.value);
   });
   return input;
+}
+// The username a password manager files the pass under: always "Orbit Pass".
+const passUser = () => node('input', { class: 'q-pass-user', type: 'text', name: 'username', autocomplete: 'username', value: BRAND.pass, readonly: '', tabindex: '-1', 'aria-hidden': 'true' });
+// A pass field with its 顯示 button (it types as dots, as a password does).
+function passField(input, lang) {
+  const en = lang === 'en';
+  const eye = node('button', {
+    class: 'q-pass-eye',
+    type: 'button',
+    text: en ? 'Show' : '顯示',
+    onclick: () => {
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      eye.textContent = show ? (en ? 'Hide' : '隱藏') : en ? 'Show' : '顯示';
+      input.focus();
+    }
+  });
+  return node('div', { class: 'q-pass-field' }, [input, eye]);
 }
 const ERR = {
   SYNC_PASSCODE_NOT_FOUND: ['找不到這組通行碼。', 'No Orbit Pass has this code.'],
@@ -1929,6 +1952,11 @@ const ERR = {
   ECO_LOAN_REFUSED: ['銀行婉拒了這筆申請。', 'The bank turned this application down.'],
   ECO_RELIEF_REFUSED: ['目前不符合急難紓困資格。', 'You don’t qualify for relief right now.'],
   ECO_SESSION_MOVED: ['這個 App 已在別處開啟，回到這裡後再試一次。', 'This app is open somewhere else. Come back here and try again.'],
+  ECO_PASSKEY_UNKNOWN: ['這個通行密鑰已不在任何 Orbit Pass 上，請用通行碼登入。', 'This passkey isn’t on any Orbit Pass any more. Sign in with your pass.'],
+  ECO_PASSKEY_INVALID: ['這個通行密鑰無法使用，請再試一次或用通行碼登入。', 'That passkey didn’t work. Try again, or use your pass.'],
+  ECO_PASSKEY_EXPIRED: ['等太久了，請再試一次。', 'That took too long. Please try again.'],
+  ECO_PASSKEY_TAKEN: ['這個通行密鑰已經加入過了。', 'This passkey is already added.'],
+  ECO_PASSKEY_FULL: ['最多 10 個通行密鑰，請先移除一個。', 'Ten passkeys at most: remove one first.'],
   INVALID_PASSCODE: ['請輸入 10 碼通行碼（例如 ABCDE-23456）或 8 碼裝置代碼。', 'Enter your 10-character pass (like ABCDE-23456) or an 8-character device code.']
 };
 export const errorText = (error, lang) => {
@@ -1974,40 +2002,58 @@ function dropFromTop(dialog) {
 }
 
 // The sign-in screen: nothing of the app shows until there's a pass.
+// A real form a password manager knows (iCloud Keychain, Chrome, Bitwarden
+// offer to save the pass and fill it in later): a username that is always
+// "Orbit Pass" (one entry for orbit.<domain>, every app and the admin page's
+// next to it under its own name) and the pass as a password. A device code
+// typed here is no password: the field stops being one before it's sent, so
+// nothing offers to save it over the pass. Where passkeys work, a button
+// (and the keyboard's passkey suggestion) signs in with one.
 function signInGate(s) {
   const en = s.lang === 'en';
   const a = APPS[s.app];
   document.getElementById('loading')?.setAttribute('hidden', '');
   return new Promise(resolve => {
-    const input = passInput(BRAND.pass);
+    const input = passInput(BRAND.pass, { save: 'current-password' });
     const error = node('p', { class: 'q-gate-error', role: 'alert' });
     const enter = node('button', { class: 'q-btn primary block', type: 'submit', text: en ? 'Sign in' : '登入' });
-    const busy = on => [enter, input].forEach(b => (b.disabled = on));
+    const keys = passkeyHere() && passkeyGate(s, error, res => finish(res), on => busy(on));
+    const busy = on => [enter, input, keys?.button].forEach(b => b && (b.disabled = on));
+    let over = false;
+    const finish = res => {
+      if (over) return;
+      over = true;
+      keys?.stop();
+      dropFromTop(gate);
+      document.documentElement.classList.remove('q-signing-in');
+      resolve(res);
+    };
     const done = async task => {
       busy(true);
       error.textContent = '';
       try {
-        const res = await task();
-        dropFromTop(gate);
-        document.documentElement.classList.remove('q-signing-in');
-        resolve(res);
+        finish(await task());
       } catch (e) {
         error.textContent = errorText(e, s.lang);
         busy(false);
+        input.type = 'password';
       }
     };
     const form = node(
       'form',
       {
         class: 'q-gate-form',
+        method: 'post',
+        action: '#',
         onsubmit: event => {
           event.preventDefault();
           const code = cleanCode(input.value);
           if (!PASS_PATTERN.test(code) && !DEVICE_CODE_PATTERN.test(code)) return void (error.textContent = errorText({ code: 'INVALID_PASSCODE' }, s.lang));
+          if (DEVICE_CODE_PATTERN.test(code)) input.type = 'text';
           done(() => s.login(code));
         }
       },
-      [node('label', { class: 'q-gate-label', text: en ? 'Your Orbit Pass or a device code' : 'Orbit Pass 或裝置代碼' }), input, error, enter]
+      [passUser(), node('label', { class: 'q-gate-label', for: input.id, text: en ? 'Your Orbit Pass or a device code' : 'Orbit Pass 或裝置代碼' }), passField(input, s.lang), error, enter]
     );
     const gate = node('dialog', { class: 'q-gate', 'aria-modal': 'true', style: `--q-accent:${a.color}` }, [
       node('div', { class: 'q-gate-box' }, [
@@ -2016,6 +2062,7 @@ function signInGate(s) {
         node('h1', { class: 'q-gate-title', text: a.name }),
         node('p', { class: 'q-gate-lede', text: en ? 'Sign in with your Orbit Pass: one account for every Orbit app.' : '用 Orbit Pass 登入：所有 Orbit 的 App 共用一個帳戶。' }),
         form,
+        ...(keys ? [keys.row] : []),
         node('p', { class: 'q-gate-note', text: en ? 'No Orbit Pass yet? Ask the person who shared Orbit with you for one.' : '還沒有 Orbit Pass？請向分享 Orbit 給你的人索取。' }),
         node('p', { class: 'q-gate-note', text: en ? 'Signed in on another device? Its Account sheet gives a device code for this one.' : '已在其他裝置登入？在那裡的「帳戶」取得裝置代碼，就能在這裡登入。' })
       ])
@@ -2024,10 +2071,97 @@ function signInGate(s) {
     // Alone on screen: any sheet the app had open closes first.
     for (const d of document.querySelectorAll('dialog[open]')) if (!onTop.has(d)) d.close();
     keepOnTop(gate);
+    keys?.start();
     setTimeout(() => input.focus(), 50);
   });
 }
 
+// The passkey half of the sign-in screen: { row, button, start, stop }.
+// The challenge is asked for as the screen opens (Safari takes a passkey
+// request only during the tap itself) and again before it runs out; where
+// the browser offers passkeys in the keyboard (conditional mediation), it
+// waits there too, and the button takes over from it.
+// `lock(on)`: the whole form held (the pass box, 登入, this button) while
+// a passkey is checked, and let go when it fails or is closed.
+function passkeyGate(s, error, signedIn, lock) {
+  const en = s.lang === 'en';
+  let begin = null;
+  let wait = null;
+  let quiet = null;
+  let timer = 0;
+  let stopped = false;
+  const fresh = () => begin && begin.exp - Date.now() > 30_000;
+  const ask = async () => {
+    try {
+      begin = await s.passkeyBegin();
+    } catch {
+      begin = null;
+    }
+    clearTimeout(timer);
+    if (!stopped) timer = setTimeout(ask, begin ? Math.max(30_000, begin.exp - Date.now() - 45_000) : 60_000);
+    return begin;
+  };
+  const run = async (challenge, credential) => {
+    lock(true);
+    try {
+      signedIn(await s.passkeyLogin(challenge, credential));
+    } catch (e) {
+      if (e.code === 'ECO_PASSKEY_UNKNOWN') forgetPasskey(credential.id);
+      error.textContent = errorText(e, s.lang);
+      lock(false);
+      ask().then(listen);
+    }
+  };
+  // The keyboard's suggestion (iOS 16+, Chrome, Edge): a passkey picked there signs in.
+  const listen = async () => {
+    if (stopped || !(await globalThis.PublicKeyCredential?.isConditionalMediationAvailable?.().catch(() => false))) return;
+    if (!fresh()) await ask();
+    if (!begin || stopped) return;
+    quiet?.abort();
+    quiet = new AbortController();
+    const challenge = begin.challenge;
+    try {
+      const cred = await usePasskey(challenge, { signal: quiet.signal, conditional: true });
+      if (!stopped) run(challenge, cred);
+    } catch {}
+  };
+  const button = node('button', {
+    class: 'q-btn block q-passkey-btn',
+    type: 'button',
+    html: `${icons.key || ''}<span>${en ? 'Sign in with a passkey' : '用通行密鑰登入'}</span>`,
+    onclick: async () => {
+      error.textContent = '';
+      quiet?.abort();
+      lock(true);
+      const b = fresh() ? begin : await ask();
+      if (!b) {
+        lock(false);
+        error.textContent = errorText({}, s.lang);
+        return;
+      }
+      try {
+        wait = new AbortController();
+        const cred = await usePasskey(b.challenge, { signal: wait.signal });
+        await run(b.challenge, cred);
+      } catch (e) {
+        lock(false);
+        if (!cancelled(e)) error.textContent = errorText({ code: 'ECO_PASSKEY_INVALID' }, s.lang);
+        ask().then(listen);
+      }
+    }
+  });
+  const row = node('div', { class: 'q-gate-or' }, [node('span', { class: 'q-gate-or-line', text: en ? 'or' : '或' }), button]);
+  return {
+    row,
+    button,
+    start: () => ask().then(listen),
+    stop: () => {
+      stopped = true;
+      clearTimeout(timer);
+      quiet?.abort();
+    }
+  };
+}
 // "This app is open somewhere else": this one waits.
 let movedEl = null;
 function showMoved(s) {
@@ -2078,8 +2212,8 @@ export function accountButton(s, { extra = null } = {}) {
     const a = avatarOf(s.wallet);
     const f = frameOf(s.wallet);
     btn.replaceChildren();
-    for (const c of [...btn.classList]) if (c.startsWith('q-frame-')) btn.classList.remove(c);
-    if (f) btn.classList.add('q-framed', `q-frame-${f.id}`);
+    for (const c of [...btn.classList]) if (c.startsWith('q-frame-') || c.startsWith('q-ms-t')) btn.classList.remove(c);
+    if (f) btn.classList.add(...frameClass(f).split(' '));
     else btn.classList.remove('q-framed');
     if (a || s.wallet) btn.append(node('img', { class: 'q-avatar', alt: '', src: avatarSrc(a?.id || DEFAULT_AVATAR) }));
     else btn.innerHTML = PERSON_SVG;
@@ -2158,12 +2292,20 @@ export async function accountSheet(s, { extra = null, tab = 'pass', help = null 
   return openPass(s, { extra, tab, help });
 }
 export const openHelp = (s, app = s.app, topic = null) => accountSheet(s, { tab: 'help', help: { app, topic } });
+// Sharing a link: the sheet with its QR code, styled by the person and saved
+// as PNG or SVG (share.mjs, loaded when first opened). { url, title, app, icon, lang }.
+export async function shareSheet(opts = {}) {
+  const { shareSheet: open } = await import('./share.mjs');
+  return open({ lang: detectLang(), ...opts });
+}
 
 // The account at a glance: its number and since when. Never a balance:
 // money is Securities' alone.
-// The account number: the pass's id in three fours (a name for the
-// account, never the pass itself).
-const accountNumber = id => (id ? id.slice(0, 12).toUpperCase().replace(/(.{4})(?=.)/g, '$1 ') : '');
+// The account number: the first 6 of the account's id (a name for the
+// account, never the pass itself; what the admin page finds it by). Only 6:
+// an older pass's id is its plain SHA-256, and the 12 shown before were
+// enough to guess the pass from a screenshot.
+const accountNumber = id => (id ? id.slice(0, 6).toUpperCase() : '');
 // The card atop the Pass tab: who you are here (the avatar and frame worn)
 // and how far along the milestones are; a tap opens 外觀.
 function accountCard(s, onLooks) {
@@ -2171,17 +2313,20 @@ function accountCard(s, onLooks) {
   const w = s.wallet || {};
   const a = avatarOf(w);
   const f = frameOf(w);
-  const got = MILESTONES.filter(m => milestoneOf(w, m).done).length;
-  return node('button', { class: 'q-pass-card', type: 'button', onclick: onLooks, 'aria-label': en ? `Milestones ${got} of ${MILESTONES.length}` : `里程碑 ${got} / ${MILESTONES.length}` }, [
+  const tiers = MILESTONES.map(m => milestoneOf(w, m).tier);
+  const got = tiers.reduce((a, b) => a + b, 0);
+  const all = MILESTONES.length * TIERS.length;
+  return node('button', { class: 'q-pass-card', type: 'button', onclick: onLooks, 'aria-label': en ? `Milestones ${got} of ${all}` : `里程碑 ${got} / ${all}` }, [
     node('span', { class: 'q-pc-top' }, [
-      node('span', { class: `q-pc-face${f ? ` q-framed q-frame-${f.id}` : ''}` }, [node('img', { alt: '', src: avatarSrc(a?.id || DEFAULT_AVATAR) })]),
+      node('span', { class: `q-pc-face ${frameClass(f)}` }, [node('img', { alt: '', src: avatarSrc(a?.id || DEFAULT_AVATAR) })]),
       node('span', { class: 'q-pc-id' }, [
-        node('span', { class: 'q-pc-brand', text: 'ORBIT PASS' }),
-        node('strong', { class: 'q-pc-big' }, [document.createTextNode(en ? 'Milestones ' : '里程碑 '), node('span', { class: 'num', text: `${got}/${MILESTONES.length}` })]),
+        node('span', { class: 'q-pc-brand', text: BRAND.pass }),
+        node('strong', { class: 'q-pc-big' }, [document.createTextNode(en ? 'Milestones ' : '里程碑 '), node('span', { class: 'num', text: `${got}/${all}` })]),
         node('span', { class: 'q-pc-no num', text: accountNumber(s.pass) })
       ])
     ]),
-    node('span', { class: 'q-pc-ms', 'aria-hidden': 'true' }, MILESTONES.map(m => node('img', { class: milestoneOf(w, m).done ? 'got' : '', alt: '', src: avatarSrc(`ms-${m.id}`) })))
+    // One medal per milestone, in its tier's metal, on one row however many.
+    node('span', { class: 'q-pc-ms', 'aria-hidden': 'true' }, MILESTONES.map((m, i) => node('img', { class: tiers[i] ? '' : 'dim', alt: '', src: avatarSrc(`ms-${m.id}.${tiers[i]}`) })))
   ]);
 }
 
@@ -2233,6 +2378,7 @@ export function passAccount(s, { extra = null, close = () => {}, looks = () => {
     ...(extra ? [extra] : []),
     node('h3', { class: 'q-sheet-h', text: T('裝置', 'Devices') }),
     node('div', { class: 'q-rows' }, [act(T('新增裝置（取得裝置代碼）', 'Add a device (get a device code)'), async () => showCode(await s.deviceCode())), device]),
+    ...passkeyRows(s, note),
     node('h3', { class: 'q-sheet-h', text: T('通知', 'Notifications') }),
     ...notifyRows(s, note),
     node('h3', { class: 'q-sheet-h', text: T('除錯紀錄', 'Debug log') }),
@@ -2274,6 +2420,136 @@ export function passAccount(s, { extra = null, close = () => {}, looks = () => {
   };
   return { nodes, card, stop: () => clearInterval(tick) };
 }
+// ---- Passkeys: the Pass sheet's list and the one-time offer -----------------------------
+
+// A challenge to make a passkey, asked for ahead of the tap (Safari takes
+// the request only during it): { get(), fresh() }.
+function addChallenge(s) {
+  let begin = null;
+  let asking = null;
+  const get = () =>
+    (asking ||= s
+      .passkeyAddBegin()
+      .then(b => (begin = b))
+      .finally(() => (asking = null)));
+  const fresh = () => (begin && begin.exp - Date.now() > 30_000 ? begin : null);
+  return { get, fresh };
+}
+// Made and kept: the challenge in hand (or fetched now), then the browser's
+// sheet (Face ID, Windows Hello, a phone by QR…). true once added; false if
+// the person closed the sheet.
+async function addPasskey(s, ch) {
+  const begin = ch.fresh() || (await ch.get());
+  try {
+    const cred = await makePasskey(begin);
+    await s.passkeyAdd(begin.challenge, cred);
+    return true;
+  } catch (e) {
+    ch.get().catch(() => {});
+    if (cancelled(e) || e?.name === 'InvalidStateError') return e?.name === 'InvalidStateError' ? 'here' : false;
+    throw e;
+  }
+}
+const dayOf = (t, en) => new Date(t).toLocaleDateString(en ? 'en-US' : 'zh-TW', { month: 'short', day: 'numeric', ...(Date.now() - t > 300 * 86_400_000 ? { year: 'numeric' } : {}) });
+const passkeysOf = s => (Array.isArray(s.wallet?.passkeys) ? s.wallet.passkeys : []);
+
+// The Pass tab's 通行密鑰: every passkey of the account (named by who keeps
+// it, when added and last used), each removable, and a button to add one
+// where this browser can. Shown also where it can't, once there are some.
+function passkeyRows(s, note) {
+  const en = s.lang === 'en';
+  const T = (zh, e) => (en ? e : zh);
+  const here = passkeyHere();
+  const ch = here ? addChallenge(s) : null;
+  const box = node('div', { class: 'q-rows q-passkeys' });
+  const head = node('h3', { class: 'q-sheet-h', text: T('通行密鑰', 'Passkeys') });
+  const sub = node('p', { class: 'q-sheet-sub', text: T('用 Face ID、Touch ID 或 Windows Hello 登入，不必輸入通行碼；通行碼照樣能用。', 'Sign in with Face ID, Touch ID or Windows Hello instead of typing your pass. Your pass still works.') });
+  const paint = () => {
+    const keys = passkeysOf(s);
+    head.hidden = box.hidden = sub.hidden = !here && !keys.length;
+    box.replaceChildren(
+      ...keys.map(k =>
+        node('div', { class: 'q-cell' }, [
+          node('span', { class: 'q-cell-icon', style: '--q-cell-tint:#0a84ff', html: icons.key || '' }),
+          node('span', { class: 'q-cell-text' }, [node('span', { text: passkeyName(k, s.lang) }), node('small', { text: [T(`${dayOf(k.t, en)} 加入`, `Added ${dayOf(k.t, en)}`), k.used ? T(`上次使用 ${dayOf(k.used, en)}`, `last used ${dayOf(k.used, en)}`) : T('還沒用過', 'not used yet')].join(' · ') })]),
+          node('button', {
+            class: 'q-cell-act danger',
+            type: 'button',
+            text: T('移除', 'Remove'),
+            onclick: async event => {
+              const b = event.currentTarget;
+              if (!(await ask({ lang: s.lang, icon: '🔑', title: T('移除這個通行密鑰？', 'Remove this passkey?'), body: T(`「${passkeyName(k, s.lang)}」就不能再登入這個 Orbit Pass。通行碼和其他通行密鑰照常可用。`, `“${passkeyName(k, s.lang)}” will no longer sign in to this Orbit Pass. Your pass and other passkeys still work.`), ok: T('移除', 'Remove'), danger: true }))) return;
+              b.disabled = true;
+              try {
+                await s.passkeyRemove(k.id);
+                forgetPasskey(k.id);
+                note.textContent = T('已移除通行密鑰。', 'Passkey removed.');
+              } catch (e) {
+                b.disabled = false;
+                note.textContent = errorText(e, s.lang);
+              }
+            }
+          })
+        ])
+      ),
+      ...(here
+        ? [
+            node('button', {
+              class: 'q-row-btn',
+              type: 'button',
+              text: keys.length ? T('再加一個通行密鑰', 'Add another passkey') : T('加入通行密鑰（Face ID／Touch ID）', 'Add a passkey (Face ID, Touch ID)'),
+              disabled: keys.length >= 10,
+              onclick: async event => {
+                const b = event.currentTarget;
+                b.disabled = true;
+                note.textContent = '';
+                try {
+                  const done = await addPasskey(s, ch);
+                  if (done === true) note.textContent = T('已加入通行密鑰，下次可以直接用它登入。', 'Passkey added: next time, sign in with it.');
+                  if (done === 'here') note.textContent = T('這台裝置已經有這個 Orbit Pass 的通行密鑰。', 'This device already has a passkey for this Orbit Pass.');
+                } catch (e) {
+                  note.textContent = errorText(e, s.lang);
+                } finally {
+                  b.disabled = false;
+                }
+              }
+            })
+          ]
+        : [])
+    );
+  };
+  paint();
+  if (here) ch.get().catch(() => {});
+  s.on('wallet', () => box.isConnected && paint());
+  return [head, box, sub];
+}
+
+// Once, a while after an app opens signed in: "加入 Face ID 登入", where this
+// browser can make a passkey and the account has none. 以後再說 or done, it
+// never asks again (the account's setting `passkeyAsk`, every device).
+export async function passkeyOffer(s) {
+  if (typeof document === 'undefined' || !passkeyHere() || !s.wallet || passkeysOf(s).length || s.wallet.settings?.passkeyAsk) return;
+  const en = s.lang === 'en';
+  const T = (zh, e) => (en ? e : zh);
+  const ch = addChallenge(s);
+  if (!(await ch.get().catch(() => null))) return;
+  // (Nothing else of Orbit's on screen first: no sheet, no sign-in, no dialog.)
+  if (document.querySelector('dialog[open]') || document.visibilityState === 'hidden' || passkeysOf(s).length) return;
+  // (Kept fresh while the question waits: the tap on 加入 goes straight to the browser.)
+  const keep = setInterval(() => ch.get().catch(() => {}), 240_000);
+  const yes = await ask({ lang: s.lang, icon: 'key', tint: '#0a84ff', title: T('加入 Face ID 登入', 'Sign in with Face ID'), body: T('建立通行密鑰，之後在新裝置用 Face ID 或 Touch ID 就能登入，不必輸入通行碼。', 'Make a passkey: on a new device, sign in with Face ID or Touch ID instead of typing your pass.'), ok: T('加入', 'Add'), cancel: T('以後再說', 'Not now') });
+  clearInterval(keep);
+  if (yes) {
+    try {
+      if ((await addPasskey(s, ch)) === true) toast(T('已加入通行密鑰', 'Passkey added'));
+    } catch (e) {
+      toast(errorText(e, s.lang));
+    }
+  }
+  // Asked once, whatever the answer (the Pass sheet's 通行密鑰 adds one any time).
+  s.write({ wallet: settingPatch('passkeyAsk', yes ? 'yes' : 'no') }).catch(() => {});
+}
+
 export function showNewPass(s, passcode) {
   const en = s.lang === 'en';
   const T = (zh, e) => (en ? e : zh);
@@ -2307,8 +2583,15 @@ export function showNewPass(s, passcode) {
         ok
       ])
     ]);
+    // Sent as a form when confirmed, so a password manager offers to keep
+    // the new pass (in place of the old one under "Orbit Pass").
+    const saver = node('form', { class: 'q-pass-saver', method: 'post', action: '#', onsubmit: event => event.preventDefault() }, [passUser(), node('input', { class: 'q-pass-user', type: 'password', name: 'password', autocomplete: 'new-password', value: shown, readonly: '', tabindex: '-1', 'aria-hidden': 'true' })]);
+    box.querySelector('.q-gate-box').append(saver);
     // Not closed by Esc or a tap outside: only by the confirmed button.
     ok.addEventListener('click', () => {
+      try {
+        saver.requestSubmit?.();
+      } catch {}
       dropFromTop(box);
       resolve();
     });
@@ -2430,9 +2713,9 @@ function pushedHere(app, key) {
 export const NOTICE_KINDS = {
   match: [
     ['start', '比賽開打', 'A game starts', '你追蹤的球隊比賽開始時。', 'When a team you follow starts a game.'],
-    ['end', '比賽結束', 'Final score', '你追蹤的球隊比賽結束，附上比分。', 'When a team you follow finishes a game, with the score.'],
+    ['end', '比賽結束', 'Final score', '你追蹤的球隊打完，附比分。', 'When a team you follow finishes a game, with the score.'],
     ['pick', '今日推薦開賽', 'Today’s picks start', '今日推薦的每一場開始時。', 'When each of today’s picks starts.'],
-    ['pickend', '今日推薦賽果', 'Today’s picks: final', '今日推薦的每一場結束，附上比分。', 'When each of today’s picks ends, with the score.']
+    ['pickend', '今日推薦賽果', 'Today’s picks: final', '今日推薦每場打完，附比分。', 'When each of today’s picks ends, with the score.']
   ],
   vocab: [
     ['streak', '連續練習快斷了', 'Streak ending', '今天還沒練習單字，連續天數今晚就會歸零時。', 'When you haven’t practised today and your streak ends tonight.']
@@ -2782,7 +3065,7 @@ function insideGate(app, home, lang) {
   installCovered = true;
   const en = lang === 'en';
   const name = appName(app);
-  const url = `${SITE}${APPS[app].path}`;
+  const url = homeOf(app);
   const copy = node('button', {
     class: 'q-btn',
     type: 'button',
@@ -2826,7 +3109,7 @@ export function phoneOnlyGate(app, { lang = detectLang(), qr = '' } = {}) {
   if (isPhoneOrTablet()) return false;
   const en = lang === 'en';
   const name = appName(app);
-  const url = `${SITE}${APPS[app].path}`;
+  const url = homeOf(app);
   const qrBox = node('div', { class: 'q-qr', role: 'img', 'aria-label': en ? `QR code for ${url}` : `${url} 的 QR code` });
   qrBox.innerHTML = qr;
   const copy = node('button', {

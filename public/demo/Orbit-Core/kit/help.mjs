@@ -30,10 +30,11 @@ export const HELP = {
       ]],
       ['looks', '頭像、頭像框與里程碑', [
         '免費的頭像和頭像框隨時換，點一下戴上，再點一下拿下。每個 App 的帳戶按鈕都看得到。',
-        '里程碑每個 App 一個，達成一次就永久保留，送一組專屬頭像和頭像框（一起戴上）。沒達成的會上鎖，格子上寫著要做什麼、還差多少。'
+        '里程碑每個 App 一個，分銅、銀、金三級，拿到就永久保留。拿到第一級就能戴上它的頭像和頭像框（一起戴上），升級後會換成銀色、金色。最上面是最接近的下一枚：要做什麼、還差多少。'
       ]],
       ['devices', '登入與裝置', [
         '新裝置：輸入通行碼，或在已登入的裝置按「新增裝置」拿 8 碼裝置代碼（10 分鐘內、只能用一次）。',
+        '通行密鑰：在 Pass 分頁加入後，新裝置按「用通行密鑰登入」，用 Face ID、Touch ID 或 Windows Hello 就能登入；通行碼照樣能用。',
         '「在這台裝置登出」只清掉這台裝置的資料；都還在 Orbit Pass，登入就回來。'
       ]],
       ['one', '一個 App 一個地方', [
@@ -68,10 +69,11 @@ export const HELP = {
       ]],
       ['looks', 'Avatars, frames and milestones', [
         'The free avatars and frames change any time: tap to wear, tap again to take off. They show on your account button in every app.',
-        'One milestone per app, earned once and kept for good, each with its own avatar and frame (worn together). Until then it’s locked; its tile says what to do and how far along you are.'
+        'One milestone per app, in bronze, silver and gold, each kept for good once reached. The first earns its avatar and frame (worn together), which turn silver and gold as you go. On top: the nearest next medal, what it asks and how far along you are.'
       ]],
       ['devices', 'Signing in and devices', [
         'On a new device, enter the pass, or choose “Add a device” on a signed-in one for an 8-character device code (10 minutes, once).',
+        'Passkeys: add one in the Pass tab, then on a new device choose “Sign in with a passkey” and use Face ID, Touch ID or Windows Hello. Your pass still works.',
         '“Sign out on this device” wipes only this device; it all stays on your Orbit Pass.'
       ]],
       ['one', 'Each app in one place', [

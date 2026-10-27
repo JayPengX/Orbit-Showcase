@@ -1,7 +1,8 @@
 // The apps that run for real inside the showcase (frozen copies under
 // demo/, scripts/demo/), and each one's guided tour: a step points at what
 // to tap in the app (`tap`, a selector inside it) and says why, in plain
-// words. The recording walks the same steps, so every tap has its answers.
+// words; `type`, words typed into the box once it's tapped. The recording
+// walks the same steps, so every tap has its answers.
 // `real`: its data is the real feeds' at the moment it was recorded, not made up.
 export const DEMOS = {
   weather: { repo: 'Orbit-Weather' },
@@ -40,12 +41,19 @@ export const TOURS = {
     { tap: '.q-tab[data-tab="history"]', say: ['剛才的委託在這裡', 'Your order is here'] }
   ],
   sports: [
-    { tap: '.sport-card', say: ['選一個你看的運動', 'Pick a sport you watch'] },
-    { tap: '.sp-done', say: ['完成', 'Done'] },
-    { tap: '.hero-game', say: ['下一場好比賽，哪台播都寫好了', 'The next good game, and its channel'] },
+    { say: ['今天在台灣看得到的比賽：足球、棒球、籃球放在一起。', 'Today’s games you can watch in Taiwan: football, baseball and basketball together.'] },
+    { tap: '.event-row:has(source[srcset*="teamlogos/mlb"])', wait: 5000, say: ['點世界大賽這場', 'Tap the World Series game'] },
+    { tap: '.match-tabs .q-chip:nth-child(2)', say: ['兩隊數據，一眼比較', 'Both teams’ stats, side by side'] },
+    { tap: '.match-tabs .q-chip:nth-child(6)', wait: 5000, say: ['整個季後賽的對戰圖', 'The whole playoff bracket'] },
     { tap: '.q-close', say: ['看完關掉', 'Close it'] },
-    { tap: '#tab-live', say: ['哪一台、幾點、播哪場', 'Which channel shows what, when'] },
-    { tap: '#tab-matches', say: ['每個聯賽的賽程和排名', 'Every league’s games and table'] }
+    { tap: '#tab-matches', wait: 5000, say: ['每個聯賽的賽程和排名', 'Every league’s games and table'] },
+    { tap: '[data-league="f1"]', wait: 5000, say: ['F1：每一站、每一節', 'F1: every race, every session'] },
+    { tap: '.race-part button:nth-child(2)', say: ['看已經比完的', 'See the finished ones'] },
+    { tap: '.wk-card', wait: 10000, say: ['冠軍、每一節、完整成績', 'Winner, sessions, full results'] },
+    { tap: '.lb-views .q-chip:nth-child(2)', wait: 4000, say: ['每位車手怎麼換胎', 'Each driver’s tyres'] },
+    { tap: '.lb-views .q-chip:nth-child(3)', wait: 4000, say: ['每一圈跑多快', 'Every lap’s time'] },
+    { tap: '.q-close', say: ['關掉', 'Close it'] },
+    { tap: '#tab-live', wait: 5000, say: ['哪一台、幾點、播哪場', 'Which channel shows what, when'] }
   ],
   words: [
     { tap: '.q-hc-btn', say: ['開始今天的字', 'Start today’s words'] },
