@@ -2761,6 +2761,120 @@ html.sc-playing body {
   }
 }
 
+/* On a phone: the app is the screen, under a slim bar; the tour floats. */
+.sc-player.full {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.sc-player-head.slim {
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top) + 6px) 10px 6px;
+  border-bottom: 0.5px solid var(--q-sep, var(--q-fill-2));
+  background: var(--q-surface, var(--sc-card));
+}
+.sc-player-head.slim > div {
+  grid-template-columns: minmax(0, 1fr);
+}
+.sc-player-head.slim strong {
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sc-player-head.slim small {
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sc-player-head.slim .sc-btn {
+  flex: none;
+  white-space: nowrap;
+  min-height: 34px;
+  gap: 4px;
+  padding: 0 10px;
+  font-size: 13.5px;
+}
+.sc-player-head.slim .sc-player-leave {
+  padding: 0 11px 0 8px;
+  background: var(--q-fill-2);
+  font-weight: 600;
+}
+.sc-player-head.slim .sc-player-again {
+  display: none;
+}
+.sc-player-head.slim > .sc-btn:not(.sc-player-leave):not(.sc-player-tour) {
+  width: 34px;
+  padding: 0;
+}
+.sc-player-tour.on {
+  background: var(--sc-ac);
+  color: #fff;
+}
+.sc-player.full .sc-player-body {
+  display: block;
+  padding: 0 0 env(safe-area-inset-bottom);
+}
+.sc-player.full .sc-player-stage {
+  position: relative;
+  display: block;
+  height: 100%;
+}
+.sc-player.full .sc-player-screen {
+  border-radius: 0;
+}
+.sc-player.full .sc-player-card {
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  right: 10px;
+  bottom: calc(10px + 64px);
+  gap: 4px;
+  padding: 11px 12px 10px 14px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--sc-card) 94%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 0 0 0.5px var(--q-sep, rgba(0, 0, 0, 0.1)), 0 10px 30px rgba(0, 0, 0, 0.28);
+  transition: top 260ms ease, bottom 260ms ease;
+}
+.sc-player.full .sc-player-card.up {
+  top: 10px;
+  bottom: auto;
+}
+.sc-player.full .sc-player-say {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.sc-player-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sc-player-hide {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -4px -4px -4px 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-2);
+  color: var(--q-label-2);
+  font-size: 14px;
+}
+.sc-player.full .sc-player-btns {
+  justify-content: space-between;
+  margin-top: 2px;
+}
+.sc-player.full .sc-player-btns .sc-btn {
+  min-height: 34px;
+  font-size: 14px;
+}
+.sc-player-skip {
+  background: transparent;
+  color: var(--q-label-2);
+}
+
 /* The phone frame's way into the demo. */
 .sc-try {
   position: absolute;
