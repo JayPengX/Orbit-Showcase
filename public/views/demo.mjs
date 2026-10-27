@@ -45,7 +45,7 @@ export function openDemo(app, title) {
   const box = h('div', { class: 'sc-player', role: 'dialog', 'aria-modal': 'true', 'aria-label': t(['試玩', 'Try it']) }, [
     h('header', { class: 'sc-player-head' }, [
       appImg(app.brand, 34),
-      h('div', {}, [h('strong', { text: title }), h('small', { text: t(['真的 App，假的資料，什麼都不會存', 'The real app, made-up data, nothing kept']) })]),
+      h('div', {}, [h('strong', { text: title }), h('small', { text: t(demo.real ? ['真的 App，錄下那一刻的真實資料', 'The real app, real data from when it was recorded'] : ['真的 App，假的資料，什麼都不會存', 'The real app, made-up data, nothing kept']) })]),
       h('button', { class: 'sc-btn', type: 'button', 'aria-label': t(['重來', 'Restart']), onclick: () => load() }, [ico('refresh'), h('span', { class: 'sc-player-again', text: t(['重來', 'Restart']) })]),
       h('button', { class: 'sc-btn sc-icon', type: 'button', 'aria-label': t(['關閉', 'Close']), onclick: close }, [ico('x')])
     ]),

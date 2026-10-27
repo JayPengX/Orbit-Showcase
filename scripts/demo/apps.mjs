@@ -4,7 +4,8 @@
 // `explore` (more of the app, so taps off the tour still have answers), and
 // `payload`, a script that writes the made-up saved data it opens on; `skip`,
 // big folders left out but for what the recording read, and `keep`, files from
-// them it needs anyway.
+// them it needs anyway; `built`, files the app's deploy makes, from its live
+// site; `css`, rules put into the copy.
 // A step: { tap: selector } | { hash: '#…' } | { type: [selector, text] } | { back: true }, with an optional wait (ms).
 import { TOURS } from '../../public/lib/demos.mjs';
 
@@ -19,5 +20,9 @@ export const DEMOS = {
   money: { app: 'money', repo: 'Orbit-Money', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], payload: 'scripts/demo/money-books.mjs', tour: steps('money'), explore: [
     { tap: '#tab-inv' }, { tap: '#tab-cal' }, { tap: '.mn-step[aria-label="上個月"]' }, { tap: '.mn-step[aria-label="下個月"]' }, { tap: '.mn-row' }
   ] },
-  words: { app: 'words', repo: 'Orbit-Words', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], skip: ['data'], keep: ['fare', 'hit', 'how', 'military'].map(w => `data/audio/${w}.mp3`), tour: steps('words'), explore: [{ tap: '#tab-review' }, { tap: '#tab-today' }, { tap: '.wotd' }] }
+  words: { app: 'words', repo: 'Orbit-Words', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], skip: ['data'], keep: ['fare', 'hit', 'how', 'military'].map(w => `data/audio/${w}.mp3`), tour: steps('words'), explore: [{ tap: '#tab-review' }, { tap: '#tab-today' }, { tap: '.wotd' }] },
+  sports: { app: 'sports', repo: 'Orbit-Sports', clock: 'now', geo: [25.034, 121.565], tour: steps('sports'), explore: [], settle: 9000,
+    built: { 'nba-elta.json': 'https://jaypengx.github.io/Orbit-Sports/nba-elta.json' },
+    // No betting anywhere in the showcase (Jay): the win chance cards come from betting prices, so they stay hidden.
+    css: '.q-card:has(.wp){display:none!important}' }
 };
