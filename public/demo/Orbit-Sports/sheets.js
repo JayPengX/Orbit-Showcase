@@ -21,7 +21,7 @@ import { f1Driver, f1Constructor, countryName, logoPicture, countryFlag } from '
 import { raceControlParts } from './lib/racecontrol.mjs';
 import { lapRate, readCar, stepCar, spread, behindLeader, apart, placeTags } from './lib/carpace.mjs';
 import { fold, surname, esc } from './lib/text.mjs';
-import { f1Official, f1Label, f1Value, finishOf, eventOfRace, raceResult, qualifyingResult, espnQualifying, liveTiming, keptTiming, qualiCut, feedOver, feedBreak, sessionTiming, sessionLaps, circuitMap, lapMs, practicePace, MIN_RUN, PRACTICE_SPAN, lapTicks, pitLaps, pushLaps, gapsBetween, closingRate, recentPace, neutralLaps, pointsFor, asItStands, standingAfter, settleScoring, liveLapEnds, liveRaceEvents } from './lib/f1.mjs';
+import { f1Official, f1Label, f1Value, finishOf, eventOfRace, raceResult, qualifyingResult, espnQualifying, liveTiming, keptTiming, qualiCut, feedOver, feedBreak, sessionTiming, sessionLaps, circuitMap, lapMs, practicePace, MIN_RUN, PRACTICE_SPAN, lapTicks, pitLaps, pushLaps, gapsBetween, closingRate, recentPace, neutralLaps, pointsFor, asItStands, standingAfter, settleScoring, liveLapEnds, liveRaceEvents, circuitFacts, lastPodium, weekendCircuit, circuitWeather } from './lib/f1.mjs';
 import { tvOf, replayOf, camKnownOf, camPlayerOf } from './lib/tv.mjs';
 import { parseSearch } from './lib/search.mjs';
 import { hasLeaders, playerRanks } from './lib/leaders.mjs';
@@ -2651,7 +2651,7 @@ function weekendHero(e, sessions) {
     tick();
     const timer = setInterval(() => (count.isConnected ? tick() : clearInterval(timer)), 20_000);
     panel = el('div', { class: `wkh-now${now.abbr === 'Race' ? ' race' : ''}` }, [
-      el('span', { class: 'wkh-k' }, [document.createTextNode(en ? 'Next' : '下一節'), sessionTag({ sessionKey: now.abbr, session: sessionName(now, L()) })]),
+      el('span', { class: 'wkh-k', text: `${en ? 'Next' : '下一節'} · ${sessionName(now, L())}` }),
       count,
       el('small', { class: 'wkh-at num', text: `${dayLabel(localDate(Date.parse(now.start)))} ${timeText(now)}` })
     ]);
@@ -2670,6 +2670,116 @@ function weekendHero(e, sessions) {
     weekendFollow(e),
     watchButton(e, 'wide')
   ]);
+}
+
+// A part of a weekend's sheet read on its own: its card's shape meanwhile,
+// the card faded in when it comes, nothing left where there's nothing.
+function lateCard(title, height, load) {
+  const box = card(title, el('i', { class: 'skel wk-skel', style: `height:${height}px` }));
+  load()
+    .then(node => (node ? (node.classList.add('fade-in'), box.replaceWith(node)) : box.remove()))
+    .catch(() => box.remove());
+  return box;
+}
+const pts = r => Number(r?.stats?.PTS) || 0;
+// The championship going into the weekend: what the leader needs (the
+// table's race line), the top three drivers on bars of their points (a tap
+// to their page), and the teams' lead in a line.
+function titleFightCard(e) {
+  const en = L() === 'en';
+  const title = en ? 'Title fight' : '冠軍之爭';
+  if (!ctx.titleFight) return null;
+  return lateCard(title, 168, async () => {
+    const all = await ctx.titleFight(e.league);
+    const d = all?.find(x => x.g.rows.some(r => r.athlete));
+    if (!d || pts(d.g.rows[0]) <= 0) return null;
+    const top = d.g.rows.slice(0, 3);
+    const lead = pts(top[0]);
+    const teams = all.find(x => x !== d)?.g.rows;
+    const tn = r => (en ? r.en || r.name : f1Constructor(r.en || r.name)?.zh || r.short || r.name);
+    const teamLine = teams?.length > 1 && pts(teams[0]) > 0 ? el('p', { class: 'fight-teams' }, [constructorBadge(teams[0].en || teams[0].name, 'xs'), el('span', { text: en ? `${tn(teams[0])} lead the teams by ${pts(teams[0]) - pts(teams[1])}` : `車隊：${tn(teams[0])}領先 ${pts(teams[0]) - pts(teams[1])} 分` })]) : null;
+    return card(
+      title,
+      el('div', { class: 'stack tight' }, [
+        raceBlock(d.race, d.g, e.league, false),
+        el(
+          'div',
+          { class: 'fight-rows' },
+          top.map((r, i) =>
+            el('button', { class: 'fight-row', type: 'button', style: r.color ? `--c:${r.color}` : null, onclick: () => r.id && ctx.openPlayer(e.league, r.id, r) }, [
+              el('span', { class: 'fight-pos num', text: String(i + 1) }),
+              personPic(r, e.league, 'sm round'),
+              el('span', { class: 'fight-main' }, [el('span', { class: 'fight-name', text: r.short || r.name }), el('span', { class: 'fight-bar' }, [el('i', { style: `width:${Math.max(4, Math.round((pts(r) / lead) * 100))}%` })])]),
+              el('span', { class: 'fight-pts' }, [el('strong', { class: 'num', text: String(pts(r)) }), el('small', { class: 'num', text: i ? `−${lead - pts(r)}` : en ? 'pts' : '分' })])
+            ])
+          )
+        ),
+        teamLine
+      ])
+    );
+  });
+}
+// A weather code (WMO's) as the kit's icon.
+const skyIcon = code => (code >= 51 ? 'rain' : code >= 2 ? 'cloud' : 'sun');
+// The circuit: its outline, figures (length, laps, distance, first race, the
+// lap record and who holds it) and, while the weekend's to come or on, the
+// weather there each of its days.
+function circuitCard(e, sessions) {
+  const en = L() === 'en';
+  const title = en ? 'The circuit' : '賽道';
+  const race = sessions.find(x => x.abbr === 'Race') || sessions.at(-1);
+  const ahead = sessions.some(x => x.status.state !== 'post');
+  return lateCard(title, 200, async () => {
+    const [facts, c, wx] = await Promise.all([circuitFacts(race.start).catch(() => null), weekendCircuit(race.start).catch(() => null), ahead ? circuitWeather(race.start, sessions.map(x => x.start)).catch(() => []) : []]);
+    if (!facts && !c && !wx.length) return null;
+    const km = v => String(v || '').replace(/km$/, ' km');
+    const tiles = facts
+      ? [
+          [en ? 'Length' : '單圈長度', km(facts['Circuit Length']?.v)],
+          [en ? 'Laps' : '圈數', facts['Number of Laps']?.v],
+          [en ? 'Distance' : '比賽距離', km(facts['Race Distance']?.v)],
+          [en ? 'First race' : '首次舉辦', facts['First Grand Prix']?.v]
+        ].filter(([, v]) => v)
+      : [];
+    let map = null;
+    if (c) {
+      const W = 120;
+      const { fit, H } = trackFit(c, W, 84, 120, 8);
+      const d = c.x.map((x, i) => fit(x, c.y[i]).map(n => n.toFixed(1)).join(',')).join(' ');
+      map = el('div', { class: 'cc-map', html: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.name || title)}"><polyline class="cc-edge" points="${d}"/><polyline class="cc-line" points="${d}"/><circle class="cc-start" r="3.2" cx="${fit(c.x[0], c.y[0])[0].toFixed(1)}" cy="${fit(c.x[0], c.y[0])[1].toFixed(1)}"/></svg>` });
+    }
+    const rec = facts?.['Fastest lap time'];
+    const day = date => new Date(`${date}T12:00:00`).toLocaleDateString(en ? 'en-US' : 'zh-TW', { weekday: 'short' });
+    return card(
+      title,
+      el('div', { class: 'stack tight' }, [
+        map || tiles.length ? el('div', { class: `cc-top${map ? '' : ' flat'}` }, [map, tiles.length ? el('div', { class: 'cc-facts' }, tiles.map(([k, v]) => el('span', { class: 'cc-fact' }, [el('small', { text: k }), el('strong', { class: 'num', text: v })]))) : null]) : null,
+        // The lap record, who and when on the line under it.
+        rec?.v ? el('div', { class: 'cc-record' }, [el('small', { text: en ? 'Lap record' : '單圈紀錄' }), el('span', { class: 'cc-v' }, [el('strong', { class: 'num', text: rec.v }), rec.sub ? el('small', { text: rec.sub }) : null])]) : null,
+        wx.length
+          ? el('div', { class: 'cc-wx', style: `--n:${wx.length}` }, wx.map(w => el('span', { class: 'cc-day' }, [el('small', { text: day(w.date) }), el('span', { class: `cc-sky ${skyIcon(w.code)}`, html: kitUI.icons[skyIcon(w.code)] || '' }), el('strong', { class: 'num', text: `${w.hi}°` }), el('small', { class: 'num', text: `${w.lo}°${w.rain != null ? ` · ${w.rain}%` : ''}` })])))
+          : null
+      ])
+    );
+  });
+}
+// Last year's podium here: second, first and third side by side, the winner raised.
+function podiumCard(e, sessions) {
+  const en = L() === 'en';
+  const race = sessions.find(x => x.abbr === 'Race') || sessions.at(-1);
+  if (race.status.state === 'post') return null;
+  return lateCard(en ? 'Last year here' : '去年這一站', 150, async () => {
+    const { year, rows } = await lastPodium(race.start);
+    if (rows.length < 3) return null;
+    const step = r =>
+      el('span', { class: `pd-step p${r.pos}` }, [
+        personPic({ name: `${r.driver.givenName} ${r.driver.familyName}`, en: `${r.driver.givenName} ${r.driver.familyName}` }, 'f1', 'round pd-pic'),
+        el('strong', { class: 'pd-name', text: r.driver.familyName || '' }),
+        el('span', { class: 'pd-team' }, [constructorBadge(r.team, 'xxs'), el('small', { text: en ? r.team : f1Constructor(r.team)?.zh || r.team })]),
+        el('span', { class: 'pd-block num', text: String(r.pos) })
+      ]);
+    return card(en ? `Here in ${year}` : `${year} 年這一站`, el('div', { class: 'pd' }, [2, 1, 3].map(p => step(rows.find(r => r.pos === p))).filter(Boolean)));
+  });
 }
 
 export function openFieldEvent(e) {
@@ -2807,7 +2917,8 @@ const choiceWatch = typeof ResizeObserver === 'function'
         const ways = n.__ways || [];
         n.style.fontSize = '';
         for (const w of ways) {
-          n.textContent = w;
+          if (w?.html != null) n.innerHTML = w.html;
+          else n.textContent = w;
           if (!overflows(n)) break;
         }
         for (let i = 0; i < 30 && overflows(n); i++) {
@@ -2820,10 +2931,105 @@ const choiceWatch = typeof ResizeObserver === 'function'
   : null;
 function fitChoice(n, ways) {
   n.__ways = ways;
-  n.textContent = ways[0];
+  // (A way may be { html }: words with their <b>, escaped where they're made.)
+  if (ways[0]?.html != null) n.innerHTML = ways[0].html;
+  else n.textContent = ways[0];
   n.classList.add('one-line');
   choiceWatch?.observe(n);
   return n;
+}
+// A game over on a light day's 首頁 (Jay 2026-10-23): who decided it for
+// each side, by what decides the sport (never a stat that misleads, Jay:
+// not shots for a forward who didn't score in a 3-1). The ways to see it
+// again (回看, 精華) stay on its page (2026-10-25), not on the card.
+const boxNum = v => parseFloat(String(v ?? '').replace(/[^\d.-]/g, '')) || 0;
+function sideStar(d, e, team) {
+  const en = L() === 'en';
+  const sport = LEAGUES[e.league]?.sport;
+  const tables = (d?.players || []).find(p => p.team === team)?.tables || [];
+  const col = (t, ...labels) => t.labels.findIndex(x => labels.includes(x));
+  const rowsWith = (...labels) => tables.filter(t => col(t, ...labels) >= 0).flatMap(t => t.rows.map(r => ({ r, t })));
+  const val = ({ r, t }, ...labels) => boxNum(r.stats[col(t, ...labels)]);
+  const join = parts => parts.filter(Boolean).join(' · ');
+  if (sport === 'soccer') {
+    // The goals (an own goal is the other side's), with their minutes; then
+    // the assists; then a keeper who kept them in it.
+    const goals = new Map();
+    for (const k of d?.keyEvents || []) if (k.scoring && k.team === team && k.pic?.id && !/own/i.test(`${k.kind} ${k.type} ${k.text}`)) goals.set(k.pic.id, [...(goals.get(k.pic.id) || []), k.clock]);
+    const all = rowsWith('G', 'A');
+    const row = id => all.find(x => x.r.id === id);
+    const [id, mins] = [...goals].sort((x, y) => y[1].length - x[1].length)[0] || [];
+    if (id) {
+      const x = row(id);
+      const ast = x ? val(x, 'A') : 0;
+      const ke = d.keyEvents.find(k => k.pic?.id === id);
+      return { p: x?.r || { id, name: ke.who, full: ke.pic.name, headshot: ke.pic.headshot }, line: join([`${en ? 'Goal' : '進球'} ${mins.join(en ? ', ' : '、')}`, ast ? (en ? `${ast} assist${ast > 1 ? 's' : ''}` : `${ast} 助攻`) : '']) };
+    }
+    const a = all.filter(x => val(x, 'A') > 0).sort((x, y) => val(y, 'A') - val(x, 'A'))[0];
+    if (a) return { p: a.r, line: en ? `${val(a, 'A')} assist${val(a, 'A') > 1 ? 's' : ''}` : `${val(a, 'A')} 助攻` };
+    const k = rowsWith('SV').filter(x => val(x, 'SV') >= 3).sort((x, y) => val(y, 'SV') - val(x, 'SV'))[0];
+    return k ? { p: k.r, line: en ? `${val(k, 'SV')} saves` : `${val(k, 'SV')} 次撲救` } : null;
+  }
+  if (sport === 'basketball') {
+    const x = rowsWith('PTS').sort((p, q) => val(q, 'PTS') - val(p, 'PTS'))[0];
+    if (!x || !val(x, 'PTS')) return null;
+    return { p: x.r, line: en ? join([`${val(x, 'PTS')} PTS`, `${val(x, 'REB')} REB`, `${val(x, 'AST')} AST`]) : join([`${val(x, 'PTS')} 分`, `${val(x, 'REB')} 籃板`, `${val(x, 'AST')} 助攻`]), tight: en ? null : join([`${val(x, 'PTS')} 分`, `${val(x, 'REB')} 板`, `${val(x, 'AST')} 助`]) };
+  }
+  if (sport === 'baseball') {
+    // A starter who shut them down, else the bat that drove the runs in,
+    // else whoever pitched longest.
+    const outs = x => { const ip = String(x.r.stats[col(x.t, 'IP')] || '0').split('.'); return Number(ip[0]) * 3 + Number(ip[1] || 0); };
+    const arms = rowsWith('IP').filter(x => x.t.name === 'pitching' || col(x.t, 'ERA') >= 0).sort((p, q) => outs(q) - outs(p));
+    const arm = arms[0];
+    const armLine = x => (en ? join([`${x.r.stats[col(x.t, 'IP')]} IP`, `${val(x, 'K')} K`, `${val(x, 'ER')} ER`]) : join([`${x.r.stats[col(x.t, 'IP')]} 局`, `${val(x, 'K')} 次三振`, `失 ${val(x, 'ER')} 分`]));
+    const armTight = x => (en ? null : join([`${x.r.stats[col(x.t, 'IP')]} 局`, `${val(x, 'K')}K`, `失 ${val(x, 'ER')}`]));
+    if (arm && outs(arm) >= 18 && val(arm, 'ER') <= 1) return { p: arm.r, line: armLine(arm), tight: armTight(arm) };
+    const bats = rowsWith('RBI', 'HR').filter(x => x.t.name !== 'pitching' && col(x.t, 'IP') < 0);
+    const weight = x => val(x, 'HR') * 3 + val(x, 'RBI') * 2 + val(x, 'H') + val(x, 'R');
+    const bat = bats.filter(x => val(x, 'RBI') > 0 || val(x, 'HR') > 0).sort((p, q) => weight(q) - weight(p))[0];
+    if (bat) {
+      const h = val(bat, 'H');
+      const hr = val(bat, 'HR');
+      const rbi = val(bat, 'RBI');
+      return { p: bat.r, line: en ? join([`${bat.r.stats[col(bat.t, 'H-AB')] || h + ' H'}`, hr ? `${hr > 1 ? hr + ' ' : ''}HR` : '', rbi ? `${rbi} RBI` : '']) : join([h ? `${h} 安` : '', hr ? `${hr} 轟` : '', rbi ? `${rbi} 分打點` : '']), tight: en ? null : join([h ? `${h} 安` : '', hr ? `${hr} 轟` : '', rbi ? `${rbi} 打點` : '']) };
+    }
+    return arm ? { p: arm.r, line: armLine(arm), tight: armTight(arm) } : null;
+  }
+  if (sport === 'hockey') {
+    const pts = x => val(x, 'G') * 2 + val(x, 'A');
+    const x = rowsWith('G').filter(x => val(x, 'G') + val(x, 'A') > 0).sort((p, q) => pts(q) - pts(p))[0];
+    if (x) return { p: x.r, line: en ? join([val(x, 'G') ? `${val(x, 'G')} G` : '', val(x, 'A') ? `${val(x, 'A')} A` : '']) : join([val(x, 'G') ? `${val(x, 'G')} 進球` : '', val(x, 'A') ? `${val(x, 'A')} 助攻` : '']) };
+    const g = rowsWith('SV').sort((p, q) => val(q, 'SV') - val(p, 'SV'))[0];
+    return g && val(g, 'SV') ? { p: g.r, line: en ? `${val(g, 'SV')} saves` : `${val(g, 'SV')} 次撲救` } : null;
+  }
+  // The rest (American football): the game's own first leader, its stat named.
+  const l = (d?.leaders || []).find(x => x.team === team && x.name);
+  return l ? { p: l, line: `${statName(l.stat, L(), { sport })} ${leaderValue(l.value, L())}` } : null;
+}
+export function gameRecap(e, d) {
+  const sides = inOrder(e, [e.away, e.home]);
+  const best = sides.map(s => ({ s, star: d ? sideStar(d, e, String(s.id)) : null })).filter(x => x.star);
+  // One line a side, under the scores as a race's top three is under its
+  // name (Jay 2026-10-27: not two big cards that make one game twice as tall).
+  // Never cut (Jay 2026-10-27, "why it text wrap"): the full name first, then
+  // its short form (R. Gasser), then the stats' short words (3K, 12 板),
+  // then smaller (fitChoice).
+  const ways = (p, line, tight) => {
+    const full = playerName(p.full || p.name, 'full', p.name);
+    const short = p.name && p.name !== full ? p.name : shortWords(full);
+    const way = (who, what) => ({ html: `<strong>${esc(who)}</strong><small>${esc(what)}</small>` });
+    return [way(full, line), way(short, line), ...(tight && tight !== line ? [way(short, tight)] : [])];
+  };
+  return best.length
+    ? [
+        el('div', { class: 'recap-best' }, best.map(({ star: { p, line, tight } }) =>
+          el('button', { class: 'recap-lead', type: 'button', disabled: p.id ? null : true, onclick: () => p.id && ctx.openPlayer(e.league, p.id, { name: p.full || p.name, logo: p.headshot }) }, [
+            personPic({ ...p, name: p.full || p.name }, e.league, 'xs round'),
+            fitChoice(el('span', { class: 'recap-text' }), ways(p, line, tight))
+          ])
+        ))
+      ]
+    : [];
 }
 function fitLine(n) {
   if (!n) return n;
@@ -3313,6 +3519,29 @@ function tmZoom(m) {
     }
   });
 }
+// A circuit's outline turned as MultiViewer draws it (its rotation and a
+// quarter turn, y as it comes), then fitted to W wide, between minH and maxH
+// high: fit(x, y) → [x, y] in the drawing, and its height.
+function trackFit(c, W, minH, maxH, pad) {
+  const a = ((c.rotation + 90) * Math.PI) / 180;
+  const cx = (Math.min(...c.x) + Math.max(...c.x)) / 2;
+  const cy = (Math.min(...c.y) + Math.max(...c.y)) / 2;
+  const turn = (x, y) => [(x - cx) * Math.cos(a) - (y - cy) * Math.sin(a), (y - cy) * Math.cos(a) + (x - cx) * Math.sin(a)];
+  const pts = c.x.map((x, i) => turn(x, c.y[i]));
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const k = (W - pad * 2) / (x1 - x0);
+  const H = Math.round(Math.min(maxH, Math.max(minH, (y1 - y0) * k + pad * 2)));
+  const kk = Math.min(k, (H - pad * 2) / (y1 - y0));
+  const ox = (W - (x1 - x0) * kk) / 2, oy = (H - (y1 - y0) * kk) / 2;
+  return {
+    H,
+    fit: (x, y) => {
+      const [u, v] = turn(x, y);
+      return [ox + (u - x0) * kk, oy + (v - y0) * kk];
+    }
+  };
+}
 function f1TrackMap(b, ss) {
   const c = circuitOf(b, ss);
   // (Each car where F1's feed puts it, or, as F1 stopped giving the cars' x/y in 2026, by the mini-sectors it has passed this lap.)
@@ -3321,23 +3550,8 @@ function f1TrackMap(b, ss) {
   const ns = 'http://www.w3.org/2000/svg';
   let m = f1Maps.get(ss.start);
   if (!m) {
-    const a = ((c.rotation + 90) * Math.PI) / 180;
-    const cx = (Math.min(...c.x) + Math.max(...c.x)) / 2;
-    const cy = (Math.min(...c.y) + Math.max(...c.y)) / 2;
-    // Turned as MultiViewer draws it (its rotation and a quarter turn, y as it comes), then fitted to the card.
-    const turn = (x, y) => [(x - cx) * Math.cos(a) - (y - cy) * Math.sin(a), (y - cy) * Math.cos(a) + (x - cx) * Math.sin(a)];
-    const pts = c.x.map((x, i) => turn(x, c.y[i]));
-    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-    const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-    const W = 340, pad = 16;
-    const k = (W - pad * 2) / (x1 - x0);
-    const H = Math.round(Math.min(340, Math.max(180, (y1 - y0) * k + pad * 2)));
-    const kk = Math.min(k, (H - pad * 2) / (y1 - y0));
-    const ox = (W - (x1 - x0) * kk) / 2, oy = (H - (y1 - y0) * kk) / 2;
-    const fit = (x, y) => {
-      const [u, v] = turn(x, y);
-      return [ox + (u - x0) * kk, oy + (v - y0) * kk];
-    };
+    const W = 340;
+    const { fit, H } = trackFit(c, W, 180, 340, 16);
     const svg = document.createElementNS(ns, 'svg');
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.setAttribute('class', 'tm-svg');
@@ -4508,7 +4722,11 @@ function fillField(s, e) {
     paint();
     s.body.append(box);
   }
-  s.body.append(twCard(e.league, e));
+  // A race weekend (the owner, 2026-10-27: before its sessions the sheet
+  // stood nearly empty): the title fight, where to watch, the circuit and
+  // its weather, last year's podium there.
+  if (sessions.length) s.body.append(...[e.league === 'f1' ? titleFightCard(e) : null, twCard(e.league, e), e.league === 'f1' ? circuitCard(e, sessions) : null, e.league === 'f1' ? podiumCard(e, sessions) : null].filter(Boolean));
+  else s.body.append(twCard(e.league, e));
 }
 
 // A finished session's official numbers, once read (they don't change).
@@ -5681,9 +5899,11 @@ function raceBlock(race, g, league, many) {
   // A side playing now (its game isn't in the table till it's over: liveTable).
   const onNow = id => (ctx.recentOf?.(league) || []).some(e => e.status?.state === 'in' && (e.home?.id === id || e.away?.id === id));
   // (`sub` said several ways, fullest first: the first that fits one line.)
+  // (`main` too: several ways, fullest first, e.g. the leader's full name then the family name.)
   const line = (icon, main, sub = '', cls = '') => {
     const ways = [].concat(sub).filter(Boolean);
-    return el('div', { class: `race-line ${cls}`.trim() }, [glyph(icon), el('span', { class: 'race-t' }, [el('span', { html: main }), ways.length > 1 ? fitChoice(el('small'), ways) : ways.length ? el('small', { text: ways[0] }) : null])]);
+    const mains = [].concat(main).filter(Boolean);
+    return el('div', { class: `race-line ${cls}`.trim() }, [glyph(icon), el('span', { class: 'race-t' }, [mains.length > 1 ? fitChoice(el('span', { class: 'race-main' }), mains.map(html => ({ html }))) : el('span', { html: mains[0] || '' }), ways.length > 1 ? fitChoice(el('small'), ways) : ways.length ? el('small', { text: ways[0] }) : null])]);
   };
   // (Its words go in as HTML for the <b>: every name and word from a feed escaped, never read as markup, an & kept.)
   const b = x => `<b>${esc(x)}</b>`;
@@ -5771,7 +5991,10 @@ function raceBlock(race, g, league, many) {
       if (race.unit === 'wins') return line('clock', W(`${b(nm(t.leader))} ${many ? top : '封王'}魔術數字 ${b(t.magic)}`, `${b(nm(t.leader))}: magic number ${b(t.magic)}`), when(t));
       const what = k ? W(`確定第 ${k + 1} 名`, `clinch P${k + 1}`) : many ? W(`確定${top}`, 'clinch 1st') : W('封王', 'clinch the title');
       const at = perRound ? W(`最快${roundAt(t.round, b)}`, `in ${roundAt(t.round, b)} at the earliest`) : sport === 'racing' ? (t.at ? W(`最快在${b(t.at)}`, `at ${b(t.at)} at the earliest`) : t.soonest === 1 ? W('最快下一站就', 'at the next race at the earliest') : W(`最快再 ${b(t.soonest)} 站`, `${b(t.soonest)} race weekends from now at the earliest`)) : t.soonest === 1 && onNow(t.leader.id) ? W('最快這場', 'this game') : W(`最快 ${b(t.soonest)} 場後`, `in ${b(t.soonest)} game${t.soonest === 1 ? '' : 's'}`);
-      return line('clock', W(`${b(nm(t.leader))} ${at}${what}`, `${b(nm(t.leader))} could ${what} ${at}`), [nextLine(t), ...weekendLine(t), ...marginLine(t), leadLine(t)]);
+      // (English runs long: last, the place alone, "at the earliest" left to "could".)
+      const near = sport === 'racing' && t.at ? `at ${b(t.at)}` : at;
+      const says = (who, short) => W(`${b(who)} ${at}${what}`, `${b(who)} could ${what} ${short ? near : at}`);
+      return line('clock', [...new Set([says(nm(t.leader)), says(last(t.leader)), says(last(t.leader), true)])], [nextLine(t), ...weekendLine(t), ...marginLine(t), leadLine(t)]);
     }
     if (t.soonest == null) return null;
     const next = g.rows[k + 1];

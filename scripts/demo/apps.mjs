@@ -13,7 +13,7 @@ import { TOURS } from '../../public/lib/demos.mjs';
 import { timetable } from './class-timetable.mjs';
 
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
-const steps = id => (TOURS[id] || []).map(s => ({ tap: s.tap, hash: s.hash, wait: s.wait }));
+const steps = id => (TOURS[id] || []).map(s => ({ tap: s.tap, hash: s.hash, type: s.type && [s.tap, s.type], wait: s.wait }));
 
 export const DEMOS = {
   weather: { app: 'weather', repo: 'Orbit-Weather', clock: '2026-10-02T19:30:00+08:00', geo: [25.034, 121.565], tour: steps('weather'), explore: [

@@ -7,30 +7,36 @@
 // `id` stays what the apps and the pass store under (stock, match,
 // vocab…); only the names and looks are the brand's.
 
-import { SITE } from './domain.mjs';
+import { SITE, DOMAIN, onDomain } from './domain.mjs';
 
 export const GOLD = '#f5c451';
 export const FAMILY = { name: 'Orbit', from: '#312e81', to: '#020617', ink: '#1e1b4b', accent: '#a5b4fc', tag: { zh: '每天用得到的 App，一個 Orbit Pass', en: 'Everyday apps, one Orbit Pass' } };
 
 // repo: the GitHub repo (and Pages path) each app lives at.
 export const BRANDS = {
-  stock: { name: 'Orbit Securities', short: 'Securities', repo: 'Orbit-Securities', from: '#2dd4bf', to: '#0f3d5c', ink: '#0f766e', color: '#0d9488', paint: ['#5eead4', '#0d9488', '#134e4a'], spot: '#fde047', pitch: { zh: '全球股市，模擬投資', en: 'Invest worldwide, risk-free' }, role: { zh: '投資與理財', en: 'Invest and grow' }, tag: { zh: '全球股市模擬投資：真實報價、換匯與融資', en: 'Invest in markets worldwide with play money' } },
-  orbit: { name: 'Orbit Class', short: 'Class', repo: 'Orbit-Class', from: '#7dd3fc', to: '#0c4a6e', ink: '#0369a1', color: '#0ea5e9', paint: ['#67e8f9', '#0891b2', '#164e63'], spot: '#fde047', pitch: { zh: '今天的課，一眼看懂', en: 'Today’s classes at a glance' }, role: { zh: '課表', en: 'Class schedule' }, tag: { zh: '即時課表：現在、下一節與倒數', en: 'Your class schedule, live' } },
-  weather: { name: 'Orbit Weather', short: 'Weather', repo: 'Orbit-Weather', from: '#a5b4fc', to: '#312e81', ink: '#4338ca', color: '#6366f1', paint: ['#93c5fd', '#2563eb', '#1e3a8a'], spot: '#fcd34d', pitch: { zh: '一個答案的天氣', en: 'One clear forecast' }, role: { zh: '天氣', en: 'Weather' }, tag: { zh: '一個答案的天氣：降雨、紫外線、空氣，跟著你的行程', en: 'One clear forecast for wherever you’ll be' } },
-  transit: { name: 'Orbit Transit', short: 'Transit', repo: 'Orbit-Transit', from: '#6ee7b7', to: '#064e3b', ink: '#047857', color: '#10b981', paint: ['#86efac', '#16a34a', '#14532d'], spot: '#fde047', pitch: { zh: '公車、火車、YouBike', en: 'Bus, train and bike' }, role: { zh: '大眾運輸', en: 'Public transport' }, tag: { zh: '全台公車、火車、捷運與 YouBike，一次規劃', en: 'Buses, trains, metros and bikes across Taiwan' } },
-  match: { name: 'Orbit Sports', short: 'Sports', repo: 'Orbit-Sports', from: '#fdba74', to: '#9a3412', ink: '#c2410c', color: '#ea580c', paint: ['#fdba74', '#f97316', '#9a3412'], spot: '#fff', pitch: { zh: '每場比賽，即時比分', en: 'Every game, live' }, role: { zh: '賽程與比分', en: 'Scores and schedules' }, tag: { zh: '所有運動的賽程、比分與數據', en: 'Every sport, every match, every stat' } },
-  beats: { name: 'Orbit Beats', short: 'Beats', repo: 'Orbit-Beats', from: '#f0abfc', to: '#701a75', ink: '#a21caf', color: '#c026d3', paint: ['#f0abfc', '#c026d3', '#581c87'], spot: '#fde047', pitch: { zh: '做出你的節拍', en: 'Make your own beats' }, role: { zh: '節拍作曲', en: 'Beat maker' }, tag: { zh: '把你的節拍片段，排成一首首新歌', en: 'Your beat pieces, arranged into new songs' } },
-  law: { name: 'Orbit Law', short: 'Law', repo: 'Orbit-Law', from: '#a5b4fc', to: '#1e1b4b', ink: '#4338ca', color: '#4f46e5', paint: ['#6366f1', '#3730a3', '#1e1b4b'], spot: '#fcd34d', pitch: { zh: '法規、裁判、立法', en: 'Laws, rulings, bills' }, role: { zh: '法規與法案', en: 'Laws and bills' }, tag: { zh: '台灣的法規，每個條號都能點；立法院的法案，走到哪一步一眼就懂。', en: 'Taiwan\'s laws with linked references, and 立法院 bills by stage' } },
-  money: { name: 'Orbit Money', short: 'Money', repo: 'Orbit-Money', from: '#fde047', to: '#713f12', ink: '#a16207', color: '#ca8a04', paint: ['#facc15', '#ca8a04', '#713f12'], spot: GOLD, pitch: { zh: '每一筆，記得清楚', en: 'Every dollar, in its place' }, role: { zh: '記帳', en: 'Money tracker' }, tag: { zh: '記帳：月曆一眼看每天花多少，帳戶、悠遊卡、信用卡一起算，發票掃一下就記好', en: 'Your spending by day, every account and card, invoices scanned in' } },
-  vocab: { name: 'Orbit Words', short: 'Words', repo: 'Orbit-Words', from: '#f9a8d4', to: '#831843', ink: '#be185d', color: '#db2777', paint: ['#fda4af', '#e11d48', '#881337'], spot: '#fde047', pitch: { zh: '背得住的英文單字', en: 'Words that stay' }, role: { zh: '英文單字', en: 'English words' }, tag: { zh: '背得住的英文單字：大考 6000 字，真人發音', en: 'English words that stay with you' } }
+  stock: { name: 'Orbit Securities', short: 'Securities', repo: 'Orbit-Securities', slug: 'securities', from: '#2dd4bf', to: '#0f3d5c', ink: '#0f766e', color: '#0d9488', paint: ['#5eead4', '#0d9488', '#134e4a'], spot: '#fde047', pitch: { zh: '全球股市，模擬投資', en: 'Invest worldwide, risk-free' }, role: { zh: '投資與理財', en: 'Invest and grow' }, tag: { zh: '全球股市模擬投資：真實報價、換匯與融資', en: 'Invest in markets worldwide with play money' } },
+  orbit: { name: 'Orbit Class', short: 'Class', repo: 'Orbit-Class', slug: 'class', from: '#7dd3fc', to: '#0c4a6e', ink: '#0369a1', color: '#0ea5e9', paint: ['#67e8f9', '#0891b2', '#164e63'], spot: '#fde047', pitch: { zh: '今天的課，一眼看懂', en: 'Today’s classes at a glance' }, role: { zh: '課表', en: 'Class schedule' }, tag: { zh: '即時課表：現在、下一節與倒數', en: 'Your class schedule, live' } },
+  weather: { name: 'Orbit Weather', short: 'Weather', repo: 'Orbit-Weather', slug: 'weather', from: '#a5b4fc', to: '#312e81', ink: '#4338ca', color: '#6366f1', paint: ['#93c5fd', '#2563eb', '#1e3a8a'], spot: '#fcd34d', pitch: { zh: '一個答案的天氣', en: 'One clear forecast' }, role: { zh: '天氣', en: 'Weather' }, tag: { zh: '一個答案的天氣：降雨、紫外線、空氣，跟著你的行程', en: 'One clear forecast for wherever you’ll be' } },
+  transit: { name: 'Orbit Transit', short: 'Transit', repo: 'Orbit-Transit', slug: 'transit', from: '#6ee7b7', to: '#064e3b', ink: '#047857', color: '#10b981', paint: ['#86efac', '#16a34a', '#14532d'], spot: '#fde047', pitch: { zh: '公車、火車、YouBike', en: 'Bus, train and bike' }, role: { zh: '大眾運輸', en: 'Public transport' }, tag: { zh: '全台公車、火車、捷運與 YouBike，一次規劃', en: 'Buses, trains, metros and bikes across Taiwan' } },
+  match: { name: 'Orbit Sports', short: 'Sports', repo: 'Orbit-Sports', slug: 'sports', from: '#fdba74', to: '#9a3412', ink: '#c2410c', color: '#ea580c', paint: ['#fdba74', '#f97316', '#9a3412'], spot: '#fff', pitch: { zh: '每場比賽，即時比分', en: 'Every game, live' }, role: { zh: '賽程與比分', en: 'Scores and schedules' }, tag: { zh: '所有運動的賽程、比分與數據', en: 'Every sport, every match, every stat' } },
+  beats: { name: 'Orbit Beats', short: 'Beats', repo: 'Orbit-Beats', slug: 'beats', from: '#f0abfc', to: '#701a75', ink: '#a21caf', color: '#c026d3', paint: ['#f0abfc', '#c026d3', '#581c87'], spot: '#fde047', pitch: { zh: '做出你的節拍', en: 'Make your own beats' }, role: { zh: '節拍作曲', en: 'Beat maker' }, tag: { zh: '把你的節拍片段，排成一首首新歌', en: 'Your beat pieces, arranged into new songs' } },
+  law: { name: 'Orbit Law', short: 'Law', repo: 'Orbit-Law', slug: 'law', from: '#a5b4fc', to: '#1e1b4b', ink: '#4338ca', color: '#4f46e5', paint: ['#6366f1', '#3730a3', '#1e1b4b'], spot: '#fcd34d', pitch: { zh: '法規、裁判、立法', en: 'Laws, rulings, bills' }, role: { zh: '法規與法案', en: 'Laws and bills' }, tag: { zh: '台灣的法規，每個條號都能點；立法院的法案，走到哪一步一眼就懂。', en: 'Taiwan\'s laws with linked references, and bills in the Legislative Yuan by stage' } },
+  money: { name: 'Orbit Money', short: 'Money', repo: 'Orbit-Money', slug: 'money', from: '#fde047', to: '#713f12', ink: '#a16207', color: '#ca8a04', paint: ['#facc15', '#ca8a04', '#713f12'], spot: GOLD, pitch: { zh: '每一筆，記得清楚', en: 'Every dollar, in its place' }, role: { zh: '記帳', en: 'Money tracker' }, tag: { zh: '記帳：月曆一眼看每天花多少，帳戶、悠遊卡、信用卡一起算，發票掃一下就記好', en: 'Your spending by day, every account and card, invoices scanned in' } },
+  vocab: { name: 'Orbit Words', short: 'Words', repo: 'Orbit-Words', slug: 'words', from: '#f9a8d4', to: '#831843', ink: '#be185d', color: '#db2777', paint: ['#fda4af', '#e11d48', '#881337'], spot: '#fde047', pitch: { zh: '背得住的英文單字', en: 'Words that stay' }, role: { zh: '英文單字', en: 'English words' }, tag: { zh: '背得住的英文單字：大考 6000 字，真人發音', en: 'English words that stay with you' } }
 };
 export const SITE_URL = SITE;
-export const pathOf = id => {
-  const b = BRANDS[id];
-  return b ? `/${b.repo}/` : '/';
-};
-// Where an app will live (the new repo), for its links shared outside.
-export const homeOf = id => `${SITE_URL}/${BRANDS[id].repo}/`;
+// An app's folder: /<repo>/ on GitHub Pages, /<slug>/ on the family's own
+// domain (site.js serves each slug from its repo's Pages and sends the
+// repo's path there). pathOf: as the page it runs on has it.
+export const repoPathOf = id => (BRANDS[id] ? `/${BRANDS[id].repo}/` : '/');
+export const shortPathOf = id => (BRANDS[id] ? `/${BRANDS[id].slug}/` : '/');
+export const pathOf = id => (onDomain ? shortPathOf(id) : repoPathOf(id));
+// Where an app lives, for its links shared outside (a QR code, a share card, a notice).
+export const homeOf = id => `${SITE_URL}${DOMAIN ? shortPathOf(id) : repoPathOf(id)}`;
+// The folders served on orbit.<domain>, by their short name: every app's, and
+// the Pass's page. (The showcase is on the bare domain, Longshot on its own
+// host: site.js.)
+export const SHORT = { ...Object.fromEntries(Object.values(BRANDS).map(b => [b.slug, b.repo])), pass: 'Orbit-Core' };
 
 // The Orbit Pass: the account, in every app's top-right.
 export const PASS = { name: 'Orbit Pass', short: 'Pass', from: '#334155', to: '#020617', ink: '#0f172a', paint: ['#64748b', '#1e293b', '#020617'], spot: GOLD, pitch: { zh: '一組通行碼，所有 App', en: 'One pass, every app' }, tag: { zh: '一組通行碼，所有 App 共用', en: 'One pass for every app' } };
@@ -118,9 +124,17 @@ export const DEV = {
   // expected in 30 days would run past Cloudflare's $5 plan (checked every
   // 6 hours); the numbers above stay the owner's own, the floor.
   autoScale: { def: false, group: 'scale', zh: '依人數自動調整', en: 'Scale with people', note: '人數預估會超過 Cloudflare $5 方案的額度時，上面的即時更新一起放慢（每 6 小時檢查）；有空間就回到上面的設定' },
-  mirror: { def: true, group: 'data', zh: '使用每晚的資料副本', en: 'Use the nightly copies', note: '關掉：所有 App 都直接問代理（除錯用）' }
+  mirror: { def: true, group: 'data', zh: '使用每晚的資料副本', en: 'Use the nightly copies', note: '關掉：所有 App 都直接問代理（除錯用）' },
+  // Each paid AI feature's calls a day, everyone together (the proxy's
+  // routes named in `ai`; 0 pauses it, the app then says today's AI is used up).
+  aiClassPhoto: { def: 300, min: 0, max: 3000, unit: '次', group: 'ai', ai: ['gemini'], zh: '課表照片匯入（Class）', en: 'Class photo import', note: '每個 Worker 各自計數；0 = 暫停' },
+  aiClassEdit: { def: 300, min: 0, max: 3000, unit: '次', group: 'ai', ai: ['nl-edit'], zh: '課表 AI 修改（Class）', en: 'Class AI edit', note: '每個 Worker 各自計數；0 = 暫停' },
+  aiLaw: { def: 300, min: 0, max: 3000, unit: '次', group: 'ai', ai: ['law-ask', 'law-chat'], zh: '法律 AI（Law）', en: 'Law AI', note: '白話解釋和問法律一起算；0 = 暫停' },
+  aiMoneyRead: { def: 300, min: 0, max: 3000, unit: '次', group: 'ai', ai: ['money-read'], zh: '發票讀圖（Money）', en: 'Money invoice reading', note: '0 = 暫停' }
 };
-export const DEV_GROUPS = { proxy: '代理（sports-proxy）', sports: 'Orbit Sports', f1: 'F1', transit: 'Orbit Transit（TDX）', scale: '容量', data: '資料' };
+export const DEV_GROUPS = { proxy: '代理（sports-proxy）', sports: 'Orbit Sports', f1: 'F1', transit: 'Orbit Transit（TDX）', scale: '容量', data: '資料', ai: 'AI 每天上限（全部人一起）' };
+// The setting that caps a Gemini feature ('law-chat' → 'aiLaw').
+export const aiSettingOf = feature => Object.keys(DEV).find(k => DEV[k].ai?.includes(feature)) || null;
 
 // Settings as stored: each known key, in range, else its default.
 export function cleanDev(x = {}) {
@@ -261,14 +275,28 @@ export function avatarSvg(id) {
   return svg;
 }
 // Earned ones (orbit.mjs MILESTONES): one for each app and one for the
-// family, `ms-<app>`, a planet in the app's colours in a gold ring, the
-// app's sign on a gold medal.
+// family, `ms-<app>.<tier>`, a planet in the app's colours ringed in the
+// tier's metal (0 none yet, 1 bronze, 2 silver, 3 gold; a bare `ms-<app>`
+// is gold), the app's sign on a medal of that metal, a star for each tier.
 const MEDAL = { pass: { body: '#a5b4fc', deep: '#4338ca', night: '#1e1b4b' } };
+const METALS = [
+  ['#e2e8f0', '#94a3b8', '#475569'],
+  ['#fed7aa', '#d97706', '#7c2d12'],
+  ['#f8fafc', '#cbd5e1', '#64748b'],
+  ['#fef3c7', '#fbbf24', '#b45309']
+];
+const STARS = ['M51 6l1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4z', 'M12 9l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z', 'M57 25l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z'];
 export const MEDAL_AVATARS = ['pass', ...Object.keys(BRANDS)].map(app => ({ id: `ms-${app}`, app }));
-function medalSvg(app) {
+function medalSvg(app, tier = 3) {
   const b = BRANDS[app];
   const p = MEDAL[app] || { body: b.from, deep: b.ink, night: b.to };
+  const [hi, mid, lo] = METALS[tier];
   const ring = (d, o) => `<g transform="rotate(-18 32 41)"><path d="M3 41a29 8 0 0 ${d} 58 0" fill="none" stroke="url(#g)" stroke-width="3.4" stroke-linecap="round" opacity="${o}"/></g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><radialGradient id="s" cx=".3" cy=".2" r="1"><stop offset="0" stop-color="${p.deep}"/><stop offset="1" stop-color="${p.night}"/></radialGradient><radialGradient id="b" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#f8fafc"/><stop offset=".5" stop-color="${p.body}"/><stop offset="1" stop-color="${p.deep}"/></radialGradient><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fef3c7"/><stop offset=".5" stop-color="#fbbf24"/><stop offset="1" stop-color="#b45309"/></linearGradient></defs><rect width="64" height="64" fill="url(#s)"/><path d="M51 6l1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4z" fill="#fde68a"/><circle cx="12" cy="14" r="1.3" fill="#fff" opacity=".8"/>${ring(1, 0.55)}<circle cx="${PLANET.x}" cy="${PLANET.y}" r="${PLANET.r}" fill="url(#b)"/><ellipse cx="25" cy="21" rx="6" ry="3.4" fill="#fff" opacity=".4" transform="rotate(-28 25 21)"/>${FACES[1]()}${ring(0, 1)}<circle cx="50" cy="50" r="11" fill="url(#g)" stroke="${p.night}" stroke-width="1.6"/><g transform="translate(41.5 41.5) scale(.1328)">${GLYPHS[app](p.night, '#fff')}</g></svg>`;
+  const stars = STARS.slice(0, tier).map(d => `<path d="${d}" fill="${hi}"/>`).join('') || '<circle cx="51" cy="10" r="1.3" fill="#fff" opacity=".6"/>';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><radialGradient id="s" cx=".3" cy=".2" r="1"><stop offset="0" stop-color="${p.deep}"/><stop offset="1" stop-color="${p.night}"/></radialGradient><radialGradient id="b" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#f8fafc"/><stop offset=".5" stop-color="${p.body}"/><stop offset="1" stop-color="${p.deep}"/></radialGradient><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".5" stop-color="${mid}"/><stop offset="1" stop-color="${lo}"/></linearGradient></defs><rect width="64" height="64" fill="url(#s)"/>${stars}${ring(1, 0.55)}<circle cx="${PLANET.x}" cy="${PLANET.y}" r="${PLANET.r}" fill="url(#b)"/><ellipse cx="25" cy="21" rx="6" ry="3.4" fill="#fff" opacity=".4" transform="rotate(-28 25 21)"/>${FACES[1]()}${ring(0, 1)}<circle cx="50" cy="50" r="11" fill="url(#g)" stroke="${p.night}" stroke-width="1.6"/><g transform="translate(41.5 41.5) scale(.1328)">${GLYPHS[app](p.night, '#fff')}</g></svg>`;
 }
-export const avatarSrc = id => `data:image/svg+xml,${encodeURIComponent(/^ms-/.test(id) && MEDAL_AVATARS.some(m => m.id === id) ? medalSvg(id.slice(3)) : avatarSvg(id))}`;
+const medalOf = id => {
+  const [, app, tier] = /^ms-(\w+)(?:\.([0-3]))?$/.exec(id) || [];
+  return app && MEDAL_AVATARS.some(m => m.app === app) ? medalSvg(app, tier == null ? 3 : Number(tier)) : null;
+};
+export const avatarSrc = id => `data:image/svg+xml,${encodeURIComponent(medalOf(id) || avatarSvg(id))}`;

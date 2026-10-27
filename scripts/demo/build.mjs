@@ -93,7 +93,8 @@ for (const id of ids) {
       items[trim ? `${trim}!${single.searchParams.get('url')}` : single.searchParams.get('url')] ??= `../_x/${name}`;
     }
   }
-  const data = { at: rec.at, geo: demo.geo, ua: demo.ua, wall: demo.wall, token: TOKEN, stores: demo.stores || [], answers, items, pics };
+  // (liveMap: the map the real app shows, asked of the proxy when the demo opens; shim.js)
+  const data = { at: rec.at, geo: demo.geo, ua: demo.ua, wall: demo.wall, token: TOKEN, stores: demo.stores || [], answers, items, pics, ...(demo.liveMap ? { liveMap: 'https://api.jaypengx.com/transit/showcase-map' } : {}) };
   writeFileSync(join(site, '_demo', `${id}.js`), `window.__DEMO=${JSON.stringify(data)};\n`);
   const index = join(to, 'index.html');
   const html = readFileSync(index, 'utf8');
