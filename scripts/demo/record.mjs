@@ -51,6 +51,7 @@ const context = await browser.newContext({
   deviceScaleFactor: 2,
   isMobile: true,
   hasTouch: true,
+  ...(demo.ua ? { userAgent: demo.ua } : {}),
   locale: 'zh-TW',
   timezoneId: 'Asia/Taipei',
   geolocation: { latitude: demo.geo[0], longitude: demo.geo[1], accuracy: 20 },
@@ -61,6 +62,8 @@ const page = await context.newPage();
 // 'now': frozen at the moment of recording, for apps that read live feeds (their answers are today's).
 const at = demo.clock === 'now' ? Date.now() : Date.parse(demo.clock);
 await page.clock.install({ time: at });
+// What the app finds saved on the phone (the sandbox seeds the same).
+if (demo.stores?.length) await page.addInitScript(stores => stores.forEach(([k, v]) => localStorage.getItem(k) == null && localStorage.setItem(k, v)), demo.stores);
 // The same luck as the demo's sandbox (shim.js), so what the app picks by
 // chance while recording is what it picks in the showcase.
 await page.addInitScript(() => {

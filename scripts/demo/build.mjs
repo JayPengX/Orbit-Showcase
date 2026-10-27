@@ -90,7 +90,7 @@ for (const id of ids) {
       items[trim ? `${trim}!${single.searchParams.get('url')}` : single.searchParams.get('url')] ??= `../_x/${name}`;
     }
   }
-  const data = { at: rec.at, geo: demo.geo, token: TOKEN, stores: demo.stores || [], answers, items, pics };
+  const data = { at: rec.at, geo: demo.geo, ua: demo.ua, wall: demo.wall, token: TOKEN, stores: demo.stores || [], answers, items, pics };
   writeFileSync(join(site, '_demo', `${id}.js`), `window.__DEMO=${JSON.stringify(data)};\n`);
   const index = join(to, 'index.html');
   const html = readFileSync(index, 'utf8');

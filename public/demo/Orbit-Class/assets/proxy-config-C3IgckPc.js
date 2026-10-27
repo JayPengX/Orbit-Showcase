@@ -1,0 +1,1 @@
+import*as e from"#kit/orbit.mjs";var t=(e.API||`https://orbit-workers-proxy.pengzjay.workers.dev`).trim().replace(/\/+$/,``);function n(e){return t?`${t}${e}`:``}export{n as t};

@@ -5,10 +5,14 @@
 // `payload`, a script that writes the made-up saved data it opens on; `skip`,
 // big folders left out but for what the recording read, and `keep`, files from
 // them it needs anyway; `built`, files the app's deploy makes, from its live
-// site; `css`, rules put into the copy.
+// site; `css`, rules put into the copy; `ua`, the phone's name for an app
+// that asks for it; `stores`, what the app finds saved on the phone; `wall`,
+// an app on the phone's own clock hands (shown Taiwan's time anywhere).
 // A step: { tap: selector } | { hash: '#…' } | { type: [selector, text] } | { back: true }, with an optional wait (ms).
 import { TOURS } from '../../public/lib/demos.mjs';
+import { timetable } from './class-timetable.mjs';
 
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
 const steps = id => (TOURS[id] || []).map(s => ({ tap: s.tap, hash: s.hash, wait: s.wait }));
 
 export const DEMOS = {
@@ -25,5 +29,6 @@ export const DEMOS = {
     built: { 'nba-elta.json': 'https://jaypengx.github.io/Orbit-Sports/nba-elta.json' },
     // No betting anywhere in the showcase (Jay): the win chance cards come from betting prices, so they stay hidden.
     css: '.q-card:has(.wp){display:none!important}' },
-  securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-symbol="^TWII"]' }], settle: 9000 }
+  securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-symbol="^TWII"]' }], settle: 9000 },
+  class: { app: 'orbit', repo: 'Orbit-Class', dist: 'dist', ua: IPHONE, wall: true, clock: '2026-10-28T09:20:00+08:00', geo: [25.034, 121.565], stores: [['classFocusData', JSON.stringify(timetable)]], tour: steps('class'), explore: [] }
 };
