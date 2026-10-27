@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
+<title>JayPengX</title>
+<meta name="description" content="JayPengX 做的東西：Orbit 系列 App、它們怎麼做出來的，和 GitHub 上的程式碼。" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="JayPengX" />
+<meta property="og:description" content="JayPengX 做的東西：Orbit 系列 App、它們怎麼做出來的，和 GitHub 上的程式碼。" />
+<meta property="og:url" content="https://jaypengx.com/" />
+<meta property="og:image" content="https://jaypengx.com/showcase/icons/icon-512.png" />
+<meta name="twitter:card" content="summary" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1c1e'/%3E%3Ctext x='32' y='45' font-family='-apple-system,Helvetica,Arial,sans-serif' font-size='38' font-weight='700' fill='%23fff' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E" />
+<!-- Jay's own page, at the bare domain (site.js serves it at /). One file,
+     nothing loaded: the kit's tokens copied in (Orbit-Core docs/DESIGN.md),
+     the words in both languages, picked by the browser's. Open to all. -->
+<style>
+  :root {
+    color-scheme: light dark;
+    --page: #f2f2f7; --cell: #fff; --label: #000; --label-2: rgba(60, 60, 67, 0.6);
+    --sep: rgba(60, 60, 67, 0.29); --press: rgba(0, 0, 0, 0.05); --tile: #1c1c1e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --page: #000; --cell: #1c1c1e; --label: #fff; --label-2: rgba(235, 235, 245, 0.6);
+      --sep: rgba(84, 84, 88, 0.6); --press: rgba(255, 255, 255, 0.06); --tile: #3a3a3c; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; min-height: 100dvh; background: var(--page); color: var(--label);
+    font: 17px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: max(48px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  main { width: 100%; max-width: 520px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  h1 { margin: 0 16px; font: 700 44px/1.1 ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif; letter-spacing: -0.01em; }
+  .line { margin: 8px 16px 0; font-size: 17px; color: var(--label-2); }
+  ul { list-style: none; margin: 32px 0 0; padding: 0; background: var(--cell); border-radius: 22px; overflow: hidden; }
+  li + li a::before { content: ""; position: absolute; top: 0; left: 72px; right: 0; border-top: 0.5px solid var(--sep); }
+  a { position: relative; display: flex; align-items: center; gap: 16px; padding: 12px 16px; min-height: 64px; color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  a:active, a:hover { background: var(--press); }
+  a:focus-visible { outline: 2px solid #0a84ff; outline-offset: -2px; border-radius: 22px; }
+  .icon { flex: none; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; display: grid; place-items: center; background: var(--tile); color: #fff; }
+  .icon svg { width: 100%; height: 100%; display: block; }
+  .icon.glyph svg { width: 24px; height: 24px; }
+  .text { flex: 1; min-width: 0; }
+  .name { font-weight: 500; }
+  .sub { font-size: 15px; color: var(--label-2); }
+  .chev { flex: none; width: 8px; height: 14px; color: var(--label-2); opacity: 0.6; }
+  footer { margin-top: 48px; font-size: 13px; color: var(--label-2); }
+  @media (min-width: 900px) { h1 { font-size: 56px; } .line { font-size: 19px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>JayPengX</h1>
+  <p class="line" data-en="I build things, mostly apps I use every day on my own phone.">我喜歡動手做東西，大多是自己每天在手機上用的 App。</p>
+  <ul>
+    <li><a href="https://orbit.jaypengx.com/pass/">
+      <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="home-orbit-bg" x1="0.15" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#312e81"/><stop offset="0.5" stop-color="#1e1b4b"/><stop offset="1" stop-color="#020617"/></linearGradient><radialGradient id="home-orbit-hl" cx="0.2" cy="0.05" r="0.75"><stop offset="0" stop-color="#fff" stop-opacity="0.32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="home-orbit-sh" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.3"/></filter></defs><rect width="512" height="512" rx="116" fill="url(#home-orbit-bg)"/><rect width="512" height="512" rx="116" fill="url(#home-orbit-hl)"/><defs><linearGradient id="orbit-planet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0e7ff"/><stop offset="1" stop-color="#a5b4fc"/></linearGradient></defs><ellipse cx="256" cy="256" rx="220" ry="80" transform="rotate(-24 256 256)" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="20"/><circle cx="256" cy="256" r="130" fill="url(#orbit-planet)"/><ellipse cx="256" cy="256" rx="220" ry="80" transform="rotate(-24 256 256)" fill="none" stroke="#fff" stroke-width="20" stroke-dasharray="0 330 420 2000" stroke-linecap="round"/><circle cx="440" cy="150" r="26" fill="#fff"/></svg></span>
+      <span class="text"><span class="name">Orbit</span><br /><span class="sub" data-en="Apps for sports, transit, weather and more">運動、交通、天氣、法律⋯⋯一系列 App</span></span>
+      <svg class="chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a></li>
+    <li><a href="/showcase/">
+      <span class="icon glyph" style="background:#4f46e5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM12 16v3M8 20h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13v-3M12 13V8M16 13v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+      <span class="text"><span class="name" data-en="Showcase">展示</span><br /><span class="sub" data-en="How Orbit is built">Orbit 怎麼做出來的</span></span>
+      <svg class="chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a></li>
+    <li><a href="https://github.com/JayPengX">
+      <span class="icon glyph"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+      <span class="text"><span class="name">GitHub</span><br /><span class="sub" data-en="All the code, open">所有程式碼，公開</span></span>
+      <svg class="chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a></li>
+  </ul>
+</main>
+<footer>© <span id="y">2026</span> JayPengX</footer>
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+  if (!/^zh/i.test(navigator.language || '')) {
+    document.documentElement.lang = 'en';
+    document.querySelectorAll('[data-en]').forEach(el => { el.textContent = el.dataset.en; });
+  }
+</script>
+</body>
+</html>
