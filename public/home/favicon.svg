@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<defs>
+<linearGradient id="bg" x1="0.2" y1="0" x2="0.7" y2="1"><stop offset="0" stop-color="#3730a3"/><stop offset="0.55" stop-color="#1e1b4b"/><stop offset="1" stop-color="#020617"/></linearGradient>
+<radialGradient id="ball" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#e0e7ff"/><stop offset="0.45" stop-color="#818cf8"/><stop offset="1" stop-color="#3730a3"/></radialGradient>
+<clipPath id="front"><rect x="0" y="64" width="128" height="64"/></clipPath>
+</defs>
+<rect width="128" height="128" rx="28" fill="url(#bg)"/>
+<g transform="rotate(-18 64 64)">
+<ellipse cx="64" cy="64" rx="50" ry="15" fill="none" stroke="#c7d2fe" stroke-opacity="0.55" stroke-width="4"/>
+<circle cx="64" cy="64" r="25" fill="url(#ball)"/>
+<ellipse cx="64" cy="64" rx="50" ry="15" fill="none" stroke="#e0e7ff" stroke-width="4" clip-path="url(#front)"/>
+<circle cx="16" cy="60" r="6" fill="#f97316"/>
+<circle cx="104" cy="74" r="7" fill="#10b981"/>
+<circle cx="96" cy="52" r="4.5" fill="#db2777"/>
+</g>
+</svg>
