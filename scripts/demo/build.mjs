@@ -10,7 +10,7 @@
 // Nothing in a demo reaches outside the showcase or changes with the live apps.
 //   node scripts/demo/build.mjs [id…] [--repos dir]
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { DEMOS } from './apps.mjs';
 
@@ -35,6 +35,8 @@ for (const id of ids) {
   rmSync(to, { recursive: true, force: true });
   const skip = demo.skip || [];
   cpSync(from, to, { recursive: true, filter: p => !skip.some(s => p.startsWith(join(from, s))) && !/\/sw\.js$/.test(p) });
+  // Files from a skipped folder the demo needs though the recording didn't ask for them.
+  for (const f of demo.keep || []) (mkdirSync(dirname(join(to, f)), { recursive: true }), cpSync(join(from, f), join(to, f)));
   const answers = [];
   const pics = {};
   const origin = new URL(rec.base).origin;
@@ -65,3 +67,7 @@ for (const id of ids) {
   writeFileSync(index, html.replace(/<head>/i, `<head><script src="../_demo/${id}.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">`));
   console.log(`${id}: ${answers.length} answers, ${Object.keys(pics).length} pictures`);
 }
+
+// Answers no demo uses any more (an earlier recording's) go.
+const used = new Set(readdirSync(join(site, '_demo')).flatMap(f => readFileSync(join(site, '_demo', f), 'utf8').match(/_x\/[\w.]+/g) || []).map(x => x.slice(3)));
+for (const f of readdirSync(join(site, '_x'))) if (!used.has(f)) rmSync(join(site, '_x', f));

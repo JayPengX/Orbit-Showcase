@@ -8,7 +8,8 @@
 //   never read or touched), and so do caches; no service worker, no
 //   BroadcastChannel (the family's one-session rule never hears it), no
 //   notifications;
-// - the phone is where it was recorded;
+// - the phone is where it was recorded, and chance plays out the same way
+//   each time (Math.random from a fixed seed, as while recording);
 // - every call outside the site is answered from the recording (nothing
 //   goes out live), and pictures from outside come from the copies kept.
 (() => {
@@ -29,6 +30,15 @@
     }
   }
   window.Date = DemoDate;
+
+  // ---- The same luck every time (record.mjs seeds it the same) ----
+  let luck = 20261027;
+  Math.random = () => {
+    luck = (luck + 0x6d2b79f5) | 0;
+    let x = Math.imul(luck ^ (luck >>> 15), 1 | luck);
+    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
 
   // ---- Storage in memory ----
   const memory = seed => {
