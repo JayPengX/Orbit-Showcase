@@ -58,7 +58,8 @@ const context = await browser.newContext({
   serviceWorkers: 'block'
 });
 const page = await context.newPage();
-const at = Date.parse(demo.clock);
+// 'now': frozen at the moment of recording, for apps that read live feeds (their answers are today's).
+const at = demo.clock === 'now' ? Date.now() : Date.parse(demo.clock);
 await page.clock.install({ time: at });
 // The same luck as the demo's sandbox (shim.js), so what the app picks by
 // chance while recording is what it picks in the showcase.

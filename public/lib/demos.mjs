@@ -2,13 +2,23 @@
 // demo/, scripts/demo/), and each one's guided tour: a step points at what
 // to tap in the app (`tap`, a selector inside it) and says why, in plain
 // words. The recording walks the same steps, so every tap has its answers.
+// `real`: its data is the real feeds' at the moment it was recorded, not made up.
 export const DEMOS = {
   weather: { repo: 'Orbit-Weather' },
   money: { repo: 'Orbit-Money' },
-  words: { repo: 'Orbit-Words' }
+  words: { repo: 'Orbit-Words' },
+  sports: { repo: 'Orbit-Sports', real: true }
 };
 
 export const TOURS = {
+  sports: [
+    { tap: '.sport-card', say: ['先選你看的運動，例如足球。', 'First pick a sport you watch, say football.'] },
+    { tap: '.sp-done', say: ['按「完成」。首頁馬上變成你的觀賽計畫。', 'Press Done: home turns into your watching plan.'] },
+    { tap: '.hero-game', say: ['最上面是下一場值得看的比賽，連哪一台在播都寫好了。點它。', 'At the top: the next game worth watching, with the channel showing it. Tap it.'] },
+    { tap: '.q-close', say: ['比賽頁有兩隊的近況和對戰紀錄。看完按 × 關起來。', 'The game page has both teams’ form and their past meetings. Close it with the ×.'] },
+    { tap: '#tab-live', say: ['「轉播」分頁：台灣哪一台、幾點播哪一場，全部排好。', 'The Channels tab: which Taiwanese channel shows which game, and when.'] },
+    { tap: '#tab-matches', say: ['「賽事」分頁：每個聯賽的賽程、比分和排名。', 'The Games tab: every league’s fixtures, scores and table.'] }
+  ],
   words: [
     { tap: '.q-hc-btn', say: ['每天的目標是 20 個字。按「開始 10 個字」。', 'The daily goal is 20 words. Press “Start 10 words”.'] },
     { tap: '.choice', say: ['選你覺得對的中文意思。答錯也沒關係，App 會記下來，之後再考你。', 'Pick the meaning you think is right. A wrong answer is fine: the app notes it and asks again later.'] },

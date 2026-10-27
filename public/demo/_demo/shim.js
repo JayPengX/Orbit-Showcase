@@ -143,11 +143,19 @@
   );
 
   // ---- Every outside call answered from the recording ----
+  // Matched as plain text, however many times it was escaped (a recorded
+  // address can come back decoded once), without its cache-busting stamp.
   const clean = u => {
-    const url = new URL(u, location.href);
-    url.searchParams.delete('t');
-    url.searchParams.delete('_');
-    return url.href;
+    let x = new URL(u, location.href).href;
+    for (let i = 0; i < 3; i++) {
+      let y = x;
+      try {
+        y = decodeURIComponent(x);
+      } catch {}
+      if (y === x) break;
+      x = y;
+    }
+    return x.replace(/([?&])(?:t|_)=\d+(?=&|$)/g, '$1').replace(/[?&]+$/, '').replace(/&&+/g, '&');
   };
   const byKey = new Map();
   const byUrl = new Map();
@@ -172,6 +180,23 @@
         return new Response(JSON.stringify({ version: v }), { headers: { 'content-type': 'application/json' } });
       }
       return realFetch(input, init);
+    }
+    // The proxy's reads, one by one, however the app batches them this time:
+    // a batch is answered a line each ({ i, s, b }); one not kept answers 504,
+    // and the app asks for it alone, as it does with the real proxy.
+    if (/\/sports-proxy$/.test(url.pathname) && method === 'GET') {
+      const one = u => (D.items?.[u] ? realFetch(new URL(D.items[u], here).href).then(r => r.text()) : null);
+      if (url.searchParams.has('batch')) {
+        const lines = await Promise.all(url.searchParams.getAll('u').map(async (u, i) => {
+          const b = await one(u);
+          return b ? `{"i":${i},"s":200,"b":${b}}` : `{"i":${i},"s":504}`;
+        }));
+        return new Response(`${lines.join('\n')}\n`, { headers: { 'content-type': 'application/json' } });
+      }
+      const target = url.searchParams.get('url');
+      const trim = url.searchParams.get('trim');
+      const b = target && (await one(trim ? `${trim}!${target}` : target));
+      if (b) return new Response(b, { headers: { 'content-type': 'application/json' } });
     }
     const body = typeof init.body === 'string' ? init.body : '';
     const k = `${method} ${clean(url.href)}`;

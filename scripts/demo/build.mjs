@@ -26,6 +26,9 @@ const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'im
 rmSync(join(site, 'Shared-Proxy'), { recursive: true, force: true });
 cpSync(join(repos, 'Shared-Proxy/kit'), join(site, 'Shared-Proxy/kit'), { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|stamp-app\.mjs$|\.md$/.test(p) });
 mkdirSync(join(site, '_x'), { recursive: true });
+// No betting anywhere in the showcase (Jay): Money's help names the betting app beside Securities.
+const help = join(site, 'Shared-Proxy/kit/help.mjs');
+writeFileSync(help, readFileSync(help, 'utf8').replace('和 Securities、Longshot 的遊戲錢', '和 Securities 的遊戲錢').replace('play money in Securities and Longshot.', 'play money in Securities.'));
 
 for (const id of ids) {
   const demo = DEMOS[id];
@@ -35,9 +38,15 @@ for (const id of ids) {
   rmSync(to, { recursive: true, force: true });
   const skip = demo.skip || [];
   cpSync(from, to, { recursive: true, filter: p => !skip.some(s => p.startsWith(join(from, s))) && !/\/sw\.js$/.test(p) });
+  // Files the app's deploy builds (not in the repo), from the live site.
+  for (const [f, url] of Object.entries(demo.built || {})) {
+    const res = await fetch(url);
+    if (res.ok) writeFileSync(join(to, f), Buffer.from(await res.arrayBuffer()));
+  }
   // Files from a skipped folder the demo needs though the recording didn't ask for them.
   for (const f of demo.keep || []) (mkdirSync(dirname(join(to, f)), { recursive: true }), cpSync(join(from, f), join(to, f)));
   const answers = [];
+  const items = {};
   const pics = {};
   const origin = new URL(rec.base).origin;
   for (const g of rec.got) {
@@ -55,17 +64,39 @@ for (const id of ids) {
       }
     }
     if (g.status >= 300 && g.status < 400) continue;
+    // A batch through the proxy: kept item by item, since the app groups its
+    // reads into batches by timing, never the same way twice.
+    if (/\/sports-proxy$/.test(new URL(url).pathname) && new URL(url).searchParams.has('batch')) {
+      const us = new URL(url).searchParams.getAll('u');
+      // (A line each, { i, s, b }, or whole, { r: [{ s, b }…] }, as the preview answers.)
+      const text = body.toString('utf8');
+      const all = text.startsWith('{"r":') ? JSON.parse(text).r.map((x, i) => ({ ...x, i })) : text.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+      for (const got of all) {
+        if (got.s !== 200 || !us[got.i]) continue;
+        const text = JSON.stringify(got.b);
+        const name = `${createHash('sha1').update(text).digest('hex').slice(0, 16)}.json`;
+        if (!existsSync(join(site, '_x', name))) writeFileSync(join(site, '_x', name), text);
+        items[us[got.i]] = `../_x/${name}`;
+      }
+      continue;
+    }
     const name = `${createHash('sha1').update(body).digest('hex').slice(0, 16)}.${EXT[type] || 'bin'}`;
     if (!existsSync(join(site, '_x', name))) writeFileSync(join(site, '_x', name), body);
     if (/^image\//.test(type) && g.method === 'GET') pics[url] = `../_x/${name}`;
     answers.push([g.method, url, g.post || '', g.status, g.type, `../_x/${name}`]);
+    const single = new URL(url);
+    if (g.status === 200 && /\/sports-proxy$/.test(single.pathname) && single.searchParams.get('url')) {
+      const trim = single.searchParams.get('trim');
+      items[trim ? `${trim}!${single.searchParams.get('url')}` : single.searchParams.get('url')] ??= `../_x/${name}`;
+    }
   }
-  const data = { at: rec.at, geo: demo.geo, token: TOKEN, stores: demo.stores || [], answers, pics };
+  const data = { at: rec.at, geo: demo.geo, token: TOKEN, stores: demo.stores || [], answers, items, pics };
   writeFileSync(join(site, '_demo', `${id}.js`), `window.__DEMO=${JSON.stringify(data)};\n`);
   const index = join(to, 'index.html');
   const html = readFileSync(index, 'utf8');
-  writeFileSync(index, html.replace(/<head>/i, `<head><script src="../_demo/${id}.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">`));
-  console.log(`${id}: ${answers.length} answers, ${Object.keys(pics).length} pictures`);
+  const style = demo.css ? `<style>${demo.css}</style>` : '';
+  writeFileSync(index, html.replace(/<head>/i, `<head><script src="../_demo/${id}.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">${style}`));
+  console.log(`${id}: ${answers.length} answers, ${Object.keys(items).length} proxy reads, ${Object.keys(pics).length} pictures`);
 }
 
 // Answers no demo uses any more (an earlier recording's) go.
