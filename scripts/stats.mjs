@@ -3,7 +3,9 @@
 // lines of code and its test cases, the first day Claude co-wrote one and how
 // many GitHub Copilot co-wrote, and the family's commits by day and by
 // hour of the day, plus the churn: code lines written and later taken out
-// again, and the updates that were undone outright (reverts). Run by the deploy (daily too) with the repos beside this one:
+// again, and the updates that were undone outright (reverts), and the
+// rules Jay has set (each dated line of Orbit-Core's docs/RULEBOOK.md before
+// its "Replaced" part). Run by the deploy (daily too) with the repos beside this one:
 //   node scripts/stats.mjs [folder holding the repos] > public/data/stats.json
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -80,6 +82,12 @@ export function countRepo(dir) {
   return { commits: log.length, claude, added, removed, reverts, first: sorted[0] || null, last: sorted.at(-1) || null, lines, tests, days, hours, copilot, firstClaude };
 }
 
+// Jay's rules in force: the dated lines ("- 10-18 …") above section 6.
+export function countRules(text) {
+  const live = text.split(/^## 6\./m)[0];
+  return (live.match(/^- \d{1,2}-\d{2} /gm) || []).length;
+}
+
 export function collect(root) {
   const repos = [];
   const days = {};
@@ -108,6 +116,7 @@ export function collect(root) {
     removed: sum('removed'),
     reverts: sum('reverts'),
     tests: sum('tests'),
+    rules: countRules(readFileSync(join(root, 'Orbit-Core', 'docs', 'RULEBOOK.md'), 'utf8')),
     first,
     days: Object.fromEntries(Object.entries(days).sort()),
     hours,
