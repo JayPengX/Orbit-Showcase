@@ -16,7 +16,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1c1e'/%3E%3Ctext x='32' y='45' font-family='-apple-system,Helvetica,Arial,sans-serif' font-size='38' font-weight='700' fill='%23fff' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E" />
 <!-- Jay's own page, at the bare domain (site.js serves it at /). One file,
      nothing loaded: the kit's tokens copied in (Orbit-Core docs/DESIGN.md),
-     the words in both languages, picked by the browser's. Open to all. -->
+     the words in both languages, picked by the browser's. Open to all.
+     Livelier than the apps on purpose (Jay: "fancier, more animated"): a
+     small orbit with a planet per app, the parts rising in, the name
+     written in; all of it still when the phone asks for less motion. -->
 <style>
   :root {
     color-scheme: light dark;
@@ -51,33 +54,151 @@
   .sub { font-size: 15px; color: var(--label-2); }
   .chev { flex: none; width: 8px; height: 14px; color: var(--label-2); opacity: 0.6; }
   footer { margin-top: 48px; font-size: 13px; color: var(--label-2); }
-  @media (min-width: 900px) { h1 { font-size: 56px; } .line { font-size: 19px; } }
+  @media (min-width: 900px) { h1 { font-size: 56px; } .line { font-size: 19px; } .sky { height: 280px; margin: -48px -120px 0; } }
+
+  /* The sky: a little orbit, one planet per Orbit app, in its colour. */
+  .sky { position: relative; height: 200px; margin: -24px -16px 0; }
+  .sky svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ring { fill: none; stroke: var(--sep); stroke-width: 1; }
+  .core { animation: breathe 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: -1; display: none; }
+  .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; opacity: 0; animation: twinkle 4s ease-in-out infinite; }
+  @media (prefers-color-scheme: dark) { .stars { display: block; } }
+  @keyframes breathe { 50% { transform: scale(1.06); } }
+  @keyframes twinkle { 50% { opacity: 0.7; } }
+
+  /* Arriving: each part rises in, one after another. */
+  .in { opacity: 0; transform: translateY(12px); animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: calc(var(--i, 0) * 90ms + 150ms); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  h1 .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(6deg); animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: calc(var(--c) * 45ms + 200ms); }
+  h1 { background: linear-gradient(100deg, var(--label) 40%, #818cf8 50%, var(--label) 60%) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; }
+  h1.shine { -webkit-text-fill-color: transparent; animation: shine 1.6s ease-in-out forwards; background-position: 100% 0; }
+  @keyframes shine { to { background-position: 0 0; } }
+  ul { transform-style: preserve-3d; }
+  li { transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .icon { transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+  a:hover .icon, a:active .icon { transform: scale(1.1) rotate(-6deg); }
+  a:hover .chev { transform: translateX(3px); }
+  .chev { transition: transform 0.25s; }
+  @media (prefers-reduced-motion: reduce) {
+    .in, h1 .ch { animation: none; opacity: 1; transform: none; }
+    .core, .stars i { animation: none; }
+    h1.shine { animation: none; -webkit-text-fill-color: currentColor; }
+  }
 </style>
 </head>
 <body>
+<div class="stars" aria-hidden="true"></div>
 <main>
+  <div class="sky in" style="--i:0" aria-hidden="true">
+    <svg id="sky" viewBox="-180 -110 360 220">
+      <defs>
+        <radialGradient id="core-fill" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#e0e7ff"/><stop offset="0.45" stop-color="#818cf8"/><stop offset="1" stop-color="#312e81"/></radialGradient>
+        <radialGradient id="core-glow"><stop offset="0" stop-color="#818cf8" stop-opacity="0.45"/><stop offset="1" stop-color="#818cf8" stop-opacity="0"/></radialGradient>
+      </defs>
+      <g transform="rotate(-14)">
+        <g id="rings"></g>
+        <g id="back"></g>
+        <circle r="52" fill="url(#core-glow)"/>
+        <circle class="core" r="22" fill="url(#core-fill)"/>
+        <g id="front"></g>
+      </g>
+    </svg>
+  </div>
   <h1>JayPengX</h1>
-  <p class="line" data-en="I build things, mostly apps I use every day on my own phone.">我喜歡動手做東西，大多是自己每天在手機上用的 App。</p>
-  <ul>
-    <li><a href="https://orbit.jaypengx.com/pass/">
+  <p class="line in" style="--i:2" data-en="I build things, mostly apps I use every day on my own phone.">我喜歡動手做東西，大多是自己每天在手機上用的 App。</p>
+  <ul class="in" style="--i:3">
+    <li class="in" style="--i:4"><a href="https://orbit.jaypengx.com/pass/">
       <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="home-orbit-bg" x1="0.15" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#312e81"/><stop offset="0.5" stop-color="#1e1b4b"/><stop offset="1" stop-color="#020617"/></linearGradient><radialGradient id="home-orbit-hl" cx="0.2" cy="0.05" r="0.75"><stop offset="0" stop-color="#fff" stop-opacity="0.32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="home-orbit-sh" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.3"/></filter></defs><rect width="512" height="512" rx="116" fill="url(#home-orbit-bg)"/><rect width="512" height="512" rx="116" fill="url(#home-orbit-hl)"/><defs><linearGradient id="orbit-planet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0e7ff"/><stop offset="1" stop-color="#a5b4fc"/></linearGradient></defs><ellipse cx="256" cy="256" rx="220" ry="80" transform="rotate(-24 256 256)" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="20"/><circle cx="256" cy="256" r="130" fill="url(#orbit-planet)"/><ellipse cx="256" cy="256" rx="220" ry="80" transform="rotate(-24 256 256)" fill="none" stroke="#fff" stroke-width="20" stroke-dasharray="0 330 420 2000" stroke-linecap="round"/><circle cx="440" cy="150" r="26" fill="#fff"/></svg></span>
       <span class="text"><span class="name">Orbit</span><br /><span class="sub" data-en="Apps for sports, transit, weather and more">運動、交通、天氣、法律⋯⋯一系列 App</span></span>
       <svg class="chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a></li>
-    <li><a href="/showcase/">
+    <li class="in" style="--i:5"><a href="/showcase/">
       <span class="icon glyph" style="background:#4f46e5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM12 16v3M8 20h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13v-3M12 13V8M16 13v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
       <span class="text"><span class="name" data-en="Showcase">展示</span><br /><span class="sub" data-en="How Orbit is built">Orbit 怎麼做出來的</span></span>
       <svg class="chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a></li>
-    <li><a href="https://github.com/JayPengX">
+    <li class="in" style="--i:6"><a href="https://github.com/JayPengX">
       <span class="icon glyph"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
       <span class="text"><span class="name">GitHub</span><br /><span class="sub" data-en="All the code, open">所有程式碼，公開</span></span>
       <svg class="chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a></li>
   </ul>
 </main>
-<footer>© <span id="y">2026</span> JayPengX</footer>
+<footer class="in" style="--i:7">© <span id="y">2026</span> JayPengX</footer>
 <script>
+  // The orbit: three rings, a planet for each Orbit app in its own colour,
+  // going round at their own pace; the near half passes in front of the core.
+  (function () {
+    var NS = 'http://www.w3.org/2000/svg', svg = document.getElementById('sky');
+    var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var RINGS = [
+      { a: 62, b: 20, s: 0.55, p: ['#f97316', '#10b981', '#6366f1'] },
+      { a: 108, b: 34, s: -0.34, p: ['#ca8a04', '#db2777', '#0d9488'] },
+      { a: 158, b: 50, s: 0.22, p: ['#c026d3', '#0ea5e9', '#4f46e5'] }
+    ];
+    var planets = [];
+    RINGS.forEach(function (r, ri) {
+      var e = document.createElementNS(NS, 'ellipse');
+      e.setAttribute('class', 'ring'); e.setAttribute('rx', r.a); e.setAttribute('ry', r.b);
+      document.getElementById('rings').appendChild(e);
+      r.p.forEach(function (c, i) {
+        var dot = document.createElementNS(NS, 'circle');
+        dot.setAttribute('fill', c);
+        planets.push({ el: dot, r: r, t: (i / r.p.length) * Math.PI * 2 + ri, size: 7 - ri });
+      });
+    });
+    var tx = 0, ty = 0, px = 0, py = 0;
+    addEventListener('pointermove', function (e) {
+      tx = (e.clientX / innerWidth - 0.5) * 2; ty = (e.clientY / innerHeight - 0.5) * 2;
+    }, { passive: true });
+    var last = performance.now();
+    function frame(now) {
+      var dt = Math.min(0.05, (now - last) / 1000); last = now;
+      px += (tx - px) * 0.05; py += (ty - py) * 0.05;
+      svg.style.transform = 'translate(' + (px * 8) + 'px,' + (py * 6) + 'px)';
+      planets.forEach(function (p) {
+        if (!still) p.t += p.r.s * dt;
+        var sin = Math.sin(p.t), x = p.r.a * Math.cos(p.t), y = p.r.b * sin;
+        p.el.setAttribute('cx', x.toFixed(2)); p.el.setAttribute('cy', y.toFixed(2));
+        p.el.setAttribute('r', (p.size * (1 + 0.28 * sin)).toFixed(2));
+        p.el.setAttribute('opacity', sin < 0 ? 0.55 + 0.45 * (1 + sin) : 1);
+        var g = document.getElementById(sin < 0 ? 'back' : 'front');
+        if (p.el.parentNode !== g) g.appendChild(p.el);
+      });
+      if (!still) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    // Stars, in the dark only (CSS hides them in the light).
+    var sky = document.querySelector('.stars');
+    for (var i = 0; i < 60; i++) {
+      var st = document.createElement('i');
+      st.style.left = Math.random() * 100 + '%'; st.style.top = Math.random() * 100 + '%';
+      st.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+      st.style.animationDuration = (3 + Math.random() * 4).toFixed(2) + 's';
+      sky.appendChild(st);
+    }
+
+    // The name, letter by letter, then one sweep of light across it.
+    var h1 = document.querySelector('h1');
+    h1.innerHTML = h1.textContent.split('').map(function (c, i) { return '<span class="ch" style="--c:' + i + '">' + c + '</span>'; }).join('');
+    h1.setAttribute('aria-label', 'JayPengX');
+    // (A clipped background can't paint through the letters' own boxes, so
+    // the letters go back to plain text before the light sweeps.)
+    if (!still) setTimeout(function () { h1.textContent = 'JayPengX'; h1.classList.add('shine'); }, 1400);
+
+    // Rows lean toward the pointer a little (desktop).
+    document.querySelectorAll('li').forEach(function (li) {
+      li.addEventListener('pointermove', function (e) {
+        if (e.pointerType !== 'mouse' || still) return;
+        var b = li.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5;
+        li.style.transform = 'perspective(600px) rotateY(' + (x * 4).toFixed(2) + 'deg) translateZ(4px)';
+      });
+      li.addEventListener('pointerleave', function () { li.style.transform = ''; });
+    });
+  })();
+
   document.getElementById('y').textContent = new Date().getFullYear();
   if (!/^zh/i.test(navigator.language || '')) {
     document.documentElement.lang = 'en';
