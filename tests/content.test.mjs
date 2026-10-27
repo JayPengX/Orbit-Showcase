@@ -37,6 +37,7 @@ test('apps: a tree branch, screenshots on disk, captions in both languages', () 
     assert.ok(pair(a.q), `${a.id}.q`);
     for (const [f, c] of [...a.shots, ...(a.then ? [a.then] : [])]) {
       assert.ok(existsSync(shot(f)), `${f}.webp`);
+      if (a.zh && !f.startsWith('then-')) assert.ok(existsSync(shot(`${f}.zh`)), `${f}.zh.webp`);
       assert.ok(pair(c), `${f} caption`);
     }
   }
