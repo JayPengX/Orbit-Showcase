@@ -1,10 +1,12 @@
-// 歷程: how Orbit grew. Where it began (Orbit Color), the apps' birthdays,
+// 歷程: how Orbit grew. Where it began (Orbit Color), the tools, Jay's
+// decisions, how he asks (his own messages and what came of them), where it
+// went wrong (with the churn counted from git), the apps' birthdays,
 // the big changes with their real dates, why, and before/after pictures,
 // then a feel of how the work goes: the loop, a calendar of every day's
 // updates and the hours they happen (data/stats.json, counted from git),
 // three real days, and the complaints that became rules.
 import { h, t, ico, appImg, fmtDay, fmtDayYear, num, reveal, zoom, en } from '../shell.mjs';
-import { ORIGIN, TOOLS, DECISIONS, SETUP, CHANGES, BIRTHS, LOOP, DAYS, RULES } from '../lib/history.mjs';
+import { ORIGIN, TOOLS, DECISIONS, SETUP, PATTERNS, PROMPTS, LEARNED, SETBACKS, CHANGES, BIRTHS, LOOP, DAYS, RULES } from '../lib/history.mjs';
 import { APPS } from '../lib/apps.mjs';
 import { NODES } from '../lib/tree.mjs';
 
@@ -72,6 +74,92 @@ function decisions() {
       'div',
       { class: 'sc-days' },
       SETUP.map(([icon, title, line]) => h('div', { class: 'sc-card sc-day sc-rise' }, [h('span', { class: 'sc-badge' }, [ico(icon)]), h('h4', { text: t(title) }), h('p', { text: t(line) })]))
+    )
+  ]);
+}
+
+// How Jay asks: his messages beside what came of them; the habit chips
+// filter the cards.
+function prompts() {
+  const by = Object.fromEntries(PATTERNS.map(p => [p.id, p]));
+  const line = h('p', { class: 'sc-ask-line', 'aria-live': 'polite' });
+  const list = h(
+    'ol',
+    { class: 'sc-asks' },
+    PROMPTS.map(x =>
+      h('li', { class: 'sc-card sc-ask sc-rise', 'data-tag': x.tag }, [
+        h('div', { class: 'sc-ask-top' }, [
+          x.app ? appImg(BRAND[x.app], 22) : null,
+          h('span', { class: 'sc-over', text: fmtDayYear(x.date) }),
+          h('span', { class: 'sc-ask-tag' }, [ico(by[x.tag].icon), t(by[x.tag].title)])
+        ]),
+        h('blockquote', { lang: 'en' }, [h('p', { text: x.said })]),
+        h('p', { class: 'sc-ask-gist', text: t(x.gist) }),
+        h('p', { class: 'sc-ask-then' }, [ico('chevron'), h('span', { text: t(x.then) })])
+      ])
+    )
+  );
+  const chips = h('div', { class: 'sc-chips sc-ask-chips', role: 'group', 'aria-label': t(['依習慣篩選', 'Filter by habit']) });
+  const pick = id => {
+    [...chips.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+    list.querySelectorAll('.sc-ask').forEach(li => (li.hidden = id !== 'all' && li.dataset.tag !== id));
+    line.textContent = id === 'all' ? t(['點一個習慣，看它出現在哪幾句話裡。', 'Tap a habit to see the messages that show it.']) : t(by[id].line);
+  };
+  [{ id: 'all', icon: 'list', title: ['全部', 'All'] }, ...PATTERNS].forEach(p =>
+    chips.append(h('button', { type: 'button', class: 'sc-chip', 'data-id': p.id, onclick: () => pick(p.id) }, [ico(p.icon), t(p.title)]))
+  );
+  pick('all');
+  return h('section', { class: 'sc-block sc-prompts' }, [
+    h('h2', { class: 'sc-h2 sc-rise', text: t(['Jay 怎麼跟 AI 說話', 'How Jay asks']) }),
+    h('p', { class: 'sc-lede-s sc-rise', text: t(['Jay 的訊息很短、打得很快，常常中英夾雜，也有錯字，不是什麼完美的「提示詞」。但它們像一個產品負責人的聲音：直接從手機上用的感受出發，說清楚要什麼、好到什麼程度。下面是他的原話，和後來做出來的東西。', 'Jay’s messages are short, quick, mixed Chinese and English, typos and all: no textbook prompts. But they read like a product owner: straight from using the app on his phone, clear about what he wants and how good it must be. Below are his own words and what came of them.']) }),
+    h('div', { class: 'sc-rise' }, [chips, line]),
+    list,
+    h('div', { class: 'sc-card sc-learned sc-rise' }, [
+      h('h3', { class: 'sc-h3' }, [ico('spark'), t(['學到的事', 'What he learned about asking AI'])]),
+      h('ul', {}, LEARNED.map(x => h('li', { text: t(x) }))),
+      h('p', { class: 'sc-note', text: t(['整理自 Jay 實際的做法，不是他的原話。', 'Drawn from how Jay works, not his exact words.']) })
+    ]),
+    h('p', { class: 'sc-note sc-rise', text: t(['引用的都是 Jay 傳給 Claude 的原話，只修了拼字；[ ] 裡是補上的說明。', 'Quotes are Jay’s own messages to Claude with only spelling fixed; [brackets] are added for clarity.']) })
+  ]);
+}
+
+// Where it went wrong, and the churn git shows.
+function setbacks(stats) {
+  const meter = stats?.added
+    ? (() => {
+        const share = stats.removed / stats.added;
+        return h('div', { class: 'sc-card sc-churn sc-rise' }, [
+          h('div', { class: 'sc-churn-nums' }, [
+            h('div', {}, [h('strong', { text: num(stats.added) }), h('small', { text: t(['行程式寫過', 'lines of code written']) })]),
+            h('div', {}, [h('strong', { text: num(stats.removed) }), h('small', { text: t(['行後來刪掉或改寫', 'later removed or rewritten']) })]),
+            h('div', {}, [h('strong', { text: num(stats.reverts) }), h('small', { text: t(['次更新整個撤回', 'updates undone outright']) })])
+          ]),
+          h('div', { class: 'sc-churn-bar', style: `--k:${Math.round(share * 1000) / 10}%`, role: 'img', 'aria-label': t([`每 10 行約有 ${Math.round(share * 10)} 行後來被拿掉`, `About ${Math.round(share * 10)} in every 10 lines were later taken out`]) }, [h('span')]),
+          h('p', { class: 'sc-proof' }, [ico('check'), t([`每寫 10 行，大約有 ${Math.round(share * 10)} 行後來被刪掉或改寫。這是從 GitHub 紀錄數出來的，每天重算。`, `Of every 10 lines written, about ${Math.round(share * 10)} were later removed or rewritten. Counted from the GitHub history, daily.`])])
+        ]);
+      })()
+    : null;
+  return h('section', { class: 'sc-block sc-setbacks' }, [
+    h('h2', { class: 'sc-h2 sc-rise', text: t(['沒那麼順的地方', 'Where it didn’t go smoothly']) }),
+    h('p', { class: 'sc-lede-s sc-rise', text: t(['Orbit 不是一路順利。AI 常常做出跟 Jay 想的不一樣的東西，很多地方做了又拆、拆了又做。進步最快的往往就是這些時候：Jay 把不對的地方講清楚，再變成一條以後都適用的規則。', 'Orbit didn’t go smoothly all the way. The AI often built something other than what Jay had in mind, and a lot was built, torn down and built again. Those were often the moments it moved fastest: Jay said clearly what was wrong, and it became a rule for everything after.']) }),
+    meter,
+    h(
+      'ol',
+      { class: 'sc-setback-list' },
+      SETBACKS.map(x =>
+        h('li', { class: 'sc-card sc-setback sc-rise' }, [
+          h('div', { class: 'sc-setback-head' }, [h('span', { class: 'sc-badge' }, [ico(x.icon)]), h('div', {}, [h('p', { class: 'sc-over', text: fmtDayYear(x.date) }), h('h3', { text: t(x.title) })])]),
+          h(
+            'div',
+            { class: 'sc-pir' },
+            [
+              ['x', ['出了什麼錯', 'What went wrong'], x.wrong],
+              ['send', ['Jay 怎麼說', 'How Jay pushed back'], x.push],
+              ['check', ['後來', 'What came of it'], x.rule]
+            ].map(([icon, label, v]) => h('div', { class: 'sc-pir-row' }, [h('span', { class: 'sc-pir-k' }, [ico(icon), t(label)]), h('p', { text: t(v) })]))
+          )
+        ])
+      )
     )
   ]);
 }
@@ -208,6 +296,6 @@ function howIWork(stats) {
 }
 
 export function renderStory(panel, stats) {
-  panel.replaceChildren(origin(), tools(stats), decisions(), births(stats), changes(), howIWork(stats));
+  panel.replaceChildren(origin(), tools(stats), decisions(), prompts(), setbacks(stats), births(stats), changes(), howIWork(stats));
   reveal(panel);
 }

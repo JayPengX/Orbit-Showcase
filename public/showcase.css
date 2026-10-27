@@ -1975,3 +1975,211 @@
     transform: scale(0.86);
   }
 }
+
+/* How Jay asks: his words, then what came of them. */
+.sc-ask-chips {
+  margin-bottom: 8px;
+}
+.sc-ask-chips .sc-chip {
+  border: 0;
+  cursor: pointer;
+  transition: background 160ms, color 160ms, transform 160ms var(--sc-spring);
+}
+.sc-ask-chips .sc-chip:active {
+  transform: scale(0.96);
+}
+.sc-ask-chips .sc-chip[aria-pressed='true'] {
+  background: var(--sc-ac);
+  color: #fff;
+}
+.sc-ask-chips .sc-chip[aria-pressed='true'] .sc-ico {
+  color: #fff;
+}
+.sc-ask-line {
+  min-height: 1.5em;
+  margin: 0 0 12px;
+  color: var(--q-label-2);
+  font: 400 14px/1.5 var(--q-font);
+}
+.sc-asks {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-asks [hidden] {
+  display: none !important;
+}
+.sc-ask-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.sc-ask-top .sc-over {
+  margin: 0;
+}
+.sc-ask-top img {
+  border-radius: 6px;
+}
+.sc-ask-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sc-ac) 12%, transparent);
+  color: var(--sc-ac);
+  font: 600 12px/1.3 var(--q-font);
+  white-space: nowrap;
+}
+.sc-ask blockquote {
+  position: relative;
+  margin: 12px 0 10px;
+  padding: 12px 14px 12px 16px;
+  border-left: 3px solid var(--sc-ac);
+  border-radius: 4px 14px 14px 4px;
+  background: var(--q-fill-1, var(--q-fill-2));
+}
+.sc-ask blockquote p {
+  margin: 0;
+  font: 500 16px/1.55 var(--q-font);
+  overflow-wrap: anywhere;
+}
+.sc-ask-gist {
+  margin: 0 0 8px;
+  color: var(--q-label-2);
+  font: 400 14px/1.5 var(--q-font);
+}
+.sc-ask-then {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--q-green) 10%, transparent);
+  font: 500 15px/1.5 var(--q-font);
+}
+.sc-ask-then .sc-ico {
+  flex: none;
+  margin-top: 3px;
+  color: var(--q-green);
+}
+.sc-learned {
+  margin-top: 14px;
+  background: color-mix(in srgb, var(--sc-ac) 8%, var(--sc-card));
+}
+.sc-learned .sc-h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.sc-learned .sc-h3 .sc-ico {
+  color: var(--sc-ac);
+}
+.sc-learned ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.2em;
+  font: 400 15px/1.55 var(--q-font);
+}
+
+/* Where it went wrong. */
+.sc-churn {
+  margin-bottom: 12px;
+}
+.sc-churn-nums {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.sc-churn-nums strong {
+  display: block;
+  font: 800 22px/1.2 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.sc-churn-nums div:nth-child(2) strong {
+  color: var(--q-orange);
+}
+.sc-churn-nums small {
+  display: block;
+  margin-top: 2px;
+  color: var(--q-label-2);
+  font: 400 13px/1.35 var(--q-font);
+}
+.sc-churn-bar {
+  height: 10px;
+  margin: 14px 0 12px;
+  border-radius: 999px;
+  background: var(--q-fill-2);
+  overflow: hidden;
+}
+.sc-churn-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--q-orange);
+  transition: width 1200ms var(--sc-spring, ease) 200ms;
+}
+.sc-churn.in .sc-churn-bar span {
+  width: var(--k);
+}
+.sc-churn p.sc-proof {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--q-green) 10%, transparent);
+  font: 400 14px/1.5 var(--q-font);
+}
+.sc-setback-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-setback-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.sc-setback-head .sc-over {
+  margin: 0;
+}
+.sc-setback-head h3 {
+  margin: 2px 0 0;
+  font: 700 17px/1.4 var(--q-font);
+}
+.sc-setback .sc-badge {
+  --c: var(--q-orange);
+}
+.sc-setback .sc-pir-row {
+  background: var(--q-fill-1, var(--q-fill-2));
+}
+.sc-setback .sc-pir-row:nth-child(2) .sc-pir-k {
+  color: var(--sc-ac);
+}
+@media (min-width: 900px) {
+  .sc-asks,
+  .sc-setback-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 359px) {
+  .sc-churn-nums strong {
+    font-size: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-churn-bar span {
+    transition: none;
+  }
+}

@@ -2,7 +2,8 @@
 // each repo's commits, the ones Claude co-wrote, its first and last day, its
 // lines of code and its test cases, the first day Claude co-wrote one and how
 // many GitHub Copilot co-wrote, and the family's commits by day and by
-// hour of the day. Run by the deploy (daily too) with the repos beside this one:
+// hour of the day, plus the churn: code lines written and later taken out
+// again, and the updates that were undone outright (reverts). Run by the deploy (daily too) with the repos beside this one:
 //   node scripts/stats.mjs [folder holding the repos] > public/data/stats.json
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -62,8 +63,21 @@ export function countRepo(dir) {
     }
     if (/co-authored-by:\s*copilot/i.test(entry)) copilot++;
   }
+  // Churn: every code line ever added and removed, and the reverts.
+  let added = 0;
+  let removed = 0;
+  let reverts = 0;
+  try {
+    for (const row of git(dir, 'log', '--numstat', '--format=').split('\n')) {
+      const [a, d, f] = row.split('\t');
+      if (!f || a === '-' || !CODE.test(f) || NOT_CODE.test(f)) continue;
+      added += +a;
+      removed += +d;
+    }
+    reverts = git(dir, 'log', '--format=%s').split('\n').filter(s => /^revert\b/i.test(s)).length;
+  } catch {}
   const sorted = Object.keys(days).sort();
-  return { commits: log.length, claude, first: sorted[0] || null, last: sorted.at(-1) || null, lines, tests, days, hours, copilot, firstClaude };
+  return { commits: log.length, claude, added, removed, reverts, first: sorted[0] || null, last: sorted.at(-1) || null, lines, tests, days, hours, copilot, firstClaude };
 }
 
 export function collect(root) {
@@ -90,6 +104,9 @@ export function collect(root) {
     copilot: sum('copilot'),
     firstClaude: repos.map(r => r.firstClaude).filter(Boolean).sort()[0] || null,
     lines: sum('lines'),
+    added: sum('added'),
+    removed: sum('removed'),
+    reverts: sum('reverts'),
     tests: sum('tests'),
     first,
     days: Object.fromEntries(Object.entries(days).sort()),

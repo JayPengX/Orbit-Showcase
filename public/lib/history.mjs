@@ -220,3 +220,120 @@ export const RULES = [
   ['bike', ['規劃路線一定把 YouBike 當備案', 'Every trip plan keeps YouBike as a fallback']],
   ['cloud', ['颱風假在每個 App 都算放假', 'A typhoon day off counts as a holiday in every app']]
 ];
+
+// How Jay asks: his own messages to Claude (lightly tidied: spelling,
+// capitals, a word in [brackets] where the old name would confuse), each with
+// what came of it. `tag` is the habit it shows (PATTERNS).
+export const PATTERNS = [
+  { id: 'phone', icon: 'camera', title: ['從手機上真的用出發', 'Straight from using it'], line: ['幾乎每句話都是用到一半發現的，常常附一張截圖。', 'Almost every message comes from using the app, often with a screenshot.'] },
+  { id: 'goal', icon: 'target', title: ['說要什麼，不說怎麼做', 'The goal, not the steps'], line: ['講想要的結果和標準，怎麼做交給 AI 去想。', 'He names the result and the standard and leaves the how to the AI.'] },
+  { id: 'rule', icon: 'flag', title: ['一次的問題，變成全家的規則', 'One problem becomes a family rule'], line: ['修好一個地方還不夠：「整個 App 都要這樣」。', 'Fixing one spot isn’t enough: “make it like this across the app”.'] },
+  { id: 'fix', icon: 'swap', title: ['不對就馬上說', 'Quick to correct'], line: ['AI 弄錯了，他幾分鐘內就指出來，不會等到最後。', 'When the AI gets it wrong, he says so within minutes, not at the end.'] },
+  { id: 'team', icon: 'user', title: ['連怎麼合作都在設計', 'Designing how the work runs'], line: ['不只管 App，也管 AI 怎麼分工、怎麼省額度。', 'Not just the apps: how the AI splits work and saves its quota too.'] }
+];
+
+export const PROMPTS = [
+  {
+    date: '2026-10-27', app: 'money', tag: 'rule',
+    said: 'Super empty. Also for 統計, honestly you should be able to see the graph in one sight, not need to scroll slightly. Make sure this kind of design choice is made across the app: things that should be shown should never be buried or need a scroll.',
+    gist: ['統計的圖要一眼看完；而且整個 App 都照這個標準。', 'See the chart at a glance, and hold the whole app to that.'],
+    then: ['變成一條規則：每個分頁、每個彈出視窗都要重新檢查，視窗大小跟著內容走。', 'It became a rule: every tab and sheet re-checked, each sheet sized to what’s in it.']
+  },
+  {
+    date: '2026-10-27', app: 'money', tag: 'phone',
+    said: 'I rarely use 載具 in the app. 發票 is only for me to port my purchase details in, so I don’t have to type.',
+    gist: ['說的是自己怎麼用，不是要加什麼功能。', 'He describes how he actually uses it, not a feature.'],
+    then: ['發票分頁整個改成以「匯入」為主：掃描、匯入檔案放最上面，條碼和對獎移到下面。', 'The 發票 tab was rebuilt around bringing purchases in; the barcode and prize check moved down.']
+  },
+  {
+    date: '2026-10-27', app: 'money', tag: 'fix',
+    said: 'Also 悠遊卡 is not 電子錢包, it’s a card. Only 悠遊付 is digital.',
+    gist: ['一句話糾正一個分類錯誤。', 'One line to correct a wrong category.'],
+    then: ['帳戶改成五種：現金、銀行、信用卡、儲值卡、電子支付。', 'Accounts became five kinds: cash, bank, credit card, stored-value card, e-payment.']
+  },
+  {
+    date: '2026-10-18', app: null, tag: 'goal',
+    said: 'For questions regarding [the apps], the key is to stay as realistic as the real world is.',
+    gist: ['不是一個步驟，而是之後每個問題都能拿來判斷的標準。', 'Not a step but a standard to judge every later question by.'],
+    then: ['股票 App 照台灣證交所真正的規則做：當沖的資格、零股、交割，再麻煩也照做。', 'Securities follows the real TWSE rules: day-trade eligibility, odd lots, settlement, however fiddly.']
+  },
+  {
+    date: '2026-10-18', app: null, tag: 'team',
+    said: 'Don’t just give me three options. Make sure to give me an option to type additional info or ask a follow-up.',
+    gist: ['連 AI 問他問題的方式都要改。', 'He even changed how the AI asks him things.'],
+    then: ['從那天起，每張選擇卡都多一個「其他，讓我說」。', 'From then on every choice card has an “Other, let me explain”.']
+  },
+  {
+    date: '2026-10-18', app: null, tag: 'team',
+    said: 'Don’t just forward my request. You should absorb it first, then message them, cause that will probably convey my message more clearly.',
+    gist: ['要總指揮先想懂，再交代下去。', 'The coordinator must understand first, then pass it on.'],
+    then: ['總指揮先消化 Jay 的話，再用每條線聽得懂的方式交代，原話附在後面。', 'The coordinator works out what each request means for each thread, with his words attached.']
+  },
+  {
+    date: '2026-10-18', app: null, tag: 'team',
+    said: 'Changing models or effort will need to reread the history. If that’s more costly than just starting a new helper, then start a new helper. Goal is to efficiently use our resources.',
+    gist: ['他自己想到換設定的成本。', 'He spotted the hidden cost himself.'],
+    then: ['工作換難度就開一個新的小幫手，只帶一張短短的交接單。', 'A job that needs a different level gets a fresh helper with a short handoff note.']
+  },
+  {
+    date: '2026-10-27', app: null, tag: 'goal',
+    said: 'I am making Orbit a 自主學習 for my portfolio. A single app to demonstrate the apps and an interactive interface to explain the structure, like a structure tree. Do make it good, cause personally it may teach me one or two things.',
+    gist: ['你現在看的這個網站，就是從這一句開始的。', 'The site you’re reading started with this message.'],
+    then: ['之後他又補了十幾句：不要太技術、要動畫、電腦也要好看、數字要真的、不要只講成功。', 'A dozen follow-ups came after: not too technical, animated, good on a laptop, real numbers, not only the successes.']
+  }
+];
+
+// What the habits add up to. Drawn from how Jay works, not his exact words.
+export const LEARNED = [
+  ['說清楚要的結果和標準，比教它一步一步怎麼做有用。', 'Saying the result and the standard works better than spelling out steps.'],
+  ['一張截圖比十句描述清楚。', 'One screenshot says more than ten lines.'],
+  ['AI 說「修好了」不算數，要自己在手機上試過。', 'The AI saying “fixed” doesn’t count until it works on the phone.'],
+  ['修好一個問題後，問：別的地方是不是也有？', 'After a fix, ask: is the same thing wrong anywhere else?']
+];
+
+// Where it went wrong: the AI's work not matching what Jay meant, how he
+// pushed back, and what was done about it. Real dates (Taipei).
+export const SETBACKS = [
+  {
+    date: '2026-10-19', icon: 'star',
+    title: ['第一次改版：「疊上去很怪」', 'The first redesign: “adding on top, weird”'],
+    wrong: ['要所有 App 換新設計，AI 卻只是在舊畫面上再加一層。', 'Asked for a new look, the AI layered new styles over the old screens.'],
+    push: ['Jay 一句「adding on top, weird」。', 'Jay: “adding on top, weird”.'],
+    rule: ['整個重做：每個畫面重寫、舊的樣式刪掉。從此改版就是重做，不是疊加。', 'Every screen rebuilt and the old styles deleted. Since then a redesign means rebuild, not layer.']
+  },
+  {
+    date: '2026-10-21', icon: 'shield',
+    title: ['一次推錯，蓋掉兩萬多筆判決', 'One bad push wiped 21,927 rulings'],
+    wrong: ['一條線從舊的副本推更新，把法律 App 的判決和別人的進度一起蓋掉。', 'One thread pushed from an old copy and wrote over Law’s rulings and others’ work.'],
+    push: ['救回來後，Jay 要求定下規矩，不能只是這次小心。', 'After the rescue, Jay wanted a rule, not just more care.'],
+    rule: ['每次推之前一定先拿最新版本；後來加了每晚備份。', 'Always sync with the newest version before pushing; nightly backups followed.']
+  },
+  {
+    date: '2026-10-22', icon: 'bell',
+    title: ['信箱被「部署失敗」塞滿', 'An inbox full of “deploy failed”'],
+    wrong: ['好幾條線同時推，四天裡約 45 次發布被後來的推送取消，加上幾次檢查沒過，每一次都寄一封信給 Jay。', 'With several threads pushing at once, about 45 deploys in four days were cancelled by later pushes, plus a few failed checks, and each one emailed Jay.'],
+    push: ['「kept getting a bunch of emails telling my deploy or build fail, super annoying」', '“kept getting a bunch of emails telling my deploy or build fail, super annoying”'],
+    rule: ['發布改成排隊，只有真的壞掉才會寄信。', 'Deploys now queue, and only a real break sends an email.']
+  },
+  {
+    date: '2026-10-23', icon: 'user',
+    title: ['iPad 版做了又拆', 'iPad layouts built, then removed'],
+    wrong: ['有些 App 為 iPad 另外做了排版，修 iPad 才有的問題花了不少時間。', 'Some apps got their own iPad layouts, and fixing iPad-only problems took real time.'],
+    push: ['Jay 決定只做手機。', 'Jay decided: phones only.'],
+    rule: ['大螢幕只顯示一欄手機寬度，不再做平板排版。這個網站是唯一的例外。', 'Wide screens show one phone-width column, no tablet layouts. This site is the one exception.']
+  },
+  {
+    date: '2026-10-27', icon: 'pencil',
+    title: ['鍵盤問題「修好」了五次', 'The keyboard “fixed” five times'],
+    wrong: ['10 月 20 日到 27 日，打字時畫面被鍵盤推走的問題在共用零件裡改了五次。AI 每次都說修好了，但只在模擬的鍵盤上試過。', 'From 20 to 27 October the shared parts changed the keyboard handling five times. Each time the AI called it fixed, tested only with a simulated keyboard.'],
+    push: ['「I thought you fixed all typing fields… the UI just flies up to IDK nowhere」', '“I thought you fixed all typing fields… the UI just flies up to IDK nowhere”'],
+    rule: ['改用已經在真的 iPhone 上證明有效的做法，所有 App 一起換。', 'Every app switched to the one approach already proven on a real iPhone.']
+  },
+  {
+    date: '2026-10-27', icon: 'wallet',
+    title: ['記帳 App：「感覺不對」', 'Money: “doesn’t feel so right”'],
+    wrong: ['第一版功能都有，但用起來不順。', 'The first version had every feature but didn’t feel right to use.'],
+    push: ['「You need to think harder to redesign the Orbit Money UI better, cause now it doesn’t feel so right」', '“You need to think harder to redesign the Orbit Money UI better, cause now it doesn’t feel so right”'],
+    rule: ['退一步重新設計整個版面，參考最好的記帳 App；同一天又來了十幾句修正。', 'A step back and a full redesign, studying the best money apps, then a dozen more corrections the same day.']
+  }
+];

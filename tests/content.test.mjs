@@ -10,7 +10,7 @@ import { ICONS } from '#kit/orbit.mjs';
 import { ROOT, NODES } from '../public/lib/tree.mjs';
 import { APPS } from '../public/lib/apps.mjs';
 import { ROWS, STORIES } from '../public/lib/stories.mjs';
-import { ORIGIN, TOOLS, DECISIONS, SETUP, CHANGES, BIRTHS, LOOP, DAYS, RULES } from '../public/lib/history.mjs';
+import { ORIGIN, TOOLS, DECISIONS, SETUP, PATTERNS, PROMPTS, LEARNED, SETBACKS, CHANGES, BIRTHS, LOOP, DAYS, RULES } from '../public/lib/history.mjs';
 
 const shot = f => new URL(`../public/shots/${f}.webp`, import.meta.url);
 const pair = x => Array.isArray(x) && x.length === 2 && x.every(s => typeof s === 'string' && s.trim());
@@ -70,6 +70,22 @@ test('history: dates in order, nodes real, pictures on disk', () => {
   for (const x of [...TOOLS.map(t => t.icon), ...DECISIONS.map(d => d.icon), ...CHANGES.map(c => c.icon), ...DAYS.map(d => d.icon), ...LOOP.map(l => l[0]), ...SETUP.map(s => s[0]), ...RULES.map(r => r[0])]) assert.ok(icons[x], `icon ${x}`);
 });
 
+test('how Jay asks and where it went wrong: real dates, a habit each, both languages', () => {
+  const tags = new Set(PATTERNS.map(p => p.id));
+  for (const p of PATTERNS) assert.ok(pair(p.title) && pair(p.line) && icons[p.icon], p.id);
+  for (const x of PROMPTS) {
+    assert.match(x.date, /^2026-\d\d-\d\d$/);
+    assert.ok(tags.has(x.tag), x.tag);
+    assert.ok(typeof x.said === 'string' && x.said.length > 20 && pair(x.gist) && pair(x.then), x.said);
+    if (x.app) assert.ok(APPS.some(a => a.id === x.app), x.app);
+  }
+  for (const p of PATTERNS) assert.ok(PROMPTS.some(x => x.tag === p.id), `a message for ${p.id}`);
+  assert.ok(LEARNED.every(pair));
+  const dates = SETBACKS.map(x => x.date);
+  assert.deepEqual(dates, [...dates].sort(), 'oldest first');
+  for (const x of SETBACKS) assert.ok(pair(x.title) && pair(x.wrong) && pair(x.push) && pair(x.rule) && icons[x.icon], x.date);
+});
+
 test('the tab bar draws its icons', () => {
   const app = readFileSync(new URL('../public/app.mjs', import.meta.url), 'utf8');
   const tabs = [...app.matchAll(/\{ id: '\w+', icon: '(\w+)'/g)].map(m => m[1]);
@@ -79,8 +95,9 @@ test('the tab bar draws its icons', () => {
 
 test('stats.json has what the pages read', () => {
   const s = JSON.parse(readFileSync(new URL('../public/data/stats.json', import.meta.url), 'utf8'));
-  for (const k of ['apps', 'commits', 'claude', 'copilot', 'lines', 'tests']) assert.ok(Number.isInteger(s[k]) && s[k] >= 0, k);
+  for (const k of ['apps', 'commits', 'claude', 'copilot', 'lines', 'tests', 'added', 'removed', 'reverts']) assert.ok(Number.isInteger(s[k]) && s[k] >= 0, k);
   assert.ok(s.claude <= s.commits);
+  assert.ok(s.removed <= s.added);
   assert.match(s.first, /^\d{4}-\d\d-\d\d$/);
   assert.equal(s.hours.length, 24);
   assert.ok(Object.keys(s.days).length > 0);

@@ -70,14 +70,14 @@ jobs:
           sparse-checkout: kit
       - run: ln -sfn .shared/kit .kit
       - name: Recount the numbers from every family repo
-        # Each public repo cloned beside a link to this one (history, and the
-        # files of its tip only). A clone that fails keeps the last counts
+        # Each public repo cloned whole beside a link to this one (its history
+        # and every change, for the churn). A clone that fails keeps the last counts
         # committed here rather than publishing wrong ones.
         run: |
           mkdir -p .family && ln -sfn "$PWD" .family/Orbit-Showcase
           ok=1
           for r in Shared-Proxy Orbit-Sports Orbit-Transit Orbit-Weather Orbit-Class Orbit-Words Orbit-Beats Orbit-Law Orbit-Securities Orbit-Money; do
-            git clone --quiet --filter=blob:none "https://github.com/JayPengX/$r.git" ".family/$r" || ok=0
+            git clone --quiet "https://github.com/JayPengX/$r.git" ".family/$r" || ok=0
           done
           if [ "$ok" = 1 ] && TZ=Asia/Taipei node scripts/stats.mjs .family > /tmp/stats.json; then
             mv /tmp/stats.json public/data/stats.json
