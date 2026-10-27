@@ -1,44 +1,41 @@
-# Orbit Showcase
+<p align="center">
+  <img src="public/icons/icon-192.png" width="96" height="96" alt="">
+</p>
 
-Orbit explained for anyone, in what a page does better than a PDF: the structure, the numbers
-and the apps themselves, running.
-Jay's 自主學習 portfolio. Live at https://jaypengx.github.io/Orbit-Showcase/.
+<h1 align="center">Orbit Showcase</h1>
 
-Open to everyone: no Orbit Pass and no Add to Home Screen step. It works on phones and on
-computers (the one exception to the family's phones-only rule), in Safari and Chrome.
+<p align="center">
+  <b>Orbit explained for anyone.</b><br>
+  <a href="https://jaypengx.com/showcase/"><b>jaypengx.com/showcase</b></a>
+</p>
 
-## The four tabs
+<p align="center">
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES_modules-F7DF1E?logo=javascript&logoColor=000"> <img alt="GitHub" src="https://img.shields.io/badge/GitHub-Pages-24292F?logo=github&logoColor=fff"> <img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub_Actions-daily_stats-2088FF?logo=githubactions&logoColor=fff"> <img alt="Tests" src="https://img.shields.io/badge/Tests-node_--test-339933?logo=nodedotjs&logoColor=fff">
+</p>
 
-| Tab | What it shows | Its data |
-| --- | --- | --- |
-| 總覽 | The family, the headline numbers | `public/data/stats.json` |
-| App | Each app's screens, and the app itself running on frozen data with a tour (`#apps/<app>`) | `public/lib/apps.mjs`, `public/lib/demos.mjs`, `public/demo/` |
-| 架構 | The structure tree (each card a small picture first: steps, numbers, before → after; then problem → idea → result, technical names folded away) and the journey map | `public/lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
-| 數字 | When each app arrived, every day's updates, the hours, code written and rewritten | `public/data/stats.json`, `public/lib/births.mjs` |
+The Orbit family of apps, shown the way a page does better than a PDF: the structure, the numbers, and the apps themselves running. Open to everyone, on phones and computers, with no sign-in.
 
-Jay 2026-10-27: the showcase is structure, numbers and demos only. The story of how it was made
-(requests, decisions, setbacks) is kept privately for Jay, not on the site.
+## What it shows
 
-The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share. The look is the kit's
-(`Shared-Proxy/kit`), with the showcase's own `public/showcase.css`.
+| Tab | What you see |
+| --- | --- |
+| 總覽 | The family of apps and the headline numbers |
+| App | Each app's screens, and the app itself running on sample data with a guided tour |
+| 架構 | How it's built, as small pictures: problem, idea, result |
+| 數字 | When each app arrived, every day's updates, hours and code written |
 
-## Keeping it true
+## Stack
 
-- **The numbers refresh by themselves.** The deploy runs on every push and daily at 00:17 Taipei.
-  It clones every family repo and recounts commits, lines, tests and days with `scripts/stats.mjs`.
-  Nothing in the pages is typed in.
-- **Everything else changes only when Jay says "catch up the showcase".** At that point, update the
-  data files above from the repos' own history, with real dates.
-- Screenshots use made-up data only, never anyone's own. The pre-GitHub versions were drawn from
-  Jay's saved copies with a sample timetable.
-- Nothing about betting appears anywhere. A test enforces it.
+- Plain JavaScript (ES modules), HTML and CSS: no framework, no build step.
+- The look comes from the shared kit in [Shared-Proxy](https://github.com/JayPengX/Shared-Proxy).
+- The numbers recount themselves: a GitHub Actions run clones every Orbit repo daily and counts commits, lines, tests and days. Nothing is typed in by hand.
+- Demos run on made-up sample data only.
+- Hosted on GitHub Pages and served at jaypengx.com by a Cloudflare Worker.
 
-## Run it
+## For developers
 
-```sh
+```bash
 npm test
-TZ=Asia/Taipei node scripts/stats.mjs <folder with the family repos> > public/data/stats.json
 ```
 
-To preview, serve a folder that holds `Orbit-Showcase -> public` and `Shared-Proxy` side by side,
-then open `/Orbit-Showcase/`.
+How it's put together and how to keep it true: **[MAP.md](MAP.md)**.
