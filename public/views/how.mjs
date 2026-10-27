@@ -1,10 +1,12 @@
-// 架構: the structure tree and the map. The tree is the whole system in
-// plain words, short at the top, deeper as it opens; a node opens its
+// 架構: the system diagram (views/system.mjs), the structure tree and the
+// map. The tree is the whole system in plain words, short at the top, deeper
+// as it opens; a node opens its
 // problem → idea → result, its related nodes, and the technical names behind
 // a fold. Beside it on a computer, in a sheet on a phone. The map walks five
 // everyday stories across the system's five rows, a dot travelling between
 // the places each step happens.
-//   #how            the tree
+//   #how, #how/sys-<app>  the system diagram
+//   #how/tree       the tree
 //   #how/<node id>  the tree, that node open
 //   #how/map[-<story>]  the map
 import { segmented, sheet, tile } from '#kit/ui.mjs';
@@ -12,6 +14,7 @@ import { h, t, ico, appImg, go, reduced, wide, en } from '../shell.mjs';
 import { ROOT, NODES, pathTo } from '../lib/tree.mjs';
 import { ROWS, STORIES } from '../lib/stories.mjs';
 import { pir } from './apps.mjs';
+import { renderSystem, leaveSystem } from './system.mjs';
 
 const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', money: 'money' };
 
@@ -160,7 +163,7 @@ function tap(id) {
     else openTo(id);
   } else openTo(NODES.get(id).parent);
   select(id);
-  history.replaceState(null, '', id === ROOT.id ? '#how' : `#how/${id}`);
+  history.replaceState(null, '', id === ROOT.id ? '#how/tree' : `#how/${id}`);
   if (!wide() && !node.kids?.length) showSheet(id);
 }
 
@@ -494,26 +497,36 @@ function mapView(storyId) {
 // ---- The tab ----
 let built = null;
 let seg = null;
-let mode = 'tree';
+let mode = '';
+let sysApp = null;
 
 export function renderHow(panel, what = '') {
-  const wantMap = what.startsWith('map');
+  const view = !what || what.startsWith('sys') ? 'sys' : what.startsWith('map') ? 'map' : 'tree';
   if (!built) {
     seg = segmented(
       [
+        { id: 'sys', label: t(['系統圖', 'System']) },
         { id: 'tree', label: t(['樹狀圖', 'Tree']) },
-        { id: 'map', label: t(['旅程地圖', 'Journey map']) }
+        { id: 'map', label: t(['旅程', 'Journeys']) }
       ],
-      { value: wantMap ? 'map' : 'tree', onChange: id => go('how', id === 'map' ? 'map' : picked && picked !== ROOT.id ? picked : '') }
+      { value: view, onChange: id => go('how', id === 'map' ? 'map' : id === 'sys' ? `sys-${sysApp || 'sports'}` : picked && picked !== ROOT.id ? picked : 'tree') }
     );
-    built = { tree: buildTree(), map: h('div', { class: 'sc-mapslot' }) };
-    panel.replaceChildren(h('div', { class: 'sc-how' }, [h('div', { class: 'sc-segbox' }, [seg]), built.tree, built.map]));
+    built = { sys: h('div', { class: 'sc-sysslot' }), tree: buildTree(), map: h('div', { class: 'sc-mapslot' }) };
+    panel.replaceChildren(h('div', { class: 'sc-how' }, [h('div', { class: 'sc-segbox' }, [seg]), built.sys, built.tree, built.map]));
   }
-  seg.set(wantMap ? 'map' : 'tree');
-  built.tree.hidden = wantMap;
-  built.map.hidden = !wantMap;
-  if (wantMap) {
-    openSheet?.close();
+  seg.set(view);
+  for (const k of ['sys', 'tree', 'map']) built[k].hidden = k !== view;
+  if (view !== 'map') mapState?.stop();
+  if (view !== 'tree') openSheet?.close();
+  if (view !== 'sys') leaveSystem();
+  const from = mode;
+  if (view === 'sys') {
+    sysApp = what.slice(4) || sysApp || 'sports';
+    mode = 'sys';
+    renderSystem(built.sys, sysApp);
+    return;
+  }
+  if (view === 'map') {
     const storyId = what.slice(4) || STORIES[0].id;
     if (mode !== `map-${storyId}`) {
       built.map.replaceChildren(mapView(storyId));
@@ -522,16 +535,16 @@ export function renderHow(panel, what = '') {
     mode = `map-${storyId}`;
     return;
   }
-  mapState?.stop();
-  const from = mode;
   mode = 'tree';
-  if (what && what === picked && from === 'tree') return;
-  requestAnimationFrame(() => pick(what || ROOT.id, Boolean(what)));
+  const id = what === 'tree' ? '' : what;
+  if (id && id === picked && from === 'tree') return;
+  requestAnimationFrame(() => pick(id || ROOT.id, Boolean(id)));
 }
 
 // Leaving the tab: a phone's open sheet closes, the map stops.
 export function leaveHow() {
   mapState?.stop();
+  leaveSystem();
   if (openSheet) {
     const s = openSheet;
     openSheet = null;
