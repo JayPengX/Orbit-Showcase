@@ -42,7 +42,13 @@ const otherLang = () => {
   location.reload();
 };
 const langBtn = () => h('button', { class: 'sc-lang', type: 'button', onclick: otherLang, 'aria-label': en ? '切換成中文' : 'Switch to English' }, [en ? '中文' : 'EN']);
-$('top-actions').replaceChildren(langBtn());
+// The showcase's link and its QR code (the kit's share sheet: colours, shapes, PNG or SVG to print).
+const share = async () => {
+  const [{ shareSheet }, { SITE, DOMAIN }, { familyMark }] = await Promise.all([import('#kit/share.mjs'), import('#kit/domain.mjs'), import('#kit/brand.mjs')]);
+  shareSheet({ url: `${SITE}${DOMAIN ? '/showcase/' : '/Orbit-Showcase/'}`, title: 'Orbit Showcase', icon: familyMark(), lang: en ? 'en' : 'zh' });
+};
+const shareBtn = () => h('button', { class: 'sc-share', type: 'button', onclick: share, 'aria-label': t(['分享', 'Share']) }, [ico('share')]);
+$('top-actions').replaceChildren(shareBtn(), langBtn());
 
 const side = h('aside', { class: 'sc-side', 'aria-label': t(['導覽', 'Navigation']) }, [
   h('a', { class: 'sc-side-brand', href: '#home' }, [appImg(null, 40), h('span', {}, [h('strong', { text: 'Orbit' }), h('small', { text: 'Showcase' })])]),
@@ -52,7 +58,7 @@ const side = h('aside', { class: 'sc-side', 'aria-label': t(['導覽', 'Navigati
     TABS.map(tab => h('a', { href: `#${tab.id}`, 'data-tab': tab.id }, [ico(tab.side || tab.icon), tab.label]))
   ),
   h('div', { class: 'sc-side-foot' }, [
-    langBtn(),
+    h('div', { class: 'sc-side-btns' }, [langBtn(), shareBtn()]),
     h('p', { text: t(['Jay 的自主學習作品，和 Claude 一起做。', 'Jay’s self-directed learning project, made with Claude.']) })
   ])
 ]);

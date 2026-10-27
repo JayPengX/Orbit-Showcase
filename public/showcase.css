@@ -28,6 +28,29 @@
   font: 600 14px/1 var(--q-font);
   cursor: pointer;
 }
+.sc-share {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-2);
+  color: var(--q-label);
+  cursor: pointer;
+}
+.sc-share .sc-ico svg {
+  width: 20px;
+  height: 20px;
+}
+#top-actions {
+  gap: 8px;
+}
+.sc-side-btns {
+  display: flex;
+  gap: 8px;
+}
 .sc-pagetitle {
   margin: 8px 0 14px;
   font: 800 32px/1.15 var(--q-font);
