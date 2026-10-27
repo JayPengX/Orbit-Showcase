@@ -83,7 +83,7 @@ test('the tab bar draws its icons', () => {
 
 test('stats.json has what the pages read', () => {
   const s = JSON.parse(readFileSync(new URL('../public/data/stats.json', import.meta.url), 'utf8'));
-  for (const k of ['apps', 'commits', 'claude', 'copilot', 'lines', 'tests', 'added', 'removed', 'reverts']) assert.ok(Number.isInteger(s[k]) && s[k] >= 0, k);
+  for (const k of ['apps', 'commits', 'claude', 'copilot', 'lines', 'tests', 'rules', 'added', 'removed', 'reverts']) assert.ok(Number.isInteger(s[k]) && s[k] >= 0, k);
   assert.ok(s.claude <= s.commits);
   assert.ok(s.removed <= s.added);
   assert.match(s.first, /^\d{4}-\d\d-\d\d$/);

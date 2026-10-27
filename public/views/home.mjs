@@ -73,13 +73,13 @@ function numbers(stats) {
   if (!stats) return null;
   const more = [
     ['pencil', stats.lines, ['行程式碼', 'lines of code']],
-    ['spark', Math.round((stats.claude / stats.commits) * 100), ['% 的更新有 Claude 參與', '% of updates written with Claude']]
-  ];
+    stats.rules ? ['check', stats.rules, ['條 Jay 定下的規則', 'rules Jay has set']] : null
+  ].filter(Boolean);
   const at = new Date(stats.at).toLocaleString(en ? 'en-GB' : 'zh-TW', { timeZone: 'Asia/Taipei', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   return h('section', { class: 'sc-block sc-numbers' }, [
     fold('sc-rise', [h('span', { class: 'sc-fold-t' }, [h('strong', { text: t(['更多數字', 'More numbers']) })])], [
       h('div', { class: 'sc-morenums' }, more.map(([icon, value, label]) => h('div', {}, [ico(icon), h('strong', { text: num(value) }), h('span', { text: t(label) })]))),
-      h('p', { class: 'sc-note', text: t([`全部從程式碼自動數出來，每天重算，不是估的。上次：${at}。天數從 ${fmtDayYear(stats.first)} 上 GitHub 算起。`, `All counted from the code itself, every day, never estimated. Last counted ${at}. Days count from ${fmtDayYear(stats.first)}, when it reached GitHub.`]) })
+      h('p', { class: 'sc-note', text: t([`每天從程式碼自動重數（${at}）。`, `Recounted from the code every day (${at}).`]) })
     ])
   ]);
 }
