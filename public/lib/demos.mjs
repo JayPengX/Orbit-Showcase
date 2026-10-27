@@ -4,10 +4,20 @@
 // words. The recording walks the same steps, so every tap has its answers.
 export const DEMOS = {
   weather: { repo: 'Orbit-Weather' },
-  money: { repo: 'Orbit-Money' }
+  money: { repo: 'Orbit-Money' },
+  words: { repo: 'Orbit-Words' }
 };
 
 export const TOURS = {
+  words: [
+    { tap: '.q-hc-btn', say: ['每天的目標是 20 個字。按「開始 10 個字」。', 'The daily goal is 20 words. Press “Start 10 words”.'] },
+    { tap: '.choice', say: ['選你覺得對的中文意思。答錯也沒關係，App 會記下來，之後再考你。', 'Pick the meaning you think is right. A wrong answer is fine: the app notes it and asks again later.'] },
+    { tap: '.q-btn.primary', say: ['按「下一題」。每個字什麼時候再出現，由記憶模型決定。', 'Press Next. When each word comes back is decided by a memory model.'] },
+    { tap: '.choice', say: ['再答一題。', 'One more.'] },
+    { tap: '.q-close', say: ['先結束這一輪，按左上角的 ×。', 'End the round with the × at the top left.'] },
+    { tap: '#tab-list', say: ['「單字」分頁：6,169 個字，每個都有發音、例句和等級。', 'The Words tab: 6,169 words, each with its sound, an example and its level.'] },
+    { tap: '#tab-progress', say: ['「進度」分頁：記住了多少、每天練了多少。', 'The Progress tab: how many you know, and how much you practise each day.'] }
+  ],
   money: [
     { tap: '.mn-day[data-day="2026-10-16"]', say: ['月曆上每一天花了多少，一眼就看到。點 16 號，看那天記了哪幾筆。', 'The calendar shows what each day cost. Tap the 16th to see what was spent that day.'] },
     { tap: '.q-tab-action', say: ['右下角的 + 是記一筆。點它。', 'The + at the bottom right adds a new entry. Tap it.'] },

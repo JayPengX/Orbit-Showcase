@@ -60,6 +60,17 @@ const context = await browser.newContext({
 const page = await context.newPage();
 const at = Date.parse(demo.clock);
 await page.clock.install({ time: at });
+// The same luck as the demo's sandbox (shim.js), so what the app picks by
+// chance while recording is what it picks in the showcase.
+await page.addInitScript(() => {
+  let seed = 20261027;
+  Math.random = () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+});
 const got = [];
 const misses = [];
 page.on('response', async r => {
@@ -83,7 +94,7 @@ await snap('open');
 for (const step of [...(demo.tour || []), ...(demo.explore || [])]) {
   try {
     if (step.hash) await page.evaluate(h => (location.hash = h), step.hash);
-    if (step.tap) await page.locator(step.tap).first().click({ timeout: 5000 });
+    if (step.tap) await page.locator(step.tap).locator('visible=true').first().click({ timeout: 5000 });
     if (step.type) await page.locator(step.type[0]).first().fill(step.type[1]);
     if (step.back) await page.goBack();
     await page.waitForTimeout(step.wait || 1500);
