@@ -835,8 +835,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 30px;
-  padding: 4px 10px;
+  min-height: 26px;
+  padding: 3px 9px;
   border: 0;
   border-radius: 999px;
   background: color-mix(in srgb, var(--c) 9%, transparent);
@@ -1049,7 +1049,7 @@
     flex-direction: row;
     justify-content: flex-start;
     gap: 10px;
-    padding: 16px 16px 10px;
+    padding: 12px 14px 8px;
   }
   .sc-ov-head > img,
   .sc-ov-head .sc-tn-i {
@@ -1060,15 +1060,15 @@
     font: 750 16px/1.25 var(--q-font);
   }
   .sc-ov-n {
-    top: 18px;
+    top: 14px;
     right: 14px;
     font-size: 12px;
   }
   .sc-ov-kids {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 0 14px 16px;
+    gap: 5px;
+    padding: 0 12px 12px;
   }
   .sc-rail {
     display: flex;
@@ -3644,4 +3644,44 @@ html.sc-playing body {
 .sc-adbox,
 .sc-adrow {
   min-width: 0;
+}
+
+/* A smaller computer: the overview names each branch's parts as a line of
+   text rather than chips, so all nine branches still fit one screen. */
+@media (min-width: 900px) and (max-width: 1299px) {
+  .sc-ov {
+    gap: 10px;
+  }
+  .sc-ov-head {
+    padding: 10px 12px 4px;
+  }
+  .sc-ov-t {
+    font-size: 15px;
+  }
+  .sc-ov-kids {
+    display: block;
+    padding: 0 12px 10px;
+    font: 500 12.5px/1.6 var(--q-font);
+  }
+  .sc-ov-k {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    background: none;
+    font: inherit;
+  }
+  .sc-ov-k:not(:last-child)::after {
+    content: '·';
+    margin: 0 5px;
+    color: var(--c);
+  }
+  .sc-ov-k img {
+    display: none;
+  }
+  @media (hover: hover) {
+    .sc-ov-k:hover {
+      background: none;
+      color: var(--c);
+    }
+  }
 }
