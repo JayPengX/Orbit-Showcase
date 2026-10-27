@@ -70,7 +70,7 @@ function facts(app, stats) {
   const days = daysBetween(r.first, twToday(Date.parse(stats.at))) + 1;
   return h('div', { class: 'sc-facts' }, [
     h('span', {}, [ico('calendar'), en ? `Since ${fmtDayYear(r.first)}` : `${fmtDayYear(r.first)} 開始`]),
-    h('span', {}, [ico('clock'), en ? `${num(days)} days` : `${num(days)} 天`]),
+    h('span', {}, [ico('clock'), en ? `${num(days)} day${days === 1 ? '' : 's'}` : `${num(days)} 天`]),
     h('span', {}, [ico('send'), en ? `${num(r.commits)} updates` : `${num(r.commits)} 次更新`]),
     r.tests ? h('span', {}, [ico('check'), en ? `${num(r.tests)} checks` : `${num(r.tests)} 個自動檢查`]) : null
   ]);

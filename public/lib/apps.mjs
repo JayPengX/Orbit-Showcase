@@ -7,7 +7,7 @@
 // id, `repo` matches scripts/stats.mjs.
 export const APPS = [
   {
-    id: 'sports', brand: 'match', repo: 'Orbit-Sports',
+    id: 'sports', brand: 'match', repo: 'Orbit-Sports', zh: true,
     q: ['今晚有什麼比賽值得看？在哪一台？', 'Which games tonight are worth it, and on which channel?'],
     shots: [
       ['sports/1', ['每場比賽，完整呈現', 'Every game, in full']],
@@ -19,7 +19,7 @@ export const APPS = [
     ]
   },
   {
-    id: 'transit', brand: 'transit', repo: 'Orbit-Transit',
+    id: 'transit', brand: 'transit', repo: 'Orbit-Transit', zh: true,
     q: ['怎麼去最實際？公車還要等多久？', 'What’s the practical way there, and how long for the bus?'],
     shots: [
       ['transit/1', ['最好的路線排在最前', 'The best trips, ranked']],
@@ -31,7 +31,7 @@ export const APPS = [
     ]
   },
   {
-    id: 'weather', brand: 'weather', repo: 'Orbit-Weather',
+    id: 'weather', brand: 'weather', repo: 'Orbit-Weather', zh: true,
     q: ['今天要不要帶傘？', 'Do I need an umbrella today?'],
     shots: [
       ['weather/1', ['今天天氣一眼看完', 'Today, in one look']],
@@ -45,7 +45,7 @@ export const APPS = [
     then: ['then-weather', ['第一天：一個簡單的預報頁（這張截圖的位置是伺服器所在地）', 'Day one: a simple forecast page (placed where the screenshot server is)']]
   },
   {
-    id: 'class', brand: 'orbit', repo: 'Orbit-Class',
+    id: 'class', brand: 'orbit', repo: 'Orbit-Class', zh: true,
     q: ['現在上什麼課？下一節去哪？', 'Which class is it now, and what’s next?'],
     shots: [
       ['class/1', ['現在、下一節與倒數', 'Now, next, and how long']],
@@ -59,7 +59,7 @@ export const APPS = [
     then: ['then-class', ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use']]
   },
   {
-    id: 'words', brand: 'vocab', repo: 'Orbit-Words',
+    id: 'words', brand: 'vocab', repo: 'Orbit-Words', zh: true,
     q: ['今天該背哪些字，才記得住？', 'Which words today, so they stick?'],
     shots: [
       ['words/1', ['每天一小輪', 'A quick round a day']],
@@ -73,7 +73,7 @@ export const APPS = [
     then: ['then-words', ['第一天：高中英文參考詞彙表 Level 4–6', 'Day one: the high-school word list, Levels 4–6']]
   },
   {
-    id: 'beats', brand: 'beats', repo: 'Orbit-Beats',
+    id: 'beats', brand: 'beats', repo: 'Orbit-Beats', zh: true,
     q: ['來點好聽、不會重複的音樂', 'Something good to hear that never repeats'],
     shots: [
       ['beats/1', ['用你的節拍做出新歌', 'New songs from your beats']],
@@ -87,7 +87,7 @@ export const APPS = [
     then: ['then-beats', ['第一天叫 Passion Beats：用錄音切成的節拍做歌', 'Day one was Passion Beats: songs from a recording cut into beats']]
   },
   {
-    id: 'law', brand: 'law', repo: 'Orbit-Law',
+    id: 'law', brand: 'law', repo: 'Orbit-Law', zh: true,
     q: ['我遇到的事，法律怎麼說？', 'What does the law say about what happened to me?'],
     shots: [
       ['law/1', ['台灣法律一次看懂', 'Taiwan’s law, made clear']],
@@ -99,7 +99,7 @@ export const APPS = [
     ]
   },
   {
-    id: 'securities', brand: 'stock', repo: 'Orbit-Securities',
+    id: 'securities', brand: 'stock', repo: 'Orbit-Securities', zh: true,
     q: ['在不花真錢的情況下，學會台灣的股市規則', 'Learn Taiwan’s market rules without spending real money'],
     shots: [
       ['securities/1', ['真實報價，模擬交易', 'Real prices, play money']],
@@ -113,7 +113,7 @@ export const APPS = [
     then: ['then-securities', ['第一天叫 Stock Study：開一個模擬帳戶', 'Day one was Stock Study: open a practice account']]
   },
   {
-    id: 'money', brand: 'money', repo: 'Orbit-Money',
+    id: 'money', brand: 'money', repo: 'Orbit-Money', zh: true,
     q: ['這個月的錢花到哪裡去了？', 'Where did this month’s money go?'],
     shots: [
       ['money/1', ['一整個月的收支', 'Your month on a calendar']],

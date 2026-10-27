@@ -3468,3 +3468,9 @@ html.sc-playing body {
     margin-top: 12px;
   }
 }
+/* The screens' row scrolls inside its column, never widening the page. */
+.sc-appdetail,
+.sc-adbox,
+.sc-adrow {
+  min-width: 0;
+}
