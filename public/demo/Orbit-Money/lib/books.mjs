@@ -11,27 +11,33 @@
 //            wallet (電子支付: 悠遊付, LINE Pay…); other, from before, shows as wallet.
 //            open: the balance when it was added (a credit card's: what it owed, negative).
 //            inTotal: counted in the 總資產. brand: a logo key (brands.mjs).
+//            reload: a stored-value card's 自動加值 { on, from, amt, below } (autoReload;
+//            from '': nobody in the books pays, the balance just goes up).
 //            A credit card's pay: the account its bill is paid from; close / due: its
 //            statement and payment days of the month. closed: when it was put
 //            away (封存): out of every picker, its entries and balance kept.
 //   cards    { id: { id, acct, name, last4, closed? } } ways to pay under an account (a
 //            debit card, Apple Pay or LINE Pay on a card…): they spend
 //            straight from their bank account.
-//   entries  { id: { id, d, k, amt, cat, note, a, via, to, inv, rec } }
+//   entries  { id: { id, d, k, amt, cat, sub, note, a, via, to, inv, rec } }
+//            sub: the finer kind under cat ('' none; lib/cats.mjs).
 //            d: the day, 'YYYY-MM-DD'. k: out | in | move | adj (a balance set by hand).
 //            amt: whole NT$, > 0 (adj: the change, either sign). a: the account it's
 //            paid from or into; via: the card used (a debit card's id); to: a move's
 //            other account. inv: the 發票 it came from ({ no, sid, seller, items }).
+//            auto: 'reload' a card's 自動加值, for: the spend that set it off.
 //            rec: the repeat that made it.
 //   budgets  { id: { id, cat ('' for everything), amt } } a month's limit.
-//   recur    { id: { id, k, amt, cat, a, via, to, note, every, day, from } } every:
+//   recur    { id: { id, k, amt, cat, sub, a, via, to, note, every, day, from } } every:
 //            month | week | year; day: the month's day (1–31, the last when the
 //            month is shorter), the weekday (0 Sunday) or 'MM-DD'; from: the first day.
+//   cats     { id: { id, k, parent, zh, icon, color, order, hidden, into } } the
+//            person's own categories and changes to the built-in ones (lib/cats.mjs).
 //   carrier  { code, u } the 手機條碼 (載具).
 
 import { addDays } from '#kit/format.mjs';
 
-export const COLLECTIONS = ['accts', 'cards', 'entries', 'budgets', 'recur'];
+export const COLLECTIONS = ['accts', 'cards', 'entries', 'budgets', 'recur', 'cats'];
 // Removed records are kept this long (a device away longer than this can't
 // bring one back: by then its copy is older than the removal).
 export const KEEP_GONE_MS = 120 * 86_400_000;
@@ -40,7 +46,7 @@ export const KEEP_GONE_MS = 120 * 86_400_000;
 export const ACCOUNT_KINDS = ['cash', 'bank', 'credit', 'ticket', 'wallet'];
 export const groupOf = kind => (ACCOUNT_KINDS.includes(kind) ? kind : 'wallet');
 
-export const emptyBooks = () => ({ accts: {}, cards: {}, entries: {}, budgets: {}, recur: {}, carrier: null, st: 0, opt: {} });
+export const emptyBooks = () => ({ accts: {}, cards: {}, entries: {}, budgets: {}, recur: {}, cats: {}, carrier: null, st: 0, opt: {} });
 
 let seq = 0;
 export const newId = (now = Date.now()) => `${now.toString(36)}${(seq++ % 1296).toString(36).padStart(2, '0')}${Math.random().toString(36).slice(2, 6)}`;
@@ -302,7 +308,7 @@ export function runRepeats(books, today, now = Date.now()) {
     for (const d of repeatDays(r, r.from, today)) {
       const id = repeatEntryId(r, d);
       if (books.entries[id]) continue;
-      put(books, 'entries', { id, d, k: r.k, amt: r.amt, cat: r.k === 'move' ? '' : r.cat, note: r.note || '', a: r.a, via: r.via || '', to: r.k === 'move' ? r.to : '', rec: r.id, t: now }, now);
+      put(books, 'entries', { id, d, k: r.k, amt: r.amt, cat: r.k === 'move' ? '' : r.cat, sub: r.k === 'move' ? '' : r.sub || '', note: r.note || '', a: r.a, via: r.via || '', to: r.k === 'move' ? r.to : '', rec: r.id, t: now }, now);
       n++;
     }
   }
@@ -338,6 +344,62 @@ export function cardBill(books, card, today) {
     due = `${dm}-${String(Math.min(dueDay, monthDays(dm))).padStart(2, '0')}`;
   }
   return { closed, opened, bill, paid, left: Math.max(0, bill - paid), due };
+}
+
+// ---- 自動加值 -------------------------------------------------------------------------
+
+// A stored-value card that reloads itself (悠遊卡, 一卡通, icash: a.reload
+// { on, from, amt, below }, the person's own settings; the usual rule is
+// NT$500 when the balance is under NT$100 or short of the fare): a spend that
+// sets it off brings its reload in as a transfer from the account behind it,
+// on the same day, tied to the spend (`for`), so both balances stay right.
+// Run again when the spend changes; its old reload goes first. → the amount reloaded.
+export function autoReload(books, e, now = Date.now()) {
+  for (const r of live(books.entries)) if (r.for === e.id) drop(books, 'entries', r.id, now);
+  const a = books.accts[e.a];
+  const r = a?.reload;
+  // (No account behind it, left empty: paid by someone not in the books, a
+  // parent's card (Jay 2026-10-27). The card's balance just goes up: neither
+  // spending nor income.)
+  const outside = !r?.from || !books.accts[r.from] || books.accts[r.from].del;
+  if (!e || e.del || e.k !== 'out' || !r?.on || !(r.amt > 0) || r.from === a.id) return 0;
+  const bal = balances(books, e.d)[a.id];
+  if (bal + e.amt >= (Number(r.below) || 0) && bal >= 0) return 0;
+  let n = 1;
+  while (bal + n * r.amt < 0 && n < 20) n++;
+  const base = { id: `${e.id}-r`, d: e.d, amt: n * r.amt, via: '', auto: 'reload', for: e.id, t: (e.t || now) - 1 };
+  put(books, 'entries', outside ? { ...base, k: 'adj', cat: '', note: '', a: a.id, to: '' } : { ...base, k: 'move', cat: '', note: '', a: r.from, to: a.id }, now);
+  return n * r.amt;
+}
+
+// ---- What's usual ------------------------------------------------------------------
+
+// A category's (or a sub's) usual amounts and way to pay, from the last 120
+// days of the person's own entries (Jay 2026-10-27: breakfast is often NT$34,
+// the bread): amounts seen at least twice, most often first (the newer of two
+// as often); the way to pay used most, with how many of how many. Only ever
+// offered, never filled in by itself.
+export function usualFor(books, { k, cat, sub = '' }, today, { days = 120, max = 4 } = {}) {
+  const from = addDays(today, -days);
+  const list = live(books.entries)
+    .filter(e => e.k === k && e.cat === cat && (!sub || e.sub === sub) && e.d >= from && e.d <= today)
+    .sort((a, b) => b.d.localeCompare(a.d) || (b.t || 0) - (a.t || 0));
+  const amts = new Map();
+  const pays = new Map();
+  list.forEach((e, i) => {
+    const x = amts.get(e.amt) || { amt: e.amt, n: 0, last: i };
+    x.n++;
+    amts.set(e.amt, x);
+    const key = `${e.a}|${e.via || ''}`;
+    pays.set(key, (pays.get(key) || 0) + 1);
+  });
+  const top = [...pays].sort((a, b) => b[1] - a[1])[0];
+  return {
+    of: list.length,
+    amts: [...amts.values()].filter(x => x.n >= 2).sort((a, b) => b.n - a.n || a.last - b.last).slice(0, max).map(x => ({ amt: x.amt, n: x.n })),
+    pay: top ? { a: top[0].split('|')[0], via: top[0].split('|')[1], n: top[1] } : null,
+    last: list.slice(0, 6)
+  };
 }
 
 // ---- Merging and saving ------------------------------------------------------------

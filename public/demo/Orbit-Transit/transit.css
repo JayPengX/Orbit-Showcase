@@ -461,12 +461,63 @@ button.ot-hero {
   height: 12px;
 }
 
-/* A plan's legs: each ride a chip in its line's colour, a walk its minutes. */
+/* A plan's legs: each ride a chip in its line's colour, a walk its minutes.
+   One line always (ui.mjs fitLegs draws a row tighter a step at a time). */
 .ot-legs {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 6px 4px;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+.ot-legs > *,
+.ot-jny-legs > * {
+  flex: none;
+}
+.ot-leg b .k {
+  font-weight: 600;
+}
+:is(.ot-legs, .ot-jny-legs).f1 {
+  gap: 3px;
+}
+:is(.ot-legs, .ot-jny-legs).f1 .ot-leg:not(.walk) {
+  gap: 3px;
+  padding: 0 6px;
+}
+:is(.ot-legs, .ot-jny-legs).f1 .ot-leg-sep {
+  font-size: 11px;
+}
+:is(.ot-legs, .ot-jny-legs).f2 .ot-leg b .k {
+  display: none;
+}
+:is(.ot-legs, .ot-jny-legs).f3 .ot-leg.walk,
+:is(.ot-legs, .ot-jny-legs).f3 .ot-leg.walk + .ot-leg-sep,
+:is(.ot-legs, .ot-jny-legs).f3 .ot-leg-sep:has(+ .ot-leg.walk:last-child) {
+  display: none;
+}
+:is(.ot-legs, .ot-jny-legs).f4 .ot-leg {
+  height: 22px;
+  font-size: 11.5px;
+}
+:is(.ot-legs, .ot-jny-legs).f4 .ot-leg .ot-i {
+  width: 13px;
+  height: 13px;
+}
+:is(.ot-legs, .ot-jny-legs).f4 .ot-leg-sep {
+  display: none;
+}
+:is(.ot-legs, .ot-jny-legs).f5 .ot-leg:not(.walk, .bike) .ot-i {
+  display: none;
+}
+/* A ride's facts: the minutes long (1 小時 14 分), short (74 分) on a narrow row, then gone. */
+.q-tag.dur .short,
+.q-tags.f1 .q-tag.dur .long,
+.q-tags.f2 .q-tag.dur {
+  display: none;
+}
+.q-tags.f1 .q-tag.dur .short {
+  display: inline;
 }
 .ot-leg {
   display: inline-flex;
@@ -1317,7 +1368,11 @@ body.tab-map {
 .ot-mk > * {
   pointer-events: auto;
 }
-/* YouBike: a yellow pill with its bike and the bikes there (⚡ the 電輔車), a point under it. */
+/* YouBike (Shared-Proxy docs/DESIGN.md §7): the stations that matter a
+   white pill, a yellow edge and bike, the bikes there in dark type, a point
+   under it; few bikes in orange type; none grey. The rest (.dot) a small
+   yellow dot ringed in white, a 28px target round it. A trip's own station
+   is the one filled yellow (.plan). */
 .ot-mk.bike {
   display: flex;
   align-items: center;
@@ -1325,24 +1380,20 @@ body.tab-map {
   height: 24px;
   margin: -12px 0 0 -16px;
   padding: 0 8px 0 5px;
-  border: 2px solid #fff;
+  border: 1.5px solid var(--ot-bike);
   border-radius: 12px;
-  background: var(--ot-bike);
-  color: #1a1300;
-  font: 800 12px/1 var(--q-font);
+  background: #fff;
+  color: #1c1c1e;
+  font: 700 13px/1 var(--q-font-rounded);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
 }
 .ot-mk.bike .ot-i {
   width: 14px;
   height: 14px;
   stroke-width: 2.4;
-}
-.ot-mk.bike i {
-  font-size: 10.5px;
-  font-style: normal;
-  font-weight: 700;
-  opacity: 0.85;
+  color: #b07d00;
 }
 .ot-mk.bike::after {
   content: '';
@@ -1350,19 +1401,86 @@ body.tab-map {
   bottom: -6px;
   left: 12px;
   border: 5px solid transparent;
-  border-top-color: #fff;
+  border-top-color: var(--ot-bike);
   border-bottom: 0;
 }
-.ot-mk.bike.few {
-  background: #f59e0b;
+.ot-mk.bike.few b {
+  color: #c25e00;
 }
-.ot-mk.bike.none {
-  background: #6b7280;
-  color: #f3f4f6;
+.ot-mk.bike:is(.none, .off) {
+  border-color: #aeaeb2;
+  color: #8e8e93;
 }
-.ot-mk.bike.off {
-  background: #374151;
-  color: #9ca3af;
+.ot-mk.bike:is(.none, .off) .ot-i {
+  color: #8e8e93;
+}
+.ot-mk.bike:is(.none, .off)::after {
+  border-top-color: #aeaeb2;
+}
+.ot-mk.bike.plan {
+  border-color: #fff;
+  background: var(--ot-bike);
+  color: #1a1300;
+}
+.ot-mk.bike.plan .ot-i {
+  color: inherit;
+}
+.ot-mk.bike.plan::after {
+  border-top-color: #fff;
+}
+.ot-mk.bike.dot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.ot-mk.bike.dot::after {
+  content: none;
+}
+.ot-mk.bike.dot i {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--ot-bike);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+.ot-mk.bike.dot:is(.none, .off) i {
+  background: #aeaeb2;
+}
+/* Dark: the pill a dark glass, never a white plate; the dot ringed dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .ot-mk.bike:not(.plan, .dot) {
+    background: #2c2c2e;
+    color: #fff;
+  }
+  :root:not([data-theme='light']) .ot-mk.bike:not(.plan, .dot) .ot-i {
+    color: var(--ot-bike);
+  }
+  :root:not([data-theme='light']) .ot-mk.bike.few:not(.plan) b {
+    color: #ffb340;
+  }
+  :root:not([data-theme='light']) .ot-mk.bike.dot i {
+    border-color: #1c1c1e;
+  }
+}
+:root[data-theme='dark'] .ot-mk.bike:not(.plan, .dot) {
+  background: #2c2c2e;
+  color: #fff;
+}
+:root[data-theme='dark'] .ot-mk.bike:not(.plan, .dot) .ot-i {
+  color: var(--ot-bike);
+}
+:root[data-theme='dark'] .ot-mk.bike.few:not(.plan) b {
+  color: #ffb340;
+}
+:root[data-theme='dark'] .ot-mk.bike.dot i {
+  border-color: #1c1c1e;
 }
 /* On a ride, in the map's own view: the station's bike alone, a round badge. */
 .ot-mk.bike.bare {
@@ -3360,10 +3478,21 @@ body.ot-navigating:not(.tab-map) .ot-scroll::after {
   font: 500 12px/15px var(--q-font);
   white-space: nowrap;
 }
+.ot-ride-top {
+  flex-wrap: nowrap;
+}
 .ot-ride-top .q-tags {
   flex: 1 1 auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-width: 0;
+  overflow: hidden;
+}
+.ot-ride-top .q-tag {
+  flex: none;
+}
+/* (Below the star: the legs take the card's whole width.) */
+.ot-ride-main > .ot-legs {
+  margin-right: -42px;
 }
 .ot-ride-main .ot-warn {
   font: 500 13px/17px var(--q-font);
@@ -3544,37 +3673,52 @@ button.ot-trip-foot {
   height: 16px;
   color: var(--q-label-2);
 }
-.ot-tq-pill input {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 52px;
-  height: 36px;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: none;
-  color: inherit;
+.ot-tq-pill b {
   font: 600 16px/36px var(--q-font);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.ot-tq-pill input::-webkit-date-and-time-value {
-  text-align: left;
+/* (The field over the whole pill, unseen: a tap opens iPhone's wheel; 16px so it never zooms.) */
+.ot-tq-pill input {
+  position: absolute;
+  inset: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
 }
-/* (The browser's own picker icon: the whole pill, unseen.) */
 .ot-tq-pill input::-webkit-calendar-picker-indicator {
   position: absolute;
   inset: 0;
   width: auto;
   height: auto;
   margin: 0;
-  opacity: 0;
 }
-/* The journeys: a card each, the times big, its trains as chips, a mark only for what changes the choice. */
+.ot-tq-st .q-tile {
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+  border-radius: 7px;
+}
+.ot-tq-st .q-tile svg {
+  width: 15px;
+  height: 15px;
+}
+/* The journeys: a card each. The times either side of a line through the
+   journey's time (each train a stretch in its kind's colour, a dot at each
+   station it calls at, a change a gap); under it the trains as chips and
+   whether they run late. The next train lit, its countdown on top. */
 .ot-jny {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 16px 14px;
   border: 0;
   border-radius: var(--q-r-card, 20px);
   background: var(--q-surface);
@@ -3586,70 +3730,151 @@ button.ot-trip-foot {
 .ot-jny + .ot-jny {
   margin-top: 8px;
 }
+.ot-jny.next {
+  box-shadow: inset 0 0 0 2px var(--q-accent);
+}
 .ot-jny.on {
   box-shadow: inset 0 0 0 2px var(--q-blue);
 }
-.ot-jny-top {
+.ot-jny-next {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--q-accent);
+  font: 600 13px/18px var(--q-font);
+  white-space: nowrap;
+}
+.ot-jny-next b {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--q-accent);
+  color: #fff;
+  font: 700 13px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-jny-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
 }
-.ot-jny-top b {
+.ot-jny-top > b {
   font: 700 24px/28px var(--q-font-rounded);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
-.ot-jny-top i {
-  flex: 0 1 36px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--q-fill-1);
+.ot-jny-mid {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  text-align: center;
 }
-.ot-jny-dur {
-  margin-left: auto;
+.ot-jny-mid small {
   color: var(--q-label-2);
-  font: 500 14px/18px var(--q-font);
+  font: 500 12px/14px var(--q-font);
   white-space: nowrap;
+}
+.ot-jbar {
+  position: relative;
+  display: block;
+  height: 10px;
+}
+/* (The ends: where you board and where you get off.) */
+.ot-jbar::before,
+.ot-jbar::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2.5px solid var(--q-label);
+  border-radius: 50%;
+  background: var(--q-surface);
+}
+.ot-jbar::before {
+  left: -5px;
+}
+.ot-jbar::after {
+  right: -5px;
+}
+.ot-jbar i {
+  position: absolute;
+  top: 3px;
+  height: 4px;
+}
+.ot-jbar i.ride {
+  border-radius: 2px;
+  background: var(--c);
+}
+.ot-jbar i.walk {
+  background: radial-gradient(circle, var(--q-label-3) 1px, transparent 1.5px) 0 50% / 5px 4px repeat-x;
+}
+.ot-jbar em {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: var(--q-surface);
+}
+.ot-jny-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 .ot-jny-legs {
   display: flex;
-  flex-wrap: wrap;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
 }
-.ot-jny-legs .q-tags {
-  margin-left: auto;
-}
-.ot-jny-maybe {
-  color: var(--q-orange);
-  font: 600 13px/16px var(--q-font);
-}
-.ot-train-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 9px;
-  border-radius: 8px;
-  background: #0ea5e9;
-  color: #fff;
-  font: 600 13px/16px var(--q-font);
+.ot-jny-at {
+  color: var(--q-label-2);
+  font: 500 12.5px/1 var(--q-font);
   white-space: nowrap;
 }
-.ot-train-chip.hsr {
-  background: #f97316;
+:is(.ot-jny-legs).f3 .ot-jny-at,
+:is(.ot-jny-legs).f3 .ot-jny-at + .ot-leg-sep {
+  display: none;
 }
-.ot-train-chip.local {
-  background: color-mix(in srgb, #0ea5e9 16%, transparent);
-  color: #0369a1;
+.ot-jny-st {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font: 600 13px/1 var(--q-font);
+  white-space: nowrap;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .ot-train-chip.local {
-    background: color-mix(in srgb, #0ea5e9 22%, transparent);
-    color: #7dd3fc;
-  }
+.ot-jny-st .ot-i {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.6;
 }
-:root[data-theme='dark'] .ot-train-chip.local {
-  background: color-mix(in srgb, #0ea5e9 22%, transparent);
-  color: #7dd3fc;
+.ot-jny-st.late {
+  background: color-mix(in srgb, var(--q-red) 16%, transparent);
+  color: var(--q-red);
+}
+.ot-jny-st.ok {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.ot-jny-st.maybe {
+  background: color-mix(in srgb, var(--q-orange) 16%, transparent);
+  color: var(--q-orange);
+}
+.ot-ok {
+  color: var(--q-green);
+  font-weight: 600;
 }
 .ot-jny .ot-steps {
   margin-top: 6px;

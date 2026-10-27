@@ -15,64 +15,64 @@ export const DEMOS = {
 
 export const TOURS = {
   transit: [
-    { say: ['地圖上是附近的 YouBike：每個站還有幾台可借，閃電是電輔車。', 'The map shows the YouBike stations nearby: bikes to borrow at each, the bolt for e-bikes.'] },
-    { tap: '.q-tab[data-tab="go"]', say: ['點「交通」：附近的公車、火車和 YouBike 排在一起。', 'Tap “Transit”: the buses, trains and YouBike nearby, side by side.'] },
-    { tap: '.ot-strip-main', say: ['點一路公車，看它現在開到哪、幾分鐘後到。', 'Tap a bus route to see where it is now and when it arrives.'] },
-    { tap: '.q-close', say: ['每一站幾分鐘到、車子在哪裡，都在這條線上。看完按 × 關掉。', 'Every stop’s minutes and where the buses are, along one line. Close it with the ×.'] },
-    { tap: '.q-tab[data-tab="times"]', say: ['「查時刻」：火車、高鐵和公車的時刻表，不用打開別的 App。', '“Times”: train, high-speed rail and bus timetables, without opening another app.'] }
+    { say: ['這是你附近：黃點是 YouBike 站。', 'Around you: the yellow dots are YouBike stations.'] },
+    { tap: '.q-tab[data-tab="go"]', say: ['看附近的車', 'See what’s nearby'] },
+    { tap: '.ot-strip-main', say: ['點一路公車', 'Tap a bus'] },
+    { tap: '.q-close', say: ['每站幾分鐘到，都在這裡', 'Minutes to every stop'] },
+    { tap: '.q-tab[data-tab="times"]', say: ['火車和公車時刻表', 'Train and bus times'] }
   ],
   class: [
-    { say: ['上課時，最上面就是現在這節：哪一科、哪位老師、在哪間教室，還有幾分鐘下課。數字每秒都在倒數。', 'In class, the top shows the period now: the subject, the teacher, the room and the minutes left, counting down every second.'] },
-    { tap: '.q-chip.day[data-day="2026-10-29"]', say: ['點「明天」，看明天要上什麼。', 'Tap “Tomorrow” to see tomorrow’s classes.'] },
-    { tap: '.q-tab[data-tab="week"]', say: ['「課表」分頁：整週的課，一眼看完。', 'The Timetable tab: the whole week at a glance.'] },
-    { tap: '.q-tab[data-tab="tools"]', say: ['「工具」分頁：改課表、考試倒數，還有拍一張照片就讓 AI 填好課表。', 'The Tools tab: edit the timetable, exam countdowns, and a photo that AI turns into a timetable.'] }
+    { say: ['最上面是現在這節課，倒數到下課。', 'The class on now, counting down to the bell.'] },
+    { tap: '.q-chip.day[data-day="2026-10-29"]', say: ['看明天的課', 'See tomorrow'] },
+    { tap: '.q-tab[data-tab="week"]', say: ['整週課表', 'The whole week'] },
+    { tap: '.q-tab[data-tab="tools"]', say: ['改課表、考試倒數', 'Edit it, count down to exams'] }
   ],
   securities: [
-    { tap: '.q-stock', say: ['這幾檔是今天台股漲跌最多的，價格是錄下那一刻的真實行情。點第一檔。', 'Today’s biggest Taiwan movers, at real prices from the moment this was recorded. Tap the first.'] },
-    { tap: '[data-action="chart-style"][data-v="candle"]', say: ['切成 K 線圖，看每天的開盤、最高、最低和收盤。', 'Switch to candles: each day’s open, high, low and close.'] },
-    { tap: '.q-btn.trade.buy', say: ['按「買進」。用的是 App 裡的練習資金，不是真錢。', 'Press Buy. It uses the app’s practice money, not real money.'] },
-    { tap: '[data-action="qty"][data-qty="100"]', say: ['台股可以買零股，選 100 股。', 'Taiwan shares can be bought in odd lots: pick 100 shares.'] },
-    { tap: '[data-action="otype"][data-otype="limit"]', say: ['零股跟真的一樣只能掛限價：點「限價」，價格會先幫你填好。', 'Odd lots take limit orders only, as on a real exchange: tap Limit, and the price is filled in for you.'] },
-    { tap: '[data-action="place"]', say: ['按「送出買單」。手續費和稅都已經算進總額。', 'Press Send. Fees and tax are already in the total.'] },
-    { tap: '.q-ask-actions .q-btn.primary', say: ['再確認一次就送出。規則跟真的券商一樣：休市時，委託會等開盤再成交。', 'Confirm, and it goes in. The rules are a real broker’s: when the market is closed, the order waits for the open.'] },
-    { tap: '.q-close', say: ['買單送出了。按 × 關掉這一檔。', 'The order is in. Close this stock with the ×.'] },
-    { tap: '.q-tab[data-tab="portfolio"]', say: ['「資產」分頁：持股、現金和整體的損益；剛才的買單先圈存了錢，等成交。', 'The Portfolio tab: holdings, cash and overall gain or loss; the order’s money is held until it fills.'] },
-    { tap: '.q-tab[data-tab="history"]', say: ['「紀錄」分頁：錢的進出和每一張委託，剛才那張在「委託」裡。', 'The History tab: money in and out, and every order; the one you just placed is under Orders.'] }
+    { tap: '.q-stock', say: ['點今天漲最多的這檔', 'Tap today’s top gainer'] },
+    { tap: '[data-action="chart-style"][data-v="candle"]', say: ['換成 K 線', 'Switch to candles'] },
+    { tap: '.q-btn.trade.buy', say: ['買進（練習資金）', 'Buy, with practice money'] },
+    { tap: '[data-action="qty"][data-qty="100"]', say: ['買 100 股零股', '100 shares, an odd lot'] },
+    { tap: '[data-action="otype"][data-otype="limit"]', say: ['零股只能掛限價', 'Odd lots are limit orders'] },
+    { tap: '[data-action="place"]', say: ['手續費和稅已算好，送出', 'Fees and tax included: send'] },
+    { tap: '.q-ask-actions .q-btn.primary', say: ['確認', 'Confirm'] },
+    { tap: '.q-close', say: ['關掉這一檔', 'Close this stock'] },
+    { tap: '.q-tab[data-tab="portfolio"]', say: ['看你的資產', 'Your holdings'] },
+    { tap: '.q-tab[data-tab="history"]', say: ['剛才的委託在這裡', 'Your order is here'] }
   ],
   sports: [
-    { tap: '.sport-card', say: ['先選你看的運動，例如足球。', 'First pick a sport you watch, say football.'] },
-    { tap: '.sp-done', say: ['按「完成」。首頁馬上變成你的觀賽計畫。', 'Press Done: home turns into your watching plan.'] },
-    { tap: '.hero-game', say: ['最上面是下一場值得看的比賽，連哪一台在播都寫好了。點它。', 'At the top: the next game worth watching, with the channel showing it. Tap it.'] },
-    { tap: '.q-close', say: ['比賽頁有兩隊的近況和對戰紀錄。看完按 × 關起來。', 'The game page has both teams’ form and their past meetings. Close it with the ×.'] },
-    { tap: '#tab-live', say: ['「轉播」分頁：台灣哪一台、幾點播哪一場，全部排好。', 'The Channels tab: which Taiwanese channel shows which game, and when.'] },
-    { tap: '#tab-matches', say: ['「賽事」分頁：每個聯賽的賽程、比分和排名。', 'The Games tab: every league’s fixtures, scores and table.'] }
+    { tap: '.sport-card', say: ['選一個你看的運動', 'Pick a sport you watch'] },
+    { tap: '.sp-done', say: ['完成', 'Done'] },
+    { tap: '.hero-game', say: ['下一場好比賽，哪台播都寫好了', 'The next good game, and its channel'] },
+    { tap: '.q-close', say: ['看完關掉', 'Close it'] },
+    { tap: '#tab-live', say: ['哪一台、幾點、播哪場', 'Which channel shows what, when'] },
+    { tap: '#tab-matches', say: ['每個聯賽的賽程和排名', 'Every league’s games and table'] }
   ],
   words: [
-    { tap: '.q-hc-btn', say: ['每天的目標是 20 個字。按「開始 10 個字」。', 'The daily goal is 20 words. Press “Start 10 words”.'] },
-    { tap: '.choice', say: ['選你覺得對的中文意思。答錯也沒關係，App 會記下來，之後再考你。', 'Pick the meaning you think is right. A wrong answer is fine: the app notes it and asks again later.'] },
-    { tap: '.q-btn.primary', say: ['按「下一題」。每個字什麼時候再出現，由記憶模型決定。', 'Press Next. When each word comes back is decided by a memory model.'] },
-    { tap: '.choice', say: ['再答一題。', 'One more.'] },
-    { tap: '.q-close', say: ['先結束這一輪，按左上角的 ×。', 'End the round with the × at the top left.'] },
-    { tap: '#tab-list', say: ['「單字」分頁：6,169 個字，每個都有發音、例句和等級。', 'The Words tab: 6,169 words, each with its sound, an example and its level.'] },
-    { tap: '#tab-progress', say: ['「進度」分頁：記住了多少、每天練了多少。', 'The Progress tab: how many you know, and how much you practise each day.'] }
+    { tap: '.q-hc-btn', say: ['開始今天的字', 'Start today’s words'] },
+    { tap: '.choice', say: ['選一個意思，錯了也沒關係', 'Pick a meaning; wrong is fine'] },
+    { tap: '.q-btn.primary', say: ['下一題', 'Next'] },
+    { tap: '.choice', say: ['再一題', 'One more'] },
+    { tap: '.q-close', say: ['先結束這一輪', 'End the round'] },
+    { tap: '#tab-list', say: ['6,169 個字都在這', 'All 6,169 words'] },
+    { tap: '#tab-progress', say: ['你記住了多少', 'How many you know'] }
   ],
   money: [
-    { tap: '.mn-day[data-day="2026-10-16"]', say: ['月曆上每一天花了多少，一眼就看到。點 16 號，看那天記了哪幾筆。', 'The calendar shows what each day cost. Tap the 16th to see what was spent that day.'] },
-    { tap: '.q-tab-action', say: ['右下角的 + 是記一筆。點它。', 'The + at the bottom right adds a new entry. Tap it.'] },
-    { tap: '.mn-cat[data-cat="drink"]', say: ['先選分類，例如「飲料」。', 'Pick a category, say “Drinks”.'] },
-    { tap: '.mn-key[aria-label="6"]', say: ['用下面的數字鍵輸入金額，先按 6。', 'Type the amount on the keypad: press 6.'] },
-    { tap: '.mn-key[aria-label="5"]', say: ['再按 5，就是 65 元。', 'Then 5, for NT$65.'] },
-    { tap: '.mn-key.save', say: ['按「儲存」。月曆和今天的總數馬上跟著變。', 'Press Save: the calendar and today’s total change at once.'] },
-    { tap: '#tab-stats', say: ['「統計」分頁：這個月的錢花到哪裡，用分類畫成圖。', 'The Stats tab: where this month’s money went, by category.'] },
-    { tap: '#tab-accts', say: ['「帳戶」分頁：現金、銀行、悠遊卡、信用卡，各有多少一目了然。', 'The Accounts tab: cash, bank, transit card and credit card, each balance at a glance.'] }
+    { tap: '.mn-day[data-day="2026-10-16"]', say: ['點一天，看那天花了什麼', 'Tap a day to see what was spent'] },
+    { tap: '.q-tab-action', say: ['記一筆', 'Add an entry'] },
+    { tap: '.mn-cat[data-cat="drink"]', say: ['選「飲料」', 'Pick Drinks'] },
+    { tap: '.mn-key[aria-label="6"]', say: ['輸入 6', 'Type 6'] },
+    { tap: '.mn-key[aria-label="5"]', say: ['再按 5', 'Then 5'] },
+    { tap: '.mn-key.save', say: ['儲存', 'Save'] },
+    { tap: '#tab-stats', say: ['錢花到哪裡', 'Where the money went'] },
+    { tap: '#tab-accts', say: ['每個帳戶的餘額', 'Every account’s balance'] }
   ],
   weather: [
-    { tap: '.wx-hero', say: ['先點最上面的天氣卡：今天每個時段的溫度、降雨和風，一次看完。', 'Tap the weather card at the top: today hour by hour, temperature, rain and wind.'] },
-    { tap: '.q-close', say: ['看完按右上角的 × 關起來。', 'Close it with the × at the top right.'] },
-    { tap: '.q-panel[data-open="rain"]', say: ['往下有降雨卡，點開看接下來幾小時會不會下雨。', 'Further down is the rain card: tap it to see whether rain is coming.'] },
-    { tap: '[data-range="rain:10d"]', say: ['切到「10 天」，看整個十天的降雨機率。', 'Switch to “10 days” for the rain chance across ten days.'] },
-    { tap: '.q-close', say: ['再關起來。', 'Close it again.'] },
-    { tap: '#tab-week', say: ['底下的「預報」分頁：十天的高低溫排成一張圖。', 'The Forecast tab: ten days of highs and lows in one picture.'] },
-    { tap: '#tab-places', say: ['「地點」分頁可以存好幾個地方，像學校和家，一眼比較。', 'The Places tab keeps several places, like school and home, side by side.'] }
+    { tap: '.wx-hero', say: ['點開今天每小時的天氣', 'Open today hour by hour'] },
+    { tap: '.q-close', say: ['關掉', 'Close it'] },
+    { tap: '.q-panel[data-open="rain"]', say: ['會不會下雨？', 'Will it rain?'] },
+    { tap: '[data-range="rain:10d"]', say: ['看十天', 'Ten days'] },
+    { tap: '.q-close', say: ['關掉', 'Close it'] },
+    { tap: '#tab-week', say: ['十天預報', 'Ten-day forecast'] },
+    { tap: '#tab-places', say: ['存好幾個地方', 'Keep several places'] }
   ]
 };

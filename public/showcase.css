@@ -2761,54 +2761,53 @@ html.sc-playing body {
   }
 }
 
-/* On a phone: the app is the screen, under a slim bar; the tour floats. */
+/* On a phone: the app is the screen, under a slim, quiet bar; the tour is a
+   coach mark pointing at what to tap, in the app's own colour (--app). */
 .sc-player.full {
+  --app: var(--sc-ac);
   grid-template-rows: auto minmax(0, 1fr);
 }
 .sc-player-head.slim {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
   gap: 8px;
-  padding: calc(env(safe-area-inset-top) + 6px) 10px 6px;
+  padding: calc(env(safe-area-inset-top) + 4px) 8px 4px;
   border-bottom: 0.5px solid var(--q-sep, var(--q-fill-2));
-  background: var(--q-surface, var(--sc-card));
+  background: var(--q-page);
 }
-.sc-player-head.slim > div {
-  grid-template-columns: minmax(0, 1fr);
-}
-.sc-player-head.slim strong {
-  font-size: 14.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sc-player-head.slim small {
-  font-size: 11.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sc-player-head.slim .sc-btn {
-  flex: none;
-  white-space: nowrap;
-  min-height: 34px;
-  gap: 4px;
-  padding: 0 10px;
-  font-size: 13.5px;
-}
-.sc-player-head.slim .sc-player-leave {
-  padding: 0 11px 0 8px;
-  background: var(--q-fill-2);
-  font-weight: 600;
-}
-.sc-player-head.slim .sc-player-again {
-  display: none;
-}
-.sc-player-head.slim > .sc-btn:not(.sc-player-leave):not(.sc-player-tour) {
-  width: 34px;
+.sc-player-x {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--q-label-2);
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
 }
-.sc-player-tour.on {
-  background: var(--sc-ac);
-  color: #fff;
+.sc-player-x:active {
+  background: var(--q-fill-2);
+}
+.sc-player-name {
+  display: grid;
+  min-width: 0;
+  text-align: center;
+}
+.sc-player-name strong {
+  overflow: hidden;
+  font: 600 15px/1.25 var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sc-player-name small {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 11.5px/1.3 var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .sc-player.full .sc-player-body {
   display: block;
@@ -2822,57 +2821,107 @@ html.sc-playing body {
 .sc-player.full .sc-player-screen {
   border-radius: 0;
 }
-.sc-player.full .sc-player-card {
+.sc-coach {
   position: absolute;
   z-index: 2;
-  left: 10px;
-  right: 10px;
-  bottom: calc(10px + 64px);
-  gap: 4px;
-  padding: 11px 12px 10px 14px;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--sc-card) 94%, transparent);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 0 0 0.5px var(--q-sep, rgba(0, 0, 0, 0.1)), 0 10px 30px rgba(0, 0, 0, 0.28);
-  transition: top 260ms ease, bottom 260ms ease;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 190px;
+  max-width: min(280px, calc(100% - 24px));
+  padding: 10px 12px 8px 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px var(--q-sep, rgba(0, 0, 0, 0.12)), 0 8px 28px rgba(0, 0, 0, 0.22);
+  animation: sc-coach-in 220ms cubic-bezier(0.32, 0.72, 0, 1);
 }
-.sc-player.full .sc-player-card.up {
-  top: 10px;
-  bottom: auto;
+.sc-coach[hidden] {
+  display: none;
 }
-.sc-player.full .sc-player-say {
-  font-size: 15px;
-  line-height: 1.45;
+.sc-coach-say {
+  margin: 0;
+  color: var(--q-label);
+  font: 500 15px/1.4 var(--q-font);
 }
-.sc-player-top {
+.sc-coach-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  margin-top: 4px;
 }
-.sc-player-hide {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  margin: -4px -4px -4px 0;
+.sc-coach-n {
+  color: var(--q-label-2);
+  font: 400 12px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.sc-coach-acts {
+  display: flex;
+  gap: 4px;
+}
+.sc-coach-skip,
+.sc-coach-next {
+  min-height: 30px;
+  padding: 0 6px;
   border: 0;
-  border-radius: 999px;
-  background: var(--q-fill-2);
+  background: none;
+  font: 400 14px/1 var(--q-font);
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-coach-skip {
   color: var(--q-label-2);
-  font-size: 14px;
 }
-.sc-player.full .sc-player-btns {
-  justify-content: space-between;
-  margin-top: 2px;
+.sc-coach-next {
+  color: var(--app);
+  font-weight: 600;
 }
-.sc-player.full .sc-player-btns .sc-btn {
-  min-height: 34px;
-  font-size: 14px;
+.sc-coach-skip[hidden],
+.sc-coach-next[hidden] {
+  display: none;
 }
-.sc-player-skip {
-  background: transparent;
-  color: var(--q-label-2);
+.sc-coach.done .sc-coach-foot {
+  display: none;
+}
+.sc-coach.done {
+  padding: 10px 14px;
+}
+/* the tip, on the side facing the target */
+.sc-coach-tip {
+  position: absolute;
+  left: calc(var(--tip, 50%) - 7px);
+  display: none;
+  width: 14px;
+  height: 14px;
+  z-index: -1;
+  background: inherit;
+  transform: rotate(45deg);
+}
+.sc-coach.down .sc-coach-tip {
+  top: -6px;
+  display: block;
+  box-shadow: -0.5px -0.5px 0 0 var(--q-sep, rgba(0, 0, 0, 0.12));
+}
+.sc-coach.up .sc-coach-tip {
+  bottom: -6px;
+  display: block;
+  box-shadow: 0.5px 0.5px 0 0 var(--q-sep, rgba(0, 0, 0, 0.12));
+}
+@media (prefers-color-scheme: dark) {
+  .sc-coach {
+    background: #2c2c2e;
+  }
+}
+@keyframes sc-coach-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-coach {
+    animation: none;
+  }
 }
 
 /* The phone frame's way into the demo. */

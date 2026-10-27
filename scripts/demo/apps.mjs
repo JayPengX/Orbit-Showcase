@@ -22,7 +22,7 @@ export const DEMOS = {
     { tap: '#tab-week' }, { tap: '#tab-places' }, { tap: '#tab-now' }
   ] },
   money: { app: 'money', repo: 'Orbit-Money', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], payload: 'scripts/demo/money-books.mjs', tour: steps('money'), explore: [
-    { tap: '#tab-inv' }, { tap: '#tab-cal' }, { tap: '.mn-step[aria-label="上個月"]' }, { tap: '.mn-step[aria-label="下個月"]' }, { tap: '.mn-row' }
+    { tap: '#tab-more' }, { tap: '#tab-cal' }, { tap: '.mn-step[aria-label="上個月"]' }, { tap: '.mn-step[aria-label="下個月"]' }, { tap: '.mn-row' }
   ] },
   words: { app: 'words', repo: 'Orbit-Words', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], skip: ['data'], keep: ['fare', 'hit', 'how', 'military'].map(w => `data/audio/${w}.mp3`), tour: steps('words'), explore: [{ tap: '#tab-review' }, { tap: '#tab-today' }, { tap: '.wotd' }] },
   sports: { app: 'sports', repo: 'Orbit-Sports', clock: 'now', geo: [25.034, 121.565], tour: steps('sports'), explore: [], settle: 9000,
