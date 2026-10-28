@@ -23,12 +23,12 @@ export const APPS = [
     id: 'transit', brand: 'transit', repo: 'Orbit-Transit', zh: true,
     q: ['怎麼去最實際？公車還要等多久？', 'What’s the practical way there, and how long for the bus?'],
     shots: [
-      ['transit/1', ['最好的路線排在最前', 'The best trips, ranked']],
-      ['transit/2', ['每一段都畫在地圖上', 'Every step on the map']],
-      ['transit/3', ['附近即將發車', 'What leaves near you']],
-      ['transit/4', ['整座城市即時動態', 'The city, live']],
-      ['transit/5', ['捷運班次一眼看懂', 'Metro times at a glance']],
-      ['transit/6', ['短程也幫你算好', 'Short hops too']]
+      ['transit/1', ['路線畫在 Google 地圖上', 'Your trip on Google Maps']],
+      ['transit/2', ['台鐵高鐵，最佳路線排好', 'Trains and HSR, ranked for you']],
+      ['transit/3', ['兩站之間所有班次', 'Every train between two cities']],
+      ['transit/4', ['車站即時班次', 'Live trains at the station']],
+      ['transit/5', ['YouBike 即時車位', 'YouBike docks, live']],
+      ['transit/6', ['台鐵轉高鐵，一步步帶你走', 'TRA to HSR, step by step']]
     ]
   },
   {
