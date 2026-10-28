@@ -29,7 +29,7 @@
 // that one live; the one left behind stops refreshing and says so, with a
 // button to continue there. Links between the apps carry the sign-in along.
 
-import { BRANDS, FAMILY, pathOf, homeOf, appIcon, familyMark } from './brand.mjs';
+import { BRANDS, APP_ORDER, FAMILY, pathOf, homeOf, appIcon, familyMark } from './brand.mjs';
 import { DEV, cleanDev } from './brand.mjs';
 import { API, SITE as HOME, isApi } from './domain.mjs';
 import { passkeyHere, passkeyName, deviceName, makePasskey, usePasskey, forgetPasskey, cancelled } from './passkey.mjs';
@@ -210,6 +210,7 @@ export const TIERS = [
   { id: 'gold', zh: '金', en: 'Gold' }
 ];
 const APP_COUNT = Object.keys(APPS).length;
+// The Explorer first, then the apps in the family's order (APP_ORDER).
 export const MILESTONES = [
   { id: 'pass', goals: [3, 6, APP_COUNT], was: 3, zh: 'Orbit 旅人', en: 'Explorer', unit: { zh: '個 App', en: 'apps' }, do: { zh: '用過 {n} 個 App', en: 'Use {n} Orbit apps' } },
   { id: 'stock', goals: [300_000, 1_000_000, 10_000_000], was: 2, money: true, zh: '身價', en: 'Net worth', unit: { zh: '', en: '' }, do: { zh: '身價到 {n}', en: 'Reach {n}' } },
@@ -221,7 +222,7 @@ export const MILESTONES = [
   { id: 'weather', goals: [7, 30, 100], was: 2, days: true, zh: '看天的人', en: 'Sky watcher', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天看天氣', en: 'Check the weather on {n} days' } },
   { id: 'orbit', goals: [7, 30, 100], was: 2, days: true, zh: '全勤', en: 'Attendance', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天打開課表', en: 'Open Class on {n} days' } },
   { id: 'money', goals: [7, 30, 100], was: 2, days: true, zh: '天天記帳', en: 'Daily books', unit: { zh: '天', en: 'days' }, do: { zh: '{n} 天記帳', en: 'Keep the books on {n} days' } }
-];
+].sort((a, b) => (a.id === 'pass' ? -1 : b.id === 'pass' ? 1 : APP_ORDER.indexOf(a.id) - APP_ORDER.indexOf(b.id)));
 const MS_FRAMES = MILESTONES.map(m => ({ id: `ms-${m.id}`, ms: m.id }));
 const msKept = (wallet, id) => setting(wallet, `ms.${id}`, null) || {};
 const keptTier = (m, kept) => Math.min(3, kept.t != null ? Math.floor(finiteOr0(kept.t)) : kept.done ? m.was : 0);
@@ -2017,7 +2018,7 @@ function signInGate(s) {
     const input = passInput(BRAND.pass, { save: 'current-password' });
     const error = node('p', { class: 'q-gate-error', role: 'alert' });
     const enter = node('button', { class: 'q-btn primary block', type: 'submit', text: en ? 'Sign in' : '登入' });
-    const keys = passkeyHere() && passkeyGate(s, error, res => finish(res), on => busy(on));
+    const keys = passkeyHere() ? passkeyGate(s, error, res => finish(res), on => busy(on)) : null;
     const busy = on => [enter, input, keys?.button].forEach(b => b && (b.disabled = on));
     let over = false;
     const finish = res => {
@@ -2222,7 +2223,12 @@ export function accountButton(s, { extra = null } = {}) {
   };
   paint();
   s.on('wallet', paint);
+  // The sheet's code is fetched while the app sits idle, and again from the
+  // finger's touch: fetched only at the tap, a phone on 4G waited a second
+  // for it after each kit deploy (Jay 2026-10-27, "sometimes slow").
+  btn.addEventListener('pointerdown', warmPass, { passive: true });
   btn.addEventListener('click', () => accountSheet(s, { extra: extra ? extra() : null }));
+  warmPassLater();
   return btn;
 }
 
@@ -2287,8 +2293,23 @@ export const tell = (opts = {}) => ask({ ...opts, alertOnly: true }).then(() => 
 // money: that's Securities'. Loaded when first opened (pass.mjs). tab:
 // 'pass' | 'looks' | 'apps' | 'help';
 // help: { app, topic } for the guide to open on.
+// The sheet's module, once: the first tap opens it from memory when the
+// page fetched it while idle (warmPassLater), and its guides (help.mjs)
+// follow it, also while idle.
+let passing = null;
+export function warmPass() {
+  passing ||= import('./pass.mjs').catch(e => ((passing = null), Promise.reject(e)));
+  return passing;
+}
+let passWarmed = false;
+function warmPassLater() {
+  if (passWarmed) return;
+  passWarmed = true;
+  const idle = f => (globalThis.requestIdleCallback ? globalThis.requestIdleCallback(f, { timeout: 4000 }) : setTimeout(f, 2000));
+  idle(() => warmPass().then(m => idle(() => m.loadHelp?.().catch(() => {}))).catch(() => {}));
+}
 export async function accountSheet(s, { extra = null, tab = 'pass', help = null } = {}) {
-  const { openPass } = await import('./pass.mjs');
+  const { openPass } = await warmPass();
   return openPass(s, { extra, tab, help });
 }
 export const openHelp = (s, app = s.app, topic = null) => accountSheet(s, { tab: 'help', help: { app, topic } });
@@ -2716,6 +2737,9 @@ export const NOTICE_KINDS = {
     ['end', '比賽結束', 'Final score', '你追蹤的球隊打完，附比分。', 'When a team you follow finishes a game, with the score.'],
     ['pick', '今日推薦開賽', 'Today’s picks start', '今日推薦的每一場開始時。', 'When each of today’s picks starts.'],
     ['pickend', '今日推薦賽果', 'Today’s picks: final', '今日推薦每場打完，附比分。', 'When each of today’s picks ends, with the score.']
+  ],
+  money: [
+    ['renew', '到期提醒', 'Renewal reminder', 'TPASS 這類有效期的票，到期前一晚和當天早上。', 'For a pass like TPASS: the evening before it ends, and that morning.']
   ],
   vocab: [
     ['streak', '連續練習快斷了', 'Streak ending', '今天還沒練習單字，連續天數今晚就會歸零時。', 'When you haven’t practised today and your streak ends tonight.']

@@ -1,0 +1,1 @@
+{"token":"preview","wallet":{"v":1,"created":1782786584527,"entries":[{"id":"eco:start","t":1782786584527,"app":"eco","kind":"start","amount":110000},{"id":"eco:pay:1","t":1791426584527,"app":"eco","kind":"pay","amount":7000}],"snap":{},"settings":{"passkeyAsk":{"value":true,"t":1793154584524}},"apps":{},"inbox":{}},"active":true,"live":{"app":"transit"}}
