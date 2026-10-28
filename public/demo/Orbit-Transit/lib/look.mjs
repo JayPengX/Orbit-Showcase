@@ -2,7 +2,7 @@
 // q-hero-card, q-tile, q-rowcard, q-tag, q-rail), written as strings since
 // the tabs draw their pages whole.
 
-import { e, hm } from './util.mjs';
+import { e, hm, shown } from './util.mjs';
 import { icon } from './ui.mjs';
 import { effectLabel, oneEach } from './service.mjs';
 import { W } from '#kit/lang.mjs';
@@ -46,6 +46,16 @@ export function hero({ eyebrow = '', glyph = '', big = '', title = '', sub = '',
   return attrs ? `<button class="q-hero-card q-press ot-hero" type="button" ${attrs}${style}>${inner}</button>` : `<div class="q-hero-card ot-hero"${style}>${inner}</div>`;
 }
 
+// The page's answer on its card (the kit's .q-focus): a quiet label, the
+// countdown at the focal size, the line under it, the facts as grey text (`facts`:
+// plain strings; `live`: a word in the live colour; `warn`: the one exception, a
+// tag), `body` (html), then the buttons. `attrs`: the whole block a button.
+export function focus({ eyebrow = '', big = '', title = '', sub = '', facts = [], live = false, warn = '', body = '', actions = [], attrs = '' }) {
+  const line = [live ? `<span class="ot-now">${W('即時', 'Live')}</span>` : '', ...facts.filter(Boolean).map(e)].filter(Boolean).join(' · ');
+  const inner = `${eyebrow ? `<span class="q-focus-label">${e(eyebrow)}</span>` : ''}${big}${title ? `<strong class="ot-focus-title">${e(shown(title))}</strong>` : ''}${sub ? `<span class="q-focus-sub">${e(sub)}</span>` : ''}${line || warn ? `<span class="q-focus-sub ot-focus-facts">${line}${warn ? `${line ? ' ' : ''}${tag(warn, 'red')}` : ''}</span>` : ''}${body}${actions.length ? `<div class="ot-focus-acts">${actions.map(a => `<button class="q-btn${a.primary ? ' primary' : ' tinted'}" type="button" ${a.attrs}>${a.label}</button>`).join('')}</div>` : ''}`;
+  return attrs ? `<button class="q-focus q-press ot-focus" type="button" ${attrs}>${inner}</button>` : `<section class="q-focus ot-focus">${inner}</section>`;
+}
+
 // Nothing here: the kit's empty state.
 export const emptyNote = title => kitUI.emptyHtml({ title });
 // A non-first tab's large title (the kit's navTitle).
@@ -57,10 +67,11 @@ export const noticesHtml = items =>
   items?.length
     ? `<div class="q-rowcard ot-notices">${items
         .map(
-          n => `<details class="ot-notice${n.stop ? ' stop' : ''}"><summary class="q-ritem">${tile(n.kind === 'metro' && n.sys === 'TRTCMG' ? 'gondola' : n.kind, COLOR[n.kind] || COLOR.route, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title">${e(n.title)}</span><small>${e(n.sum)}</small></span></summary>${n.said?.length ? `<div class="ot-notice-body">${saidRows(n.said)}</div>` : n.lines.length ? `<div class="ot-notice-body">${n.lines.map(t => `<p>${e(t)}</p>`).join('')}</div>` : ''}</details>`
+          n => `<details class="ot-notice${n.stop ? ' stop' : ''}"><summary class="q-ritem">${tile(n.kind === 'metro' && n.sys === 'TRTCMG' ? 'gondola' : n.kind, COLOR[n.kind] || COLOR.route, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title"${/[\u3400-\u9fff]/.test(n.title) ? ' lang="zh-Hant"' : ''}>${e(n.title)}</span><small>${e(n.sum)}</small></span></summary>${n.said?.length ? `<div class="ot-notice-body">${saidRows(n.said)}</div>` : n.lines.length ? `<div class="ot-notice-body">${n.lines.map(t => `<p>${e(t)}</p>`).join('')}</div>` : ''}</details>`
         )
         .join('')}</div>`
     : '';
+// (An operator's notice is written in Chinese only: marked so, as it stays in English too.)
 // Notices as rows: their two words and first line, the whole notice a tap away.
 const firstLine = t => String(t || '').split('\n').find(x => x.trim()) || '';
 // (`open`: each shown whole, in the notice's own sheet.)

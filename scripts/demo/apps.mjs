@@ -31,5 +31,6 @@ export const DEMOS = {
     css: '.q-card:has(.wp){display:none!important}' },
   securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-symbol="^TWII"]' }], settle: 9000 },
   class: { app: 'orbit', repo: 'Orbit-Class', dist: 'dist', ua: IPHONE, wall: true, clock: '2026-10-28T09:20:00+08:00', geo: [25.034, 121.565], stores: [['classFocusData', JSON.stringify(timetable)]], tour: steps('class'), explore: [] },
-  transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], tour: steps('transit'), explore: [], settle: 9000 }
+  // Today's real buses, trains and bikes (--live), on Google's map in the showcase like the real app (liveMap).
+  transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 }
 };

@@ -14,7 +14,7 @@ import { tpassOf, passTrainTrip } from './tpass.mjs';
 import { sheet, sheetHead, icon, tagText, trainKind, trainColor, inkOn, stationLabel, fitLegs } from './ui.mjs';
 import { COLOR, tile, section, rowCard, emptyNote, noticesHtml } from './look.mjs';
 import { loadNotices, onNotices } from './service.mjs';
-import { e, hm, minsText, tw, twAt, addDays, meters, distText, readJson, writeJson } from './util.mjs';
+import { e, hm, minsText, tw, twAt, addDays, meters, distText, readJson, writeJson, shown } from './util.mjs';
 
 import { W } from '#kit/lang.mjs';
 import * as kitUI from '#kit/ui.mjs';
@@ -87,8 +87,9 @@ function pickDay(d) {
 }
 // The search is the page's card, as iOS lists it: 出發 over 抵達, ⇅ beside
 // them, the time and which railways under; any change asks at once (no 查詢).
-// (A station in its railway's colour: 台鐵 blue, 高鐵 orange.)
-const stPick = (which, st) => `<button class="ot-tq-st" type="button" data-pick="${which}"><small>${which === 'from' ? W('出發', 'From') : W('抵達', 'To')}</small>${st ? `${tile(st.sys === 'hsr' ? 'hsr' : 'tra', st.sys === 'hsr' ? COLOR.hsr : COLOR.tra)}<b>${e(stationLabel(st))}</b>` : `<b class="muted">${W('選車站', 'Pick a station')}</b>`}</button>`;
+// A station in its railway's colour: 台鐵 blue, 高鐵 orange.
+// (Only when the two ends are on different railways: a pair all of one kind needs no tile, DESIGN.md §3.)
+const stPick = (which, st) => `<button class="ot-tq-st" type="button" data-pick="${which}"><small>${which === 'from' ? W('出發', 'From') : W('抵達', 'To')}</small>${st ? `${state.from && state.to && state.from.sys !== state.to.sys ? tile(st.sys === 'hsr' ? 'hsr' : 'tra', st.sys === 'hsr' ? COLOR.hsr : COLOR.tra) : ''}<b>${e(stationLabel(st))}</b>` : `<b class="muted">${W('選車站', 'Pick a station')}</b>`}</button>`;
 // The time asked from, as the app writes it (24-hour; iPhone's own field said 晚上 7:09 and
 // wrapped in the pill): 現在, the time picked, or 首班 on another day. The field itself is
 // over it, unseen, so a tap still opens iPhone's wheel.
@@ -108,6 +109,9 @@ function render() {
   const today = tw().date;
   const date = state.date || today;
   const recent = ctx.data.trains.filter(x => trainKey(x) !== (state.from && state.to ? trainKey({ from: state.from, to: state.to }) : '')).slice(0, 4);
+  // 全部 / 台鐵 / 高鐵 kept across a redraw (the owner, 2026-10-27: it switched with no slide): a tap
+  // redraws the page twice (the search's loading, then its trains), and a control drawn anew lands.
+  const seg = $('panel-train').querySelector('.ot-tq-sys');
   $('panel-train').innerHTML = `
     <div class="ot-tq-days"></div>
     <section class="ot-tq">
@@ -118,6 +122,10 @@ function render() {
     <div id="t-results">${resultsHtml()}</div>
     ${recent.length ? section(W('最近', 'Recent'), rowCard(recent.map((x, i) => `<button class="q-ritem chevron" type="button" data-recent="${i}">${tile(x.from.sys === 'hsr' ? 'hsr' : 'tra', x.from.sys === 'hsr' ? COLOR.hsr : COLOR.tra, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title">${e(stationLabel(x.from))} → ${e(stationLabel(x.to))}</span></span></button>`).join(''))) : ''}`;
   $('panel-train').querySelector('.ot-tq-days').replaceWith(kitUI.dayBar(dayRec, { days: trainDays(), current: date, today, follow: true, onPick: pickDay }));
+  if (seg) {
+    $('panel-train').querySelector('.ot-tq-sys').replaceWith(seg);
+    for (const b of seg.children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
+  }
   drawn();
 }
 // After the trains are drawn: their chips on one line, the next train's countdown kept true.
@@ -191,7 +199,8 @@ function journeyHtml(j, i, next) {
   const rides = j.legs.filter(l => !l.walk);
   const delays = rides.map(l => delayOf(l.trip));
   const late = delays.reduce((a, d) => a + (d || 0), 0);
-  // What changes the choice: late (red), on time by the live board (green), run only if the weather allows.
+  // What changes the choice: late or run only if the weather allows (a tag: the exception),
+  // on time by the live board (plain green text: a fact, DESIGN.md §6).
   const state_ = late
     ? `<span class="ot-jny-st late">${W(`晚 ${late} 分`, `${late} min late`)}</span>`
     : delays.some(d => d === 0)
@@ -206,7 +215,7 @@ function journeyHtml(j, i, next) {
       return at + trainChip(l.trip);
     })
     .join('');
-  const eyebrow = next ? `<span class="ot-jny-next">${W('下一班', 'Next train')}<b data-leave="${leaveAt(j)}">${e(leaveText(leaveAt(j)))}</b></span>` : '';
+  const eyebrow = next ? `<span class="ot-jny-next">${W('下一班', 'Next train')} · <b data-leave="${leaveAt(j)}">${e(leaveText(leaveAt(j)))}</b></span>` : '';
   return `<button class="ot-jny${i === state.open ? ' on' : ''}${next ? ' next' : ''}" type="button" data-j="${i}">
     ${eyebrow}
     <span class="ot-jny-top"><b>${e(hm(j.dep))}</b><span class="ot-jny-mid"><small>${e(minsText((j.arr - j.dep) / 1000))}</small>${barHtml(j)}</span><b>${e(hm(j.arr))}</b></span>
@@ -246,7 +255,7 @@ function detailHtml(j) {
     const d = delayOf(t);
     const pinned = ctx.data.pins.some(p => p.kind === 'trainNo' && p.no === t.no && p.sys === t.sys);
     const facts = [W(`${l.stops} 站`, `${l.stops} stops`), minsText((l.arr - l.dep) / 1000), onPass(l) ? 'TPASS' : state.fares.get(fareKey(l)) ? `NT$${state.fares.get(fareKey(l))}` : '', t.bike ? W('可攜車', 'bikes OK') : ''].filter(Boolean).join(' · ');
-    out.push(`<li style="--c:${trainColor(t)}"><span class="ot-step-time">${e(hm(l.dep))}</span><span class="ot-step-i">${icon(t.sys)}</span><span class="ot-step-what"><b>${e(trainKind(t.typeFull || t.type))} ${e(t.no)}</b> ${W('往', 'to')} ${e(String(t.headsign || '').replace(/^往/, ''))}${d ? ` <span class="ot-warn">${W(`晚 ${d} 分`, `${d} min late`)}</span>` : d === 0 ? ` <span class="ot-ok">${W('準點', 'On time')}</span>` : ''}<small>${e(nameOf(l.from))} → ${e(nameOf(l.to))} ${e(hm(l.arr))}</small><small>${e(facts)}</small><span class="ot-pin-train${pinned ? ' on' : ''}" role="button" data-pin-train="${e(JSON.stringify({ sys: t.sys, no: t.no, type: t.type, from: l.from, to: l.to, dep: hm(l.dep) }))}">${icon('star')}${pinned ? W('已釘選', 'Pinned') : W('釘選這班', 'Pin train')}</span></span></li>`);
+    out.push(`<li style="--c:${trainColor(t)}"><span class="ot-step-time">${e(hm(l.dep))}</span><span class="ot-step-i">${icon(t.sys)}</span><span class="ot-step-what"><b>${e(trainKind(t.typeFull || t.type))} ${e(t.no)}</b> ${W('往', 'to')} ${e(shown(String(t.headsign || '').replace(/^往/, '')))}${d ? ` <span class="ot-warn">${W(`晚 ${d} 分`, `${d} min late`)}</span>` : d === 0 ? ` <span class="ot-ok">${W('準點', 'On time')}</span>` : ''}<small>${e(nameOf(l.from))} → ${e(nameOf(l.to))} ${e(hm(l.arr))}</small><small>${e(facts)}</small><span class="ot-pin-train${pinned ? ' on' : ''}" role="button" data-pin-train="${e(JSON.stringify({ sys: t.sys, no: t.no, type: t.type, from: l.from, to: l.to, dep: hm(l.dep) }))}">${icon('star')}${pinned ? W('已釘選', 'Pinned') : W('釘選這班', 'Pin train')}</span></span></li>`);
   });
   out.push(`<li class="end" style="--c:${COLOR.walk}"><span class="ot-step-time">${e(hm(j.arr))}</span><span class="ot-step-i">${icon('pin')}</span><span class="ot-step-what"><b>${W('抵達', 'Arrive')} ${e(nameOf(j.legs.at(-1).to))}</b></span></li>`);
   return `<ol class="ot-steps">${out.join('')}</ol>`;
@@ -390,7 +399,7 @@ async function pickStation(which) {
   };
   const isOther = s => other && other.sys === s.sys && other.id === s.id;
   const row = (s, value = '') => `<button class="q-ritem" type="button" data-st="${e(s.key)}">${tile(s.sys, s.sys === 'hsr' ? COLOR.hsr : COLOR.tra, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title">${e(stationLabel(s))}</span></span>${value ? `<span class="q-ritem-value">${e(value)}</span>` : ''}</button>`;
-  const btn = s => `<button class="ot-st-btn" type="button" data-st="${e(s.key)}">${e(s.sys === 'hsr' ? stationLabel(s) : s.name)}</button>`;
+  const btn = s => `<button class="ot-st-btn" type="button" data-st="${e(s.key)}">${e(stationLabel(s))}</button>`;
   const draw = () => {
     const q = d.querySelector('#s-q').value;
     const body = d.querySelector('#s-body');

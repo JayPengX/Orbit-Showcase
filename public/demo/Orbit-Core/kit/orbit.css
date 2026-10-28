@@ -166,26 +166,17 @@
 /* Each app's colour, set by <html data-app> (kit/apps.mjs writes it into
    each page, orbitSession() too), from kit/brand.mjs. */
 /* app-colours */
-:where(:root[data-app='stock']) {
-  --q-accent: #0d9488;
-}
-:where(:root[data-app='orbit']) {
-  --q-accent: #0ea5e9;
-}
-:where(:root[data-app='weather']) {
-  --q-accent: #6366f1;
+:where(:root[data-app='match']) {
+  --q-accent: #ea580c;
 }
 :where(:root[data-app='transit']) {
   --q-accent: #10b981;
 }
-:where(:root[data-app='match']) {
-  --q-accent: #ea580c;
+:where(:root[data-app='weather']) {
+  --q-accent: #6366f1;
 }
-:where(:root[data-app='beats']) {
-  --q-accent: #c026d3;
-}
-:where(:root[data-app='law']) {
-  --q-accent: #4f46e5;
+:where(:root[data-app='orbit']) {
+  --q-accent: #0ea5e9;
 }
 :where(:root[data-app='money']) {
   --q-accent: #ca8a04;
@@ -193,27 +184,27 @@
 :where(:root[data-app='vocab']) {
   --q-accent: #db2777;
 }
+:where(:root[data-app='beats']) {
+  --q-accent: #c026d3;
+}
+:where(:root[data-app='law']) {
+  --q-accent: #4f46e5;
+}
+:where(:root[data-app='stock']) {
+  --q-accent: #0d9488;
+}
 @media (prefers-color-scheme: dark) {
-  :where(:root[data-app='stock']:not([data-theme='light'])) {
-    --q-accent: #1db4a4;
-  }
-  :where(:root[data-app='orbit']:not([data-theme='light'])) {
-    --q-accent: #46bcf3;
-  }
-  :where(:root[data-app='weather']:not([data-theme='light'])) {
-    --q-accent: #848df7;
+  :where(:root[data-app='match']:not([data-theme='light'])) {
+    --q-accent: #f48940;
   }
   :where(:root[data-app='transit']:not([data-theme='light'])) {
     --q-accent: #3fd09c;
   }
-  :where(:root[data-app='match']:not([data-theme='light'])) {
-    --q-accent: #f48940;
+  :where(:root[data-app='weather']:not([data-theme='light'])) {
+    --q-accent: #848df7;
   }
-  :where(:root[data-app='beats']:not([data-theme='light'])) {
-    --q-accent: #d869e8;
-  }
-  :where(:root[data-app='law']:not([data-theme='light'])) {
-    --q-accent: #7a7df1;
+  :where(:root[data-app='orbit']:not([data-theme='light'])) {
+    --q-accent: #46bcf3;
   }
   :where(:root[data-app='money']:not([data-theme='light'])) {
     --q-accent: #e4b526;
@@ -221,21 +212,33 @@
   :where(:root[data-app='vocab']:not([data-theme='light'])) {
     --q-accent: #ea68a6;
   }
+  :where(:root[data-app='beats']:not([data-theme='light'])) {
+    --q-accent: #d869e8;
+  }
+  :where(:root[data-app='law']:not([data-theme='light'])) {
+    --q-accent: #7a7df1;
+  }
+  :where(:root[data-app='stock']:not([data-theme='light'])) {
+    --q-accent: #1db4a4;
+  }
 }
-:where(:root[data-app='stock'][data-theme='dark']) {
-  --q-accent: #1db4a4;
-}
-:where(:root[data-app='orbit'][data-theme='dark']) {
-  --q-accent: #46bcf3;
-}
-:where(:root[data-app='weather'][data-theme='dark']) {
-  --q-accent: #848df7;
+:where(:root[data-app='match'][data-theme='dark']) {
+  --q-accent: #f48940;
 }
 :where(:root[data-app='transit'][data-theme='dark']) {
   --q-accent: #3fd09c;
 }
-:where(:root[data-app='match'][data-theme='dark']) {
-  --q-accent: #f48940;
+:where(:root[data-app='weather'][data-theme='dark']) {
+  --q-accent: #848df7;
+}
+:where(:root[data-app='orbit'][data-theme='dark']) {
+  --q-accent: #46bcf3;
+}
+:where(:root[data-app='money'][data-theme='dark']) {
+  --q-accent: #e4b526;
+}
+:where(:root[data-app='vocab'][data-theme='dark']) {
+  --q-accent: #ea68a6;
 }
 :where(:root[data-app='beats'][data-theme='dark']) {
   --q-accent: #d869e8;
@@ -243,11 +246,8 @@
 :where(:root[data-app='law'][data-theme='dark']) {
   --q-accent: #7a7df1;
 }
-:where(:root[data-app='money'][data-theme='dark']) {
-  --q-accent: #e4b526;
-}
-:where(:root[data-app='vocab'][data-theme='dark']) {
-  --q-accent: #ea68a6;
+:where(:root[data-app='stock'][data-theme='dark']) {
+  --q-accent: #1db4a4;
 }
 /* /app-colours */
 /* What a colour means, the same in every app. Taiwan's market convention:
@@ -1547,7 +1547,7 @@ dialog.q-sheet.q-full {
 
 /* ---- Sections and cards on the page ---- */
 .q-section {
-  margin: var(--q-s-6) 0 0;
+  margin: var(--q-s-5) 0 0;
 }
 .q-section-head {
   display: flex;
@@ -2269,6 +2269,16 @@ input[type='checkbox'][switch] {
 .q-menu button:is(:active, [data-q-press], :hover) {
   background: var(--q-fill-3);
 }
+/* An item's own picture first (menu({ lead }): an account's logo). */
+.q-menu-lead {
+  display: grid;
+  flex: none;
+  margin-right: -4px;
+}
+.q-menu button:has(> .q-menu-lead) > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
 .q-menu button.danger {
   color: var(--q-red);
 }
@@ -2762,9 +2772,8 @@ dialog.q-moved::backdrop {
   text-align: start;
   margin-bottom: 6px;
   cursor: pointer;
-  /* (A card you hold: one deep colour lit from the top, no glow; docs/DESIGN.md §3.) */
-  background: linear-gradient(180deg, color-mix(in srgb, var(--q-accent) 34%, #0f172a), #0f172a);
-  box-shadow: none;
+  background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--q-accent) 45%, transparent) 0%, transparent 60%), linear-gradient(135deg, #0f172a, color-mix(in srgb, var(--q-accent) 55%, #0f172a));
+  box-shadow: var(--q-shadow);
 }
 .q-pc-top { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .q-pc-face { position: relative; flex: none; display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; overflow: hidden; }
@@ -2946,18 +2955,22 @@ dialog {
 
 
 .q-pass .looks { display: grid; gap: 10px; }
-/* 里程碑: the next medal open on the page (the focal number, a bar, the
-   medal it earns), then one row each in a list. */
+/* 里程碑: what's worn, the next medal open on the page (the focal number,
+   a ring round the faint medal it earns), then one row each in a list. */
 .q-pass .ms-got { margin-left: auto; color: var(--q-label-2); font: var(--q-t-footnote); }
 .q-pass .ms-next { display: flex; align-items: center; gap: 16px; margin: 4px 0 24px; }
 .q-pass .ms-next-text { display: grid; gap: 4px; flex: 1 1 auto; min-width: 0; }
 .q-pass .ms-next-text small { color: var(--q-label-2); font: var(--q-t-subhead); }
 .q-pass .ms-next-n { font: var(--q-t-focal); letter-spacing: -0.02em; white-space: nowrap; }
 .q-pass .ms-next-n span { color: var(--q-label-2); font: var(--q-t-figure); }
-.q-pass .ms-next-look { flex: none; display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; }
-.q-pass .ms-next-look .av-face { width: 100%; height: 100%; border-radius: 50%; }
-.q-pass .ms-bar { display: block; height: 4px; margin: 4px 0 2px; border-radius: 2px; background: var(--q-fill-3, color-mix(in srgb, var(--q-text) 12%, transparent)); overflow: hidden; }
-.q-pass .ms-bar i { display: block; min-width: 4px; height: 100%; border-radius: 2px; background: var(--accent); }
+.q-pass .ms-goal { position: relative; flex: none; display: grid; place-items: center; width: 80px; height: 80px; }
+.q-pass .ms-goal svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.q-pass .ms-goal .av-face { width: 56px; height: 56px; border-radius: 50%; filter: grayscale(0.5); opacity: 0.55; }
+.q-pass .ms-worn { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; }
+.q-pass .ms-worn-face { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; }
+.q-pass .ms-worn-face.q-framed { border-width: 2px; }
+.q-pass .ms-worn-face .av-face { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.q-pass .ms-worn small { color: var(--q-label-2); font: var(--q-t-subhead); }
 .q-pass .ms-list { --q-sep-left: 68px; }
 .q-pass .ms-row { width: 100%; min-width: 0; min-height: 64px; }
 .q-pass .ms-row:not(.got) { cursor: default; }
@@ -2965,7 +2978,8 @@ dialog {
 .q-pass .ms-look .av-face { display: block; width: 100%; height: 100%; }
 .q-pass .ms-look.icon { border-radius: 10px; opacity: 0.85; }
 .q-pass .ms-name { display: flex; align-items: baseline; gap: 8px; }
-.q-pass .ms-name em { color: var(--accent); font: var(--q-t-footnote); font-style: normal; }
+.q-pass .ms-name em { color: var(--accent); font: var(--q-t-footnote); font-style: normal; white-space: nowrap; }
+.q-pass .ms-wear { padding: 1px 10px; border-radius: 999px; background: var(--accent-wash); color: var(--accent); font: 600 13px/20px var(--q-font); white-space: nowrap; }
 .q-pass .ms-row.on .ms-look { box-shadow: 0 0 0 2px var(--q-surface), 0 0 0 4px var(--accent); }
 .q-pass .ms-row .q-cell-text small { white-space: normal; text-wrap: pretty; }
 .q-pass .ms-side { flex: none; display: grid; justify-items: end; gap: 6px; }
@@ -3145,9 +3159,12 @@ html[data-q-turn] dialog[open] {
   color: var(--q-accent);
 }
 
-.q-hero-card {
-  --q-hc-a: color-mix(in srgb, var(--q-accent) 74%, #0b1020);
-  --q-hc-b: color-mix(in srgb, var(--q-accent) 86%, #0b1020);
+/* (.q-focus shares the hero's colour: the screen's answer on the app's colour.) */
+.q-hero-card,
+.q-focus {
+  --q-hc-a: color-mix(in srgb, var(--q-accent) 62%, #0b1020);
+  --q-hc-b: var(--q-accent);
+  --q-hc-glow: color-mix(in srgb, var(--q-accent) 45%, #ffffff);
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -3156,29 +3173,30 @@ html[data-q-turn] dialog[open] {
   overflow: hidden;
   border: 0;
   border-radius: var(--q-r-card);
-  /* One deep colour, lit a shade from the top: no glow, no diagonal sweep,
-     no coloured bloom under it. It is the screen's one coloured surface;
-     what's on it does the talking (docs/DESIGN.md). */
-  background: linear-gradient(180deg, var(--q-hc-b), var(--q-hc-a));
+  /* The app's colour, lit from the corner (Jay 2026-10-27: a screen
+     without it "feels so empty"). It is the screen's one coloured surface. */
+  background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--q-hc-glow) 55%, transparent), transparent 60%), linear-gradient(135deg, var(--q-hc-a), var(--q-hc-b));
   color: #ffffff;
   font: inherit;
   text-align: left;
   text-decoration: none;
-  box-shadow: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 18px 36px -20px color-mix(in srgb, var(--q-hc-b) 80%, transparent);
   -webkit-tap-highlight-color: transparent;
 }
 /* In dark the accents brighten; the card keeps a deep colour so white type
    stays readable. :where() keeps this at one-class weight so an app that sets
    its own --q-hc-a/b on its hero class still wins. */
 @media (prefers-color-scheme: dark) {
-  :where(:root:not([data-theme='light'])) .q-hero-card {
+  :where(:root:not([data-theme='light'])) :is(.q-hero-card, .q-focus) {
     --q-hc-a: color-mix(in srgb, var(--q-accent) 38%, #05070d);
     --q-hc-b: color-mix(in srgb, var(--q-accent) 72%, #05070d);
+    --q-hc-glow: color-mix(in srgb, var(--q-accent) 60%, transparent);
   }
 }
-:where(:root[data-theme='dark']) .q-hero-card {
+:where(:root[data-theme='dark']) :is(.q-hero-card, .q-focus) {
   --q-hc-a: color-mix(in srgb, var(--q-accent) 38%, #05070d);
   --q-hc-b: color-mix(in srgb, var(--q-accent) 72%, #05070d);
+  --q-hc-glow: color-mix(in srgb, var(--q-accent) 60%, transparent);
 }
 .q-hc-eyebrow {
   display: flex;
@@ -3280,11 +3298,11 @@ html[data-q-turn] dialog[open] {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  /* (One flat colour: the tile says which kind, nothing more. docs/DESIGN.md §3) */
-  background: var(--t);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--t) 82%, #fff), var(--t) 60%);
   color: #ffffff;
   font-size: 20px;
   line-height: 1;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18);
 }
 .q-tile svg {
   width: 22px;
@@ -3925,7 +3943,7 @@ div.q-ritem {
   margin: 4px 0 16px;
   padding: 16px;
   border-radius: 20px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--t) 86%, #0b1020), color-mix(in srgb, var(--t) 74%, #0b1020));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--t) 92%, #000), color-mix(in srgb, var(--t) 70%, #fff));
   color: #ffffff;
 }
 .q-sh-logos {
@@ -5044,42 +5062,48 @@ html.q-kb .q-kb-docked {
 /* A menu over a sheet: solid, so its rows never mix with what's under them (Money's 付款方式 over the keypad). */
 dialog[open] .q-menu { background: var(--q-sheet); }
 
-/* ---- The focal point, on its card (docs/DESIGN.md) ----
+/* ---- The focal point, on the app's colour (docs/DESIGN.md) ----
    A screen's one answer: a quiet label, the number, one line under it, a
-   thin bar if there's a limit, and at most three figures beside it, on a
-   plain card (Jay 2026-10-27: open on the page read as bare text). The card
-   is flat, the surface every card uses; size and space still make the focus.
+   thin bar if there's a limit, and at most three figures beside it, on the
+   app's colour lit from the corner, as the hero card (Jay 2026-10-27: open
+   on the page, then on a grey card, it "feels so empty"). The content stays
+   calm: no capsules on it, one big number.
    .q-focus > .q-focus-label, .q-focus-value, .q-focus-bar > i,
    .q-focus-sub, .q-focus-figs > div > small + b (.in / .out on b: meaning). */
 .q-focus {
+  position: relative;
   display: grid;
   gap: var(--q-s-1);
   min-width: 0;
   padding: var(--q-s-4) 18px 18px;
+  overflow: hidden;
   border-radius: var(--q-r-card);
-  background: var(--q-surface);
+  background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--q-hc-glow) 55%, transparent), transparent 60%), linear-gradient(135deg, var(--q-hc-a), var(--q-hc-b));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 18px 36px -20px color-mix(in srgb, var(--q-hc-b) 80%, transparent);
+  color: #ffffff;
+  --q-focus-2: rgba(255, 255, 255, 0.78);
 }
 .q-focus-label {
-  color: var(--q-label-2);
+  color: var(--q-focus-2);
   font: 500 15px/20px var(--q-font);
 }
 .q-focus-value {
   display: block;
   max-width: 100%;
-  color: var(--q-label);
+  color: #ffffff;
   font: var(--q-t-focal);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   white-space: nowrap;
 }
-/* The rest of a value ("/ 6,169", a unit): smaller and grey beside it. */
 .q-focus-value.q-words {
   /* (A focal line in words, not a number: the text face, which reads better.) */
   font-family: var(--q-font);
   letter-spacing: -0.01em;
 }
+/* The rest of a value ("/ 6,169", a unit): smaller and softer beside it. */
 .q-focus-value .dim {
-  color: var(--q-label-2);
+  color: var(--q-focus-2);
   font-size: 0.5em;
   font-weight: 500;
   letter-spacing: 0;
@@ -5089,19 +5113,19 @@ dialog[open] .q-menu { background: var(--q-sheet); }
   margin-top: var(--q-s-2);
   overflow: hidden;
   border-radius: 99px;
-  background: var(--q-fill-2);
+  background: rgba(255, 255, 255, 0.24);
 }
 .q-focus-bar > i {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--q-accent);
+  background: #ffffff;
 }
 .q-focus-bar.over > i {
-  background: var(--q-red);
+  background: color-mix(in srgb, var(--q-red) 40%, #ffffff);
 }
 .q-focus-sub {
-  color: var(--q-label-2);
+  color: var(--q-focus-2);
   font: var(--q-t-subhead);
   font-variant-numeric: tabular-nums;
 }
@@ -5116,7 +5140,7 @@ dialog[open] .q-menu { background: var(--q-sheet); }
   min-width: 0;
 }
 .q-focus-figs small {
-  color: var(--q-label-2);
+  color: var(--q-focus-2);
   font: var(--q-t-footnote);
 }
 .q-focus-figs b {
@@ -5125,7 +5149,7 @@ dialog[open] .q-menu { background: var(--q-sheet); }
   white-space: nowrap;
 }
 .q-focus-figs b.in {
-  color: var(--q-good);
+  color: color-mix(in srgb, var(--q-good) 40%, #ffffff);
 }
 
 /* ---- A list's own label (.q-section-head.q-list-head): names a group of
@@ -5139,8 +5163,9 @@ dialog[open] .q-menu { background: var(--q-sheet); }
   font: 600 15px/20px var(--q-font);
   letter-spacing: 0;
 }
+/* (Groups of one list sit close: Jay 2026-10-27 "so much gap" on 帳戶.) */
 .q-section:has(> .q-list-head) + .q-section:has(> .q-list-head) {
-  margin-top: var(--q-s-5);
+  margin-top: var(--q-s-4);
 }
 
 /* ---- The share sheet (kit/share.mjs): the code is the focus, open on the

@@ -11,16 +11,19 @@ export const DEMOS = {
   sports: { repo: 'Orbit-Sports', real: true },
   securities: { repo: 'Orbit-Securities', real: true },
   class: { repo: 'Orbit-Class' },
-  transit: { repo: 'Orbit-Transit' }
+  transit: { repo: 'Orbit-Transit', real: true }
 };
 
 export const TOURS = {
   transit: [
-    { say: ['這是你附近：黃點是 YouBike 站。', 'Around you: the yellow dots are YouBike stations.'] },
-    { tap: '.q-tab[data-tab="go"]', say: ['看附近的車', 'See what’s nearby'] },
-    { tap: '.ot-strip-main', say: ['點一路公車', 'Tap a bus'] },
-    { tap: '.q-close', say: ['每站幾分鐘到，都在這裡', 'Minutes to every stop'] },
-    { tap: '.q-tab[data-tab="times"]', say: ['火車和公車時刻表', 'Train and bus times'] }
+    { say: ['跟真的 App 一樣是 Google 地圖；黃點是 YouBike 站。', 'Google’s map, as in the real app; the yellow dots are YouBike stations.'] },
+    { tap: '#q', type: '台北101', after: 1800, wait: 8000, say: ['搜尋要去的地方', 'Search for a place'] },
+    { tap: '.ot-res', wait: 3000, say: ['選台北 101', 'Pick Taipei 101'] },
+    { tap: '[data-card="go"]', after: 2500, wait: 12000, say: ['規劃怎麼去', 'Plan the trip'] },
+    { tap: '.ot-plan[data-plan="0"]', wait: 5000, say: ['排好的選擇：火車加 YouBike，下一班也列好', 'Ranked choices: train plus YouBike, with the next departures'] },
+    { tap: '.q-tab[data-tab="go"]', wait: 6000, say: ['看附近的車', 'See what’s nearby'] },
+    { tap: '.ot-strip-main', wait: 4000, say: ['點一路公車', 'Tap a bus'] },
+    { tap: '.q-close', say: ['每站幾分鐘到，都在這裡', 'Minutes to every stop'] }
   ],
   class: [
     { say: ['最上面是現在這節課，倒數到下課。', 'The class on now, counting down to the bell.'] },

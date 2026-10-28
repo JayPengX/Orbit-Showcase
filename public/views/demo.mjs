@@ -29,6 +29,7 @@ export function openDemo(app, title) {
   let unhook = null;
   let accent = '';
   let fade = 0;
+  let moving = false; // (the step's tap is in, its next step on the way)
 
   const body = h('div', { class: 'sc-player-body' });
   const stage = h('div', { class: 'sc-player-stage' });
@@ -123,7 +124,8 @@ export function openDemo(app, title) {
       // A tap on the step's target moves the tour on.
       const onTap = e => {
         const s = tour[at];
-        if (s?.tap && e.target.closest?.(s.tap)) {
+        if (s?.tap && !moving && e.target.closest?.(s.tap)) {
+          moving = true;
           coach.hidden = true;
           if (ring) ring.hidden = true;
           cancelAnimationFrame(watch);
@@ -131,8 +133,11 @@ export function openDemo(app, title) {
           setTimeout(() => step(at + 1), typing + (s.after || 700));
         }
       };
+      // (a box to type in counts once it has the focus: a phone's tap there may never make a click)
+      const onFocus = e => tour[at]?.type && onTap(e);
       doc.addEventListener('click', onTap, true);
-      unhook = () => doc.removeEventListener('click', onTap, true);
+      doc.addEventListener('focusin', onFocus, true);
+      unhook = () => (doc.removeEventListener('click', onTap, true), doc.removeEventListener('focusin', onFocus, true));
       ring = null;
       // the app's own colour, once its page has its styles
       setTimeout(() => {
@@ -248,6 +253,7 @@ export function openDemo(app, title) {
   }
 
   function step(i) {
+    moving = false;
     at = Math.max(-1, Math.min(i, tour.length));
     back.disabled = at <= 0;
     coach.classList.remove('done');

@@ -1,13 +1,13 @@
 // Shared UI: sheets, the transport icons, a plan's legs as chips.
 
-import { e, minsText, hm, rides } from './util.mjs';
+import { e, minsText, hm, rides, shown } from './util.mjs';
 import { metroColor } from './metro.mjs';
 import * as kitUI from '#kit/ui.mjs';
 
 import { W, en } from '#kit/lang.mjs';
 
 // A railway station's name as shown: 高鐵 before an HSR station's.
-export const stationLabel = s => (!s ? '' : s.sys === 'hsr' ? W(`高鐵${s.name}`, `HSR ${s.name}`) : s.name);
+export const stationLabel = s => (!s ? '' : s.sys === 'hsr' ? W(`高鐵${s.name}`, `HSR ${s.en || shown(s.name)}`) : (en && s.en) || shown(s.name));
 // A modal sheet (the kit's look): closed by its ✕, a tap on the page
 // behind or Escape, sliding down as every app's sheets do; `d.shut()`
 // closes it the same way and `d.onclosed` runs once after.
@@ -83,7 +83,7 @@ export const MODE_NAME = en
 const TAG_EN = { 推薦: 'Best', 最快抵達: 'Fastest', 最少轉乘: 'Fewest changes', 最少步行: 'Least walking', 電輔車: 'E-bike', 即時: 'Live', 最早抵達: 'Earliest', 車程最短: 'Shortest', 直達: 'Direct', '全程 YouBike': 'All YouBike', 騎車: 'Ride', 步行: 'Walk' };
 export const tagText = t => (en ? TAG_EN[t] || t : t);
 // TRA's train kinds in English (their own names, as on the board).
-const TRAIN_EN = [[/區間快/, 'Fast Local'], [/區間/, 'Local'], [/自強/, 'Tze‑Chiang'], [/莒光/, 'Chu‑Kuang'], [/復興/, 'Fu‑Hsing'], [/普悠瑪/, 'Puyuma'], [/太魯閣/, 'Taroko'], [/新自強|EMU3000/, 'EMU3000'], [/觀光|鳴日/, 'Tourist'], [/普快/, 'Ordinary']];
+const TRAIN_EN = [[/區間快/, 'Fast Local'], [/區間/, 'Local'], [/自強/, 'Tze‑Chiang'], [/莒光/, 'Chu‑Kuang'], [/復興/, 'Fu‑Hsing'], [/普悠瑪/, 'Puyuma'], [/太魯閣/, 'Taroko'], [/新自強|EMU3000/, 'EMU3000'], [/觀光|鳴日/, 'Tourist'], [/普快/, 'Ordinary'], [/高鐵/, 'HSR']];
 export const trainKind = s => {
   const t = String(s || '');
   const hit = en && TRAIN_EN.find(([re]) => re.test(t));
@@ -193,6 +193,13 @@ export function fitLegs(box) {
   const run = () => {
     fitRows(box.querySelectorAll('.ot-legs, .ot-jny-legs'));
     for (const card of box.querySelectorAll('.ot-fit-group')) fitRows(card.querySelectorAll('.ot-fit-row'), { group: true });
+    // A plan's top line: its times whole before any tag (「最少轉乘」 dropped, never "09:…").
+    for (const top of box.querySelectorAll('.ot-plan-top')) {
+      const time = top.querySelector('.ot-plan-time');
+      const tags = [...top.querySelectorAll('.ot-tag')];
+      for (const x of tags) x.style.display = '';
+      while (time && time.scrollWidth > time.clientWidth + 1 && tags.length) tags.pop().style.display = 'none';
+    }
   };
   run();
   document.fonts?.ready?.then(run);
