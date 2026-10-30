@@ -3685,3 +3685,49 @@ html.sc-playing body {
     }
   }
 }
+
+/* 即時: the app on today's data (demos.mjs `live`), a pill in the player's bar. */
+.sc-player-head.slim:has(.sc-player-live) {
+  grid-template-columns: 36px minmax(0, 1fr) auto 36px;
+}
+.sc-player-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-2);
+  color: var(--q-label);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  align-self: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--q-label-3, #8e8e93);
+}
+.sc-player-live[aria-pressed='true'] {
+  background: color-mix(in srgb, #ff3b30 14%, transparent);
+  color: #ff3b30;
+}
+.sc-player-live[aria-pressed='true'] .sc-live-dot {
+  background: #ff3b30;
+  animation: sc-live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sc-live-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-player-live[aria-pressed='true'] .sc-live-dot {
+    animation: none;
+  }
+}
