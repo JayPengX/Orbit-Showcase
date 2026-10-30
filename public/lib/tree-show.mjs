@@ -95,6 +95,9 @@ const S = {
     flow: [['pin', ['竹東南', 'Zhudong South']], ['bus', ['5608 公車', 'Bus 5608']], ['bike', ['YouBike 20 分', 'YouBike 20 min']], ['flag', ['成功九街', 'Chenggong 9th St']]],
     rules: [['永遠有一個推薦', 'Always one pick'], ['不規劃計程車', 'No taxis'], ['不跟自己的火車賽跑', 'Never race your own train'], ['手指動過地圖就不再拉回', 'A map you moved stays put']]
   },
+  'transit-fast': {
+    pairs: [[['台北 7 到 10 秒', 'Taipei: 7 to 10 s'], ['1 到 2 秒', '1 to 2 s']]]
+  },
   'transit-tdx': {
     nums: [['240', ['TDX 每分鐘上限', 'TDX calls a minute, at most']], ['4', ['每秒', 'a second']]]
   },
@@ -444,6 +447,9 @@ const S = {
   'words-hard': {
     tags: [['target', ['易混字', 'Look-alikes']], ['list', ['相近的意思', 'Close meanings']], ['pencil', ['離線做好的提示', 'Hints made offline']]]
   },
+  'words-dict': {
+    pairs: [[['mean：低劣的', 'mean: “inferior”'], ['mean：意思是', 'mean: “to signify”']]]
+  },
   'words-offline': {
     flow: [['backpack', ['全部存在手機', 'All on the phone']], ['swap', ['回到網路就合併', 'Merged when back']], ['check', ['兩台不互蓋', 'Neither overwrites']]]
   },
@@ -473,6 +479,9 @@ const S = {
   },
   'sec-rules': {
     tags: [['chart', ['台股', 'Taiwan shares']], ['chart', ['美股', 'US shares']], ['exchange', ['期貨', 'Futures']], ['exchange', ['選擇權', 'Options']], ['wallet', ['基金', 'Funds']], ['bank', ['債券', 'Bonds']], ['coin', ['外匯、黃金', 'FX, gold']]]
+  },
+  'money-guess': {
+    flow: [['spark', ['猜好分類和付款', 'Category and card guessed']], ['coin', ['點常用金額', 'Tap a usual amount']], ['check', ['儲存', 'Save']]]
   },
   'money-merge': {
     pairs: [[['兩台手機，後存的蓋掉先存的', 'Two phones, the later save wins'], ['一筆一筆合併', 'Merged entry by entry']]]

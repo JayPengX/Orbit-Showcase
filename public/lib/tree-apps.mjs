@@ -200,6 +200,13 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           tech: ['transit.js CAPS；map.mjs 用同一個介面包 Google 或 Leaflet+NLSC。', 'transit.js CAPS; map.mjs wraps Google or Leaflet+NLSC behind one interface.'],
           links: ['cheap-guard']
         }),
+        n('transit-fast', 'clock', ['規劃快 2 到 5 倍', 'Plans 2 to 5 times faster'], ['公車到站一個城市問一次', 'Buses due, asked once a city'], {
+          p: ['規劃一趟路要一站一站問公車還有幾分鐘到，台北要等 7 到 10 秒。', 'Planning a trip asked each stop in turn when its buses were due; in Taipei that took 7 to 10 seconds.'],
+          i: ['雲端一次拿整個城市每一站、每一路的到站時間，存兩分鐘大家共用；規劃時直接查這一份。', 'The cloud fetches a whole city’s buses due for every stop and route in one ask, keeps it two minutes for everyone, and plans read that one copy.'],
+          r: ['第一批方案一到兩秒就出來。', 'The first plans show in a second or two.'],
+          tech: ['transit.js /transit/eta：TDX 一個城市一次呼叫；城市第一次問時先用站牌自己的答案頂著。', 'transit.js /transit/eta: one TDX call a city; a city’s first ask is answered by its stops’ own ask beside it.'],
+          links: ['transit-tdx']
+        }),
         n('transit-tdx', 'clock', ['即時資料大家共用', 'Live data shared by everyone'], ['TDX 的答案存 10 秒', 'TDX answers kept 10 s'], {
           p: ['TDX 每分鐘有使用次數限制。', 'TDX limits calls per minute.'],
           i: ['雲端把公車到站、捷運看板存 10 秒、YouBike 存 30 秒（TDX 本身 30 到 60 秒才更新一次），同時間的人共用。', 'The cloud keeps bus and metro boards 10 s and YouBike 30 s (TDX itself updates every 30–60 s), shared by everyone asking.'],
@@ -339,6 +346,12 @@ const words = n('words', 'book', ['Orbit Words', 'Orbit Words'], ['背得住的�
       i: ['錯誤選項挑拼法像、意思近，或你自己搞混過的字；新字第一題先快速檢查，一眼就會就幾週後再見；學會之後改成聽寫。', 'Wrong options are spelt alike, close in meaning, or ones you mixed up before; a new word gets a quick check first (known → weeks away); once held, dictation.'],
       r: ['真的會才算會。', 'Known means really known.'],
       tech: ['lib/words.mjs；提示和易混字寫在 data/hints.json，一次離線做好，不用即時 AI。', 'lib/words.mjs; mnemonics and confusions in data/hints.json, written once offline, no live AI.']
+    }),
+    n('words-dict', 'book', ['自己的字典', 'A dictionary of its own'], ['用台灣的說法，常用的意思先', 'In Taiwan’s wording, the main sense first'], {
+      p: ['網路上的中文解釋常常是對岸用語，或第一個意思就是冷僻的（mean 寫成「低劣的」）。', 'Chinese glosses found online often use mainland wording or lead with a rare sense (mean as “inferior”).'],
+      i: ['每個字的意思從維基詞典重新寫成台灣學生的說法，最常用的放第一個，附 KK 音標、例句和詞形變化。', 'Every word’s senses rewritten from Wiktionary in Taiwan students’ wording, the main one first, with KK, an example and the word’s forms.'],
+      r: ['查到的第一個意思就是考試會考的那個。', 'The first sense you see is the one the exam asks.'],
+      tech: ['釋義參考 Wiktionary，例句來自 Tatoeba；整本字典隨 App 離線。', 'Senses from Wiktionary, examples from Tatoeba; the whole dictionary ships offline with the app.']
     }),
     n('words-offline', 'backpack', ['完全離線', 'Fully offline'], ['每個字都有真人錄音', 'A recording per word'], {
       p: ['在公車上沒網路也想背。', 'You want to study on the bus with no signal.'],
@@ -485,6 +498,12 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
   i: ['做一個 Orbit 家族的記帳 App，和 Securities 的模擬金完全分開。', 'An Orbit accounting app, kept fully apart from Securities’ practice money.'],
   r: ['月曆一眼看每天花多少，發票掃一下就記好。', 'Each day’s spending at a glance, invoices scanned in.'],
   kids: [
+    n('money-guess', 'spark', ['記一筆幾乎不用選', 'An entry nearly fills itself'], ['從你自己的紀錄猜', 'Guessed from your own entries'], {
+      p: ['每記一筆都要選收支、分類、細項、付款方式，記帳很快就懶得記。', 'Every entry asked for its kind, category, sub-category and way to pay, so people soon stop logging.'],
+      i: ['從你過去最像現在的紀錄（同一個時段、星期幾、今天已經記過的）猜出全部，常用金額點一下就填好；分類也可以先選一組短的（學生、上班族、家庭）。', 'Guess it all from your past entries most like now (the hour, the weekday, what you logged today), with your usual amounts one tap away; and start from a short set of categories (student, office worker, family).'],
+      r: ['大部分時候打開、點金額、儲存，就記好了。', 'Most of the time: open, tap the amount, save.'],
+      tech: ['lib/cats.mjs 的猜測只讀本機帳本；金額不自動填，要點一下（Jay 10-30）。', 'The guesses in lib/cats.mjs read only the books on the phone; the amount is never filled without a tap (Jay 10-30).']
+    }),
     n('money-merge', 'swap', ['兩台裝置逐筆合併', 'Two devices merge entry by entry'], ['刪掉的也記得', 'Deletions remembered'], {
       p: ['手機和平板都記帳，存檔時會互相蓋掉。', 'A phone and a tablet saving books overwrite each other.'],
       i: ['每一筆都有修改時間，刪除留下「墓碑」120 天，合併時一筆一筆比，新的贏。', 'Every record has a time; a removal leaves a tombstone for 120 days; merging compares record by record, newest wins.'],
