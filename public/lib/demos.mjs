@@ -4,14 +4,15 @@
 // words; `type`, words typed into the box once it's tapped. The recording
 // walks the same steps, so every tap has its answers.
 // `real`: its data is the real feeds' at the moment it was recorded, not made up.
+// `live`: it can also run on today's data (the player's 即時; a showcase pass, Orbit-Core showcase.js).
 export const DEMOS = {
-  weather: { repo: 'Orbit-Weather' },
+  weather: { repo: 'Orbit-Weather', live: true },
   money: { repo: 'Orbit-Money' },
   words: { repo: 'Orbit-Words' },
-  sports: { repo: 'Orbit-Sports', real: true },
+  sports: { repo: 'Orbit-Sports', real: true, live: true },
   securities: { repo: 'Orbit-Securities', real: true },
   class: { repo: 'Orbit-Class' },
-  transit: { repo: 'Orbit-Transit', real: true }
+  transit: { repo: 'Orbit-Transit', real: true, live: true }
 };
 
 export const TOURS = {

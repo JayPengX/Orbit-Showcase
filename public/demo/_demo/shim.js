@@ -15,17 +15,31 @@
 //   the one exception is a map like the real app's (D.liveMap: Transit's
 //   Google map, its key asked of the proxy and its tiles from Google, live),
 //   NLSC's recorded map whenever that isn't given.
+// Live (?live in the address: the player's 即時, for the apps demos.mjs marks `live`): the app runs on
+// today's data instead. The clock and chance are real; the proxy's reads go
+// out with a showcase pass (Orbit-Core showcase.js: short, reads only, its
+// own limits) in place of the app's made-up one, and other sites' public
+// reads go out as they are. Everything else stays as above: storage in
+// memory, the recorded place, no writes (a POST is answered from the
+// recording). Any read refused or failed is answered from the recording,
+// and past the pass's limits the whole demo is the recording again.
 (() => {
   const D = window.__DEMO;
   if (!D) return;
   const noop = () => {};
+  // (where the showcase pass comes from, and the proxy's own address)
+  const LIVE = { pass: 'https://api.jaypengx.com/showcase/pass', api: 'api.jaypengx.com' };
+  let live = false;
+  try {
+    live = new URLSearchParams(location.search).has('live');
+  } catch {}
 
   // ---- The clock ----
   const RealDate = Date;
   // An app that reads the phone's own clock hands (Class: the bells are
   // local times) sees Taiwan's, wherever the visitor is.
   const away = D.wall ? (new RealDate(D.at).getTimezoneOffset() + 480) * 60_000 : 0;
-  const shift = D.at + away - RealDate.now();
+  const shift = live ? 0 : D.at + away - RealDate.now();
   class DemoDate extends RealDate {
     constructor(...a) {
       if (a.length) super(...a);
@@ -39,7 +53,7 @@
 
   // ---- The same luck every time (record.mjs seeds it the same) ----
   let luck = 20261027;
-  Math.random = () => {
+  if (!live) Math.random = () => {
     luck = (luck + 0x6d2b79f5) | 0;
     let x = Math.imul(luck ^ (luck >>> 15), 1 | luck);
     x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
@@ -196,6 +210,66 @@
   // Google turning the map down (a key not allowed here): the page again,
   // on the recorded map.
   if (D.liveMap) window.gm_authFailure = () => location.replace(`${location.pathname}${location.search ? `${location.search}&` : '?'}nogmap${location.hash}`);
+  // ---- Live: the showcase pass, and which reads go out ----
+  // (one pass at a time, a new one a minute before it runs out; null once refused)
+  let pass = null;
+  let refused = false;
+  const tell = ok => {
+    try {
+      parent.postMessage({ scDemo: 'live', ok }, location.origin);
+    } catch {}
+  };
+  const passNow = async () => {
+    if (refused) return null;
+    if (pass && (await pass)?.e > RealDate.now() + 60_000) return pass;
+    pass = realFetch(LIVE.pass, { method: 'POST' })
+      .then(r => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then(p => {
+        if (p?.qt) tell(true);
+        else giveUp();
+        return p?.qt ? p : null;
+      });
+    return pass;
+  };
+  // A live read turned down: the recording, whole (its old data on today's
+  // clock would show empty screens), which the showcase plays in this one's place.
+  const giveUp = () => {
+    if (refused) return;
+    refused = true;
+    tell(false);
+  };
+  // The proxy's reads a showcase pass may make (Orbit-Core showcase.js).
+  const isProxy = u => u.hostname.endsWith('.workers.dev') || u.hostname === LIVE.api;
+  const openRead = u => /^\/(sports-proxy|sports-today|transit\/|weather(\/|$)|data\/|config$)/.test(u.pathname);
+  const goLive = async (input, init, url, method) => {
+    if (!live || refused || method !== 'GET') return null;
+    try {
+      if (isProxy(url)) {
+        if (!openRead(url)) return null;
+        // (refused once, a new pass and once more; refused again, the recording)
+        for (let i = 0; i < 2; i++) {
+          const p = await passNow();
+          if (!p) return null;
+          const out = new URL(url.href);
+          out.searchParams.set('qt', p.qt);
+          const res = await realFetch(out.href, { headers: init.headers, signal: init.signal });
+          if (res.ok) return res;
+          if (res.status !== 401 && res.status !== 403) break;
+          pass = null;
+        }
+        giveUp();
+        return null;
+      }
+      if (url.protocol !== 'https:') return null;
+      const res = await realFetch(input, init);
+      return res.ok ? res : null;
+    } catch {
+      return null;
+    }
+  };
+  if (live) passNow();
+
   window.fetch = async (input, init = {}) => {
     const url = new URL(typeof input === 'string' || input instanceof URL ? String(input) : input.url, location.href);
     const method = String(init.method || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
@@ -207,6 +281,8 @@
       }
       return realFetch(input, init);
     }
+    const fresh = await goLive(input, init, url, method);
+    if (fresh) return fresh;
     // The proxy's reads, one by one, however the app batches them this time:
     // a batch is answered a line each ({ i, s, b }); one not kept answers 504,
     // and the app asks for it alone, as it does with the real proxy.

@@ -19,7 +19,12 @@ export const hasDemo = id => Boolean(DEMOS[id]);
 export function openDemo(app, title) {
   open?.close();
   const demo = DEMOS[app.id];
-  const tour = TOURS[app.id] || [];
+  const TOUR = TOURS[app.id] || [];
+  // 即時 (demo.live): the app on today's data, explored freely, no tour (shim.js `live`).
+  let liveOn = false;
+  // (live turned down this time: the recording until 即時 is pressed again)
+  let resting = false;
+  let tour = TOUR;
   const src = `./demo/${demo.repo}/?lang=${en ? 'en' : 'zh'}`;
   const full = !wide();
   let frame = null;
@@ -56,6 +61,7 @@ export function openDemo(app, title) {
     setTimeout(() => box.remove(), reduced() ? 0 : 220);
     sized.disconnect();
     removeEventListener('keydown', key);
+    removeEventListener('message', heard);
     removeEventListener('popstate', popped);
     // the entry the demo added stays as an ordinary one: back from here is a no-op
     if (history.state?.scDemo) history.replaceState(null, '', location.href);
@@ -65,20 +71,49 @@ export function openDemo(app, title) {
   // The phone's back gesture: the app goes back inside itself first; once
   // there is nothing left, back leaves the demo.
   const popped = () => open && close();
-  const label = t(demo.real ? ['試玩 · 錄下那一刻的真實資料', 'Demo · real data, as recorded'] : ['試玩 · 範例資料，什麼都不會存', 'Demo · sample data, nothing kept']);
+  const recorded = t(demo.real ? ['試玩 · 錄下那一刻的真實資料', 'Demo · real data, as recorded'] : ['試玩 · 範例資料，什麼都不會存', 'Demo · sample data, nothing kept']);
+  const label = h('small', { text: recorded });
+  // (the sandbox says whether the live data came: past its limits it plays the recording)
+  const heard = e => {
+    if (e.source !== frame?.contentWindow || e.data?.scDemo !== 'live' || !liveOn || resting) return;
+    if (e.data.ok) return void (label.textContent = t(['即時 · 現在的真實資料，什麼都不會存', 'Live · today’s real data, nothing kept']));
+    resting = true;
+    label.textContent = t(['即時資料休息中 · 先播錄好的', 'Live data is resting · playing the recording']);
+    freeSay.textContent = t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']);
+    load();
+  };
+  addEventListener('message', heard);
+  const liveBtn = demo.live
+    ? h('button', { class: 'sc-player-live', type: 'button', 'aria-pressed': 'false', title: t(['用現在的真實資料', 'Use today’s real data']), onclick: () => switchLive() }, [h('span', { class: 'sc-live-dot', 'aria-hidden': 'true' }), t(['即時', 'Live'])])
+    : null;
   const head = full
     ? h('header', { class: 'sc-player-head slim' }, [
         h('button', { class: 'sc-player-x', type: 'button', 'aria-label': t(['結束試玩', 'Close the demo']), onclick: close }, [ico('x')]),
-        h('div', { class: 'sc-player-name' }, [h('strong', { text: title }), h('small', { text: label })]),
+        h('div', { class: 'sc-player-name' }, [h('strong', { text: title }), label]),
+        liveBtn,
         h('button', { class: 'sc-player-x', type: 'button', 'aria-label': t(['從頭開始', 'Start over']), onclick: () => load() }, [ico('history')])
       ])
     : h('header', { class: 'sc-player-head' }, [
         appImg(app.brand, 34),
-        h('div', {}, [h('strong', { text: title }), h('small', { text: label })]),
+        h('div', {}, [h('strong', { text: title }), label]),
+        liveBtn,
         h('button', { class: 'sc-btn', type: 'button', 'aria-label': t(['重來', 'Restart']), onclick: () => load() }, [ico('history'), h('span', { class: 'sc-player-again', text: t(['重來', 'Restart']) })]),
         h('button', { class: 'sc-btn sc-icon', type: 'button', 'aria-label': t(['關閉', 'Close']), onclick: close }, [ico('x')])
       ]);
-  const freeCard = h('div', { class: 'sc-player-card' }, [h('p', { class: 'sc-player-say', text: t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']) })]);
+  const freeSay = h('p', { class: 'sc-player-say', text: t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']) });
+  const freeCard = h('div', { class: 'sc-player-card' }, [freeSay]);
+  // 即時 on: the app again on today's data, no tour; off: the recording and its tour.
+  function switchLive() {
+    liveOn = !liveOn;
+    resting = false;
+    tour = liveOn ? [] : TOUR;
+    liveBtn.setAttribute('aria-pressed', String(liveOn));
+    label.textContent = liveOn ? t(['即時 · 連線中…', 'Live · connecting…']) : recorded;
+    freeSay.textContent = liveOn ? t(['現在的真實資料：每個分頁、每個按鈕都是真的 App，什麼都不會存。', 'Today’s real data: every tab and button is the real app, and nothing is kept.']) : t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']);
+    if (!full) body.children[1]?.replaceWith(tour.length ? card : freeCard);
+    at = -1;
+    load();
+  }
   const box = h('div', { class: `sc-player${full ? ' full' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': t(['試玩', 'Try it']) }, [
     head,
     (body.append(...(full ? [stage] : [stage, tour.length ? card : freeCard])), body)
@@ -113,9 +148,10 @@ export function openDemo(app, title) {
 
   function load() {
     unhook?.();
+    cancelAnimationFrame(watch);
     clearTimeout(fade);
     coach.hidden = true;
-    frame = h('iframe', { class: 'sc-player-frame', src, title, width: String(W), height: String(H), loading: 'eager' });
+    frame = h('iframe', { class: 'sc-player-frame', src: liveOn && !resting ? `${src}&live` : src, title, width: String(W), height: String(H), loading: 'eager' });
     screen.replaceChildren(frame);
     fit();
     frame.addEventListener('load', () => {
