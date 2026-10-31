@@ -6,8 +6,10 @@ MAP.md is this repo's map (README.md is the short public front page).
 - `npm test`, then `git push origin HEAD:main`.
 - Audience: teachers and readers who know no tech. Plain everyday words, problem → idea → result,
   and technical names only inside the 技術細節 fold. Chinese first, English second.
-- Exceptions to the family rules: open to all (no Pass gate, no installGate), and a real desktop
-  layout (min-width 900px) besides the phone one. Check WebKit and Chromium, phone and desktop.
+- Exceptions to the family rules: open to all (no Pass gate, no installGate), and its own side bar
+  on computers (900px wide, over 520 tall) in place of the kit's tab rail. Pages lay out by the
+  page's width (`@container page`, wide from 560px), never the screen's. Check WebKit and Chromium
+  on every screen: phone upright and on its side, tablet, computer.
 - Honest framing: Jay sets the direction, the standards and the judgement calls; Claude does the typing.
   Every number comes from git (`scripts/stats.mjs`), never estimated.
 - No betting anywhere (Jay 2026-10-27); `tests/content.test.mjs` checks it.

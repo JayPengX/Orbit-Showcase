@@ -7,7 +7,7 @@
 // On a computer the app sits in a phone frame with the tour beside it.
 // The browser's back closes the demo once the app has nothing left to go
 // back to.
-import { h, t, ico, appImg, en, reduced, wide } from '../shell.mjs';
+import { h, t, ico, appImg, en, reduced, framed } from '../shell.mjs';
 import { DEMOS, TOURS } from '../lib/demos.mjs';
 
 const W = 390;
@@ -26,7 +26,7 @@ export function openDemo(app, title) {
   let resting = false;
   let tour = TOUR;
   const src = `./demo/${demo.repo}/?lang=${en ? 'en' : 'zh'}`;
-  const full = !wide();
+  const full = !framed();
   let frame = null;
   let at = -1;
   let ring = null;
