@@ -1,9 +1,9 @@
 // Orbit Showcase: Orbit explained for anyone, open to all (no Orbit Pass,
 // no home-screen step: teachers open it on a laptop). Four tabs: 總覽 (the
 // family and its headline numbers), App (each app's screens and its demo),
-// 架構 (the structure tree and the journey map) and 數字 (the numbers from git). Phones get the
-// kit's tab bar; a computer gets a side bar and a wide layout, the one
-// exception to the family's phones-only rule.
+// 架構 (the structure tree and the journey map) and 數字 (the numbers from git). A phone gets
+// the kit's tab bar (a rail down the side when it's on its side); a computer
+// or a tablet on its side gets the showcase's own side bar.
 //   #home  #apps/<app>  #how[/<node> | /map[-<story>]]  #numbers
 import * as kitUI from '#kit/ui.mjs';
 import { tabBar, watchUpdates, keepOffline } from '#kit/orbit.mjs';

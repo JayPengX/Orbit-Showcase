@@ -27,6 +27,12 @@
   const D = window.__DEMO;
   if (!D) return;
   const noop = () => {};
+  // ---- Either way up ----
+  // A frozen app's kit turns a phone's page back upright when the phone is
+  // on its side. In the player the app's screen is the player's own (a
+  // phone on its side: a wide, short frame), so it never turns: it lays out
+  // the way up it's seen.
+  document.documentElement.dataset.qTurnOn = '1';
   // (where the showcase pass comes from, and the proxy's own address)
   const LIVE = { pass: 'https://api.jaypengx.com/showcase/pass', api: 'api.jaypengx.com' };
   let live = false;

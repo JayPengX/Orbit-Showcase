@@ -5,7 +5,10 @@ and the apps themselves, running.
 Jay's 自主學習 portfolio. Live at https://jaypengx.com/showcase/.
 
 Open to everyone: no Orbit Pass and no Add to Home Screen step. It works on phones and on
-computers (the one exception to the family's phones-only rule), in Safari and Chrome.
+computers, either way up, in Safari and Chrome. The page lays itself out by its own width
+(`.page` is a CSS container): one column on a phone upright, the wide arrangements from 560 px of
+page (a phone on its side, a tablet, a computer). The side bar stands in for the kit's tab rail on
+screens 900 px wide and over 520 tall; a phone on its side gets the kit's rail.
 
 ## The four tabs
 

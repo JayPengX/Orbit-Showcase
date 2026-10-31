@@ -9,7 +9,17 @@ export { h };
 export const en = lang === 'en';
 export const t = pair => (Array.isArray(pair) ? pair[en ? 1 : 0] : pair || '');
 export const reduced = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-export const wide = () => globalThis.matchMedia?.('(min-width: 900px)').matches;
+// The page's wide arrangements (showcase.css @container page, 560 px of
+// page and up: a phone on its side, a tablet, a computer).
+export const wide = () => {
+  const page = globalThis.document?.querySelector('.page');
+  if (!page) return false;
+  const cs = getComputedStyle(page);
+  return page.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) >= 560;
+};
+// The demo in a phone frame, its tour beside it (a tablet or a computer);
+// otherwise the app fills the screen as itself.
+export const framed = () => globalThis.matchMedia?.('(min-width: 760px) and (min-height: 601px)').matches;
 
 // A kit icon (an unknown name falls back to the spark).
 export const ico = (name, cls = '') => h('span', { class: `sc-ico ${cls}`.trim(), 'aria-hidden': 'true', html: icons[name] || icons.spark });

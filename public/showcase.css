@@ -1,7 +1,8 @@
 /* Orbit Showcase on the kit's look (orbit.css: its tokens, tiles, sheets,
-   the tab bar). Everything here is the showcase's own (sc-), plus the one
-   exception to the family's phones-only column: from 900 px wide, a side
-   bar and a wide page (teachers read it on laptops). Movement is the kit's
+   the tab bar). Everything here is the showcase's own (sc-). Every screen,
+   either way up: the page lays out by its own width (@container page), and
+   from 900 px wide (and over 520 tall) a side bar stands in for the kit's
+   tab rail (teachers read it on laptops). Movement is the kit's
    springs and stops for prefers-reduced-motion. */
 :root {
   --sc-ac: var(--q-indigo);
@@ -11,7 +12,14 @@
   --sc-spring: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* The page lays itself out by its own width (a container), not the
+   screen's: a phone upright is one column; a phone on its side, a tablet and
+   a computer get the wide arrangements (560 px of page and up). */
+:root.q-wide {
+  --q-page-max: 1180px;
+}
 .page {
+  container: page / inline-size;
   padding: 0 16px calc(var(--q-nav) + 40px);
 }
 .sc-side {
@@ -754,7 +762,7 @@
 
 /* On a phone the heat map fills its card; the squares only scroll once there
    are too many weeks for them to stay readable. */
-@media (max-width: 899px) {
+@container page (max-width: 559px) {
   .sc-heatbox .sc-heat {
     flex: 1;
     grid-template-rows: repeat(7, auto);
@@ -1031,7 +1039,7 @@
 .sc-brow-main .sc-row-text small {
   text-wrap: balance;
 }
-@media (max-width: 899px) {
+@container page (max-width: 559px) {
   .sc-bkids {
     margin-left: 10px;
     padding-left: 8px;
@@ -1041,7 +1049,7 @@
     padding: 9px 10px;
   }
 }
-@media (min-width: 900px) {
+@container page (min-width: 560px) {
   .sc-ov {
     gap: 12px;
   }
@@ -1792,7 +1800,7 @@
 .sc-zoom-x {
   position: fixed;
   top: max(16px, env(safe-area-inset-top));
-  right: 16px;
+  right: max(16px, env(safe-area-inset-right));
 }
 @keyframes sc-fade {
   from {
@@ -1801,7 +1809,7 @@
 }
 
 /* ---- Wider phones and up ---- */
-@media (min-width: 400px) {
+@container page (min-width: 368px) {
   .sc-nums {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1809,7 +1817,7 @@
     font-size: 26px;
   }
 }
-@media (min-width: 600px) {
+@container page (min-width: 568px) {
   .sc-births {
     position: relative;
     display: block;
@@ -1875,15 +1883,14 @@
   }
 }
 
-/* ---- A computer: side bar, wide page (the one exception to the
-   family's phone column) ---- */
-@media (min-width: 900px) {
+/* ---- A computer or a tablet on its side: the side bar (the showcase's
+   own tab rail, with its name, language and share). A phone on its side
+   has the kit's rail instead: no height for this one. ---- */
+@media (min-width: 900px) and (min-height: 521px) {
+  /* (the side bar stands where the kit's tab rail would: the page and
+     what's fixed over it sit beside it) */
   :root:root {
-    --q-col-max: 100vw;
-  }
-  :root:root > body {
-    max-width: none;
-    padding-left: 240px;
+    --q-tabrail-w: 240px;
   }
   .q-appbar,
   #tabs.q-tabbar.q-tabbar {
@@ -1972,44 +1979,11 @@
     margin: 0 auto;
     padding: 36px 40px 80px;
   }
+}
+@container page (min-width: 560px) {
   .sc-pagetitle {
     margin-top: 0;
     font-size: 40px;
-  }
-  .q-sheet {
-    width: min(600px, calc(100vw - 48px));
-    margin: auto;
-  }
-
-  .sc-hero {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 40px;
-    justify-items: start;
-    text-align: left;
-  }
-  .sc-hero-text {
-    order: -1;
-  }
-  .sc-sky {
-    width: 400px;
-    height: 400px;
-  }
-  .sc-ring-1 {
-    --r: 128px;
-  }
-  .sc-ring-2 {
-    --r: 190px;
-  }
-  .sc-title {
-    font-size: 72px;
-  }
-  .sc-lede {
-    margin-left: 0;
-    font-size: 21px;
-  }
-  .sc-ctas {
-    justify-content: flex-start;
   }
   .sc-nums {
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -2046,48 +2020,8 @@
       transition: transform 240ms var(--sc-spring);
     }
   }
-
-  .sc-apps {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 32px;
-  }
-  .sc-picker {
-    position: sticky;
-    top: 24px;
-    flex-direction: column;
-    align-self: start;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-  }
-  .sc-picker a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: auto;
-    padding: 8px 10px;
-    font-size: 15px;
-  }
   .sc-apphead {
     margin-top: 0;
-  }
-  .sc-appside {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    column-gap: 28px;
-    align-items: start;
-  }
-  .sc-appside > .sc-q {
-    grid-area: 1 / 1;
-  }
-  .sc-appside > .sc-pir {
-    grid-area: 2 / 1 / span 2;
-  }
-  .sc-appside > .sc-facts {
-    grid-area: 1 / 2;
-  }
-  .sc-appside > section {
-    grid-area: 2 / 2;
   }
   .sc-adbox {
     justify-items: start;
@@ -2099,7 +2033,6 @@
   .sc-compare {
     margin: 0;
   }
-
   .sc-treewrap.branch {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(340px, 0.85fr);
@@ -2150,7 +2083,6 @@
     top: 24px;
     bottom: auto;
   }
-
   .sc-origin {
     padding: 28px;
   }
@@ -2249,7 +2181,7 @@
   color: var(--q-label-2);
   font: 400 15px/1.55 var(--q-font);
 }
-@media (min-width: 900px) {
+@container page (min-width: 560px) {
   .sc-decisions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2259,20 +2191,17 @@
 .sc-hero .sc-over {
   justify-content: center;
 }
-@media (max-width: 899px) {
+@container page (max-width: 559px) {
   .sc-ctas .sc-btn {
     padding: 0 14px;
     font-size: 14px;
   }
 }
-@media (min-width: 900px) {
-  .sc-hero .sc-over {
-    justify-content: flex-start;
-  }
+@container page (min-width: 560px) {
 }
 
 /* A change's problem / idea / result: label over text on a phone. */
-@media (max-width: 599px) {
+@container page (max-width: 567px) {
   .sc-pid {
     grid-template-columns: 1fr;
     gap: 2px;
@@ -2283,7 +2212,7 @@
 }
 
 /* The map a little tighter on a phone. */
-@media (max-width: 899px) {
+@container page (max-width: 559px) {
   .sc-map {
     gap: 8px;
     padding: 10px;
@@ -2304,7 +2233,7 @@
 }
 
 /* The smallest phones: the planet and its moons a little smaller. */
-@media (max-width: 359px) {
+@container page (max-width: 327px) {
   .sc-sky {
     margin: -22px 0;
     transform: scale(0.86);
@@ -2506,13 +2435,13 @@
 .sc-setback .sc-pir-row:nth-child(2) .sc-pir-k {
   color: var(--sc-ac);
 }
-@media (min-width: 900px) {
+@container page (min-width: 560px) {
   .sc-asks,
   .sc-setback-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 359px) {
+@container page (max-width: 327px) {
   .sc-churn-nums strong {
     font-size: 18px;
   }
@@ -2732,7 +2661,7 @@
   margin-top: 10px;
   animation: sc-fade 260ms ease-out;
 }
-@media (min-width: 900px) {
+@container page (min-width: 560px) {
   .sc-chapters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
@@ -2800,14 +2729,14 @@
 .sc-numbers + .sc-block {
   margin-top: 56px;
 }
-@media (max-width: 359px) {
+@container page (max-width: 327px) {
   .sc-bignum strong {
     font-size: 24px;
   }
 }
-@media (min-width: 900px) {
+@container page (min-width: 560px) {
   .sc-hero {
-    min-height: calc(100svh - 120px);
+    min-height: min(calc(100svh - 120px), 760px);
   }
   .sc-bignum {
     padding: 34px 10px;
@@ -2950,7 +2879,7 @@ html.sc-playing body {
 .sc-player-btns .sc-icon .sc-ico {
   transform: rotate(180deg);
 }
-@media (min-width: 900px) {
+@media (min-width: 760px) and (min-height: 601px) {
   /* the phone and the tour card, one group in the middle of the window */
   .sc-player-body {
     display: flex;
@@ -2977,6 +2906,9 @@ html.sc-playing body {
    coach mark pointing at what to tap, in the app's own colour (--app). */
 .sc-player.full {
   --app: var(--sc-ac);
+  /* (a phone on its side: the notch and the home bar's edges left clear) */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   grid-template-rows: auto minmax(0, 1fr);
 }
 .sc-player-head.slim {
@@ -3493,7 +3425,7 @@ html.sc-playing body {
 .sc-numbers {
   margin-top: 28px;
 }
-@media (max-width: 899px) {
+@container page (max-width: 559px) {
   .sc-hero {
     gap: 0;
     padding-top: 0;
@@ -3531,7 +3463,7 @@ html.sc-playing body {
     font-size: 16px;
   }
 }
-@media (max-width: 359px) {
+@container page (max-width: 327px) {
   .sc-hero .sc-sky {
     margin: 0;
     transform: none;
@@ -3570,7 +3502,148 @@ html.sc-playing body {
     height: 34px;
   }
 }
-@media (min-width: 900px) {
+@container page (min-width: 560px) {
+}
+/* A short phone screen: the planet smaller so the demos stay on it. */
+@media (max-height: 700px) {
+  @container page (max-width: 559px) {
+    .sc-hero .sc-sky {
+      width: 160px;
+      height: 160px;
+    }
+    .sc-hero .sc-ring-1 {
+      --r: 50px;
+    }
+    .sc-hero .sc-ring-2 {
+      --r: 74px;
+    }
+    .sc-hero .sc-moon img {
+      width: 24px;
+      height: 24px;
+    }
+    .sc-hero .sc-planet img {
+      width: 56px;
+      height: 56px;
+    }
+    .sc-hero .sc-title {
+      font-size: 32px;
+    }
+    .sc-herostats {
+      margin-top: 10px;
+    }
+    .sc-herostats div {
+      padding: 7px 2px;
+    }
+    .sc-try-row {
+      margin-top: 12px;
+    }
+  }
+}
+/* The screens' row scrolls inside its column, never widening the page. */
+.sc-appdetail,
+.sc-adbox,
+.sc-adrow {
+  min-width: 0;
+}
+
+/* A smaller computer: the overview names each branch's parts as a line of
+   text rather than chips, so all nine branches still fit one screen. */
+@container page (min-width: 560px) and (max-width: 979px) {
+  .sc-ov {
+    gap: 10px;
+  }
+  .sc-ov-head {
+    padding: 10px 12px 4px;
+  }
+  .sc-ov-t {
+    font-size: 15px;
+  }
+  .sc-ov-kids {
+    display: block;
+    padding: 0 12px 10px;
+    font: 500 12.5px/1.6 var(--q-font);
+  }
+  .sc-ov-k {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    background: none;
+    font: inherit;
+  }
+  .sc-ov-k:not(:last-child)::after {
+    content: '·';
+    margin: 0 5px;
+    color: var(--c);
+  }
+  .sc-ov-k img {
+    display: none;
+  }
+  @media (hover: hover) {
+    .sc-ov-k:hover {
+      background: none;
+      color: var(--c);
+    }
+  }
+}
+
+/* The hero beside its planet, and the apps' list down the side, once the
+   page has room for them (a tablet on its side, a computer). */
+@container page (min-width: 860px) {
+  .sc-hero {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 40px;
+    justify-items: start;
+    text-align: left;
+  }
+  .sc-hero-text {
+    order: -1;
+  }
+  .sc-sky {
+    width: 400px;
+    height: 400px;
+  }
+  .sc-ring-1 {
+    --r: 128px;
+  }
+  .sc-ring-2 {
+    --r: 190px;
+  }
+  .sc-title {
+    font-size: 72px;
+  }
+  .sc-lede {
+    margin-left: 0;
+    font-size: 21px;
+  }
+  .sc-ctas {
+    justify-content: flex-start;
+  }
+  .sc-apps {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+  }
+  .sc-picker {
+    position: sticky;
+    top: 24px;
+    flex-direction: column;
+    align-self: start;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .sc-picker a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+    padding: 8px 10px;
+    font-size: 15px;
+  }
+  .sc-hero .sc-over {
+    justify-content: flex-start;
+  }
   .sc-herostats {
     max-width: 560px;
     margin-left: 0;
@@ -3606,82 +3679,120 @@ html.sc-playing body {
     margin-top: 22px;
   }
 }
-/* A short phone screen: the planet smaller so the demos stay on it. */
-@media (max-width: 899px) and (max-height: 700px) {
-  .sc-hero .sc-sky {
-    width: 160px;
-    height: 160px;
-  }
-  .sc-hero .sc-ring-1 {
-    --r: 50px;
-  }
-  .sc-hero .sc-ring-2 {
-    --r: 74px;
-  }
-  .sc-hero .sc-moon img {
-    width: 24px;
-    height: 24px;
-  }
-  .sc-hero .sc-planet img {
-    width: 56px;
-    height: 56px;
-  }
-  .sc-hero .sc-title {
-    font-size: 32px;
-  }
-  .sc-herostats {
-    margin-top: 10px;
-  }
-  .sc-herostats div {
-    padding: 7px 2px;
-  }
-  .sc-try-row {
-    margin-top: 12px;
+/* A phone on its side: the hero beside a smaller planet, all of it on the
+   short screen. */
+@media (max-height: 520px) {
+  @container page (min-width: 560px) {
+    .sc-hero {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 40px;
+      justify-items: start;
+      text-align: left;
+    }
+    .sc-hero-text {
+      order: -1;
+    }
+    .sc-sky {
+      width: 220px;
+      height: 220px;
+    }
+    .sc-ring-1 {
+      --r: 68px;
+    }
+    .sc-ring-2 {
+      --r: 102px;
+    }
+    .sc-title {
+      font-size: 48px;
+    }
+    .sc-lede {
+      margin-left: 0;
+      font-size: 17px;
+    }
+    .sc-ctas {
+      justify-content: flex-start;
+    }
+    .sc-hero .sc-over {
+      justify-content: flex-start;
+    }
+    .sc-herostats {
+      max-width: 560px;
+      margin-left: 0;
+      gap: 10px;
+    }
+    .sc-herostats div {
+      justify-items: start;
+      padding: 14px 16px;
+    }
+    .sc-herostats strong {
+      font-size: 30px;
+    }
+    .sc-herostats span {
+      font-size: 14px;
+    }
+    .sc-try-row {
+      justify-items: start;
+      margin-top: 26px;
+    }
+    .sc-try-apps {
+      justify-content: flex-start;
+      gap: 10px;
+    }
+    .sc-try-app {
+      width: 64px;
+      font-size: 12px;
+    }
+    .sc-try-app img {
+      width: 52px;
+      height: 52px;
+    }
+    .sc-hero .sc-ctas {
+      margin-top: 22px;
+    }
+    .sc-hero .sc-moon img {
+      width: 28px;
+      height: 28px;
+    }
+    .sc-hero .sc-planet img {
+      width: 72px;
+      height: 72px;
+    }
+    .sc-herostats strong {
+      font-size: 24px;
+    }
+    .sc-herostats div {
+      padding: 10px 14px;
+    }
   }
 }
-/* The screens' row scrolls inside its column, never widening the page. */
-.sc-appdetail,
-.sc-adbox,
-.sc-adrow {
-  min-width: 0;
+@container page (min-width: 560px) {
+  .sc-appside {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: 28px;
+    align-items: start;
+  }
+  .sc-appside > .sc-q {
+    grid-area: 1 / 1;
+  }
+  .sc-appside > .sc-pir {
+    grid-area: 2 / 1 / span 2;
+  }
+  .sc-appside > .sc-facts {
+    grid-area: 1 / 2;
+  }
+  .sc-appside > section {
+    grid-area: 2 / 2;
+  }
 }
 
-/* A smaller computer: the overview names each branch's parts as a line of
-   text rather than chips, so all nine branches still fit one screen. */
-@media (min-width: 900px) and (max-width: 1299px) {
-  .sc-ov {
-    gap: 10px;
-  }
-  .sc-ov-head {
-    padding: 10px 12px 4px;
-  }
-  .sc-ov-t {
-    font-size: 15px;
-  }
-  .sc-ov-kids {
-    display: block;
-    padding: 0 12px 10px;
-    font: 500 12.5px/1.6 var(--q-font);
-  }
-  .sc-ov-k {
-    display: inline;
-    min-height: 0;
-    padding: 0;
-    background: none;
-    font: inherit;
-  }
-  .sc-ov-k:not(:last-child)::after {
-    content: '·';
-    margin: 0 5px;
-    color: var(--c);
-  }
-  .sc-ov-k img {
-    display: none;
-  }
-  @media (hover: hover) {
-    .sc-ov-k:hover {
-      background: none;
-      color: var(--c);
+/* A small phone on its side (one column, a short screen): the journey's
+   card in the flow, never pinned over the map it explains. */
+@media (max-height: 520px) {
+  @container page (max-width: 559px) {
+    .sc-stepcard {
+      position: relative;
+      bottom: auto;
     }
   }
 }
