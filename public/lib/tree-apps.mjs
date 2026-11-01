@@ -520,7 +520,7 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
   kids: [
     n('money-guess', 'spark', ['記一筆幾乎不用選', 'An entry nearly fills itself'], ['從你自己的紀錄猜', 'Guessed from your own entries'], {
       p: ['每記一筆都要選收支、分類、細項、付款方式，記帳很快就懶得記。', 'Every entry asked for its kind, category, sub-category and way to pay, so people soon stop logging.'],
-      i: ['從你過去最像現在的紀錄（同一個時段、星期幾、今天已經記過的）猜出全部，常用金額點一下就填好；分類是一組大家都用的十二大類，每類兩到四個細項（YouBike、捷運、公車都在「交通 › 搭車」）。', 'Guess it all from your past entries most like now (the hour, the weekday, what you logged today), with your usual amounts one tap away; one broad set of twelve categories for everyone, each with two to four subs (YouBike, the MRT and buses all under Transport › Rides).'],
+      i: ['從你過去最像現在的紀錄（同一個時段、星期幾、今天已經記過的）猜出全部，常用金額點一下就填好；分類是一組大家都用的十二大類，每類兩到五個細項（早餐、午餐、晚餐各算各的，統計看得出每一餐；YouBike、捷運、公車都在「交通 › 搭車」）。', 'Guess it all from your past entries most like now (the hour, the weekday, what you logged today), with your usual amounts one tap away; one broad set of twelve categories for everyone, each with two to five subs (breakfast, lunch and dinner each their own, so the stats show every meal; YouBike, the MRT and buses all under Transport › Rides).'],
       r: ['大部分時候打開、點金額、儲存，就記好了。', 'Most of the time: open, tap the amount, save.'],
       tech: ['lib/cats.mjs 的猜測只讀本機帳本；金額不自動填，要點一下（Jay 10-30）。', 'The guesses in lib/cats.mjs read only the books on the phone; the amount is never filled without a tap (Jay 10-30).']
     }),
