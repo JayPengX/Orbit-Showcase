@@ -870,10 +870,20 @@
 .sc-branch.moved {
   animation: sc-fade 260ms ease-out;
 }
+/* The strip stays at the top while the rows scroll, so another branch is
+   always one tap away. */
 .sc-rail {
+  position: sticky;
+  top: 0;
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 4px;
+  margin: 0 -8px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 8px 8px;
+  background: color-mix(in srgb, var(--q-page) 86%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 .sc-rail-b {
   display: grid;
@@ -899,7 +909,7 @@
   grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
   gap: 6px;
-  margin: 14px 0 12px;
+  margin: 6px 0 12px;
 }
 .sc-bstep {
   display: grid;

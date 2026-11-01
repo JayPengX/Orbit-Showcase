@@ -31,6 +31,7 @@ let picked = null;
 let host = null;
 let detailBox = null;
 let openSheet = null;
+let anchor = null; // the key of the button just tapped, kept where it was through the redraw
 
 // Each top branch its own colour, carried down to everything under it.
 const HUE = { apps: 'var(--q-orange)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
@@ -97,7 +98,7 @@ function overview() {
     { class: 'sc-ov' },
     TOP.map(b =>
       h('section', { class: 'sc-ov-b', style: `--c:${hue(b.id)}` }, [
-        h('button', { class: 'sc-ov-head', type: 'button', onclick: () => tap(b.id) }, [icon(b), h('span', { class: 'sc-ov-t', text: shortName(b) }), h('span', { class: 'sc-ov-n', 'aria-label': t([`${b.kids.length} 項`, `${b.kids.length} inside`]), text: String(b.kids.length) })]),
+        h('button', { class: 'sc-ov-head', type: 'button', 'data-key': `ov:${b.id}`, onclick: () => tap(b.id) }, [icon(b), h('span', { class: 'sc-ov-t', text: shortName(b) }), h('span', { class: 'sc-ov-n', 'aria-label': t([`${b.kids.length} 項`, `${b.kids.length} inside`]), text: String(b.kids.length) })]),
         h(
           'div',
           { class: 'sc-ov-kids' },
@@ -113,14 +114,14 @@ function branchView(id) {
   const i = TOP.indexOf(b);
   const near = d => TOP[(i + d + TOP.length) % TOP.length];
   const step = d =>
-    h('button', { class: `sc-bstep ${d < 0 ? 'back' : 'next'}`, type: 'button', 'aria-label': `${t(d < 0 ? ['上一個', 'Previous'] : ['下一個', 'Next'])}：${shortName(near(d))}`, onclick: () => tap(near(d).id) }, [ico('chevron')]);
+    h('button', { class: `sc-bstep ${d < 0 ? 'back' : 'next'}`, type: 'button', 'data-key': `step:${d}`, 'aria-label': `${t(d < 0 ? ['上一個', 'Previous'] : ['下一個', 'Next'])}：${shortName(near(d))}`, onclick: () => tap(near(d).id) }, [ico('chevron')]);
   const rows = kids =>
     kids.map(k => {
       const n = k.kids?.length || 0;
       const on = open.has(k.id);
       return h('div', { class: 'sc-bnode', style: `--c:${hue(k.id)}` }, [
         h('div', { class: `sc-brow${k.id === picked ? ' on' : ''}` }, [
-          h('button', { class: 'sc-brow-main', type: 'button', 'data-id': k.id, 'aria-expanded': n ? String(on) : null, onclick: () => tap(k.id) }, [
+          h('button', { class: 'sc-brow-main', type: 'button', 'data-id': k.id, 'data-key': `row:${k.id}`, 'aria-expanded': n ? String(on) : null, onclick: () => tap(k.id) }, [
             icon(k),
             h('span', { class: 'sc-row-text' }, [h('strong', { text: t(k.title) }), h('small', { text: t(k.line) })]),
             n ? h('span', { class: 'sc-brow-n' }, [String(n), ico('chevron')]) : null
@@ -129,7 +130,7 @@ function branchView(id) {
         // (a phone reads an opened part from the first line under it)
         n && on
           ? h('div', { class: 'sc-bkids' }, [
-              wide() ? null : h('button', { class: 'sc-bread', type: 'button', onclick: () => showSheet(k.id) }, [ico('book'), h('span', { text: t(['讀這一項的說明', 'Read about it']) }), ico('chevron')]),
+              wide() ? null : h('button', { class: 'sc-bread', type: 'button', 'data-key': `read:${k.id}`, onclick: () => showSheet(k.id) }, [ico('book'), h('span', { text: t(['讀這一項的說明', 'Read about it']) }), ico('chevron')]),
               ...rows(k.kids)
             ])
           : null
@@ -137,12 +138,12 @@ function branchView(id) {
     });
   return h('div', { class: 'sc-branch', style: `--c:${hue(id)}` }, [
     h('nav', { class: 'sc-rail', 'aria-label': t(['全部分支', 'All branches']) }, [
-      h('button', { class: 'sc-rail-b all', type: 'button', title: t(['全部分支', 'All branches']), 'aria-label': t(['全部分支', 'All branches']), onclick: () => tap(ROOT.id) }, [appImg(null, 24)]),
-      ...TOP.map(x => h('button', { class: `sc-rail-b${x === b ? ' on' : ''}`, type: 'button', style: `--c:${hue(x.id)}`, title: shortName(x), 'aria-label': shortName(x), 'aria-current': x === b ? 'true' : null, onclick: () => tap(x.id) }, [ico(x.icon)]))
+      h('button', { class: 'sc-rail-b all', type: 'button', 'data-key': 'rail:all', title: t(['全部分支', 'All branches']), 'aria-label': t(['全部分支', 'All branches']), onclick: () => tap(ROOT.id) }, [appImg(null, 24)]),
+      ...TOP.map(x => h('button', { class: `sc-rail-b${x === b ? ' on' : ''}`, type: 'button', 'data-key': `rail:${x.id}`, style: `--c:${hue(x.id)}`, title: shortName(x), 'aria-label': shortName(x), 'aria-current': x === b ? 'true' : null, onclick: () => tap(x.id) }, [ico(x.icon)]))
     ]),
     h('header', { class: `sc-bhead${picked === id ? ' on' : ''}` }, [
       step(-1),
-      h('button', { class: 'sc-bhead-mid', type: 'button', onclick: () => (wide() ? tap(id) : showSheet(id)) }, [h('small', { text: `${i + 1} / ${TOP.length}` }), h('strong', { text: shortName(b) })]),
+      h('button', { class: 'sc-bhead-mid', type: 'button', 'data-key': 'mid', onclick: () => (wide() ? tap(id) : showSheet(id)) }, [h('small', { text: `${i + 1} / ${TOP.length}` }), h('strong', { text: shortName(b) })]),
       step(1),
       h('p', { class: 'sc-bhead-line', text: t(b.line) })
     ]),
@@ -171,23 +172,36 @@ function tap(id, fromLink = false) {
   } else if (path.length > 2 && node.kids?.length) open.add(id);
   const was = picked;
   picked = id;
-  render(top !== null && was !== null && pathTo(was)[1]?.id !== top);
+  render(top !== null && was !== null && pathTo(was)[1]?.id !== top, fromLink);
   history.replaceState(null, '', id === ROOT.id ? '#how/tree' : `#how/${id}`);
   if (!wide() && path.length > 2 && (!node.kids?.length || fromLink)) showSheet(id);
 }
 
-function render(moved = false) {
+// A tap never moves the page: the button tapped stays under the finger
+// while the tree redraws around it. Only a new branch whose top has gone
+// above the screen starts from its top, and a link (an address, a chip on
+// the card) brings its row into view.
+function render(moved = false, fromLink = false) {
+  const key = anchor;
+  anchor = null;
+  const find = () => (key ? host.querySelector(`[data-key="${CSS.escape(key)}"]`) : null);
+  const was = find()?.getBoundingClientRect().top;
   host.replaceChildren(branch ? branchView(branch) : overview());
   host.closest('.sc-treewrap').classList.toggle('branch', Boolean(branch));
   // (the card leaves out what's inside when the rows beside it already show it)
   if (wide() && branch) detailBox.replaceChildren(nodeView(picked, !(picked === branch || open.has(picked))));
   if (moved) host.firstChild.classList.add('moved');
-  // the picked row in view; a new branch from its top
-  const row = host.querySelector(`.sc-brow-main[data-id="${CSS.escape(picked)}"]`);
-  const box = (row || host).getBoundingClientRect();
-  if (box.top < 70 || (row && box.bottom > innerHeight - (wide() ? 24 : 110))) {
-    window.scrollTo({ top: Math.max(0, scrollY + box.top - (row ? innerHeight / 3 : 90)), behavior: reduced() ? 'auto' : 'smooth' });
+  const jump = y => y && window.scrollTo({ top: Math.max(0, scrollY + y), behavior: 'instant' });
+  const now = find();
+  if (!moved && now && was !== undefined) return jump(now.getBoundingClientRect().top - was);
+  const row = fromLink ? host.querySelector(`.sc-brow-main[data-id="${CSS.escape(picked)}"]`) : null;
+  const box = row?.getBoundingClientRect();
+  if (box) {
+    if (box.top < 70 || box.bottom > innerHeight - (wide() ? 24 : 110)) window.scrollTo({ top: Math.max(0, scrollY + box.top - innerHeight / 3), behavior: reduced() ? 'auto' : 'smooth' });
+    return;
   }
+  const top = host.getBoundingClientRect().top;
+  if (top < 0) jump(top - 12);
 }
 
 function showSheet(id) {
@@ -311,6 +325,7 @@ function search(q) {
 
 function buildTree() {
   host = h('div', { class: 'sc-treebox' });
+  host.addEventListener('click', e => (anchor = e.target.closest?.('[data-key]')?.dataset.key || null), true);
   detailBox = h('aside', { class: 'sc-detail', 'aria-live': 'polite' });
   const field = h('input', { type: 'search', class: 'sc-search', placeholder: t(['搜尋：颱風、備份、YouBike', 'Search: typhoon, backup…']), 'aria-label': t(['搜尋架構', 'Search the structure']) });
   field.addEventListener('input', () => search(field.value));
