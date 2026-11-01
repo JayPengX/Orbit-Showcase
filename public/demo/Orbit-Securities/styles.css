@@ -42,9 +42,8 @@
   --axis: #34445e;
   --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767;
 }
-/* Which way is red: Taiwan's red-up (the default in Chinese) or green-up. */
-body { --up: var(--rise); --down: var(--fall); }
-body[data-updown='us'] { --up: var(--fall); --down: var(--rise); }
+/* Which way is red: the kit's --q-up / --q-down (Taiwan's red-up; <html data-updown="us"> flips them). */
+body { --up: var(--q-up); --down: var(--q-down); }
 
 /* ==== Base ==== */
 * { box-sizing: border-box; }
@@ -88,6 +87,8 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .q-ritem-end strong { overflow: hidden; text-overflow: ellipsis; }
 .q-ritem .q-tags { margin-top: 3px; }
 .q-ritem-title.wrap { white-space: normal; }
+/* A long name (a Tokyo fund's) shrinks, then takes two even lines rather than an ellipsis (kit fitNames). */
+.q-ritem-title.q-wrapped { white-space: normal; overflow: visible; }
 .q-ritem > .q-btn { flex: none; }
 /* A row whose text opens something of its own beside a button. */
 .link-text { min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
@@ -104,7 +105,7 @@ button.q-tag { border: 0; font-family: inherit; cursor: pointer; }
 .q-tile.flag { font-size: 22px; }
 .q-tile.flag.sm { font-size: 18px; }
 .chg-tag { min-width: 64px; justify-content: center; font-variant-numeric: tabular-nums; }
-.chg { font-weight: 700; font-variant-numeric: tabular-nums; }
+.chg { font-weight: 500; font-variant-numeric: tabular-nums; }
 .chg.up { color: var(--up); }
 .chg.down { color: var(--down); }
 .chg.flat { color: var(--q-label-2); }
@@ -153,12 +154,12 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .sym-badge.k-bond { background: #0369a1; }
 .sym-badge.k-fund { background: #9333ea; }
 .sym-badge.k-crypto { background: #ea580c; }
-.sym-badge.k-metal { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.sym-badge.k-metal { background: #b45309; }
 .sym-badge.k-index { background: #334155; }
 .sym-badge.k-future { background: #57534e; }
 .sym-badge.k-fx { background: #0f766e; }
-.sym-badge.k-fut { background: linear-gradient(135deg, #d97706, #92400e); }
-.sym-badge.k-opt { background: linear-gradient(135deg, #db2777, #9d174d); }
+.sym-badge.k-fut { background: #92400e; }
+.sym-badge.k-opt { background: #9d174d; }
 .sym-badge.k-warrant { background: #4f46e5; }
 .sym-badge.k-cb { background: #0e7490; }
 .sym-badge.zh { font-size: 13px; letter-spacing: 0; }
@@ -170,9 +171,10 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .sym-badge .sym-logo.fresh { opacity: 0; transition: opacity 0.2s; }
 .sym-badge .sym-logo.fresh.in { opacity: 1; }
 .sym-badge.pair { overflow: visible; background: transparent; }
-.sym-badge.pair .sym-logo { width: 72%; height: 72%; inset: auto; }
-.sym-badge.pair .sym-logo:first-child { top: 0; left: 0; z-index: 1; box-shadow: 0 0 0 2px var(--q-surface); }
-.sym-badge.pair .sym-logo:last-child { right: 0; bottom: 0; }
+.sym-badge.pair .sym-logo { width: 66%; height: 66%; inset: auto; }
+/* (The quote's flag in front: behind, Taiwan's showed only its red corner.) */
+.sym-badge.pair .sym-logo:first-child { top: 0; left: 0; }
+.sym-badge.pair .sym-logo:last-child { right: 0; bottom: 0; z-index: 1; box-shadow: 0 0 0 2px var(--q-surface); }
 .mkt-dot { display: inline-block; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--axis); }
 .mkt-dot.open { background: var(--q-green); }
 /* 漲停 / 跌停: the price on a red or green fill, white figures, as Taiwan's apps show it. */
@@ -200,7 +202,8 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .tool-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; padding: 6px 12px; border-radius: 12px; background: var(--q-fill-3); font: var(--q-t-subhead); }
 .tool-list li.done { color: var(--q-label-2); }
 /* Sheets: the kit's, at its tall size; the stock's sheet pads its body (its head runs edge to edge). */
-#detail-body, #trade-body, #tool-body { padding: 0 var(--q-margin) calc(24px + env(safe-area-inset-bottom)); }
+/* (The sheet already keeps 16 from its sides: no second margin inside it.) */
+#detail-body, #trade-body, #tool-body { padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
 .icon-button { flex: none; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: var(--q-fill-3); color: var(--q-label-2); }
 .icon-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .icon-button.star.on { color: #eab308; }
@@ -215,7 +218,7 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .hc-tags { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; } /* whole tags; on a narrow phone the last ones move to a second row, never cut */
 /* The exchange's rate, spread and cost: three that can't share a phone's line, one under another (the owner: no ragged second row). */
 .hc-tags.fx-tags { flex-direction: column; align-items: flex-start; }
-.q-tag.hc-tag { min-height: 26px; padding: 0 10px; background: rgba(255, 255, 255, 0.2); color: #fff; font-size: 13px; }
+.hc-fact { color: rgba(255, 255, 255, 0.78); font: 500 14px/20px var(--q-font); }
 .q-hc-sub b { color: #fff; font-weight: 700; }
 .open-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: open-breathe 2.4s ease-in-out infinite; }
 @keyframes open-breathe { 50% { opacity: 0.4; } }
@@ -234,7 +237,7 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .rec-name { overflow: hidden; font: 600 16px/21px var(--q-font); white-space: nowrap; text-overflow: ellipsis; }
 .rec-card > small { overflow: hidden; color: var(--q-label-2); font: var(--q-t-footnote); white-space: nowrap; text-overflow: ellipsis; }
 .rec-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
-.rec-foot strong { min-width: 0; overflow: hidden; font: 700 20px/24px var(--q-font-rounded); white-space: nowrap; }
+.rec-foot strong { min-width: 0; overflow: hidden; font: 600 20px/24px var(--q-font-rounded); white-space: nowrap; }
 .rec-foot .q-tag { min-width: 0; }
 /* 新股申購 */
 .ipo-item .q-ritem-title { white-space: normal; }
@@ -244,7 +247,7 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 #panel-markets > .q-search { margin-bottom: 4px; }
 .mover-groups { margin-bottom: 4px; }
 .quote .q-ritem-title { font-weight: 600; }
-.q-ritem-text .held { margin-right: 6px; padding: 0 5px; border-radius: 5px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); font-size: 11px; font-weight: 700; }
+.q-ritem-text .held { margin-right: 6px; padding: 0 5px; border-radius: 5px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); font-size: 11px; font-weight: 600; }
 /* The product bar: every product a tile and its name, the open one on a card; it scrolls sideways on a phone. */
 .prod-bar { display: flex; gap: 4px; margin: 4px calc(-1 * var(--q-margin)) 8px; padding: 2px var(--q-margin) 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .prod-bar::-webkit-scrollbar { display: none; }
@@ -254,16 +257,18 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .prod .q-tile svg { width: 20px; height: 20px; }
 .sub-chips { margin-bottom: 4px; }
 .prod-dir .q-ritem-text small { white-space: nowrap; }
+/* 各國市場: a flag a country, its index's day under its name; scrolls sideways on a narrow phone. */
+.country-row { display: flex; gap: 6px; margin: 0 calc(-1 * var(--q-margin)); padding: 2px var(--q-margin) 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.country-row::-webkit-scrollbar { display: none; }
+.country { display: grid; flex: 0 0 auto; justify-items: center; gap: 4px; min-width: 66px; padding: 10px 6px 9px; border: 0; border-radius: 16px; background: var(--q-surface); color: var(--q-label); font: 600 13px/16px var(--q-font); white-space: nowrap; }
+.country .q-tile { width: 36px; height: 36px; }
+.country .chg { font-size: 12px; line-height: 14px; font-weight: 600; }
+.chip-flag { width: 16px; height: 16px; margin-right: 5px; border-radius: 50%; vertical-align: -3px; flex: 0 0 auto; }
 .list-wait { color: var(--q-label-2); font-weight: 500; text-align: center; }
 .list-section { margin-top: 16px; }
 .list-more { display: block; width: 100%; padding: 14px; border: 0; border-top: var(--q-hairline) solid var(--q-sep); background: none; color: var(--accent); font: 600 15px/1 var(--q-font); }
 
 /* ==== The stock's sheet ==== */
-.quote-head { display: grid; gap: 4px; margin: 4px 0 12px; }
-.qh-price { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.big-price { display: inline-block; max-width: 100%; font: 700 38px/44px var(--q-font-rounded); letter-spacing: -0.02em; white-space: nowrap; }
-.cur { color: var(--q-label-2); font: 600 15px/1 var(--q-font); }
-.qh-tags { margin-top: 4px; height: 22px; overflow: hidden; } /* one row: a tag that does not fit is dropped whole */
 @media (max-width: 400px) { .mkt-status small { display: none; } }
 .mkt-status { display: inline-flex; align-items: center; gap: 6px; min-height: 22px; padding: 0 8px; border-radius: 999px; background: var(--q-fill-3); color: var(--q-label-2); font: 600 12px/1 var(--q-font); white-space: nowrap; }
 .mkt-status small { font-weight: 500; white-space: nowrap; }
@@ -332,7 +337,7 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .q-stat .stat-sub.down { color: var(--down); }
 .q-stat strong.up { color: var(--up); }
 .q-stat strong.down { color: var(--down); }
-.q-stat strong { font: var(--q-t-headline); font-weight: 700; white-space: nowrap; }
+.q-stat strong { font: var(--q-t-headline); font-weight: 600; white-space: nowrap; }
 /* Facts: a card of them, two a row; a long one takes the row, each part a line. */
 .facts-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; padding: 4px 16px; border-radius: 18px; background: var(--q-surface); }
 .facts-grid div { min-width: 0; padding: 10px 0; border-top: var(--q-hairline) solid var(--q-sep); }
@@ -360,7 +365,7 @@ select.q-field { -webkit-appearance: none; appearance: none; }
 .about-grid > div { padding: 10px 12px; border-radius: 12px; background: var(--q-fill-3); }
 .about-grid dt { color: var(--q-label-2); font: var(--q-t-caption); }
 .about-grid dd { margin: 2px 0 4px; font: 700 16px/21px var(--q-font); }
-.about-grid p { color: var(--q-label-2); font: var(--q-t-footnote); }
+.about-grid p { color: var(--q-label-2); font: var(--q-t-footnote); text-wrap: pretty; }
 .about-fin .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
 .about-fin .card-head .about-h { flex: 1 1 0; min-width: 0; margin: 0; }
 .about-fin .card-head .q-seg { flex: none; }
@@ -422,22 +427,8 @@ html .q-stats.about-returns { grid-template-columns: repeat(var(--n, 3), minmax(
 .q-btn.place { width: 100%; min-height: 52px; font-size: 17px; }
 
 /* ==== 資產 ==== */
-.pf-hero .hc-chart { min-height: 150px; margin: 4px -6px 0; }
-.hc-chart .first-day { display: grid; place-items: center; min-height: 120px; color: rgba(255, 255, 255, 0.8); font: var(--q-t-subhead); text-align: center; }
-.hc-chart .chart-svg .grid { stroke: rgba(255, 255, 255, 0.14); }
-.hc-chart .chart-svg .axis-label { fill: rgba(255, 255, 255, 0.72); }
-.hc-chart .chart-svg .line, .hc-chart .chart-svg .line.up, .hc-chart .chart-svg .line.down { stroke: #fff; }
-.hc-chart .chart-svg .line.ref { stroke: rgba(255, 255, 255, 0.6); }
-.hc-chart .chart-svg .area, .hc-chart .chart-svg .area.up, .hc-chart .chart-svg .area.down { fill: #fff; opacity: 0.14; }
-.hc-chart .chart-svg .base-line { stroke: rgba(255, 255, 255, 0.45); }
-.hc-chart .chart-svg :is(.end-dot, .hover-dot) { fill: #fff; stroke: transparent; }
-.hc-chart .chart-svg .cross { stroke: rgba(255, 255, 255, 0.7); }
-.hc-chart .legend-inline { color: rgba(255, 255, 255, 0.85); }
-.hc-chart .sw { background: #fff; }
-.hc-chart .sw.ref { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.8) 0 4px, transparent 4px 7px); }
-.hc-seg { background: rgba(255, 255, 255, 0.16); }
-.hc-seg::before { background: rgba(255, 255, 255, 0.3) !important; box-shadow: none; }
-.q-seg.hc-seg > button, .q-seg.hc-seg > button[aria-pressed] { color: #fff; }
+.pf-hero .hc-chart { min-height: 150px; margin: var(--q-s-3) -6px var(--q-s-3); }
+.hc-chart .first-day { display: grid; place-items: center; min-height: 120px; color: var(--q-label-2); font: var(--q-t-subhead); text-align: center; }
 .position-row .q-ritem-title { font-weight: 600; }
 .plan-edit-row { align-items: flex-start; }
 .plan-edit-row .q-ritem-text { gap: 10px; }
@@ -591,6 +582,9 @@ a.act-row { color: inherit; }
 .hero-spark svg path { fill: none; stroke: #fff; stroke-width: 2; vector-effect: non-scaling-stroke; opacity: 0.9; }
 .hero-spark svg .spark-base { display: none; }
 #home-body .q-actions-grid { margin-top: 16px; }
+/* 首頁's markets: a tile each, its day's move under its name (none for 基金 and 更多: an empty line keeps the rows even). */
+.prod-grid .q-action { gap: 4px; padding: 10px 4px 8px; }
+.prod-grid .chg { display: block; min-height: 14px; font-size: 12px; line-height: 14px; font-weight: 600; white-space: nowrap; }
 #home-body .q-section { margin-top: 28px; }
 #home-body .q-section-head { padding-bottom: 12px; }
 /* A holding: its picture at 48, name, size, worth, the day's line. */
@@ -605,11 +599,10 @@ a.act-row { color: inherit; }
 .hold-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
 .hold-card .sym-badge, .rec-card .sym-badge { width: 48px; height: 48px; }
 .hold-card > small { color: var(--q-label-2); font: var(--q-t-footnote); }
-.hold-val { margin-top: 2px; font: 700 18px/22px var(--q-font-rounded); white-space: nowrap; }
+.hold-val { margin-top: 2px; font: 600 18px/22px var(--q-font-rounded); white-space: nowrap; }
 .hold-card .card-spark { margin-top: 6px; }
 /* Apple Stocks' pill: solid, white on red or green. */
-.rec-why { display: block; padding: 0; border-radius: 0; background: none; color: var(--accent); white-space: normal; }
-.rec-price { margin-top: 2px; font: 700 20px/24px var(--q-font-rounded); white-space: nowrap; }
+.rec-price { margin-top: 2px; font: 600 20px/24px var(--q-font-rounded); white-space: nowrap; }
 .rec-rail { --q-rail-w: 190px; }
 .empty-card { padding: 8px 16px 16px; }
 .empty-card .q-empty { padding: 12px 8px; }
@@ -617,18 +610,64 @@ a.act-row { color: inherit; }
 #home-body .mover-groups { margin-bottom: 12px; }
 
 /* ==== Round 3: the sheets ==== */
-.q-sheet-hero .q-sh-logos .sym-badge { width: 56px; height: 56px; }
-.q-sheet-hero .q-sh-big { white-space: nowrap; }
-.q-sheet-hero .mkt-status { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.q-sheet-hero .mkt-status.open { background: rgba(255, 255, 255, 0.28); color: #fff; }
-.q-sheet-hero .q-sh-row .q-tag { background: rgba(255, 255, 255, 0.2); color: #fff; }
+/* A symbol's hero: the app's focus card (sheetHeroHtml), its picture small beside its name. */
+.sym-hero { margin: 4px 0 var(--q-s-5); }
+.sym-hero-name { display: flex; align-items: center; gap: 10px; min-width: 0; margin-bottom: 4px; }
+.sym-hero-name .q-focus-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sym-hero-name :is(.sym-badge, .q-logo) { --s: 32px; flex: none; width: 32px; height: 32px; }
+.sym-hero .q-focus-sub { white-space: nowrap; }
+/* (No price yet: the figures' places, shimmering white on the hero.) */
+.sym-hero .sym-skel { display: inline-block; width: 7em; height: 0.75em; vertical-align: middle; border-radius: 6px; background-color: rgb(255 255 255 / 0.22); background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.25) 50%, transparent 70%); }
+.sym-hero .sym-skel.big { width: 4.2em; }
+/* The market's state as one plain line on the card: words, not capsules (a 漲停 tag stays one). */
+.sym-hero-status { margin: 0; color: var(--q-focus-2); font: var(--q-t-footnote); }
+.sym-hero-status > :is(.mkt-status, .q-tag:not(.solid)) { display: inline; min-height: 0; padding: 0; border-radius: 0; background: none; color: inherit; font: inherit; white-space: normal; }
+.sym-hero-status > .mkt-status small { font-weight: 400; white-space: normal; }
+.sym-hero-status > .q-tag.q-tag { white-space: nowrap; }
+.sym-hero-status > :not(:last-child)::after { content: ' · '; }
+.sym-hero-status .mkt-dot { width: 6px; height: 6px; margin: 0 6px 2px 0; vertical-align: middle; background: rgba(255, 255, 255, 0.5); }
+.sym-hero-status .mkt-dot.open { background: #fff; }
+.sym-hero-status > .q-tag.solid { background: rgba(255, 255, 255, 0.24); color: #fff; }
+/* The ticket's: a size down, the order is what it's about. */
+.sym-hero.compact { margin-bottom: var(--q-s-4); padding: 14px 16px; }
+.sym-hero.compact .q-focus-value { font-size: 34px; line-height: 40px; }
+/* The chart on the card, as 資產's: white lines, the ranges and tools in white. */
+.sym-hero .chart-area { margin-top: var(--q-s-3); }
+.sym-hero .range-bar button { color: rgba(255, 255, 255, 0.72); }
+.sym-hero .range-bar button[aria-pressed='true'] { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.sym-hero .chart-top { margin-top: 2px; }
+.sym-hero .chart-change { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; min-width: 0; overflow: visible; white-space: normal; color: var(--q-focus-2); }
+.sym-hero .chart-change > * { white-space: nowrap; }
+.sym-hero .chart-change .legend-inline { flex-wrap: wrap; gap: 2px 12px; }
+.sym-hero .chart-change .legend-inline { margin: 0; }
+.sym-hero .chart-change .chg.up { color: color-mix(in srgb, var(--up) 45%, #fff); }
+.sym-hero .chart-change .chg.down { color: color-mix(in srgb, var(--down) 45%, #fff); }
+.sym-hero .chart-tools .tool { color: rgba(255, 255, 255, 0.72); }
+.sym-hero .chart-tools .tool[aria-pressed='true'] { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.sym-hero .chart-box { margin: 0 -6px; }
+.sym-hero .chart-box > .empty, .sym-hero .chart-box .foot-note { color: var(--q-focus-2); }
+.sym-hero .chart-svg .grid { stroke: rgba(255, 255, 255, 0.14); }
+.sym-hero .chart-svg .axis-label { fill: rgba(255, 255, 255, 0.72); }
+.sym-hero .chart-svg :is(.line, .line.up, .line.down) { stroke: #fff; }
+.sym-hero .chart-svg .area, .sym-hero .chart-svg .area.up, .sym-hero .chart-svg .area.down { fill: #fff; opacity: 0.14; }
+.sym-hero .chart-svg .base-line { stroke: rgba(255, 255, 255, 0.45); }
+.sym-hero .chart-svg :is(.end-dot, .hover-dot, .end-dot.up, .end-dot.down, .hover-dot.up, .hover-dot.down) { fill: #fff; stroke: transparent; }
+.sym-hero .chart-svg .cross { stroke: rgba(255, 255, 255, 0.7); }
+/* (Averages and candles keep their meaning, lightened to read on the colour.) */
+.sym-hero .chart-svg .line.ma1 { stroke: color-mix(in srgb, var(--c4) 55%, #fff); }
+.sym-hero .chart-svg .line.ma2 { stroke: color-mix(in srgb, var(--c1) 45%, #fff); }
+.sym-hero .chart-svg .line.ma3 { stroke: color-mix(in srgb, var(--c7) 45%, #fff); }
+.sym-hero .chart-svg .candle line, .sym-hero .chart-svg .candle rect { stroke: rgba(255, 255, 255, 0.8); fill: rgba(255, 255, 255, 0.8); }
+.sym-hero .chart-svg .candle.up line { stroke: color-mix(in srgb, var(--up) 45%, #fff); }
+.sym-hero .chart-svg .candle.up rect { fill: color-mix(in srgb, var(--up) 45%, #fff); }
+.sym-hero .chart-svg .candle.down line { stroke: color-mix(in srgb, var(--down) 40%, #fff); }
+.sym-hero .chart-svg .candle.down rect { fill: color-mix(in srgb, var(--down) 40%, #fff); }
+.sym-hero .chart-svg .vol, .sym-hero .chart-svg .vol.up, .sym-hero .chart-svg .vol.down { fill: #fff; opacity: 0.22; }
+.sym-hero .legend-inline { color: var(--q-focus-2); }
+.sym-hero .sw.ma1 { background: color-mix(in srgb, var(--c4) 55%, #fff); }
+.sym-hero .sw.ma2 { background: color-mix(in srgb, var(--c1) 45%, #fff); }
+.sym-hero .sw.ma3 { background: color-mix(in srgb, var(--c7) 45%, #fff); }
 .place-bar.q-sheet-foot { display: flex; align-items: center; gap: 12px; }
-.place-bar.q-sheet-foot .q-btn { flex: 1; min-height: 50px; }
-/* (The total shrinks to fit beside the button, never under it: the kit's fitNumbers.) */
-.place-bar .q-sf-sum { flex: 0 1 auto; min-width: 0; }
-.place-bar .q-sf-sum small { white-space: nowrap; }
-.place-bar .q-sf-sum b { display: block; white-space: nowrap; }
-.place-bar.q-sheet-foot .q-btn { flex: 1 0 auto; min-width: 108px; }
 .ticket-stake .q-stake-presets button[aria-pressed='true'] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
 .ticket-stake .q-stake-amt small { white-space: nowrap; }
 /* The ticket's sizes stay one row on a narrow phone (the kit drops to three a row there: a fourth sat alone). */
@@ -649,12 +688,12 @@ a.act-row { color: inherit; }
 #home-body .q-section-head .q-tag { margin-left: auto; }
 .q-chip[aria-pressed='true'] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
 /* A tool's main button stays in reach as a band docked to the sheet's foot (the sheet's own colour around it), never a button floating over the fields. */
-.tool-sheet .tool-page .q-btn.primary:not(.small) { position: sticky; bottom: calc(12px + max(env(safe-area-inset-bottom) - 8px, 0px)); z-index: 1; min-height: 50px; box-shadow: 0 0 0 12px var(--q-sheet), 0 calc(12px + max(env(safe-area-inset-bottom) - 8px, 0px)) 0 12px var(--q-sheet); }
+.tool-sheet .tool-page > .q-btn.primary:not(.small):last-child { position: sticky; bottom: calc(12px + max(env(safe-area-inset-bottom) - 8px, 0px)); z-index: 1; min-height: 50px; box-shadow: 0 0 0 12px var(--q-sheet), 0 calc(24px + max(env(safe-area-inset-bottom) - 8px, 0px)) 0 24px var(--q-sheet); }
 
 :is(.q-chips, .chip-row, .tool-page, .ticket) .q-chip[aria-pressed='true'] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
-.q-stats .q-stat strong { font: var(--q-t-headline); font-weight: 700; overflow: visible; text-overflow: clip; white-space: nowrap; }
+.q-stats .q-stat strong { font: var(--q-t-headline); font-weight: 600; overflow: visible; text-overflow: clip; white-space: nowrap; }
 /* Market tag before a symbol, and a currency's letters on its tile (no flag emoji). */
-.mkt-tag { display: inline-block; margin-right: 4px; padding: 0 5px; border-radius: 5px; background: var(--q-fill-3); color: var(--q-label-2); font: 600 11px/16px var(--q-font); vertical-align: 1px; }
+.mkt-tag { display: inline; margin-right: 6px; color: var(--q-label-2); font-weight: 500; }
 .q-tile .cur-mark { font: 700 14px/1 var(--q-font-rounded); letter-spacing: 0.02em; }
 .q-tile:has(> .cur-flag), .q-tile.soft:has(> .cur-flag) { background: none; }
 .q-tile .cur-flag { width: 100%; height: 100%; border-radius: 50%; }
@@ -675,9 +714,7 @@ a.act-row { color: inherit; }
 .tool-sheet .q-sheet-hero { margin: 4px 0 14px; }
 /* A disabled main button reads as off (grey), not as a dim accent. */
 .q-btn.primary:disabled { opacity: 1; background: var(--q-fill-3); color: var(--q-label-2); box-shadow: none; }
-/* 信貸's terms: four equal buttons across; a sheet's figures, then their list or tags, a step apart. */
-.q-seg.bank-terms { display: flex; width: 100%; }
-.q-seg.bank-terms > button { flex: 1; white-space: nowrap; }
+/* A sheet's figures, then their list or tags, a step apart. */
 .tool-page .q-stats + :is(.q-rowcard, .q-tags) { margin-top: 10px; }
 /* Picker tiles (定存 terms, 信用 limits): equal columns, the picked one filled. */
 .term-grid, .tier-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
@@ -709,23 +746,25 @@ a.act-row { color: inherit; }
   .rates-head, .rate-row.board { grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 14px; }
   .rates-head span:last-child, .rate-row.board > :last-child { display: none; }
 }
-.tool-sheet .tool-page .q-btn.primary:disabled { box-shadow: none; }
+/* Disabled, it stays solid on its band (a faded button would show the page scrolling under it). */
+.tool-sheet .tool-page > .q-btn.primary:not(.small):last-child:disabled { opacity: 1; background: linear-gradient(var(--q-fill), var(--q-fill)) var(--q-sheet); color: var(--q-label-3); }
 .big-field > span { white-space: nowrap; }
 .tool-page { grid-template-columns: minmax(0, 1fr); }
-/* The ticket's button floats over its sheet: no band, no line behind it. */
-.q-sheet-foot.q-sf.place-bar { border-top: 0; background: transparent; box-shadow: none; padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); pointer-events: none; }
+/* The ticket's one button floats over its sheet: no band or line, the page fading out under it
+   (so what scrolls beneath never collides with it), the total on the button's second line
+   (Jay 2026-10-28: a capsule of its own beside it sat over the card that says it too). */
+.q-sheet-foot.q-sf.place-bar { --sheet-pb: calc(16px + max(env(safe-area-inset-bottom) - 8px, 0px)); bottom: calc(-1 * var(--sheet-pb)); margin-bottom: calc(-24px - env(safe-area-inset-bottom) - var(--sheet-pb)); border-top: 0; background: linear-gradient(to bottom, transparent, var(--q-sheet) 28px); box-shadow: none; padding-top: 28px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); pointer-events: none; }
 .q-sheet-foot.q-sf.place-bar > * { pointer-events: auto; }
-.q-sheet-foot.q-sf.place-bar .q-btn { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22); }
-/* 買進/賣出: a slim bar docked along the detail's foot (the kit's sheet foot: its band and hairline), the price on its left, two compact buttons (Jay 2026-10-23: no big floating pills). */
-.q-sheet-foot.q-sf.trade-bar { gap: 8px; padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
-/* (Edge to edge and flush with the bottom: it sits in #detail-body, inside the sheet's own padding.) */
-#detail-body > .q-sheet-foot.trade-bar { bottom: calc(-1 * var(--sheet-pb, 16px)); margin: 16px calc(-2 * var(--q-margin)) calc(-24px - env(safe-area-inset-bottom) - var(--sheet-pb, 16px)); padding-left: calc(2 * var(--q-margin)); padding-right: calc(2 * var(--q-margin)); }
-.q-sheet-foot.q-sf.trade-bar .q-sf-sum { flex: 1; }
-.q-sheet-foot.q-sf.trade-bar .q-sf-sum b { font-size: 18px; }
-.q-sheet-foot.q-sf.trade-bar .q-sf-sum small.up { color: var(--up); }
-.q-sheet-foot.q-sf.trade-bar .q-sf-sum small.down { color: var(--down); }
-.q-sheet-foot.q-sf.trade-bar .q-btn { flex: 0 0 auto; width: 92px; min-height: 40px; border-radius: 10px; font-size: 16px; box-shadow: none; }
-.q-sheet-foot.q-sf.place-bar .q-sf-sum { padding: 6px 12px; border-radius: 14px; background: var(--q-sheet); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); }
+.q-sheet-foot.q-sf.place-bar .q-btn { display: grid; place-content: center; gap: 2px; flex: 1 1 auto; min-width: 0; min-height: 56px; padding: 6px 16px; border-radius: 999px; box-shadow: 0 8px 22px -6px rgba(0, 0, 0, 0.32); }
+.place-bar .place-do { font: 600 17px/22px var(--q-font); }
+.place-bar .place-sum { overflow: hidden; font: 500 13px/17px var(--q-font); opacity: 0.86; text-overflow: ellipsis; white-space: nowrap; }
+/* 買進/賣出: docked along the detail's foot (the kit's sheet foot: its band and hairline), two even buttons the bar's width (Jay 2026-10-23: no big floating pills; 2026-10-28: the price beside them, said twice, didn't fit). */
+.q-sheet-foot.q-sf.trade-bar { gap: 12px; padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+/* (Edge to edge and flush with the bottom: it sits in #detail-body, inside the sheet's own padding,
+   which at the foot is the kit's 16 + max(safe area − 8, 0); a flat 16 left a phone with a home bar
+   26 px of page showing under the bar.) */
+#detail-body > .q-sheet-foot.trade-bar { --sheet-pb: calc(16px + max(env(safe-area-inset-bottom) - 8px, 0px)); bottom: calc(-1 * var(--sheet-pb)); margin: 16px calc(-1 * var(--q-margin)) calc(-24px - env(safe-area-inset-bottom) - var(--sheet-pb)); padding-left: var(--q-margin); padding-right: var(--q-margin); }
+.q-sheet-foot.q-sf.trade-bar .q-btn { flex: 1 1 0; min-width: 0; min-height: 48px; font-size: 17px; box-shadow: none; }
 /* A range (今日區間, 52 週) breaks after its dash when the column is narrow, never inside a number. */
 .facts-grid div.range dd { white-space: normal; }
 .facts-grid div.range dd span.keep { display: inline-block; white-space: nowrap; }
@@ -782,7 +821,7 @@ html .q-logo.disc img { transform: scale(1.02); }
 .opt-step small { color: var(--q-label-2); font: 500 10px/12px var(--q-font); white-space: nowrap; }
 .opt-step b { color: var(--q-label); font: 700 15px/18px var(--q-font-rounded); white-space: nowrap; }
 
-/* Typing in a tool sheet (定存, 信貸, 融資's repay, 借券's ask): the sheet keeps
+/* Typing in a tool sheet (定存, 融資's repay, 借券's ask): the sheet keeps
    to the form, so it fits above the keys whole, never scrolling or drawing
    past its edge. The hero, the sections that aren't being typed in and what's
    marked .kb-hide wait behind the keys and come back as they go down. Its
@@ -790,17 +829,19 @@ html .q-logo.disc img { transform: scale(1.02); }
 html.q-kb .tool-sheet :is(.q-sheet-hero, .kb-hide, .tool-page > .q-section:not(:focus-within)) { display: none; }
 html.q-kb dialog.q-sheet.tool-sheet[open] { max-height: calc(var(--q-vvh) + var(--q-kb) - 8px); margin-bottom: 0; padding-bottom: var(--q-kb); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 html.q-kb .tool-sheet #tool-body { padding-bottom: 12px; }
-html.q-kb .tool-sheet .tool-page .q-btn.primary:not(.small) { position: static; box-shadow: none; }
+html.q-kb .tool-sheet .tool-page > .q-btn.primary:not(.small):last-child { position: static; box-shadow: none; }
 /* What an amount earns, on the amount's own line (定存). */
 .big-field:has(.big-field-end) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
 .big-field:has(.big-field-end) > span { grid-column: 1 / -1; }
 .big-field-end { color: var(--q-label-2); font: 600 13px/18px var(--q-font); font-style: normal; white-space: nowrap; }
 /* 交易須知: the day's sessions as a bar, then days, costs and rules as chips. */
-.guide { display: grid; gap: 14px; padding: 14px 16px 16px; border-radius: 18px; background: var(--q-surface); }
+.guide { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 14px 16px 16px; border-radius: 18px; background: var(--q-surface); }
 .guide-part h4 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; color: var(--q-label-2); font: 600 13px/1.2 var(--q-font); }
 .guide-part h4 svg { width: 15px; height: 15px; }
-.guide-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.guide-chips .q-tag { max-width: 100%; min-width: 0; white-space: normal; text-wrap: balance; }
+/* The market's facts as plain text (DESIGN §6: chips are for taps), each kept whole, a dot between. */
+.guide-facts { margin: 0; color: var(--q-label); font: var(--q-t-subhead); font-variant-numeric: tabular-nums; text-wrap: pretty; }
+.guide-facts > span { white-space: nowrap; }
+.guide-facts > i { font-style: normal; color: var(--q-label-3, var(--q-label-2)); }
 .gt { min-width: 0; }
 .gt-bar { position: relative; height: 10px; border-radius: 5px; background: var(--q-fill); }
 .gt-bar > i { position: absolute; top: 0; bottom: 0; border-radius: 5px; }
@@ -924,4 +965,116 @@ html.q-kb .tool-sheet .tool-page .q-btn.primary:not(.small) { position: static; 
 }
 .acc-go {
   margin-top: 8px;
+}
+
+/* ==== Design pass (docs/DESIGN.md): facts are grey text, moves are coloured text, one tag only where it is the exception ==== */
+/* A tag that is only a fact (no state colour, not a button) is plain grey text. */
+body .q-tag:not(button, .orange, .red, .solid) { min-width: 0; min-height: 0; padding: 0; border-radius: 0; background: none; color: var(--q-label-2); font: 500 13px/18px var(--q-font); }
+body .q-tag.up:not(button, .solid) { color: var(--up); }
+body .q-tag.down:not(button, .solid) { color: var(--down); }
+.q-tags { gap: 4px 12px; }
+/* The kit's solid move pill on every stock row: just the coloured figure. */
+body .q-move.solid { min-width: 0; padding: 0; border-radius: 0; background: none; color: var(--c); font-weight: 500; }
+body .q-move.solid.flat { color: var(--q-label-2); }
+.hold-top, .rec-top { align-items: flex-start; }
+/* Open markets: a quiet grey line with a live dot, still a tap. */
+.open-now { display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding: 0; border: 0; background: none; color: var(--q-label-2); font: 500 13px/18px var(--q-font); white-space: nowrap; overflow: hidden; }
+.open-now .open-dot { flex: none; color: var(--q-live); }
+.rec-why { display: block; padding: 0; background: none; color: var(--q-label-2); font: var(--q-t-footnote); }
+body .q-section-head button.open-now { flex: 0 1 auto; min-width: 0; font: 500 13px/18px var(--q-font); color: var(--q-label-2); }
+/* 資產 and 紀錄's headline figure, on its card (kit .q-focus). */
+.pf-hero, .stats-hero { margin-bottom: var(--q-s-4); }
+.pf-hero .q-seg { margin-top: var(--q-s-2); }
+.hc-note { color: rgba(255, 255, 255, 0.62); font-weight: 400; }
+/* The chart and its switch on the focus card's colour: white lines, as before 0b33ab6. */
+.q-focus .hc-chart .first-day { color: rgba(255, 255, 255, 0.8); }
+.q-focus .hc-chart .chart-svg .grid { stroke: rgba(255, 255, 255, 0.14); }
+.q-focus .hc-chart .chart-svg .axis-label { fill: rgba(255, 255, 255, 0.72); }
+.q-focus .hc-chart .chart-svg .line, .q-focus .hc-chart .chart-svg .line.up, .q-focus .hc-chart .chart-svg .line.down { stroke: #fff; }
+.q-focus .hc-chart .chart-svg .line.ref { stroke: rgba(255, 255, 255, 0.6); }
+.q-focus .hc-chart .chart-svg .area, .q-focus .hc-chart .chart-svg .area.up, .q-focus .hc-chart .chart-svg .area.down { fill: #fff; opacity: 0.14; }
+.q-focus .hc-chart .chart-svg .base-line { stroke: rgba(255, 255, 255, 0.45); }
+.q-focus .hc-chart .chart-svg :is(.end-dot, .hover-dot) { fill: #fff; stroke: transparent; }
+.q-focus .hc-chart .chart-svg .cross { stroke: rgba(255, 255, 255, 0.7); }
+.q-focus .hc-chart .legend-inline { color: rgba(255, 255, 255, 0.85); }
+.q-focus .hc-chart .sw { background: #fff; }
+.q-focus .hc-chart .sw.ref { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.8) 0 4px, transparent 4px 7px); }
+.q-focus .q-seg { background: rgba(255, 255, 255, 0.16); }
+.q-focus .q-seg::before { background: rgba(255, 255, 255, 0.3) !important; box-shadow: none; }
+.q-focus .q-seg > button, .q-focus .q-seg > button[aria-pressed] { color: #fff; }
+.q-focus-sub .up { color: var(--up); }
+.q-focus-sub .down { color: var(--down); }
+.q-focus-value.up { color: var(--up); }
+.q-focus-value.down { color: var(--down); }
+/* (On the focus card's colour: the same meaning, lightened to read on it.) */
+.q-focus .q-focus-sub .up, .q-focus .q-focus-value.up { color: color-mix(in srgb, var(--up) 45%, #fff); }
+.q-focus .q-focus-sub .down, .q-focus .q-focus-value.down { color: color-mix(in srgb, var(--down) 45%, #fff); }
+/* The exchange is the action on 資金: one coloured card, no shadow on the swap. */
+.fx-swap { box-shadow: none; }
+.q-ritem-end > strong { font-weight: 500; }
+/* What's still needed is read whole: a long requirement wraps instead of ending in an ellipsis. */
+.acc-needs .q-ritem-title, .credit-checks .q-ritem-title { white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* ==== Every screen, either way up (Jay 2026-10-31; kit DESIGN §10) ====
+   A phone reads each tab as one column. With room for two (html.q-wide) a
+   tab is two phone-width columns: the answer and its list on the left, what
+   goes with it on the right; lists of like rows run in two (three) columns;
+   like cards become a grid. Sheets stay a phone's width (the kit's). */
+:root.q-wide { --q-page-max: 1180px; }
+.page .q-cols > div > :first-child, #home-body .q-cols > div > .q-section:first-child { margin-top: 0; }
+/* 首頁: the world across the top, a grid of its ten cards (two rows of five)
+   where the screen is tall enough; on a phone on its side, the rail. */
+:root.q-wide #home-body .home-cols { margin-top: 28px; }
+:root.q-wide #home-body .home-cols .q-actions-grid { margin-top: 0; }
+:root.q-wide.q-float .home-world .idx-rail { grid-auto-flow: row; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; padding: 2px 0 0; overflow: visible; }
+/* 市場: the countries in a row that fits, the lists of quotes in columns (a card, rows across then down: the phone's order). */
+:root.q-wide .mk-cols { margin-top: 8px; }
+:root.q-wide.q-float .mk-cols .country-row { margin: 0; padding: 2px 0 4px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; }
+:root.q-wide.q-float .mk-cols .country { min-width: 0; padding-inline: 2px; }
+/* (Down the first column, then the next: a list keeps its order and never leaves a hole.) */
+:root.q-wide .q-rowcard.quotes { display: block; columns: 2; column-gap: 0; }
+:root.q-w3 .q-rowcard.quotes { columns: 3; }
+:root.q-wide .q-rowcard.quotes > * { break-inside: avoid; width: 100%; }
+:root.q-wide .q-rowcard.quotes > :not(.q-ritem) { column-span: all; }
+:root.q-wide .prod-bar { margin-inline: 0; padding-inline: 0; }
+/* 資產: the account down the left, the positions beside it (its own tall column). */
+:root.q-wide .pf-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(6, auto) 1fr; column-gap: var(--q-s-5, 24px); align-items: start; }
+:root.q-wide .pf-cols > * { grid-column: 1; min-width: 0; }
+:root.q-wide .pf-cols > .pf-held { grid-column: 2; grid-row: 1 / -1; margin-top: 0; }
+:root.q-wide .pf-cols > .pf-hero { margin-bottom: 0; }
+/* 紀錄: the activity on the left, 統計分析 beside it; orders open beside past. */
+/* (統計分析 beside the activity: its own sections one under another, in its column.) */
+:root.q-wide .act-stats .st-cols { grid-template-columns: minmax(0, 1fr); }
+:root.q-wide .history-tabs { max-width: calc((100% - var(--q-s-5, 24px)) / 2); }
+/* A phone on its side (330-390 px tall): every focus card, on a tab or in a
+   sheet, a size down, so none takes more than half the screen. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .q-focus { padding: 10px 16px 12px; }
+  .q-focus .q-focus-value { font-size: 30px; line-height: 36px; }
+  .pf-hero .hc-chart { min-height: 96px; margin-block: 6px; }
+  .hc-chart .first-day { min-height: 80px; }
+  .sym-hero { margin-bottom: var(--q-s-4); }
+}
+/* A small phone: the averages' key a size down, so it fits beside the chart's tools on one line. */
+@media (max-width: 380px) {
+  .sym-hero .chart-change .legend-inline { gap: 8px; font-size: 11px; }
+  .sym-hero .chart-change .legend-inline li { gap: 4px; }
+  .sym-hero .chart-change .legend-inline .sw { width: 8px; }
+}
+:root.q-wide .act-cols .filter-chips { margin-inline: 0; padding-inline: 0; }
+/* 匯率's head: its tag and 全部 go under the title when a small phone (or English) has no room beside it. */
+.fx-rates .q-section-head { flex-wrap: wrap; row-gap: 6px; }
+.fx-rates .q-section-head h2 { flex: 0 0 auto; white-space: nowrap; }
+.fx-rates .q-section-head .q-tag { margin-left: auto; }
+
+/* A stock's page wide (Jay 2026-11-01: a page in a sheet shows more at a
+   glance on a phone on its side, a tablet, a computer): the kit's
+   .q-sheet-wide, and by the sheet's width the quote and its chart on the
+   left, staying in view, its numbers, guide, tools and trades beside it. */
+@container q-sheet (min-width: 720px) {
+  #detail-body { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  #detail-body > * { grid-column: 2; min-width: 0; }
+  #detail-body > :first-child { grid-column: 1; grid-row: 1 / span 12; position: sticky; top: 64px; margin-top: 0; }
+  #detail-body > :nth-child(2) { margin-top: 0; }
+  #detail-body > .trade-bar { grid-column: 1 / -1; }
 }

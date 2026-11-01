@@ -17,7 +17,8 @@ import { OPERATORS, stationTitle } from './metro.mjs';
 import { stationGroup, loadBoards, boardHtml, codesHtml } from './metro-ui.mjs';
 import { planTrip } from './planner.mjs';
 import { etaNear, liveTimes, officialLeg } from './live.mjs';
-import { stationEta } from './near.mjs';
+import { stationEta, bikesAround } from './near.mjs';
+import { nearBusRows, nearBikes as nearBikeCards } from './near-ui.mjs';
 import { startNav, navigating, canNav, NAV_LEAD, savedNav, mapsLink, mapsName, GOOGLE_ID, busPath, trainStops, navNow, setNavMin, navStopAt, navChangeOff, wayText, stageView, navRetarget, navRest, navStops, navPickTimes, navCanPick, navOffer, onTimeWay, offerText, lateBy } from './nav.mjs';
 import { setNavPush, setBikePush, notifyLocal } from './alerts.mjs';
 import { rental, onRental, startRental, endRental, markWarned, rentalPush, swapDocks, FREE_MS, WARN_MS } from './rental.mjs';
@@ -25,11 +26,11 @@ import { railWay, railWayByStops, busWay } from './shapes.mjs';
 import { bikeSwap } from './tpass.mjs';
 import { pickSig, bikeTrip, finish, chainOn, keepBike, keepWins } from './plan.mjs';
 import { addAlert, removeAlert, alertFor, onAlerts } from './alerts.mjs';
-import { cleanPlace, cleanSaved, remember, tripKey, PLACE_ICONS, LAYERS, MAX_PLACES, MAX_SAVED } from './store.mjs';
+import { cleanPlace, cleanSaved, rememberTrip, tripKey, PLACE_ICONS, iconName, LAYERS, MAX_PLACES, MAX_SAVED } from './store.mjs';
 import { sheet, sheetHead, icon, legChips, fitLegs, depChips, legColor, inkOn, MODE_NAME, ago, timeRange, tagText, trainKind } from './ui.mjs';
-import { COLOR, tile, emptyNote } from './look.mjs';
+import { COLOR, tile, bikeTile, bikeStats, emptyNote } from './look.mjs';
 import { e, hm, minsText, distText, meters, decodeLine, uid, tw, twAt, addDays, walkSec, walkGuess, inTaiwan, stationKey, isRide, readJson, writeJson, shown } from './util.mjs';
-import { openRoute, strip, fitStrips, busWhen, plannedAt } from './bus-ui.mjs';
+import { openRoute, strip, fitStrips, busWhen, plannedAt, nearStops } from './bus-ui.mjs';
 import { persistentSheet } from './sheet.mjs';
 import { createHome } from './home.mjs';
 const plannedKey = r => `${r.routeUID}|${r.dir}|${r.stopUID}`;
@@ -210,6 +211,7 @@ function showPlan(p, from, to, resume = null) {
     return navigate(card.plans[0], resume);
   }
   card.sel = 0;
+  if (msheet && msheet.detent !== 'medium') msheet.set('medium');
   renderCard();
   drawPlan(p, { fit: true });
 }
@@ -420,20 +422,22 @@ async function drawLayersNow() {
 
 const BIKE_COUNTS_ZOOM = 17;
 const BIKE_COUNTS_NEAR = 4;
-// The part of the map not covered: below the buttons at the top, above the sheet (its height now).
+// The part of the map not covered: below the buttons at the top, above the sheet (its height now),
+// right of it when it stands beside the map.
 function seenBounds(b) {
-  const band = seenBand();
-  if (!band) return b;
-  const { room, top, bottom } = band;
-  const lat = y => b.n - (b.n - b.s) * Math.min(1, Math.max(0, y / room));
-  return { ...b, n: lat(top), s: lat(bottom) };
+  const c = seen();
+  if (!c) return b;
+  const { p, top, bottom, left, right } = c;
+  const lat = y => b.n - (b.n - b.s) * Math.min(1, Math.max(0, y / p.height));
+  const lon = x => b.w + (b.e - b.w) * Math.min(1, Math.max(0, x / p.width));
+  return { ...b, n: lat(top), s: lat(p.height - bottom), w: lon(left), e: lon(p.width - right) };
 }
-// A station: its bikes (both kinds as one number; the split is in its card),
+// A station: its regular bikes, then its 電輔車 after a ⚡ when it has any,
 // or, quiet, a dot in its level's colour.
 const bikeMarker = (s, dot = false) => {
   const lv = bikeLevel(s);
   if (dot) return { id: `bike:${s.uid}`, lat: s.lat, lon: s.lon, cls: `bike dot ${lv}`, z: 2, kind: 'bike', data: s, html: '<i></i>' };
-  return { id: `bike:${s.uid}`, lat: s.lat, lon: s.lon, cls: `bike ${lv}`, z: 3, kind: 'bike', data: s, html: `${icon('bike')}<b>${s.ok === false ? W('停', '–') : s.bikes + (s.ebike || 0)}</b>` };
+  return { id: `bike:${s.uid}`, lat: s.lat, lon: s.lon, cls: `bike ${lv}`, z: 3, kind: 'bike', data: s, html: s.ok === false ? `${icon('bike')}<b>${W('停', '–')}</b>` : `${icon('bike')}<b>${s.bikes}</b>${s.ebike ? `<b class="ot-mk-e">${icon('bolt')}${s.ebike}</b>` : ''}` };
 };
 const busMarker = s => ({ id: `bus:${s.uid}`, lat: s.lat, lon: s.lon, cls: 'bus', z: 2, kind: 'bus', data: s, html: icon('bus') });
 // A stop with a side on each side of the street, close in (zoom 17 on): a
@@ -564,6 +568,7 @@ function closeCard() {
   clearInterval(cardTimer);
   $('card').hidden = true;
   $('card').className = 'ot-card';
+  tripOpen();
   map.layer('sel').set([]);
   map.select(null);
   map.lines('plan', []);
@@ -597,6 +602,7 @@ function refreshCard() {
         for (const r of todo) c.planned.set(plannedKey(r), null);
         if (todo.length) Promise.all(todo.map(r => plannedAt(r, c.item).then(p => c.planned.set(plannedKey(r), p), () => {}))).then(() => card === c && renderCard());
       }
+      else if (c.kind === 'place' || c.kind === 'point') c.live = await aroundPlace(c);
       else if (c.kind === 'tra') c.live = await traBoard(c.item.id);
       else if (c.kind === 'hsr') c.live = await hsrBoard(c.item.id);
       else if (c.kind === 'metro') {
@@ -612,7 +618,31 @@ function refreshCard() {
     if (card === c) renderCard();
   };
   load();
-  if (card && card.kind !== 'plans' && card.kind !== 'place' && card.kind !== 'point') cardTimer = setInterval(load, liveMs());
+  if (card && card.kind !== 'plans') cardTimer = setInterval(load, liveMs());
+}
+// A place's or a spot's card: the buses due at the stops by it and the YouBike
+// stations beside it (Jay, 2026-10-28: the card was its name, 路線 and ☆ over
+// half a sheet of nothing). Distances are from the place, not from you.
+const AROUND_M = 450;
+async function aroundPlace(c) {
+  const lat = c.item.lat ?? c.lat;
+  const lon = c.item.lon ?? c.lon;
+  const [stops, bikes] = await Promise.all([nearStops({ lat, lon }, { n: 3, r: 400 }).catch(() => []), bikesAround(lat, lon).catch(() => [])]);
+  return {
+    stops: stops.filter(s => s.dist <= AROUND_M),
+    bikes: bikes
+      .map(s => ({ ...s, d: meters(lat, lon, s.lat, s.lon) }))
+      .filter(s => s.d <= AROUND_M)
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 5)
+  };
+}
+function aroundHtml(c) {
+  const n = c.live;
+  const rows = nearBusRows(n ? n.stops : null, { max: 4 });
+  const bikes = n ? nearBikeCards(n.bikes) : '';
+  const body = rows || bikes ? `${rows ? `<div class="q-rowcard">${rows}</div>` : ''}${bikes}` : `<p class="ot-note">${W('附近沒有公車站或 YouBike', 'No bus stop or YouBike nearby')}</p>`;
+  return `<section class="ot-shelf ot-card-around">${kitUI.sectionHeadHtml(W('這裡附近', 'Around here'))}${body}</section>`;
 }
 
 // A card's place as a trip's end; one of Google's carries its id (Google Maps' own navigation goes to the place itself).
@@ -696,7 +726,7 @@ function head(title, sub, kind) {
   // (Walking, by the streets once known: what 走過去 and the strip say.)
   const d = ctx.here && card ? distText(walkKnown(ctx.here, card)?.dist ?? meters(ctx.here.lat, ctx.here.lon, card.lat, card.lon)) : '';
   const [g, c] = KIND_TILE[kind] || KIND_TILE.place;
-  return `<div class="ot-card-head">${tile(g, c)}<div class="ot-card-title"><h2>${e(title)}</h2><p>${[sub, d].filter(Boolean).map(e).join(' · ')}</p></div><button class="q-close" type="button" data-card="close" aria-label="${W('關閉', 'Close')}">×</button></div>`;
+  return `<div class="ot-card-head">${kind === 'bike' ? bikeTile() : tile(g, c)}<div class="ot-card-title"><h2>${e(title)}</h2><p>${[sub, d].filter(Boolean).map(e).join(' · ')}</p></div><button class="q-close" type="button" data-card="close" aria-label="${W('關閉', 'Close')}">×</button></div>`;
 }
 
 function renderCard() {
@@ -710,9 +740,7 @@ function renderCard() {
     const s = c.live || c.item;
     html = `${head(s.name, s.kind, 'bike')}
       <section class="q-focus ot-bike-now">
-        <span class="q-focus-label">${W('可借', 'Bikes to take')}</span>
-        <div class="ot-bike-row"><b class="q-focus-value${s.bikes ? '' : ' none'}">${s.bikes}</b>
-        <div class="q-focus-figs"><div><small>${W('電輔車', 'E-bikes')}</small><b>${s.ebike}</b></div><div><small>${W('空位', 'Docks')}</small><b>${s.ret}</b></div></div></div>
+        ${bikeStats(s)}
         ${s.ok === false || s.cap || s.at ? `<span class="q-focus-sub ot-card-tags">${[s.cap ? W(`共 ${s.cap} 柱`, `${s.cap} docks`) : '', s.at ? ago(s.at) : ''].filter(Boolean).map(e).join(' · ')}${s.ok === false ? ` <span class="q-tag red">${W('暫停營運', 'Closed')}</span>` : ''}</span>` : ''}
       </section>
       ${err}${rentButtons(c)}${actions(c)}`;
@@ -757,7 +785,7 @@ function renderCard() {
       ${actions(c, { more: `<button class="q-btn" type="button" data-card="metro">${icon('metro')} ${W('路網圖', 'Map')}</button>` })}`;
   } else if (c.kind === 'place' || c.kind === 'point') {
     const s = c.item;
-    html = `${head(s.name || W('載入中…', 'Loading…'), s.sub || '', 'place')}${err}${actions(c)}`;
+    html = `${head(s.name || W('載入中…', 'Loading…'), s.sub || '', 'place')}${err}${actions(c)}${aroundHtml(c)}`;
   } else if (c.kind === 'plans') html = plansHtml(c);
   box.innerHTML = html;
   // A long station name shrinks to its row (never a second row, never cut).
@@ -766,6 +794,7 @@ function renderCard() {
   fitLegs(box);
   // The plans keep most of the map in view: the sheet stays at its half.
   box.classList.toggle('plans', c.kind === 'plans');
+  tripOpen();
 }
 
 async function cardClick(ev) {
@@ -775,7 +804,17 @@ async function cardClick(ev) {
   const act = ev.target.closest('[data-card]')?.dataset.card;
   const bell = ev.target.closest('[data-alert]');
   if (bell && card?.kind === 'bus') return alertSheet(card, JSON.parse(bell.dataset.alert));
+  // A place's 這裡附近: a YouBike station opens its card, a bus its route (near-ui's rows carry the route as JSON).
+  const bk = ev.target.closest('[data-bk]');
+  if (bk && card?.live?.bikes) {
+    const s = card.live.bikes.find(b => b.uid === bk.dataset.bk);
+    return s && arrive({ kind: 'bike', item: s, lat: s.lat, lon: s.lon });
+  }
   const routeBtn = ev.target.closest('[data-route]');
+  if (routeBtn?.dataset.route.startsWith('{')) {
+    const x = JSON.parse(routeBtn.dataset.route);
+    return openRoute(ctx, { uid: x.uid, name: x.name, city: x.city }, { stopUID: x.stopUID, dir: x.dir });
+  }
   if (routeBtn) {
     const d = routeBtn.dataset;
     return openRoute(ctx, { uid: d.routeUid, name: d.route, city: d.city }, { stopUID: d.stop, dir: Number(d.dir) });
@@ -791,10 +830,19 @@ async function cardClick(ev) {
     card.sel = -1;
     return selectPlan(j);
   }
+  // A step of the trip opened: the map on that step (again: the whole way); its summary: the whole way.
+  const stepLi = ev.target.closest('.ot-steps li[data-leg]');
+  if (stepLi && card?.kind === 'plans' && card.sel >= 0) return frameStep(Number(stepLi.dataset.leg));
   const planBtn = ev.target.closest('[data-plan]');
+  if (planBtn && card?.kind === 'plans' && Number(planBtn.dataset.plan) === card.sel) return frameStep(-1);
   if (planBtn) return selectPlan(Number(planBtn.dataset.plan));
   // A way of moving on or off for this search (never all of them), and plan again.
   // (The mode toggles themselves: the sheet's own data-mode once matched here, so every tap on a trip's card planned it again and did nothing else.)
+  // 偏好電輔車 on or off for this search, and plan again.
+  if (ev.target.closest('.ot-mtog[data-ebike]') && card?.kind === 'plans') {
+    tripEbike = !tripEbike;
+    return plan(card.fromHere ? null : card.from, card.to);
+  }
   const mode = ev.target.closest('.ot-mtog[data-mode]');
   if (mode && card?.kind === 'plans') {
     const next = { ...modesNow(), [mode.dataset.mode]: modesNow()[mode.dataset.mode] === false };
@@ -826,6 +874,8 @@ async function cardClick(ev) {
   }
   if (act === 'walk-there' || act === 'bike-there') return directTo(card, act === 'walk-there' ? 'walk' : 'bike');
   if (act === 'edit-pin') return ctx.editPlace?.(ev.target.closest('[data-id]').dataset.id);
+  // (A trip opened from a list of ways: back to the list.)
+  if (act === 'back' && card.kind === 'plans' && card.sel >= 0 && card.plans.length > 1) return selectPlan(card.sel);
   if (act === 'back') return card.back ? openCard(card.back) : closeCard();
   // (With stops: the trip backwards, the last place first.)
   if (act === 'swap') {
@@ -941,33 +991,55 @@ function pickOnMap(text, near) {
 
 // Its room is the panel above the tab bar (above the shrunk ride's bar while
 // one is followed); the large stop leaves the account buttons showing above it.
+// On a wide screen (a phone on its side, a tablet, a computer) the sheet is a
+// panel at the map's left, as Maps on an iPad; on a tall one (not a phone on
+// its side) it is pinned there whole (transit.css: the same two questions).
 const NAV_BAR = 74;
-const sheetRoom = () => $('panel-map').clientHeight - (document.body.classList.contains('ot-nav-min') ? NAV_BAR : 0);
+const SIDE_Q = '(min-width: 640px)';
+const PIN_Q = '(min-width: 640px) and (min-height: 521px)';
+const sideMode = () => Boolean(globalThis.matchMedia?.(SIDE_Q).matches);
+const pinMode = () => Boolean(globalThis.matchMedia?.(PIN_Q).matches);
+const navBar = () => (document.body.classList.contains('ot-nav-min') ? NAV_BAR : 0);
+const sheetRoom = () => $('panel-map').clientHeight - navBar();
 const sheetTop = () => {
   const b = $('top-actions')?.getBoundingClientRect();
+  // (Beside the map: up to the top, level with the account buttons.)
+  if (sideMode()) return Math.max(10, Math.round(b?.top || 0));
   return b?.height ? Math.round(b.bottom + 10) : 64;
 };
-// Room kept clear when a trip is fitted: above the sheet.
-const fitPad = (m, share) => ({
-  top: 100,
-  bottom: (msheet?.heights().medium || Math.round(innerHeight * share)) + 24,
-  left: m,
-  right: Math.max(m, fabGutter())
-});
+// What covers the map, px in from each of its edges: the buttons at the top and the right, the sheet
+// (along the foot on a phone upright, beside the map on a wide screen), the shrunk ride's bar.
+function covered() {
+  const p = $('panel-map')?.getBoundingClientRect();
+  if (!msheet || !p?.height) return null;
+  if (sideMode()) {
+    const r = $('msheet').getBoundingClientRect();
+    return { p, top: 16, bottom: 16 + navBar(), left: r.width ? Math.max(0, Math.round(r.right - p.left)) : 0, right: fabGutter() };
+  }
+  const top = Math.max(0, ($('top-actions')?.getBoundingClientRect().bottom || 0) + 8 - p.top);
+  return { p, top, bottom: msheet.heights()[msheet.detent] + navBar(), left: 0, right: fabGutter() };
+}
+// Room kept clear when a trip is fitted: clear of the sheet and the buttons.
+const fitPad = (m, share) => {
+  const c = covered();
+  if (c && sideMode()) return { top: c.top + m, bottom: c.bottom + m, left: c.left + m, right: Math.max(m, c.right) };
+  return {
+    top: 100,
+    bottom: (msheet?.heights().medium || Math.round(innerHeight * share)) + 24,
+    left: m,
+    right: Math.max(m, fabGutter())
+  };
+};
 // How far under the middle of the map the middle of what the sheet leaves in view is, px: a point put
 // that high above the middle sits in the middle of the map you can see.
 function aboveDy() {
-  const band = seenBand();
-  return band ? Math.round(band.room / 2 - (band.top + band.bottom) / 2) : 0;
+  const c = seen();
+  return c ? Math.round((c.bottom - c.top) / 2) : 0;
 }
-// The band of the map left showing, px from its top: below the buttons at the top, above the sheet
-// (null: no sheet yet, or too little left to matter).
-function seenBand() {
-  const room = $('panel-map')?.clientHeight;
-  if (!msheet || !room) return null;
-  const top = Math.max(0, ($('top-actions')?.getBoundingClientRect().bottom || 0) + 8);
-  const bottom = room - msheet.heights()[msheet.detent] - (document.body.classList.contains('ot-nav-min') ? NAV_BAR : 0);
-  return bottom - top > 80 ? { room, top, bottom } : null;
+// The part of the map left showing (null: no sheet yet, or too little left to matter).
+function seen() {
+  const c = covered();
+  return c && c.p.height - c.top - c.bottom > 80 && c.p.width - c.left - c.right > 80 ? c : null;
 }
 // The room the round buttons take at the map's right, px: what is brought to the middle of the map
 // is the middle of what they leave (so a pin is never put under ⊙), and a trip is fitted clear of them.
@@ -976,8 +1048,42 @@ const fabGutter = () => {
   const p = $('panel-map')?.getBoundingClientRect();
   return b?.width && p?.width ? Math.max(0, Math.round(p.right - b.left + 10)) : 0;
 };
-const aboveDx = () => Math.round(fabGutter() / 2);
+// (And left of the middle by half of what covers the right less what covers the left.)
+const aboveDx = () => {
+  const c = seen();
+  return c ? Math.round((c.right - c.left) / 2) : Math.round(fabGutter() / 2);
+};
 let liftedFor = false;
+// The stop the list of ways was at before one was opened (to go back to it when it's closed).
+let listDetent = null;
+// The sheet holds a trip opened: only it (the fields, the other ways and the options wait behind ‹).
+function tripOpen() {
+  const on = card?.kind === 'plans' && card.sel >= 0 && Boolean(card.plans?.[card.sel]);
+  $('msheet')?.classList.toggle('ot-trip', on);
+  if (!on && card?.kind !== 'plans') listDetent = null;
+}
+// A step of the trip opened, on the map above the sheet (its line, or its two ends); -1 the whole way,
+// the end (not a number) where it ends. The step tapped stays lit; tapped again, the whole way.
+function frameStep(k) {
+  const p = card?.plans?.[card.sel];
+  if (!p || !map) return;
+  const later = restOf(card, p) || [];
+  const legs = [p, ...later].flatMap(q => q.legs);
+  const box = $('card');
+  const was = box.querySelector('.ot-steps li.lit');
+  const li = Number.isFinite(k) && k >= 0 ? box.querySelector(`.ot-steps li[data-leg="${k}"]`) : Number.isNaN(k) ? box.querySelector('.ot-steps li.end') : null;
+  was?.classList.remove('lit');
+  if (msheet.detent !== 'medium') msheet.set('medium');
+  const end = (later.at(-1) || p).legs.at(-1)?.to;
+  const whole = () => legs.flatMap(l => legPath(l).map(([lat, lon]) => ({ lat, lon })));
+  if (!li || li === was) return void map.fit(whole(), fitPad(30, 0.5));
+  li.classList.add('lit');
+  if (Number.isNaN(k)) return end?.lat != null && map.setView(end.lat, end.lon, 17, aboveDy(), aboveDx());
+  const l = legs[k];
+  const pts = legPath(l).map(([lat, lon]) => ({ lat, lon }));
+  for (const x of [l.from, l.to]) if (x?.lat != null) pts.push({ lat: x.lat, lon: x.lon });
+  if (pts.length) map.fit(pts, fitPad(40, 0.5));
+}
 let backToPeek = false;
 function buildSheet() {
   msheet = persistentSheet($('msheet'), {
@@ -986,6 +1092,9 @@ function buildSheet() {
     grab: $('ms-grab'),
     room: sheetRoom,
     top: sheetTop,
+    pinned: pinMode,
+    // (A trip opened sits at half, its steps scrolling there, the map above showing its route.)
+    scrolls: d => d === 'large' || (d === 'medium' && $('msheet').classList.contains('ot-trip')),
     onChange: d => {
       // (Down from large, the keyboard goes: the field is no longer the thing.)
       if (d !== 'large' && document.activeElement === $('q')) $('q').blur();
@@ -1284,7 +1393,7 @@ async function chooseResult(r) {
     backToPeek = from === 'peek';
   }
   const known = p => {
-    ctx.data.trips = remember(ctx.data.trips, { name: p.name, lat: p.lat, lon: p.lon, t: Date.now(), ...(p.gid ? { gid: p.gid } : {}) }, tripKey, 10);
+    ctx.data.trips = rememberTrip(ctx.data.trips, p);
     ctx.save();
   };
   if (Number.isFinite(r.lat) && r.kind !== 'place') known(r);
@@ -1437,7 +1546,7 @@ function pinSheet(p) {
   let iconKey = p.icon in PLACE_ICONS ? p.icon : 'pin';
   const d = sheet(`${sheetHead(W('釘選地點', 'Pin a place'), '', tile('star', COLOR.place))}
     <label class="ot-field"><span>${W('名稱', 'Name')}</span><input id="pin-name" maxlength="20" value="${e(p.name)}" placeholder="${W('家、公司、學校', 'Home, Work, School')}"></label>
-    <div class="ot-field"><span>${W('圖示', 'Icon')}</span><div class="q-chips ot-wrap-chips">${Object.entries(PLACE_ICONS).map(([k, v]) => `<button class="q-chip" type="button" data-icon="${k}" aria-pressed="${k === iconKey}" aria-label="${k}">${icon(v)}</button>`).join('')}</div></div>
+    <div class="ot-field"><span>${W('圖示', 'Icon')}</span><div class="q-chips ot-wrap-chips">${Object.entries(PLACE_ICONS).map(([k, v]) => `<button class="q-chip" type="button" data-icon="${k}" aria-pressed="${k === iconKey}" aria-label="${e(iconName(k))}">${icon(v)}</button>`).join('')}</div></div>
     <button class="q-btn primary block ot-sheet-go" type="button" data-save="1">${W('儲存', 'Save')}</button>`);
   d.addEventListener('click', ev => {
     const ic = ev.target.closest('[data-icon]');
@@ -1463,7 +1572,7 @@ function layersSheet() {
   const TILE = { bike: ['bike', COLOR.bike], bus: ['bus', COLOR.bus], rail: ['tra', COLOR.tra], metro: ['metro', COLOR.metro] };
   const d = sheet(`${sheetHead(W('地圖圖層', 'Map layers'), '', tile('layers', COLOR.route))}
     <div class="q-rowcard">${Object.entries(LAYERS)
-      .map(([k, name]) => `<div class="q-ritem">${tile(...TILE[k])}<span class="q-ritem-text"><span class="q-ritem-title">${name}</span></span><button class="q-switch" type="button" role="switch" data-sw="${k}" aria-checked="${L[k]}" aria-label="${name}"><i></i></button></div>`)
+      .map(([k, name]) => `<div class="q-ritem">${k === 'bike' ? bikeTile() : tile(...TILE[k])}<span class="q-ritem-text"><span class="q-ritem-title">${name}</span></span><button class="q-switch" type="button" role="switch" data-sw="${k}" aria-checked="${L[k]}" aria-label="${name}"><i></i></button></div>`)
       .join('')}</div>`);
   d.addEventListener('click', ev => {
     const sw = ev.target.closest('[data-sw]');
@@ -1484,6 +1593,9 @@ let when = { by: 'now', at: null };
 // only where they start): null until one is changed, kept for the next search.
 let tripModes = null;
 const modesNow = () => ({ ...ctx.data.prefs.modes, ...(tripModes || {}) });
+// 偏好電輔車: this search's too (the ⚡ after the ways of moving), kept for the next.
+let tripEbike = false;
+const ebikeNow = () => tripEbike && modesNow().bike !== false;
 // A trip from `from` (null: where you are) to `to`. `opts.swapHere`: the
 // trip turned round, ending where you are.
 async function plan(from, to, opts = {}) {
@@ -1512,14 +1624,14 @@ async function plan(from, to, opts = {}) {
     return renderCard();
   }
   map.fit([fromPt, dest], fitPad(40, 0.48));
-  ctx.data.trips = remember(ctx.data.trips, { name: dest.name, lat: dest.lat, lon: dest.lon, t: Date.now(), ...(dest.gid ? { gid: dest.gid } : {}) }, tripKey, 10);
+  ctx.data.trips = rememberTrip(ctx.data.trips, dest, { went: true });
   ctx.save();
   const c = card;
   let out = null;
   try {
     const at = when.by === 'now' ? null : when.at;
     // (A saved trip's ways from 交通, as its card ranked them: not found again.)
-    out = opts.plans?.length && !then.length ? { plans: opts.plans, sources: {} } : await planTrip(ctx.data, fromPt, dest, { at, by: when.by === 'arrive' ? 'arrive' : 'depart', modes: tripModes });
+    out = opts.plans?.length && !then.length ? { plans: opts.plans, sources: {} } : await planTrip(ctx.data, fromPt, dest, { at, by: when.by === 'arrive' ? 'arrive' : 'depart', modes: tripModes, ebike: ebikeNow() });
     c.plans = await walkHere(out.plans);
     c.choice = {};
     c.sources = out.sources;
@@ -1540,7 +1652,8 @@ async function plan(from, to, opts = {}) {
       roadLegs(best, { roads: 'bike' });
     }
     if (opts.nav && c.plans[opts.index || 0]) navigate(c.plans[opts.index || 0]);
-    if ((c.then.length || c.have) && c.plans.length) planRest(c);
+    const rest = (c.then.length || c.have) && c.plans.length ? planRest(c) : null;
+    if (opts.go) goBest(c, rest, opts.go);
   }
   // The direct buses and every bus's times come a moment later: the list
   // ranked again, the plan open (if one is) kept open, unless a time was picked.
@@ -1562,6 +1675,20 @@ async function plan(from, to, opts = {}) {
   });
 }
 
+// 編輯行程 while navigating: the recommended way of the new plans (on a
+// YouBike already, the one riding it on, once that's worked out) navigated at
+// once, the trip it replaces ended; the card left open when nothing came
+// (the owner, 2026-10-29: a stop added, and nothing changed).
+async function goBest(c, rest, said) {
+  if (c.have) await rest?.catch(() => {});
+  if (card !== c) return;
+  const ok = (c.plans || []).filter(p => !p.gone && canNav(p));
+  const best = ok.find(p => p.tags?.includes('推薦')) || ok[0];
+  if (!best) return ctx.status(W('找不到新的走法，原本的導航還在', 'No new way found; the old directions go on'));
+  await navigate(best);
+  ctx.status(said);
+}
+
 // A trip with stops: each later stretch planned too, from when the
 // recommended way gets you to its start, so every way on the card is the
 // whole trip (the owner, 2026-10-15: planned to the first stop alone, a 3′
@@ -1574,7 +1701,7 @@ async function planRest(c) {
     const at = chainOn(rec, c.rest)?.at(-1)?.arr || rec.arr;
     let plans = [];
     try {
-      const o = await planTrip(ctx.data, prev, x, { at: Math.max(at, Date.now()), by: 'depart', modes: tripModes });
+      const o = await planTrip(ctx.data, prev, x, { at: Math.max(at, Date.now()), by: 'depart', modes: tripModes, ebike: ebikeNow() });
       const later = await o.later?.catch(() => null);
       plans = later?.plans?.length ? later.plans : o.plans;
     } catch {}
@@ -1598,7 +1725,7 @@ async function planRest(c) {
     const cities = [...new Set(await Promise.all(pts.map(x => ctx.cityOf(x.lat, x.lon))))].filter(Boolean);
     const bikes = (await Promise.all(cities.map(x => cityBikes(x).catch(() => [])))).flat();
     const first = c.plans.find(p => p.tags?.includes('推薦')) || c.plans[0];
-    const k = card === c && keepBike(c.from, [c.to, ...c.then], bikes, c.have ? Date.now() : first.dep, { have: c.have, swap: bikeSwap(ctx.data.prefs), since: c.since ?? Date.now() });
+    const k = card === c && keepBike(c.from, [c.to, ...c.then], bikes, c.have ? Date.now() : first.dep, { have: c.have, swap: bikeSwap(ctx.data.prefs), since: c.since ?? Date.now(), prefer: ebikeNow() });
     if (k) {
       const whole = restOf(c, first);
       // (The recommendation unless a stop is far or it's all a short walk: keepWins.)
@@ -1687,7 +1814,7 @@ function plansHtml(c) {
         .join('')}${(c.then?.length || 0) < MAX_STOPS ? `<button class="ot-od-add" type="button" data-card="stop-add">${icon('plus')}<span>${W('加一站', 'Add stop')}</span></button>` : ''}</div>
       <button class="q-icon-btn ot-ph-swap" type="button" data-card="swap" aria-label="${W('對調起訖', 'Swap ends')}">${icon('swap')}</button></div>
     <div class="ot-opts"><button class="q-chip ot-when-pick" type="button" data-when="menu" aria-haspopup="dialog">${icon('clock')}${e(when.by === 'now' ? W('現在出發', 'Leave now') : W(`${whenDay(when.at)}${hm(when.at)} ${when.by === 'arrive' ? '抵達' : '出發'}`, `${when.by === 'arrive' ? 'Arrive' : 'Leave'} ${whenDay(when.at)}${hm(when.at)}`))}${icon('down', 'ot-caret')}</button>
-      <div class="ot-mtogs" role="group" aria-label="${W('這次搭什麼', 'Modes')}">${Object.entries(MODE_CHIP).map(([k, v]) => `<button class="ot-mtog" type="button" data-mode="${k}" aria-pressed="${modesNow()[k] !== false}" aria-label="${e(v)}" title="${e(v)}">${icon(k)}</button>`).join('')}</div></div>`;
+      <div class="ot-mtogs" role="group" aria-label="${W('這次搭什麼', 'Modes')}">${Object.entries(MODE_CHIP).map(([k, v]) => `<button class="ot-mtog" type="button" data-mode="${k}" aria-pressed="${modesNow()[k] !== false}" aria-label="${e(v)}" title="${e(v)}">${icon(k)}</button>`).join('')}${modesNow().bike !== false ? `<button class="ot-mtog" type="button" data-ebike aria-pressed="${tripEbike}" aria-label="${W('偏好電輔車', 'Prefer e-bikes')}" title="${W('偏好電輔車', 'Prefer e-bikes')}">${icon('bolt')}</button>` : ''}</div></div>`;
   if (!c.plans) return `${top}<div class="ot-plans">${'<div class="ot-plan ot-plan-wait" aria-hidden="true"><i class="ot-skel" style="width:40%"></i><i class="ot-skel" style="width:70%"></i></div>'.repeat(3)}</div><span class="ot-sr">${e(whenText)}</span>`;
   if (!c.plans.length) return `${top}${c.error ? `<p class="ot-note bad">${e(c.error)}</p>` : `<p class="ot-note">${W('找不到大眾運輸方案。', 'No transit route found.')}</p>`}${sourcesNote(c.sources)}`;
   // One row per route: the departure chosen (its best at first), the route's other departures as times to pick.
@@ -1802,12 +1929,14 @@ function stepsHtml(p, c = card) {
   // With stops: each stretch's steps, 抵達 each stop between them.
   const later = restOf(c, p) || [];
   const stopAt = (q, k) => `<li class="stop"><span class="ot-step-time">${e(hm(q.arr))}</span><span class="ot-step-i">${k + 1}</span><span class="ot-step-what"><b>${W('抵達', 'Arrive')} ${e([c.to, ...c.then][k]?.name || '')}</b></span></li>`;
-  return `<ol class="ot-steps">${[p, ...later].map((q, k) => `${k ? stopAt([p, ...later][k - 1], k - 1) : ''}${stepItems(q.legs)}`).join('')}<li class="end"><span class="ot-step-time">${e(hm((later.at(-1) || p).arr))}</span><span class="ot-step-i">${icon('pin')}</span><span class="ot-step-what"><b>${W('抵達', 'Arrive')}${c.then?.length ? ` ${e([c.to, ...c.then][later.length].name || '')}` : ''}</b></span></li></ol>
+  // (Each step its place in the whole way, as drawPlan draws it: a tap frames it.)
+  const at = [p, ...later].map((q, k, all) => all.slice(0, k).reduce((a, x) => a + x.legs.length, 0));
+  return `<ol class="ot-steps">${[p, ...later].map((q, k) => `${k ? stopAt([p, ...later][k - 1], k - 1) : ''}${stepItems(q.legs, at[k])}`).join('')}<li class="end" data-leg="end"><span class="ot-step-time">${e(hm((later.at(-1) || p).arr))}</span><span class="ot-step-i">${icon('pin')}</span><span class="ot-step-what"><b>${W('抵達', 'Arrive')}${c.then?.length ? ` ${e([c.to, ...c.then][later.length].name || '')}` : ''}</b></span></li></ol>
     <span class="ot-plan-acts">${canNav(p) ? `<span class="q-btn primary" role="button" data-card="nav">${icon('route')} ${W('開始導航', 'Start')}</span>` : `<span class="ot-nav-later">${W(`${e(hm(p.dep - NAV_LEAD))} 起可以開始導航`, `Directions from ${e(hm(p.dep - NAV_LEAD))}`)}</span>`}<span class="q-btn${picked(c, p) ? ' on' : ''}" role="button" data-card="pick">${icon('star')} ${picked(c, p) ? W('已釘選', 'Pinned') : W('釘選這個方案', 'Pin route')}</span></span>`;
 }
-function stepItems(legs) {
+function stepItems(legs, from = 0) {
   return legs
-    .map(l => {
+    .map((l, k) => {
       const c = legColor(l);
       const what =
         l.mode === 'walk'
@@ -1815,7 +1944,7 @@ function stepItems(legs) {
           : l.mode === 'bike'
             ? `<b>${l.swap ? W('換一台，', 'Swap, ') : ''}${W('騎', 'ride')} ${l.ebike ? W('YouBike 電輔車', 'YouBike e-bike') : 'YouBike'} ${e(distText(l.dist))}</b>${l.to?.lat != null ? `<span class="ot-step-gm" role="link" data-maps="${e(mapsLink(l.to, 'bicycling', l.from))}">${icon('route')}${mapsName()}</span>` : ''}${bikeEnd(l.kept ? W('騎', 'On') : W('借', 'Rent'), l.from.name, l.rent ? (l.ebike ? [[`${icon('bolt')}${W('電輔', 'e')}`, l.rent.ebike]] : [[`${icon('bike')}${W('一般', 'bikes')}`, l.rent.bikes], [`${icon('bolt')}${W('電輔', 'e')}`, l.rent.ebike || 0]]) : [])}${bikeEnd(l.park ? W('停', 'Park') : W('還', 'Return'), l.to.name, l.ret ? [[W('空位', 'docks'), l.ret.ret]] : [])}`
             : `<b>${e(MODE_NAME[l.mode])} ${e(l.mode === 'tra' ? trainKind(l.short || l.name) : l.short || l.name)}</b>${wayText(l) ? ` ${e(wayText(l))}` : ''}<small class="ot-step-line" title="${e(l.agency || '')}">${e(shown(l.from.name))} → ${e(shown(l.to.name))}${l.stops ? ` · ${W(`${l.stops} 站`, `${l.stops} stops`)}` : ''}</small><span class="ot-live" data-live="${e(`${l.mode}|${l.short || l.name}|${l.from.lat}|${l.from.lon}`)}"></span>`;
-      return `<li style="--c:${e(c)}"><span class="ot-step-time">${e(hm(l.dep))}${l.live ? `<i class="ot-livedot" title="${W('即時', 'Live')}"></i>` : ''}</span><span class="ot-step-i">${icon(l.mode)}</span><span class="ot-step-what">${what}<small class="ot-step-dur">${e(minsText(l.dur))}</small></span></li>`;
+      return `<li style="--c:${e(c)}" data-leg="${from + k}"><span class="ot-step-time">${e(hm(l.dep))}${l.live ? `<i class="ot-livedot" title="${W('即時', 'Live')}"></i>` : ''}</span>${l.mode === 'bike' ? '<span class="ot-step-i ot-logo"><img src="./img/youbike.png" alt="" width="28" height="28" decoding="async"></span>' : `<span class="ot-step-i">${icon(l.mode)}</span>`}<span class="ot-step-what">${what}<small class="ot-step-dur">${e(minsText(l.dur))}</small></span></li>`;
     })
     .join('');
 }
@@ -1823,6 +1952,15 @@ function stepItems(legs) {
 function selectPlan(i) {
   if (!card?.plans?.[i]) return;
   card.sel = card.sel === i ? -1 : i;
+  // A trip opened sits at half: its steps below, its route on the map above (the owner, 2026-10-28: at
+  // the lowest stop it showed nothing, pulled up it hid the map). Closed, the list goes back where it was.
+  if (card.sel >= 0) {
+    if (listDetent == null) listDetent = msheet.detent;
+    if (msheet.detent !== 'medium') msheet.set('medium');
+  } else if (listDetent != null) {
+    if (msheet.detent === 'medium' && listDetent !== 'peek') msheet.set(listDetent);
+    listDetent = null;
+  }
   renderCard();
   // (The time picked in view in its row of the day's times.)
   const pill = $('card').querySelector('.ot-plan.on .ot-dep.on');
@@ -2191,12 +2329,19 @@ function navView(plan, i, tries = 0) {
   if (document.visibilityState !== 'visible') return;
   viewAt = Date.now();
   const n = navNow();
-  const pts = stageView(plan, i, n?.phase, n?.pos || ctx.here, legPath, n?.ride ? { ...n.ride, next: n.next } : null);
+  // (A step ahead looked at: that step alone, not you far off on another; the owner, 2026-10-28.)
+  const pts = stageView(plan, i, n?.phase, n?.ahead ? null : n?.pos || ctx.here, legPath, n?.ride ? { ...n.ride, next: n.next } : null);
   if (!pts.length) return;
   const box = $('map').getBoundingClientRect();
-  const top = $('nav').querySelector('.ot-nav-top')?.getBoundingClientRect().bottom;
-  const bottom = $('nav').querySelector('.ot-nav-bottom')?.getBoundingClientRect().top;
-  const done = map.fit(pts, { top: Math.max(60, (top || box.top + 170) - box.top + 24), bottom: Math.max(60, box.bottom - (bottom || box.bottom - 150) + 24), left: 36, right: 36 });
+  const tr = $('nav').querySelector('.ot-nav-top')?.getBoundingClientRect();
+  const br = $('nav').querySelector('.ot-nav-bottom')?.getBoundingClientRect();
+  // (On a wide screen both cards stand at the map's left: the trip goes right of them.)
+  const side = sideMode() && (tr?.width || br?.width);
+  const top = tr?.bottom;
+  const bottom = br?.top;
+  const done = map.fit(pts, side
+    ? { top: 48, bottom: 48, left: Math.max(tr?.right || 0, br?.right || 0) - box.left + 36, right: 48 }
+    : { top: Math.max(60, (top || box.top + 170) - box.top + 24), bottom: Math.max(60, box.bottom - (bottom || box.bottom - 150) + 24), left: 36, right: 36 });
   // (No room yet, the page still laying out: again in a moment, never zoomed out to the island.)
   if (done === false && tries < 6) setTimeout(() => {
     const m = navNow();
@@ -2312,7 +2457,7 @@ async function navLate({ eta = null, k = -1, ride = '' } = {}) {
   lateBusy = true;
   try {
     const from = { name: HERE, lat: here.lat, lon: here.lon };
-    const r = await planTrip(ctx.data, from, navDest(n), { at: n.plan.deadline, by: 'arrive', modes: tripModes });
+    const r = await planTrip(ctx.data, from, navDest(n), { at: n.plan.deadline, by: 'arrive', modes: tripModes, ebike: ebikeNow() });
     let best = onTimeWay(r.plans, n.plan, k, Date.now());
     if (!best && r.later) best = onTimeWay((await r.later)?.plans, n.plan, k, Date.now());
     if (navNow()?.plan !== n.plan) return;
@@ -2331,7 +2476,7 @@ const MAX_STOPS = 3;
 // From where you are now to the same place: the ways now, to look at while
 // this one goes on; 開始導航 on one replaces it.
 let replanTo = null;
-function replanFromHere(to = null, then = null) {
+function replanFromHere(to = null, then = null, go = '') {
   const n = navNow();
   if (!n) return;
   replanTo = to || navDest(n);
@@ -2339,7 +2484,7 @@ function replanFromHere(to = null, then = null) {
   ctx.goTab('map');
   // (To be there by a time: still by it, from here.)
   when = n.plan.deadline > Date.now() ? { by: 'arrive', at: n.plan.deadline } : { by: 'now', at: null };
-  plan(null, replanTo, { then: then ?? n.plan.then ?? [] });
+  plan(null, replanTo, { then: then ?? n.plan.then ?? [], go });
 }
 // A row of a navigation sheet: a colour tile and what it does.
 const menuRow = (m, g, c, text) => `<button class="q-ritem chevron" type="button" data-m="${m}">${tile(g, c, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title">${text}</span></span></button>`;
@@ -2369,23 +2514,25 @@ function navMore() {
 }
 
 // 編輯行程, navigating: the places still to go (where you're heading first,
-// then the rest), each changed with a tap or taken off with ×, a stop added
-// first or last (the owner, 2026-10-13: one place to add a stop and take it
-// off again). A change to where you're heading first re-routes (on a bus or
-// train, staying on it: onBoardTo); one to the places after it only changes
-// the list.
+// then the rest) as one card of numbered rows, each changed with a tap or
+// taken off with its ×, and a stop added first or last under it (the owner,
+// 2026-10-13: one place to add a stop and take it off again). A change to
+// where you're heading first is navigated at once (on a bus or train,
+// staying on it: onBoardTo); one to the places after it changes the list,
+// and each is planned once you're at the one before (the owner, 2026-10-29:
+// ugly, and a stop added changed nothing).
 function editTripSheet() {
   const n = navNow();
   if (!n) return;
   const places = [navDest(n), ...(n.plan.then || [])];
+  const name = p => e(p.name || W('地點', 'Place'));
   const rows = places
-    .map((p, k) => `<div class="ot-edit-row"><button class="ot-row-btn" type="button" data-ed="${k}">${icon('pin')}<span><b>${e(p.name || W('地點', 'Place'))}</b><small>${k === 0 ? W('現在要去', 'Heading now') : W(`接著第 ${k + 1} 站`, `Stop ${k + 1}`)}${k === places.length - 1 ? W('・終點', '・last') : ''}</small></span></button>${places.length > 1 ? `<button class="q-icon-btn" type="button" data-ed-x="${k}" aria-label="${W('拿掉', 'Remove')} ${e(p.name || W('這一站', 'this stop'))}">${icon('x')}</button>` : ''}</div>`)
+    .map((p, k) => `<div class="q-ritem ot-stop"><button class="ot-stop-pick" type="button" data-ed="${k}" aria-label="${W('換掉', 'Change')} ${name(p)}"><b class="ot-stop-n${k ? '' : ' now'}">${k + 1}</b><span class="q-ritem-text"><span class="q-ritem-title">${name(p)}</span><small>${k === 0 ? W('現在要去', 'Heading now') : k === places.length - 1 ? W('終點', 'Last stop') : W('接著去', 'Then')}</small></span></button>${places.length > 1 ? `<button class="ot-stop-x" type="button" data-ed-x="${k}" aria-label="${W('拿掉', 'Remove')} ${name(p)}">${icon('x')}</button>` : ''}</div>`)
     .join('');
-  const d = sheet(`${sheetHead(W('編輯行程', 'Edit trip'))}
-    <div class="ot-nav-menu">${rows}
-      <button class="ot-row-btn" type="button" data-ed-add="first">${icon('plus')}<span><b>${W('先去別的地方', 'Somewhere first')}</b><small>${W(`插在 ${e(places[0].name || '目的地')} 之前`, `Before ${e(places[0].name || 'destination')}`)}</small></span></button>
-      ${places.length <= MAX_STOPS ? `<button class="ot-row-btn" type="button" data-ed-add="last">${icon('plus')}<span><b>${W('最後再去一個地方', 'One more at the end')}</b><small>${W(`${e(places.at(-1).name || '終點')} 之後`, `After ${e(places.at(-1).name || 'the end')}`)}</small></span></button>` : ''}
-    </div>`);
+  const more = places.length <= MAX_STOPS;
+  const d = sheet(`${sheetHead(W('編輯行程', 'Edit trip'), W('點一站可以換地點', 'Tap a stop to change it'))}
+    <div class="q-rowcard ot-stops">${rows}</div>
+    ${more ? `<div class="ot-stop-adds"><button class="q-chip" type="button" data-ed-add="first">${icon('plus')}${W('先去別處', 'Somewhere first')}</button><button class="q-chip" type="button" data-ed-add="last">${icon('plus')}${W('最後再去', 'One more last')}</button></div>` : ''}`);
   d.addEventListener('click', async ev => {
     const x = ev.target.closest('[data-ed-x]')?.dataset.edX;
     const k = ev.target.closest('[data-ed]')?.dataset.ed;
@@ -2393,25 +2540,29 @@ function editTripSheet() {
     if (x == null && k == null && !add) return;
     d.shut();
     let list = places.slice();
-    if (x != null) list.splice(Number(x), 1);
-    else {
+    let said;
+    if (x != null) {
+      const [gone] = list.splice(Number(x), 1);
+      said = Number(x) === 0 ? W(`已拿掉 ${gone.name}，改去 ${list[0].name}`, `Removed ${gone.name}; now to ${list[0].name}`) : W(`已拿掉 ${gone.name}`, `Removed ${gone.name}`);
+    } else {
       const pt = await pickPoint(add === 'first' ? W('先去哪裡', 'Where first?') : add === 'last' ? W('最後再去哪裡', 'Where last?') : W('改去哪裡', 'Where instead?'), { onMap: false });
       if (!pt || pt.here) return;
       const p = { name: pt.name, lat: pt.lat, lon: pt.lon, ...(pt.gid ? { gid: pt.gid } : {}) };
       if (add === 'first') list = [p, ...list];
       else if (add === 'last') list = [...list, p];
       else list[Number(k)] = p;
+      said = add === 'first' ? W(`先去 ${p.name}`, `${p.name} first`) : add === 'last' ? W(`已加入：最後去 ${p.name}`, `Added: ${p.name} at the end`) : Number(k) === 0 ? W(`改去 ${p.name}`, `Now to ${p.name}`) : W(`第 ${Number(k) + 1} 站改成 ${p.name}`, `Stop ${Number(k) + 1} is now ${p.name}`);
     }
     if (navNow()?.plan !== n.plan || !list.length) return;
     // Where you're heading first unchanged: only the places after it.
     const first = list[0];
     if (first.lat === places[0].lat && first.lon === places[0].lon) {
       navRetarget(first, list.slice(1));
-      return ctx.status(W('已更新行程', 'Trip updated'));
+      return ctx.status(said);
     }
     const now = navNow();
     if (now.phase === 'on' && !['walk', 'bike'].includes(now.plan.legs[now.i]?.mode)) return onBoardTo(first, list.slice(1));
-    replanFromHere(first, list.slice(1));
+    replanFromHere(first, list.slice(1), said);
   });
 }
 

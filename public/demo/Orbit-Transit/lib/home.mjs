@@ -14,11 +14,11 @@
 import * as kitUI from '#kit/ui.mjs';
 import { suggest } from './suggest.mjs';
 import { tripNow, keptLead, pinnedTrainsNext, rideNow } from './tab-go.mjs';
-import { stopsEta } from './bus.mjs';
+import { stopsEta, etaFor } from './bus.mjs';
 import { nearBusRows, nearBikes, inTime } from './near-ui.mjs';
 import { nearStops, keptNear, keepNear, nearMoved, fitStrips } from './bus-ui.mjs';
 import { stationLabel, icon, legChips, fitLegs } from './ui.mjs';
-import { COLOR, tile, countHtml, tick, focus } from './look.mjs';
+import { COLOR, tile, bikeTile, bikeStats, countHtml, tick, focus } from './look.mjs';
 import { tripKey } from './store.mjs';
 import { e, hm, distText, meters, shown } from './util.mjs';
 
@@ -77,7 +77,7 @@ export function createHome(box, ctx, act) {
       .flatMap(g => g.items)
       .map(it => {
         const r = { ...it, ...rideNow(it, here) };
-        const v = S.pinned.get(r.stopUID);
+        const v = etaFor(S.pinned, r);
         const live = v?.status === 0 && v.sec != null;
         return { id: it.id, route: it.route, stop: r.stop, toward: r.off ? r.off.stop : r.headsign, at: live ? (v.t ?? S.pinnedAt) + v.sec * 1000 : null, live, last: Boolean(v?.last), d: here && r.lat != null ? meters(here.lat, here.lon, r.lat, r.lon) : null, it, r };
       });
@@ -88,7 +88,7 @@ export function createHome(box, ctx, act) {
       })
       .filter(Boolean);
     const bikes = (S.bikes || []).map(b => ({ ...b, d: b.walk?.dist ?? b.d }));
-    return suggest({ now, here, places: ctx.data.places, trips, buses, trains, bikes });
+    return suggest({ now, here, places: ctx.data.places, trips, buses, trains, bikes, recents: ctx.data.trips });
   };
 
   // One suggestion as { glyph, eyebrow, title, sub, tags, at, big, color, body }.
@@ -134,10 +134,21 @@ export function createHome(box, ctx, act) {
         glyph: 'bike',
         eyebrow: W('附近的 YouBike', 'YouBike near you'),
         title: x.name,
-        big: `<strong class="q-focus-value ot-count">${n}<small>${W('台可借', 'bikes')}</small></strong>`,
+        big: bikeStats(x),
         num: n,
-        facts: [x.d != null ? distText(x.d) : '', x.ebike ? W(`電輔車 ${x.ebike}`, `E-bikes ${x.ebike}`) : '', W(`空位 ${x.ret}`, `Docks ${x.ret}`)],
-        tile: tile('bike', COLOR.bike)
+        facts: [x.d != null ? distText(x.d) : ''],
+        tile: bikeTile()
+      };
+    }
+    if (x.kind === 'usual') {
+      const d = ctx.here ? meters(ctx.here.lat, ctx.here.lon, x.place.lat, x.place.lon) : null;
+      return {
+        glyph: 'route',
+        eyebrow: W('常在這時候去', 'You often go now'),
+        title: x.place.name || W('地圖上的位置', 'Spot on the map'),
+        ...(d != null ? { big: `<strong class="q-focus-value ot-count">${e(distText(d))}</strong>`, numText: distText(d) } : {}),
+        facts: [d != null ? W('從目前位置', 'From here') : ''],
+        tile: tile('route', COLOR.route)
       };
     }
     return {
@@ -271,6 +282,7 @@ export function createHome(box, ctx, act) {
       if (!x) return;
       // (A bike's own fields kept: the card opens the station itself.)
       if (x.kind === 'bike') return act.bike(S.bikes?.find(b => b.uid === x.uid));
+      if (x.kind === 'usual') return act.recent(x.place);
       return act[x.kind === 'home' ? 'place' : x.kind]?.(x.kind === 'home' ? x.place : x);
     }
     const del = t.closest('[data-del-recent]');

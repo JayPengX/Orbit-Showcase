@@ -2,18 +2,18 @@
 // with its subs; a category opens to its name, look and subs. Anything can be
 // renamed, moved up or down, hidden, or merged into another (its history goes
 // with it, and a merge can be undone); one never used can be deleted. The
-// built-ins are only ever hidden, never lost.
+// built-ins are only ever hidden, never lost. One set for everyone (Jay
+// 2026-11-01): no presets.
 import { h, icons, tile, sheet, segmented, menu, toast, tick } from '#kit/ui.mjs';
 import { ask } from '#kit/orbit.mjs';
-import { catList, catOf, subsOf, subOf, catName, glyph, usesOf, saveCat, addCat, moveCat, mergeCat, removeCat, isBuiltIn, catUndo, useCats, CAT_ICONS, CAT_COLORS } from '../lib/cats.mjs';
+import { catList, catOf, subsOf, subOf, catName, glyph, usesOf, saveCat, addCat, moveCat, mergeCat, removeCat, isBuiltIn, catUndo, useBooksCats, CAT_ICONS, CAT_COLORS } from '../lib/cats.mjs';
 import { state, W, lang, saved, money, acct, card } from '../shell.mjs';
 import { payOptions } from './entry.mjs';
 
-const changed = () => (useCats(state.books.cats), saved());
-
+const changed = () => (useBooksCats(state.books), saved());
 // The subs in a line that never runs off: past three, the first two and the count.
 const subLine = c => {
-  const n = c.subs.map(x => catName(x, lang));
+  const n = c.subs.filter(x => !x.hidden).map(x => catName(x, lang));
   if (!n.length) return W('沒有細項', 'No subs');
   return n.length > 3 ? W(`${n.slice(0, 2).join('、')} 等 ${n.length} 項`, `${n.slice(0, 2).join(', ')} +${n.length - 2}`) : n.join(W('、', ', '));
 };
@@ -29,7 +29,7 @@ export function openCats(kind = 'out') {
   const title = s.el.querySelector('.q-sheet-head h2');
 
   function paint() {
-    useCats(b.cats);
+    useBooksCats(b);
     return open ? paintOne(open) : paintList();
   }
 
@@ -123,7 +123,7 @@ export function openCats(kind = 'out') {
       { label: c.hidden ? W('顯示', 'Show') : W('隱藏', 'Hide'), onClick: () => (saveCat(b, { id: c.id, hidden: !c.hidden }), changed(), paint()) },
       { label: W('合併到⋯', 'Merge into…'), onClick: () => mergeMenu(anchor, c, uses) },
       !uses && !isBuiltIn(c.id) ? { label: W('刪除', 'Delete'), danger: true, onClick: () => {
-        const undo = catUndo(b);
+            const undo = catUndo(b);
         removeCat(b, c.id);
         if (open === c.id) open = '';
         changed();

@@ -3,7 +3,7 @@
 // the tabs draw their pages whole.
 
 import { e, hm, shown } from './util.mjs';
-import { icon } from './ui.mjs';
+import { icon, bikeMark } from './ui.mjs';
 import { effectLabel, oneEach } from './service.mjs';
 import { W } from '#kit/lang.mjs';
 import * as kitUI from '#kit/ui.mjs';
@@ -14,6 +14,12 @@ export const COLOR = { bus: '#22c55e', tra: '#0ea5e9', hsr: '#f97316', metro: '#
 
 // A colour tile holding one of the app's glyphs (ui.mjs icon names), or a word (`word`).
 export const tile = (glyph, color = '', size = '', word = false) => `<span class="q-tile${size ? ` ${size}` : ''}"${color ? ` style="--t:${color}"` : ''} aria-hidden="true">${word ? e(glyph) : icon(glyph)}</span>`;
+// A brand's own logo as a tile, on a white plate: TPASS 行政院通勤月票 (its wordmark from
+// tpass.tw) and YouBike (its smile-and-bike wordmark from youbike.com.tw).
+const logoTile = (name, size = '') => `<span class="q-tile ot-logo${size ? ` ${size}` : ''}" aria-hidden="true"><img src="./img/${name}.png" alt="" width="40" height="40" decoding="async"></span>`;
+export const tpassTile = () => logoTile('tpass');
+export const bikeTile = (size = '') => logoTile('youbike', size);
+export { bikeMark };
 export const tag = (text, tone = '') => `<span class="q-tag${tone ? ` ${tone}` : ''}">${e(text)}</span>`;
 // A section: its 20px title, an optional button on the right (`more`: html), its body.
 export const section = (title, body, more = '') => `<section class="q-section ot-sec"><div class="q-section-head"><h2>${e(title)}</h2>${more}</div>${body}</section>`;
@@ -56,6 +62,13 @@ export function focus({ eyebrow = '', big = '', title = '', sub = '', facts = []
   return attrs ? `<button class="q-focus q-press ot-focus" type="button" ${attrs}>${inner}</button>` : `<section class="q-focus ot-focus">${inner}</section>`;
 }
 
+// A YouBike station's bikes on a green focus card: 一般, 電輔車 and 空位 as three
+// columns apart (a small label over its number), hairlines between; a 0 dimmed.
+export const bikeStats = s => {
+  const col = (label, n, cls = '') => `<div class="ot-bstat${cls}${n ? '' : ' zero'}"><small>${label}</small><b class="num">${n}</b></div>`;
+  return `<div class="ot-bstats">${col(`${icon('bike')}${W('一般', 'Regular')}`, s.bikes || 0)}${col(`${icon('bolt')}${W('電輔車', 'E-bikes')}`, s.ebike || 0)}${col(`${icon('dock')}${W('空位', 'Docks')}`, s.ret || 0, ' dock')}</div>`;
+};
+
 // Nothing here: the kit's empty state.
 export const emptyNote = title => kitUI.emptyHtml({ title });
 // A non-first tab's large title (the kit's navTitle).
@@ -67,7 +80,7 @@ export const noticesHtml = items =>
   items?.length
     ? `<div class="q-rowcard ot-notices">${items
         .map(
-          n => `<details class="ot-notice${n.stop ? ' stop' : ''}"><summary class="q-ritem">${tile(n.kind === 'metro' && n.sys === 'TRTCMG' ? 'gondola' : n.kind, COLOR[n.kind] || COLOR.route, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title"${/[\u3400-\u9fff]/.test(n.title) ? ' lang="zh-Hant"' : ''}>${e(n.title)}</span><small>${e(n.sum)}</small></span></summary>${n.said?.length ? `<div class="ot-notice-body">${saidRows(n.said)}</div>` : n.lines.length ? `<div class="ot-notice-body">${n.lines.map(t => `<p>${e(t)}</p>`).join('')}</div>` : ''}</details>`
+          n => `<details class="ot-notice${n.stop ? ' stop' : ''}"><summary class="q-ritem">${n.kind === 'bike' ? bikeTile('sm') : tile(n.kind === 'metro' && n.sys === 'TRTCMG' ? 'gondola' : n.kind, COLOR[n.kind] || COLOR.route, 'sm')}<span class="q-ritem-text"><span class="q-ritem-title"${/[\u3400-\u9fff]/.test(n.title) ? ' lang="zh-Hant"' : ''}>${e(n.title)}</span><small>${e(n.sum)}</small></span></summary>${n.said?.length ? `<div class="ot-notice-body">${saidRows(n.said)}</div>` : n.lines.length ? `<div class="ot-notice-body">${n.lines.map(t => `<p>${e(t)}</p>`).join('')}</div>` : ''}</details>`
         )
         .join('')}</div>`
     : '';

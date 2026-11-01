@@ -21,7 +21,7 @@ export const TOURS = {
     { tap: '#q', type: '台北101', after: 1800, wait: 8000, say: ['搜尋要去的地方', 'Search for a place'] },
     { tap: '.ot-res', wait: 3000, say: ['選台北 101', 'Pick Taipei 101'] },
     { tap: '[data-card="go"]', after: 2500, wait: 12000, say: ['規劃怎麼去', 'Plan the trip'] },
-    { tap: '.ot-plan[data-plan="0"]', wait: 5000, say: ['排好的選擇：火車加 YouBike，下一班也列好', 'Ranked choices: train plus YouBike, with the next departures'] },
+    { tap: '.ot-plan[data-plan="0"]', wait: 5000, say: ['排好的選擇，下一班也列好', 'Ranked choices, with the next departures'] },
     { tap: '.q-tab[data-tab="go"]', wait: 6000, say: ['看附近的車', 'See what’s nearby'] },
     { tap: '.ot-strip-main', wait: 4000, say: ['點一路公車', 'Tap a bus'] },
     { tap: '.q-close', say: ['每站幾分鐘到，都在這裡', 'Minutes to every stop'] }
@@ -33,7 +33,8 @@ export const TOURS = {
     { tap: '.q-tab[data-tab="tools"]', say: ['改課表、考試倒數', 'Edit it, count down to exams'] }
   ],
   securities: [
-    { tap: '.q-stock', say: ['點今天漲最多的這檔', 'Tap today’s top gainer'] },
+    { tap: '[data-action="mover-group"][data-v="tw"]', say: ['看台股今天的漲跌', 'Today’s Taiwan movers'] },
+    { tap: '.home-movers .q-stock', say: ['點漲最多的這檔', 'Tap the top gainer'] },
     { tap: '[data-action="chart-style"][data-v="candle"]', say: ['換成 K 線', 'Switch to candles'] },
     { tap: '.q-btn.trade.buy', say: ['買進（練習資金）', 'Buy, with practice money'] },
     { tap: '[data-action="qty"][data-qty="100"]', say: ['買 100 股零股', '100 shares, an odd lot'] },
@@ -46,9 +47,8 @@ export const TOURS = {
   ],
   sports: [
     { say: ['今天在台灣看得到的比賽：足球、棒球、籃球放在一起。', 'Today’s games you can watch in Taiwan: football, baseball and basketball together.'] },
-    { tap: '.event-row:has(source[srcset*="teamlogos/mlb"])', wait: 5000, say: ['點世界大賽這場', 'Tap the World Series game'] },
-    { tap: '.match-tabs .q-chip:nth-child(2)', say: ['兩隊數據，一眼比較', 'Both teams’ stats, side by side'] },
-    { tap: '.match-tabs .q-chip:nth-child(6)', wait: 5000, say: ['整個季後賽的對戰圖', 'The whole playoff bracket'] },
+    { tap: '.event-row', wait: 5000, say: ['點推薦的第一場', 'Tap the top pick'] },
+    { tap: '.match-tabs .q-seg button:last-child', wait: 3000, say: ['兩隊在聯賽排第幾', 'Where both sides stand in the league'] },
     { tap: '.q-close', say: ['看完關掉', 'Close it'] },
     { tap: '#tab-matches', wait: 5000, say: ['每個聯賽的賽程和排名', 'Every league’s games and table'] },
     { tap: '[data-league="f1"]', wait: 5000, say: ['F1：每一站、每一節', 'F1: every race, every session'] },
@@ -69,12 +69,12 @@ export const TOURS = {
     { tap: '#tab-progress', say: ['你記住了多少', 'How many you know'] }
   ],
   money: [
-    { tap: '.mn-day[data-day="2026-10-16"]', say: ['點一天，看那天花了什麼', 'Tap a day to see what was spent'] },
+    { tap: '.mn-day[data-day="2026-10-26"]', say: ['點一天，看那天花了什麼', 'Tap a day to see what was spent'] },
     { tap: '.q-tab-action', say: ['記一筆', 'Add an entry'] },
-    { tap: '.mn-cat[data-cat="drink"]', say: ['選「飲料」', 'Pick Drinks'] },
-    { tap: '.mn-key[aria-label="6"]', say: ['輸入 6', 'Type 6'] },
-    { tap: '.mn-key[aria-label="5"]', say: ['再按 5', 'Then 5'] },
-    { tap: '.mn-key.save', say: ['儲存', 'Save'] },
+    { tap: '.mn-cat[data-cat="food"]', say: ['選「餐飲」', 'Pick Food'] },
+    { tap: '.mn-subchip[data-sub="food:drink"]', say: ['細項選「飲料點心」', 'Then Drinks & snacks'] },
+    { tap: '.mn-amount-in', type: '65', say: ['輸入金額', 'Type the amount'] },
+    { tap: '.q-sheet-foot .q-btn.primary', say: ['儲存', 'Save'] },
     { tap: '#tab-stats', say: ['錢花到哪裡', 'Where the money went'] },
     { tap: '#tab-accts', say: ['每個帳戶的餘額', 'Every account’s balance'] }
   ],

@@ -4,33 +4,26 @@
 // entries; a credit card to its bill too.
 import { h, icons, tile, sheet, toggle, toast, empty, segmented, menu } from '#kit/ui.mjs';
 import { ask } from '#kit/orbit.mjs';
-import { balances, worth, put, drop, dropAccount, live, adjustBy, cardBill, totals, nextRepeat, runRepeats, ACCOUNT_KINDS, groupOf, historyOf, hasHistory, closeAccount, closeCard, moveAccount, moveCard, snapshot, restore, accountParts } from '../lib/books.mjs';
+import { balances, worth, put, drop, dropAccount, live, adjustBy, cardBill, acctTotals, owed, touches, nextRepeat, runRepeats, ACCOUNT_KINDS, groupOf, historyOf, hasHistory, closeAccount, closeCard, moveAccount, moveCard, snapshot, restore, accountParts } from '../lib/books.mjs';
 import { brandsFor, brandOf } from '../lib/brands.mjs';
-import { catName, glyph, lookOf, subsOf, guessCat, guessSub } from '../lib/cats.mjs';
-import { state, W, en, lang, money, dayLabel, today, saved, KINDS, kindName, acct, acctName, allAccounts, openAccounts, cardsOf, logoFor, card } from '../shell.mjs';
-import { entryRow, openEntry, payOptions, catTiles, subChips } from './entry.mjs';
-
-// An account's picture: its brand's logo, else its kind's tile.
-export function acctTile(a, size = 40) {
-  const src = logoFor(a);
-  const k = KINDS[a?.kind] || KINDS.other;
-  if (!src) return tile(glyph(k.icon), k.color);
-  const img = h('img', { src, alt: '', width: String(size), height: String(size), loading: 'lazy', decoding: 'async' });
-  img.addEventListener('error', () => img.parentNode?.replaceWith(tile(glyph(k.icon), k.color)), { once: true });
-  return h('span', { class: 'mn-logo', style: `--s:${size}px` }, [img]);
-}
+import { NETWORKS, networkLogo } from '../lib/networks.mjs';
+import { catName, glyph, lookOf, subsOf, subOf, guessCat, guessSub } from '../lib/cats.mjs';
+import { state, W, en, lang, money, dayLabel, today, saved, KINDS, kindName, acct, acctName, allAccounts, openAccounts, cardsOf, card, flow } from '../shell.mjs';
+import { entryRow, openEntry, payOptions, catTiles, subChips, subCols } from './entry.mjs';
+import { acctTile, methodTile, cardTile, payPic, whatTile } from './pics.mjs';
 
 export function renderAccts(box) {
   const b = state.books;
   const bal = balances(b);
   const w = worth(b);
   const all = openAccounts();
-  // The focal point, open on the page: what it all comes to, then the two
+  // The focal point, on its card: what it all comes to, then the two
   // halves of it as quiet figures.
-  const hero = h('section', { class: 'q-focus' }, [
-    h('span', { class: 'q-focus-label', text: W('總資產', 'Net worth') }),
-    h('b', { class: 'q-focus-value q-fit', text: money(w.net) }),
-    h('div', { class: 'q-focus-figs' }, [fig(W('資產', 'Assets'), money(w.assets)), fig(W('負債', 'Debts'), money(w.debts))])
+  // (One short card as 月曆's, Jay 2026-10-31: the total left, its two
+  // halves right, so the accounts start on the first screen.)
+  const hero = h('section', { class: 'q-focus mn-sum' }, [
+    h('div', { class: 'mn-sum-main' }, [h('span', { class: 'q-focus-label', text: W('總資產', 'Net worth') }), h('b', { class: 'q-focus-value q-fit', text: money(w.net) })]),
+    h('div', { class: 'q-focus-figs mn-sum-figs' }, [fig(W('資產', 'Assets'), money(w.assets)), fig(W('負債', 'Debts'), money(w.debts))])
   ]);
   const groups = ACCOUNT_KINDS.map(kind => {
     const list = all.filter(a => groupOf(a.kind) === kind);
@@ -42,7 +35,30 @@ export function renderAccts(box) {
   });
   const add = h('button', { class: 'q-btn tinted block mn-add', type: 'button', onclick: () => openAccountEdit(null) }, [h('span', { html: icons.plus }), W('新增帳戶', 'Add an account')]);
 
-  box.replaceChildren(hero, ...groups.filter(Boolean), add);
+  // (Wide: the groups run on into a second and third column, in order.)
+  flow(box, [hero, ...groups, owedSection(), add]);
+}
+
+// 朋友還沒給: a friend's share of a spend not handed over yet; a tap says
+// where it went once it is (today).
+function owedSection() {
+  const list = owed(state.books);
+  if (!list.length) return null;
+  const total = list.reduce((n, x) => n + x.e.amt, 0);
+  return h('section', { class: 'q-section' }, [
+    h('div', { class: 'q-section-head q-list-head' }, [h('h2', { text: W('朋友還沒給', 'Friends owe you') }), h('span', { class: 'num mn-owed-total', text: money(total) })]),
+    h(
+      'div',
+      { class: 'q-rowcard' },
+      list.map(({ e, of }) =>
+        h('button', { class: 'q-ritem chevron mn-row', type: 'button', onclick: ev => menu(ev.currentTarget, payOptions({ moving: true }).map(o => ({ label: W(`收到了，進 ${o.label}`, `Got it, into ${o.label}`), onClick: () => (put(state.books, 'entries', { ...e, wait: 0, a: o.a, d: today() }), saved(), toast(W(`${e.who || '朋友'} 給了 ${money(e.amt)}`, `${money(e.amt)} from ${e.who || 'a friend'}`))) }))) }, [
+          tile(glyph('user'), '#0891b2'),
+          h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: e.who || W('朋友', 'A friend') }), h('small', { text: [dayLabel(e.d, { week: false }), of ? of.note || of.inv?.seller || catName(subOf(of.sub) || lookOf(of), lang) : ''].filter(Boolean).join(' · ') })]),
+          h('span', { class: 'q-ritem-value num mn-amt move', text: money(e.amt) })
+        ])
+      )
+    )
+  ]);
 }
 
 // 固定收支 (from 更多): each with when it's next, soonest first.
@@ -64,7 +80,7 @@ export function openRepeats() {
               .map(({ r, next }) => {
                 const look = lookOf(r);
                 return h('button', { class: 'q-ritem chevron mn-row', type: 'button', onclick: () => (s.close(), openRepeat(r)) }, [
-                  tile(glyph(look.icon), look.color),
+                  whatTile(look, r.sub),
                   h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: r.note || (r.k === 'move' ? W('轉帳', 'Transfer') : catName(look, lang)) }), h('small', { text: [everyText(r), next ? W(`下次 ${dayLabel(next, { week: false })}`, `next ${dayLabel(next, { week: false })}`) : ''].filter(Boolean).join(' · ') })]),
                   h('span', { class: `q-ritem-value num mn-amt ${r.k}`, text: r.k === 'in' ? money(r.amt, { sign: true }) : money(r.amt) })
                 ]);
@@ -108,8 +124,8 @@ export function openAccount(id, host = null) {
   const now = today();
   const bal = balances(b)[id] || 0;
   const ym = now.slice(0, 7);
-  const mine = live(b.entries).filter(e => e.a === id || e.to === id);
-  const month = totals({ ...b, entries: Object.fromEntries(mine.map(e => [e.id, e])) }, `${ym}-01`, `${ym}-31`);
+  const mine = live(b.entries).filter(e => touches(e).includes(id));
+  const month = acctTotals(b, id, `${ym}-01`, `${ym}-31`);
   const bill = a.kind === 'credit' ? cardBill(b, a, now) : null;
   const hero = h('div', { class: 'mn-acct-hero' }, [acctTile(a, 56), h('small', { text: a.kind === 'credit' ? W('目前欠款', 'Owed now') : W('餘額', 'Balance') }), h('b', { class: 'num q-fit', text: money(a.kind === 'credit' ? -bal : bal) })]);
   const facts = h('div', { class: 'q-fig mn-facts' }, [
@@ -177,7 +193,7 @@ function cardsSection(a, host) {
       [
         a.kind === 'bank' ? h('div', { class: 'q-ritem' }, [tile(glyph('exchange'), '#8e8e93'), h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: W('轉帳／提款', 'Transfer or ATM') })])]) : null,
         ...cards.map(c =>
-          h('button', { class: 'q-ritem chevron', type: 'button', onclick: () => editCard(a, c, host()) }, [tile(glyph('card'), '#0088ff'), h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: `${c.name}${c.last4 ? ` •${c.last4}` : ''}` }), h('small', { text: methodNote(a) })])])
+          h('button', { class: 'q-ritem chevron', type: 'button', onclick: () => editCard(a, c, host()) }, [cardTile(c), h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: `${c.name}${c.last4 ? ` •${c.last4}` : ''}` }), h('small', { text: methodNote(a) })])])
         ),
         ...allAccounts()
           .filter(x => x.kind === 'credit' && x.pay === a.id)
@@ -193,8 +209,14 @@ function cardsSection(a, host) {
 function editCard(a, c, host) {
   const name = h('input', { class: 'q-field', type: 'text', maxlength: '20', placeholder: W('名稱', 'Name'), value: c?.name || methodsFor(a)[0] });
   const last4 = h('input', { class: 'q-field', type: 'text', inputmode: 'numeric', maxlength: '4', placeholder: W('可不填', 'Optional'), value: c?.last4 || '' });
-  const chips = h('div', { class: 'q-chips mn-kinds' });
-  const paintChips = () => chips.replaceChildren(...methodsFor(a).map(m => h('button', { class: 'q-chip', type: 'button', 'aria-pressed': String(name.value === m), text: m, onclick: () => ((name.value = m), paintChips()) })));
+  // (Its network: a new one under a credit card starts on the card's.)
+  let net = c ? c.net || '' : a.kind === 'credit' ? a.net || '' : '';
+  const nets = h('div');
+  const paintNets = () => nets.replaceChildren(netGrid(net, id => ((net = id), paintNets())));
+  paintNets();
+  // (Each with its own logo, two across so a name never squeezes: Jay 2026-10-27.)
+  const chips = h('div', { class: 'mn-methods', role: 'radiogroup', 'aria-label': W('種類', 'Kind') });
+  const paintChips = () => chips.replaceChildren(...methodsFor(a).map(m => h('button', { class: 'mn-method', type: 'button', role: 'radio', 'aria-checked': String(name.value.trim() === m), onclick: () => ((name.value = m), paintChips()) }, [methodTile(m, 28), h('span', { text: m })])));
   name.addEventListener('input', paintChips);
   paintChips();
   const back = () => openAccount(a.id, host);
@@ -202,7 +224,7 @@ function editCard(a, c, host) {
     title: c ? c.name : W('新增付款方式', 'Add a way to pay'),
     lead: h('button', { class: 'q-close mn-back', type: 'button', 'aria-label': W('返回', 'Back'), html: icons.chevron, onclick: back }),
     cls: 'mn-acct-edit',
-    body: [h('div', { class: 'mn-form' }, [chips, field(W('名稱', 'Name'), name), field(W('卡號末四碼', 'Last 4 digits'), last4)])],
+    body: [h('div', { class: 'mn-form' }, [chips, field(W('名稱', 'Name'), name), group(W('卡別', 'Card network'), nets), field(W('卡號末四碼', 'Last 4 digits'), last4)])],
     foot: h('div', { class: 'q-sheet-foot mn-foot2' }, [
       c ? h('button', { class: 'q-btn danger tinted', type: 'button', text: W('移除', 'Remove'), onclick: () => removeCard(a, c, host) }) : null,
       h('button', {
@@ -210,7 +232,7 @@ function editCard(a, c, host) {
         type: 'button',
         text: W('儲存', 'Save'),
         onclick: () => {
-          put(state.books, 'cards', { ...(c || {}), acct: a.id, name: name.value.trim() || methodsFor(a)[0], last4: last4.value.replace(/\D/g, '').slice(0, 4) });
+          put(state.books, 'cards', { ...(c || {}), acct: a.id, name: name.value.trim() || methodsFor(a)[0], net, last4: last4.value.replace(/\D/g, '').slice(0, 4) });
           saved();
           back();
         }
@@ -338,7 +360,7 @@ const payBill = (a, bill) => openEntry({ kind: 'move', amt: bill?.left || 0, not
 
 export function openAccountEdit(a, host = null) {
   const isNew = !a;
-  const f = { kind: a?.kind || 'bank', brand: a?.brand || '', name: a?.name || '', open: '', inTotal: a ? Boolean(a.inTotal) : true, pay: a?.pay || '', close: a?.close || '', due: a?.due || '', reload: { on: false, from: '', amt: '', below: '', ...(a?.reload || {}) } };
+  const f = { kind: a?.kind || 'bank', brand: a?.brand || '', net: a?.net || '', name: a?.name || '', open: '', inTotal: a ? Boolean(a.inTotal) : true, pay: a?.pay || '', close: a?.close || '', due: a?.due || '', reload: { on: false, from: '', amt: '', below: '', ...(a?.reload || {}) } };
   const body = h('div', { class: 'mn-form' });
   // 自動加值 (a stored-value card's own; some have it, some don't): NT$500 under NT$100 is the usual rule, filled in to change.
   const rl = f.reload;
@@ -381,11 +403,13 @@ export function openAccountEdit(a, host = null) {
       f.kind === 'credit'
         ? h('button', { class: 'mn-pill', type: 'button', onclick: e => menu(e.currentTarget, [{ label: W('不設定', 'None'), onClick: () => ((f.pay = ''), paint()) }, ...openAccounts().filter(x => x.kind === 'bank' && x.id !== a?.id).map(x => ({ label: x.name, icon: x.id === f.pay ? '✓' : '', onClick: () => ((f.pay = x.id), paint()) }))]) }, [h('span', { class: 'mn-pill-t', text: f.pay ? acctName(f.pay) : W('選銀行帳戶', 'Choose a bank account') }), h('i', { html: icons.chevron })])
         : null;
-    // (Left empty: nobody in the books pays, a parent's card; the balance just goes up. Jay 2026-10-27.)
-    const reloadFrom = h('button', { class: 'mn-pill', type: 'button', onclick: e => menu(e.currentTarget, [{ label: W('不設定', 'None'), icon: rl.from ? '' : '✓', onClick: () => ((rl.from = ''), paint()) }, ...openAccounts().filter(x => x.id !== a?.id && (x.kind === 'bank' || x.kind === 'credit')).map(x => ({ label: x.name, icon: x.id === rl.from ? '✓' : '', onClick: () => ((rl.from = x.id), paint()) }))]) }, [h('span', { class: 'mn-pill-t', text: rl.from && acct(rl.from) ? acctName(rl.from) : W('不設定，只加餘額', 'None: just the balance') }), h('i', { html: icons.chevron })]);
+    // (Left empty: nobody in the books pays, a parent's card; it comes in as income. Jay 2026-10-27.)
+    const reloadFrom = h('button', { class: 'mn-pill', type: 'button', onclick: e => menu(e.currentTarget, [{ label: W('不設定', 'None'), icon: rl.from ? '' : '✓', onClick: () => ((rl.from = ''), paint()) }, ...openAccounts().filter(x => x.id !== a?.id && (x.kind === 'bank' || x.kind === 'credit')).map(x => ({ label: x.name, icon: x.id === rl.from ? '✓' : '', onClick: () => ((rl.from = x.id), paint()) }))]) }, [h('span', { class: 'mn-pill-t', text: rl.from && acct(rl.from) ? acctName(rl.from) : W('不設定，算收入', 'None: counted as income') }), h('i', { html: icons.chevron })]);
     body.replaceChildren(
       ...[
         kindPick ? field(W('種類', 'Kind'), kindPick) : null,
+        // (A credit card's network before its bank: two short rows, never under the long bank grid.)
+        f.kind === 'credit' ? group(W('卡別', 'Card network'), netGrid(f.net, id => ((f.net = id), paint()))) : null,
         brandGrid ? field(f.kind === 'ticket' ? W('哪一張', 'Which card') : f.kind === 'wallet' ? W('哪一個', 'Which one') : W('銀行', 'Bank'), brandGrid) : null,
         field(W('名稱', 'Name'), nameIn),
         isNew ? field(f.kind === 'credit' ? W('目前欠款', 'Owed now') : W('目前餘額', 'Balance now'), openIn) : null,
@@ -402,7 +426,7 @@ export function openAccountEdit(a, host = null) {
   const save = () => {
     const name = f.name.trim() || (f.brand ? (en ? brandOf(f.brand).en : brandOf(f.brand).zh) : kindName(f.kind));
     const day = v => Math.min(31, Math.max(0, Math.floor(Number(v) || 0))) || '';
-    const rec = { ...(a || {}), kind: f.kind, brand: f.brand, name, inTotal: f.inTotal, pay: f.kind === 'credit' ? f.pay : '', close: f.kind === 'credit' ? day(f.close) : '', due: f.kind === 'credit' ? day(f.due) : '' };
+    const rec = { ...(a || {}), kind: f.kind, brand: f.brand, net: f.kind === 'credit' ? f.net : '', name, inTotal: f.inTotal, pay: f.kind === 'credit' ? f.pay : '', close: f.kind === 'credit' ? day(f.close) : '', due: f.kind === 'credit' ? day(f.due) : '' };
     const whole = v => Math.max(0, Math.round(Number(String(v).replace(/[^\d]/g, '')) || 0));
     if (f.kind === 'ticket' || f.kind === 'wallet') {
       rec.reload = rl.on ? { on: true, from: acct(rl.from) ? rl.from : '', amt: whole(rl.amt) || 500, below: whole(rl.below) } : a?.reload ? { ...a.reload, on: false } : undefined;
@@ -430,6 +454,22 @@ export function openAccountEdit(a, host = null) {
   };
   const s = host ? swapPage(host, page) : sheet(page);
 }
+// The card networks, each its mark and name, and 不指定 (none) to close the
+// two rows; a tap on the one picked leaves it unpicked too.
+const netGrid = (cur, onPick) =>
+  h(
+    'div',
+    { class: 'mn-brands mn-nets', role: 'radiogroup', 'aria-label': W('卡別', 'Card network') },
+    [...NETWORKS, null].map(n => {
+      const id = n?.id || '';
+      return h('button', { class: 'mn-brand', type: 'button', role: 'radio', 'aria-checked': String(id === cur), 'aria-pressed': String(id === cur), onclick: () => onPick(id === cur ? '' : id) }, [
+        n ? h('img', { class: 'mn-net-card', src: networkLogo(id), alt: '', decoding: 'async' }) : h('span', { class: 'mn-net-card mn-net-none', html: glyph('card') }),
+        h('span', { text: n ? (en ? n.en : n.zh) : W('不指定', 'None') })
+      ]);
+    })
+  );
+// (A div, not a label: a tap on the words mustn't pick the first button.)
+const group = (label, control) => h('div', { class: 'mn-field' }, [h('span', { class: 'mn-field-l', text: label }), control]);
 const field = (label, control) => h('label', { class: 'mn-field' }, [h('span', { class: 'mn-field-l', text: label }), control]);
 
 // ---- A repeat ---------------------------------------------------------------------
@@ -483,11 +523,11 @@ export function openRepeat(r) {
     const pick = (field_, moving) => {
       const opts = payOptions({ moving, keep: [f.a, f.via, f.to] });
       const cur = opts.find(o => o.a === f[field_] && (moving || o.via === f.via));
-      return h('button', { class: 'mn-pill', type: 'button', onclick: e => menu(e.currentTarget, opts.map(o => ({ label: o.label, onClick: () => ((f[field_] = o.a), moving || (f.via = o.via), paint()) }))) }, [h('span', { class: 'mn-pill-t', text: cur?.label || W('選帳戶', 'Choose') }), h('i', { html: icons.chevron })]);
+      return h('button', { class: 'mn-pill', type: 'button', onclick: e => menu(e.currentTarget, opts.map(o => ({ label: o.label, lead: payPic(o.a, moving ? '' : o.via, 28), onClick: () => ((f[field_] = o.a), moving || (f.via = o.via), paint()) }))) }, [cur ? payPic(cur.a, moving ? '' : cur.via, 24) : null, h('span', { class: 'mn-pill-t', text: cur?.label || W('選帳戶', 'Choose') }), h('i', { html: icons.chevron })]);
     };
     const dayCtl =
       f.every === 'week'
-        ? h('div', { class: 'q-chips' }, WEEKDAYS.map((w, i) => h('button', { class: 'q-chip', type: 'button', 'aria-pressed': String(Number(f.day) === i), text: w, onclick: () => ((f.day = i), paint()) })))
+        ? h('div', { class: 'mn-weekdays' }, WEEKDAYS.map((w, i) => h('button', { class: 'mn-subchip', type: 'button', 'aria-pressed': String(Number(f.day) === i), text: w, onclick: () => ((f.day = i), paint()) })))
         : f.every === 'year'
           ? (() => {
               const i = h('input', { class: 'q-field', type: 'date', value: `${now.slice(0, 4)}-${f.day}` });
@@ -508,11 +548,10 @@ export function openRepeat(r) {
         f.k !== 'move'
           ? (() => {
               const grid = h('div', { class: 'mn-cats all', role: 'radiogroup' }, catTiles(f.k, f.cat, id => ((picked = true), id !== f.cat && ((f.cat = id), (f.sub = '')), paint())));
-              requestAnimationFrame(() => grid.querySelector('[aria-checked="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }));
               return field(W('分類', 'Category'), grid);
             })()
           : null,
-        f.k !== 'move' && subsOf(f.cat).length ? h('div', { class: 'mn-subs', role: 'group', 'aria-label': W('細項', 'Sub-category') }, subChips(f.cat, f.sub, id => ((f.sub = id), paint()))) : null,
+        f.k !== 'move' && subsOf(f.cat).length ? h('div', { class: 'mn-subs', role: 'group', 'aria-label': W('細項', 'Sub-category'), style: `--n:${subCols(subsOf(f.cat).length)}` }, subChips(f.cat, f.sub, id => ((f.sub = id), paint()))) : null,
         field(f.k === 'move' ? W('從', 'From') : f.k === 'in' ? W('存入', 'Into') : W('付款方式', 'Paid with'), pick('a', f.k === 'move')),
         f.k === 'move' ? field(W('到', 'To'), pick('to', true)) : null,
         field(W('多久一次', 'How often'), everySeg),

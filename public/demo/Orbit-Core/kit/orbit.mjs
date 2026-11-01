@@ -107,18 +107,17 @@ export const appName = app => APPS[app]?.name || app;
 // a new pass opens with NT$200,000; every Monday (Taiwan time) pays a fixed
 // NT$10,000, the same for every account, like a salary (eco.js pays it,
 // back pay for weeks nobody came). With the wealth level rewards and 急難紓困
-// for someone with nothing, those are the only money Orbit gives; more is
-// borrowed (信貸, loan.mjs) and repaid from the pay. All of it is shown in
-// Securities (its 資金 tab: pay, 信貸, 紓困, 財富等級, 真相); the Pass itself
+// for someone with nothing, those are the only money Orbit gives (the only
+// borrowing is 融資 in Securities). All of it is shown in
+// Securities (its 資金 tab: pay, 紓困, 財富等級, 真相); the Pass itself
 // is the account and the family, never money.
 export const ECONOMY = {
   start: 200_000,
   weekly: PAY_WEEK
 };
 
-// What the account is worth: the pool and Securities' holdings, less what a
-// loan still owes (borrowed money is nobody's worth).
-export const worthOf = (wallet, now = Date.now()) => poolBalance(wallet) + finiteOr0(wallet?.snap?.stock?.holdings) - debtOf(wallet, now);
+// What the account is worth: the pool and Securities' holdings.
+export const worthOf = wallet => poolBalance(wallet) + finiteOr0(wallet?.snap?.stock?.holdings);
 // 財富等級: what the account is worth (worthOf) puts it on a level; the
 // first time it reaches one, Orbit's economy pays the level's reward once
 // (eco.js RANKS, the same table: `eco:rank:<id>`).
@@ -137,8 +136,7 @@ const rankName = (id, i) => {
 };
 // Where the money came from and went (all time, NT$): what the system gave
 // (opening money, pay, level rewards, the owner's grants), the government
-// (govOf: relief less taxes), Orbit's bank (loan costs and overdraft
-// interest), and the account's own result (markets, savings: worth less the
+// (govOf: relief less taxes), Orbit's overdraft interest, and the account's own result (markets, savings: worth less the
 // other three).
 // 政府 (kit/gov.mjs): the same figures the admin page adds up.
 import { govOf } from './gov.mjs';
@@ -146,10 +144,8 @@ import { twDay, finiteOr0 } from './format.mjs';
 export { govOf };
 export function moneySides(wallet) {
   const gave = { start: 0, pay: 0, rank: 0, other: 0 };
-  // What Orbit charges: overdraft interest, and a loan's cost (what came in
-  // less what went back, with what's still owed: its interest and fees).
+  // What Orbit charges: overdraft interest.
   let fees = 0;
-  let loanFlow = 0;
   for (const e of wallet?.entries || []) {
     if (e.app !== 'eco') continue;
     const a = Number(e.amount) || 0;
@@ -159,9 +155,7 @@ export function moneySides(wallet) {
     // (A correction or prize from the admin page: money Orbit gave, either way.)
     else if (e.kind === 'rebase' || e.kind === 'admin') gave.other += a;
     else if (e.kind === 'od') fees -= a;
-    else if (LOAN_KINDS.has(e.kind)) loanFlow += a;
   }
-  fees += debtOf(wallet) - loanFlow;
   const given = gave.start + gave.pay + gave.rank + gave.other;
   const gov = govOf(wallet);
   const worth = worthOf(wallet);
@@ -173,10 +167,9 @@ export const paydayFor = () => ECONOMY.weekly;
 // in Securities or borrowing on margin there.
 export const OVERDRAFT_RATE = 0.01;
 
-// 信貸 and 急難紓困: loan.mjs, shared with the Worker.
-import { PAY_WEEK, LOAN, RELIEF, loans, activeLoan, loanOwed, payoffAmount, debtOf, credit, canBorrow, loanOffer, maxFor, dueCount, reliefCheck, nextPayday } from './loan.mjs';
-export { PAY_WEEK, LOAN, RELIEF, loans, activeLoan, loanOwed, payoffAmount, debtOf, credit, canBorrow, loanOffer, maxFor, dueCount, reliefCheck, nextPayday };
-const LOAN_KINDS = new Set(['loan', 'loanfee', 'loanpay', 'loanlate', 'loanbad', 'loangar', 'loanoff']);
+// The weekly pay and 急難紓困: pay.mjs, shared with the Worker.
+import { PAY_WEEK, RELIEF, reliefCheck, nextPayday } from './pay.mjs';
+export { PAY_WEEK, RELIEF, reliefCheck, nextPayday };
 
 // ---- Looks: an avatar and a frame, free for everyone ------------------------------------
 //
@@ -424,7 +417,14 @@ function cachePayload(app, account, payload) {
 // save on a slow upload still gets there). Every call can be sent twice: the
 // Worker's entries have fixed ids and a write sets the whole payload.
 // Without a connection at all it isn't tried (the app's next sync sends it).
-export const callWait = bytes => 10_000 + Math.round(bytes / 20);
+//
+// The first try waits less (5 s plus the same for its size): a call with no
+// answer by then has almost always stalled (a connection the phone left dead,
+// or one an update's reload cut a request on), and the second, asked at once,
+// gets through. Sports' first opening after an update sat 20 s on its loading
+// screen on the opening's sign-in call, where closing the app and opening it
+// again took 5 (2026-10-31).
+export const callWait = (bytes, tries = 1) => (tries ? 10_000 : 5_000) + Math.round(bytes / 20);
 export const CALL_RETRY_MS = 1_500;
 async function call(method, query = '', body) {
   const text = body ? JSON.stringify(body) : undefined;
@@ -436,12 +436,13 @@ async function call(method, query = '', body) {
         method,
         headers: body ? { 'Content-Type': 'text/plain;charset=UTF-8' } : {},
         body: text,
-        signal: AbortSignal.timeout(callWait(text?.length || 0))
+        signal: AbortSignal.timeout(callWait(text?.length || 0, tries))
       });
       break;
     } catch (error) {
       if (tries >= 1 || globalThis.navigator?.onLine === false) throw error;
-      await new Promise(done => setTimeout(done, CALL_RETRY_MS));
+      // (A try that ran out of time is asked again at once; one that failed, a moment later.)
+      if (error?.name !== 'TimeoutError') await new Promise(done => setTimeout(done, CALL_RETRY_MS));
     }
   }
   const data = await res.json().catch(() => ({}));
@@ -1194,109 +1195,73 @@ function statusStrip() {
   bar.setAttribute('aria-hidden', 'true');
   document.body.prepend(bar);
 }
-// A phone turned sideways: every app's screens are drawn for a phone held
-// upright (the owner, 2026-10-10), and iOS can't lock a web app's
-// orientation, so the page turns back against the phone: it stays upright
-// on the glass as if the phone hadn't turned (orbit.css html[data-q-turn]).
-// Only a phone (its short side 520 px or less); a tablet turns as it likes.
-function uprightTurn() {
-  if (typeof document === 'undefined' || document.documentElement.dataset.qTurnOn) return;
+// Every screen, either way up (Jay 2026-10-31: "properly work on all
+// resolution horizontal or vertical"). The page is laid out for the screen it
+// is on; <html> carries what kind of screen that is, read off its size, so the
+// kit and the apps lay out by it (orbit.css "Every screen"):
+//   q-tabrail the tabs down the left side instead of along the foot: a phone on
+//            its side (too short for a bar at the foot) and a wide screen
+//   q-float  sheets as cards in the middle, not up from the foot (a tablet, a computer)
+//   q-wide   the content has room for two columns side by side (640 px and up)
+//   q-w3     room for three (1000 px and up)
+// --q-sbw is a computer's scroll bar, which 100vw counts and the page hasn't.
+// screenFit() is what it is now; onScreen(fn) calls fn with it on each change.
+const screenFns = new Set();
+let screenNow = null;
+export function screenFit() {
+  if (screenNow) return screenNow;
+  if (typeof document === 'undefined' || !document.documentElement) return { rail: false, float: false, wide: false, w3: false, width: 390 };
+  return measureScreen();
+}
+export function onScreen(fn) {
+  screenFns.add(fn);
+  return () => screenFns.delete(fn);
+}
+let insetProbe = null;
+function measureScreen() {
   const root = document.documentElement;
-  root.dataset.qTurnOn = '1';
-  const set = () => {
-    const w = globalThis.innerWidth;
-    const h = globalThis.innerHeight;
-    const phone = root.classList.contains('q-touch') && Math.min(w, h) <= 520;
-    const angle = Number(globalThis.screen?.orientation?.angle ?? globalThis.orientation ?? 90);
-    // Turned left (90): the page a quarter back to the right, and the other way round.
-    const turn = phone && w > h ? (angle === 270 || angle === -90 ? '90' : '-90') : '';
-    if (turn) {
-      root.style.setProperty('--q-turn-w', `${h}px`);
-      root.style.setProperty('--q-turn-h', `${w}px`);
-    }
-    // Upright, no mark at all: an empty one still matches html[data-q-turn],
-    // whose rules put every alert in the top-left corner.
-    if (turn && root.dataset.qTurn !== turn) root.dataset.qTurn = turn;
-    else if (!turn && 'qTurn' in root.dataset) delete root.dataset.qTurn;
-    turnRules(turn ? [h, w, turn] : null);
-  };
-  set();
-  globalThis.addEventListener?.('resize', set);
-  globalThis.screen?.orientation?.addEventListener?.('change', set);
-  // A stylesheet that arrives later is read the same way.
-  if (typeof MutationObserver === 'function' && document.head) {
-    new MutationObserver(() => root.dataset.qTurn && set()).observe(document.head, { childList: true });
-    document.addEventListener('load', e => e.target?.tagName === 'LINK' && root.dataset.qTurn && set(), true);
+  const w = root.clientWidth || globalThis.innerWidth || 390;
+  const h = globalThis.innerHeight || root.clientHeight || 844;
+  if (!insetProbe && document.body) {
+    insetProbe = document.createElement('div');
+    insetProbe.setAttribute('aria-hidden', 'true');
+    insetProbe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;width:0;height:0;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)';
+    document.body.append(insetProbe);
   }
-}
-// Turned, the page is still laid out by the phone's sideways screen: its
-// @media widths and vw/vh lengths read 874 px wide, and the notch's and home
-// bar's margins (safe-area insets) land on the page's left and right, so
-// the page came out narrower and laid out differently from upright. While
-// turned, each is read against the upright screen instead ([width, height,
-// turn]: an inset is the sideways screen's side that is now the page's
-// top, left, …); null puts every rule back as written.
-const turnedMedia = new Map();
-const turnedStyles = new Map();
-const VIEW_LEN = /(-?[\d.]+)(d|s|l)?v(w|h|min|max)\b|safe-area-inset-(top|right|bottom|left)/g;
-const TURN_SIDES = {
-  '-90': { top: 'left', left: 'bottom', bottom: 'right', right: 'top' },
-  90: { top: 'right', left: 'top', bottom: 'left', right: 'bottom' },
-};
-function turnRules(size) {
-  if (typeof document === 'undefined') return;
-  const [W, H, turn] = size || [];
-  const sizeFits = (_, side, dim, n, unit) => {
-    const px = Number(n) * (unit === 'em' || unit === 'rem' ? 16 : 1);
-    const have = /height/.test(dim) ? H : W;
-    const ok = side === 'min-' ? have >= px : side === 'max-' ? have <= px : have === px;
-    return ok ? '(min-width: 0px)' : '(max-width: 0px)';
-  };
-  const viewLen = (_, n, __, axis, side) => {
-    if (side) return `safe-area-inset-${TURN_SIDES[turn][side]}`;
-    const unit = { w: W, h: H, min: Math.min(W, H), max: Math.max(W, H) }[axis];
-    return `${Math.round(Number(n) * unit) / 100}px`;
-  };
-  const walk = rules => {
-    for (const rule of rules || []) {
-      if (rule.media && rule.cssRules) {
-        const was = turnedMedia.get(rule) ?? rule.media.mediaText;
-        if (/width|height|orientation/.test(was)) {
-          turnedMedia.set(rule, was);
-          const text = size
-            ? was
-                .replace(/\(\s*(min-|max-)?(width|height|device-width|device-height)\s*:\s*([\d.]+)(px|em|rem)?\s*\)/g, sizeFits)
-                .replace(/\(\s*orientation\s*:\s*(\w+)\s*\)/g, (_, o) => (o === 'portrait' ? '(min-width: 0px)' : '(max-width: 0px)'))
-            : was;
-          if (rule.media.mediaText !== text) rule.media.mediaText = text;
-        }
-      }
-      // The turned page's own rules (html[data-q-turn]) already speak sideways.
-      if (rule.style && !/data-q-turn/.test(rule.selectorText || '')) {
-        // The whole declaration block: an inset inside a shorthand (padding)
-        // has no longhand to read.
-        const was = turnedStyles.get(rule) ?? rule.style.cssText;
-        VIEW_LEN.lastIndex = 0;
-        if (VIEW_LEN.test(was)) {
-          turnedStyles.set(rule, was);
-          const text = size ? was.replace(VIEW_LEN, viewLen) : was;
-          if (rule.style.cssText !== text) rule.style.cssText = text;
-        }
-      }
-      if (rule.styleSheet) walk(safeRules(rule.styleSheet));
-      if (rule.cssRules) walk(rule.cssRules);
+  const cs = insetProbe && typeof getComputedStyle === 'function' ? getComputedStyle(insetProbe) : null;
+  const insets = cs ? (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) : 0;
+  const rail = (w > h && h <= 520) || w >= 1100;
+  const float = w >= 600 && h > 520;
+  const width = Math.round(w - insets - (rail ? 92 : 0));
+  const now = { rail, float, wide: width >= 640, w3: width >= 1000, width };
+  const sbw = Math.max(0, Math.round((globalThis.innerWidth || w) - w));
+  if (root.style.getPropertyValue('--q-sbw') !== `${sbw}px`) root.style.setProperty('--q-sbw', `${sbw}px`);
+  for (const [k, cls] of [['rail', 'q-tabrail'], ['float', 'q-float'], ['wide', 'q-wide'], ['w3', 'q-w3']]) if (root.classList.contains(cls) !== now[k]) root.classList.toggle(cls, now[k]);
+  const was = screenNow;
+  screenNow = now;
+  if (was && (was.rail !== now.rail || was.float !== now.float || was.wide !== now.wide || was.w3 !== now.w3 || was.width !== now.width)) for (const fn of screenFns) {
+    try {
+      fn(now);
+    } catch (e) {
+      console.error(e);
     }
-  };
-  if (!size && !turnedMedia.size && !turnedStyles.size) return;
-  for (const sheet of document.styleSheets) walk(safeRules(sheet));
-}
-// Another site's stylesheet (the fonts) can't be read; it has no layout rules.
-function safeRules(sheet) {
-  try {
-    return sheet.cssRules;
-  } catch {
-    return null;
   }
+  return now;
+}
+function watchScreen() {
+  if (typeof document === 'undefined' || document.documentElement.dataset.qScreen) return;
+  document.documentElement.dataset.qScreen = '1';
+  measureScreen();
+  let frame = 0;
+  const again = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => ((frame = 0), measureScreen()));
+  };
+  globalThis.addEventListener?.('resize', again);
+  globalThis.screen?.orientation?.addEventListener?.('change', again);
+  // (A page that grows a scroll bar on a computer: the width it leaves.)
+  let seenW = 0;
+  if (typeof ResizeObserver === 'function') new ResizeObserver(es => es[0].contentRect.width !== seenW && ((seenW = es[0].contentRect.width), again())).observe(document.documentElement);
 }
 // The phone paints its own status bar above the page in the theme colour (or
 // black), so the theme colour is the strip's: one colour from the top of the
@@ -1319,7 +1284,7 @@ function syncThemeColor() {
 // Back at once if an app redraws its body (innerHTML) and takes it away.
 function keepStatusStrip() {
   statusStrip();
-  uprightTurn();
+  watchScreen();
   syncThemeColor();
   if (typeof MutationObserver === 'function') {
     // (The colour read again only when the strip came back or the body's
@@ -1614,8 +1579,7 @@ function makeSession(app, { lang, heartbeat }) {
       if (res.same) res.wallet = wallet;
       return res;
     });
-  // 信貸 and 急難紓困 (loan.mjs): the Worker checks and writes them.
-  s.loan = (action, body = {}) => withToken(qt => call('POST', '', { op: 'loan', qt, action, ...body })).then(res => (absorb(res), res));
+  // 急難紓困 (pay.mjs): the Worker checks and writes it.
   s.relief = () => withToken(qt => call('POST', '', { op: 'relief', qt })).then(res => (absorb(res), res));
   s.dropInbox = id => withToken(qt => call('POST', qs({ app }), { op: 'drop-inbox', qt, inbox: id }));
   // Other passes into this one (they're deleted after).
@@ -1757,13 +1721,6 @@ const KIND = {
   start: ['開戶金', 'Opening money'],
   pay: ['薪水', 'Pay'],
   rebase: ['經濟調整', 'Adjustment'],
-  loan: ['信貸撥款', 'Loan paid out'],
-  loanfee: ['信貸開辦費', 'Loan set-up fee'],
-  loanpay: ['信貸還款', 'Loan installment'],
-  loanlate: ['信貸逾期違約金', 'Late payment charge'],
-  loanbad: ['催收：存款抵銷', 'Collection: balance taken'],
-  loangar: ['催收：薪資扣押', 'Collection: pay garnished'],
-  loanoff: ['信貸清償', 'Loan paid off'],
   relief: ['急難紓困', 'Emergency relief'],
   rank: ['財富等級獎勵', 'Wealth level reward'],
   od: ['透支利息', 'Overdraft interest'],
@@ -1860,8 +1817,10 @@ export function dismiss(id) {
 const dismissed = () => readJson(KEY.dismiss, {});
 
 // items: [{ id, keys: [...], quality (0..1), group }]; returns the best
-// `n`, each with `why` (its strongest matching key) and `score`.
-export function rank(items, { wallet, n = 10, diversity = 0.35, explore = 0.08, now = Date.now(), aff = affinity(wallet, now) } = {}) {
+// `n`, each with `why` (its strongest matching key) and `score`. `lift`:
+// what the person opened and passed over among picks shown before
+// (feedback.mjs lifter), × on each score.
+export function rank(items, { wallet, n = 10, diversity = 0.35, explore = 0.08, now = Date.now(), aff = affinity(wallet, now), lift = null } = {}) {
   const gone = dismissed();
   const max = Math.max(1, ...Object.values(aff));
   const scored = items.map(item => {
@@ -1877,7 +1836,7 @@ export function rank(items, { wallet, n = 10, diversity = 0.35, explore = 0.08, 
     // A little for the unexplored: items touching nothing known yet.
     const novelty = seen ? 0 : explore * (0.5 + hash01(`${item.id}:${taipeiDay(now)}`));
     const penalty = gone[item.id] ? 0.25 : 1;
-    return { ...item, why, score: (q * (0.6 + 1.4 * best) + novelty) * penalty };
+    return { ...item, why, score: (q * (0.6 + 1.4 * best) + novelty) * penalty * (lift ? lift(item) : 1) };
   });
   // Maximal marginal relevance over groups.
   const picked = [];
@@ -1948,9 +1907,6 @@ const ERR = {
   ECO_CREATE_CLOSED: ['Orbit Pass 由擁有者發放，請向分享給你的人索取。', 'Orbit Passes are handed out by their owner: ask the person who shared Orbit with you.'],
   ECO_PAIR_NOT_FOUND: ['這組裝置代碼無效或已過期（10 分鐘內、只能用一次）。', 'That device code isn’t valid or has expired (10 minutes, once).'],
   RATE_LIMITED: ['嘗試太多次，請稍後再試。', 'Too many tries. Please wait a little.'],
-  ECO_LOAN_FUNDS: ['餘額不足以一次還清。', 'Your balance doesn’t cover paying it all off.'],
-  ECO_LOAN_NONE: ['沒有未還清的信貸。', 'There’s no loan to pay off.'],
-  ECO_LOAN_REFUSED: ['銀行婉拒了這筆申請。', 'The bank turned this application down.'],
   ECO_RELIEF_REFUSED: ['目前不符合急難紓困資格。', 'You don’t qualify for relief right now.'],
   ECO_SESSION_MOVED: ['這個 App 已在別處開啟，回到這裡後再試一次。', 'This app is open somewhere else. Come back here and try again.'],
   ECO_PASSKEY_UNKNOWN: ['這個通行密鑰已不在任何 Orbit Pass 上，請用通行碼登入。', 'This passkey isn’t on any Orbit Pass any more. Sign in with your pass.'],
@@ -2687,7 +2643,7 @@ export async function schedulePush(s, items) {
     if (readStore(storeKey) && readStore(storeKey) !== '[]' && (await pushPost(s, 'schedule', { items: [] }))) writeStore(storeKey, '[]');
     return;
   }
-  const base = `${globalThis.location?.origin || 'https://jaypengx.github.io'}${APPS[s.app]?.path || '/'}`;
+  const base = `${globalThis.location?.origin || SITE}${APPS[s.app]?.path || '/'}`;
   const list = items
     .filter(x => x && Number.isFinite(x.at) && kindOn(s.app, x.kind))
     .map(x => ({ at: Math.round(x.at), title: x.title || '', body: x.body || '', tag: `${s.app}:${x.tag || x.title}`, ...(x.kind ? { kind: x.kind } : {}), url: `${base}${x.hash ? `#${x.hash}` : ''}`, ...(x.check ? { check: x.check } : {}), ...(x.until ? { until: Math.round(x.until) } : {}) }))
@@ -3024,15 +2980,41 @@ export function isPhoneOrTablet() {
   return /Macintosh/.test(ua) && (globalThis.navigator?.maxTouchPoints || 0) > 1;
 }
 const isIOS = () => /iPhone|iPad|iPod/i.test(globalThis.navigator?.userAgent || '') || (/Macintosh/.test(globalThis.navigator?.userAgent || '') && (globalThis.navigator?.maxTouchPoints || 0) > 1);
-const inAppBrowser = () => /Line\/|FBAN|FBAV|Instagram|Messenger|MicroMessenger|KAKAOTALK/i.test(globalThis.navigator?.userAgent || '');
+// Apps whose links open in their own browser, which can't add to the home
+// screen (named so the page can say where you are).
+const IN_APPS = [
+  [/\bLine\//i, 'LINE'],
+  [/Instagram/i, 'Instagram'],
+  [/Barcelona/i, 'Threads'],
+  [/FBAN|FBAV|FB_IAB|FBIOS/i, 'Facebook'],
+  [/MicroMessenger/i, 'WeChat'],
+  [/Messenger|MESSENGER/, 'Messenger'],
+  [/KAKAOTALK/i, 'KakaoTalk'],
+  [/musical_ly|BytedanceWebview|TikTok/i, 'TikTok'],
+  [/Discord/i, 'Discord'],
+  [/; wv\)/, '']
+];
+const inAppName = (ua = globalThis.navigator?.userAgent || '') => IN_APPS.find(([re]) => re.test(ua))?.[1];
 // On phones and tablets the apps run from the home screen only, every one
 // of them: opened from another app or a link in Safari, it asks to be added
 // too (a hand-over no longer lets it run in the browser). Returns true when
 // it covered the page (the app shouldn't start).
 let installCovered = false;
+// Chrome on Android offers its own install (an app, not a bookmark): kept
+// from the moment the kit loads, shown as a button on the gate.
+let installPrompt = null;
+let installButton = null;
+globalThis.addEventListener?.('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  if (installButton) installButton.hidden = false;
+});
 // The app this home-screen window was opened as (kept for the window only):
 // another app opened from inside it (the Pass's 打開, a link) loads in the
 // same window, still "standalone", and must be added and opened on its own too.
+// iPhone only: Android keeps each app's pages in its own window already, and
+// moves a tab with its sessionStorage (Chrome → the new app's window), so the
+// key there named the app it came from and the new app never opened.
 const WINDOW_APP = 'orbit.window';
 function windowApp(app) {
   try {
@@ -3042,37 +3024,195 @@ function windowApp(app) {
   } catch {}
   return app;
 }
+// How this phone adds an app to its home screen: which browser, which
+// version (Safari 26 hides Share behind ⋯), or another app's browser that
+// has to hand the page to a real one first.
+export function installWay(ua = globalThis.navigator?.userAgent || '', touch = globalThis.navigator?.maxTouchPoints || 0) {
+  const ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && touch > 1);
+  const android = /Android/i.test(ua);
+  if (!ios && !android) return { way: 'computer' };
+  const app = inAppName(ua);
+  if (app != null) return { way: app === 'LINE' ? 'line' : ios ? 'inapp-ios' : 'inapp-android', app };
+  if (ios) {
+    const ipad = /iPad/.test(ua) || /Macintosh/.test(ua);
+    if (/CriOS/.test(ua)) return { way: 'ios-chrome' };
+    if (/FxiOS|EdgiOS|OPiOS|OPT\/|YaBrowser|DuckDuckGo|Brave|GSA\//.test(ua) || !/Safari\//.test(ua)) return { way: 'ios-other' };
+    const v26 = Number(/Version\/(\d+)/.exec(ua)?.[1] || 0) >= 26;
+    return { way: ipad ? 'ipad-safari' : v26 ? 'ios-safari-26' : 'ios-safari', v26 };
+  }
+  if (/SamsungBrowser/.test(ua)) return { way: 'samsung' };
+  if (/Chrome\//.test(ua) && !/EdgA|OPR\/|Firefox|YaBrowser|MiuiBrowser|HeyTapBrowser|VivoBrowser|UCBrowser|DuckDuckGo|HuaweiBrowser/.test(ua)) return { way: 'android-chrome' };
+  return { way: 'android-other' };
+}
+// The buttons the steps name, drawn as the browser draws them ({share} in a
+// step's text).
+const GLYPHS = {
+  share: '<path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M8.5 10.5H6.5a1.5 1.5 0 0 0-1.5 1.5v7a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5h-2"/>',
+  add: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
+  dots: '<circle cx="6" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
+  kebab: '<circle cx="12" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="18" r="1.6" fill="currentColor" stroke="none"/>',
+  menu: '<path d="M5 7h14M5 12h14M5 17h14"/>'
+};
+const glyph = (name, cls = 'q-glyph') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[name]}</svg>`;
+// What each way says: a picture of where the first tap is (`spot` on a
+// phone, the `tap` button drawn there), the button the page offers itself
+// (`act`), a line saying why (`lede`) and the steps.
+export function installSteps({ way, app, v26 } = {}, name = 'Orbit', en = false) {
+  const open = en ? `Open ${name} from its new icon on your home screen.` : `從主畫面的新圖示打開 ${name}。`;
+  const addSheet = v26
+    ? en
+      ? 'Leave “Open as Web App” on, then tap “Add”.'
+      : '「打開為網頁 App」保持開啟，再點「加入」。'
+    : en
+      ? 'Tap “Add” at the top right.'
+      : '點右上角的「加入」。';
+  const pickAdd = en ? 'Scroll down and tap “Add to Home Screen” {add}. Not there? Tap “View More” first.' : '往下滑，點「加入主畫面」{add}。沒看到就先點「檢視更多」。';
+  const where = en ? (app ? `You’re in ${app}’s own browser, which can’t add apps.` : 'You’re in another app’s browser, which can’t add apps.') : app ? `你在 ${app} 的內建瀏覽器裡，這裡不能加入主畫面。` : '你在其他 App 的內建瀏覽器裡，這裡不能加入主畫面。';
+  switch (way) {
+    case 'ios-safari':
+      return { spot: 'bottom', tap: 'share', steps: en ? ['Tap Share {share} in the middle of the bar at the bottom.', pickAdd, addSheet, open] : ['點下方工具列中間的分享鍵 {share}。', pickAdd, addSheet, open] };
+    case 'ios-safari-26':
+      return { spot: 'bottom-right', tap: 'dots', steps: en ? ['Tap {dots} beside the address bar, then “Share” {share}.', pickAdd, addSheet, open] : ['點網址列旁的 {dots}，再點「分享」{share}。', pickAdd, addSheet, open] };
+    case 'ipad-safari':
+      return { spot: 'top-right', tap: 'share', steps: en ? ['Tap Share {share} at the top right.', pickAdd, addSheet, open] : ['點右上角的分享鍵 {share}。', pickAdd, addSheet, open] };
+    case 'ios-chrome':
+      return { spot: 'top-right', tap: 'share', steps: en ? ['Tap Share {share} at the right of the address bar.', pickAdd, addSheet, open] : ['點網址列右邊的分享鍵 {share}。', pickAdd, addSheet, open] };
+    case 'ios-other':
+      return {
+        act: 'copy',
+        lede: en ? 'This browser can’t add apps to the home screen. Use Safari.' : '這個瀏覽器不能加入主畫面，請改用 Safari。',
+        steps: en
+          ? ['Tap “Copy the link” above.', 'Open Safari and paste the link into the address bar.', 'Safari then shows the steps to add it.']
+          : ['點上面的「複製連結」。', '打開 Safari，把連結貼到網址列。', 'Safari 會接著告訴你怎麼加入主畫面。']
+      };
+    case 'line':
+      return {
+        act: 'browser',
+        lede: where,
+        steps: en
+          ? ['Tap “Open in browser” above.', 'Nothing happened? Tap {dots} or {share} in LINE and choose to open it in your browser.', 'The browser then shows the steps to add it.']
+          : ['點上面的「用瀏覽器打開」。', '沒有反應的話，點 LINE 畫面上的 {dots} 或 {share}，選「用瀏覽器開啟」。', '瀏覽器會接著告訴你怎麼加入主畫面。']
+      };
+    case 'inapp-ios':
+      return {
+        spot: 'top-right',
+        tap: 'dots',
+        act: 'copy',
+        lede: where,
+        steps: en
+          ? ['Tap {dots} at the top right (or {share} at the bottom).', 'Choose “Open in Safari” (or “Open in browser”).', 'Can’t find it? Tap “Copy the link” above and paste it into Safari.', 'Safari then shows the steps to add it.']
+          : ['點右上角的 {dots}（或下方的 {share}）。', '選「在 Safari 中開啟」或「用瀏覽器開啟」。', '找不到的話，點上面的「複製連結」，貼到 Safari。', 'Safari 會接著告訴你怎麼加入主畫面。']
+      };
+    case 'inapp-android':
+      return {
+        act: 'chrome',
+        lede: where,
+        steps: en
+          ? ['Tap “Open in Chrome” above.', 'Nothing happened? Tap {kebab} at the top right and choose “Open in browser”.', 'Chrome then shows the steps to add it.']
+          : ['點上面的「用 Chrome 打開」。', '沒有反應的話，點右上角的 {kebab}，選「用瀏覽器開啟」。', 'Chrome 會接著告訴你怎麼加入主畫面。']
+      };
+    case 'samsung':
+      return {
+        spot: 'bottom-right',
+        tap: 'menu',
+        steps: en ? ['Tap {menu} at the bottom right.', 'Tap “Add page to”, then “Home screen”.', 'Tap “Add”.', open] : ['點右下角的 {menu}。', '點「新增頁面至」，再點「主螢幕」。', '點「新增」。', open]
+      };
+    case 'android-other':
+      return {
+        act: 'chrome',
+        lede: en ? 'Chrome adds it best.' : '用 Chrome 加入最穩定。',
+        steps: en
+          ? ['Tap “Open in Chrome” above.', 'Chrome then shows the steps to add it.', 'No Chrome? Find “Add to Home screen” or “Install” in this browser’s menu {kebab}.']
+          : ['點上面的「用 Chrome 打開」。', 'Chrome 會接著告訴你怎麼加入主畫面。', '沒有 Chrome 的話，在這個瀏覽器的選單 {kebab} 找「加到主畫面」或「安裝」。']
+      };
+    default:
+      return {
+        spot: 'top-right',
+        tap: 'kebab',
+        steps: en
+          ? ['Tap {kebab} at the top right of Chrome.', 'Tap “Install app” or “Add to Home screen” {add}.', 'Choose “Install”, not “Create shortcut”.', open]
+          : ['點 Chrome 右上角的 {kebab}。', '點「安裝應用程式」或「加到主畫面」{add}。', '選「安裝」，不要選「建立捷徑」。', open]
+      };
+  }
+}
+// A step's text with its buttons drawn in.
+const stepItem = text =>
+  node('li', {
+    html: text
+      .replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
+      // (kept on one line with the character before and the stop after it)
+      .replace(/(\S?)\s?\{(\w+)\}([。，、）.,)]?)/g, (_, a, g, z) => `<span class="q-keep">${a}<span class="q-key">${glyph(g)}</span>${z}</span>`)
+  });
+// Where the first tap is: a phone, its browser bar at the top or the
+// bottom, and the button there, ringed.
+function tapPicture(spot, tap) {
+  const top = spot === 'top-right';
+  const x = spot === 'bottom' ? 60 : 92;
+  const y = top ? 36 : 176;
+  const bar = top ? '<rect x="18" y="24" width="84" height="24" rx="8" class="q-tap-bar"/>' : '<rect x="18" y="164" width="84" height="24" rx="8" class="q-tap-bar"/>';
+  const lines = [64, 82, 100, 118, 136].map((ly, i) => `<rect x="28" y="${top ? ly : ly - 34}" width="${[64, 48, 58, 40, 52][i]}" height="7" rx="3.5" class="q-tap-line"/>`).join('');
+  return node('figure', {
+    class: 'q-tap',
+    'aria-hidden': 'true',
+    html: `<svg viewBox="0 0 120 210" width="120" height="210"><rect x="8" y="4" width="104" height="202" rx="22" class="q-tap-phone"/>${bar}${lines}<circle cx="${x}" cy="${y}" r="17" class="q-tap-ring"/><g transform="translate(${x - 11} ${y - 11}) scale(0.9167)" class="q-tap-key">${GLYPHS[tap]}</g></svg>`
+  });
+}
 export function installGate(app, lang = detectLang()) {
   if (!isPhoneOrTablet()) return false;
   if (isStandalone()) {
+    if (!isIOS()) return false;
     const home = windowApp(app);
     return home === app ? false : insideGate(app, home, lang);
   }
   if (installCovered) return true;
   installCovered = true;
+  // Installed from this page (Chrome moves the tab into the app's window
+  // without loading it again): start for real.
+  globalThis.matchMedia?.('(display-mode: standalone)').addEventListener?.('change', e => e.matches && location.reload());
   const en = lang === 'en';
   const name = appName(app);
-  const steps = inAppBrowser()
-    ? en
-      ? ['Open this page in Safari (iPhone) or Chrome (Android): tap ⋯ and “Open in browser”.', 'Then add it to your home screen.']
-      : ['請先用 Safari（iPhone）或 Chrome（Android）開啟：點右上角 ⋯，選「在瀏覽器開啟」。', '再加入主畫面。']
-    : isIOS()
-      ? en
-        ? ['Tap Share (the square with an arrow) in Safari.', 'Choose “Add to Home Screen”, then “Add”.', `Open ${name} from its new icon.`]
-        : ['點 Safari 的「分享」（方框加箭頭）。', '選「加入主畫面」，再點「新增」。', `從主畫面的新圖示打開 ${name}。`]
-      : en
-        ? ['Tap ⋮ at the top right of Chrome.', 'Choose “Add to Home screen” (or “Install app”).', `Open ${name} from its new icon.`]
-        : ['點 Chrome 右上角的 ⋮。', '選「加入主畫面」或「安裝應用程式」。', `從主畫面的新圖示打開 ${name}。`];
+  const how = installWay();
+  const { spot, tap, act, lede, steps } = installSteps(how, name, en);
+  const url = location.href.split('#')[0];
+  let action = null;
+  if (act === 'copy') action = copyButton(url, en);
+  // LINE opens a link in the phone's browser when it asks to; Android
+  // hands an intent:// link to Chrome (or the link to any browser).
+  else if (act === 'browser') action = node('a', { class: 'q-btn primary block', href: `${url}${url.includes('?') ? '&' : '?'}openExternalBrowser=1`, text: en ? 'Open in browser' : '用瀏覽器打開' });
+  else if (act === 'chrome') action = node('a', { class: 'q-btn primary block', href: `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`, text: en ? 'Open in Chrome' : '用 Chrome 打開' });
+  // Chrome on Android offers its own install: one tap when it's ready.
+  else if (!isIOS())
+    action = installButton = node('button', {
+      class: 'q-btn primary block',
+      type: 'button',
+      hidden: !installPrompt,
+      text: en ? `Install ${name}` : `安裝 ${name}`,
+      onclick: async () => {
+        const ask = installPrompt;
+        if (!ask) return;
+        installPrompt = null;
+        installButton.hidden = true;
+        ask.prompt();
+        try {
+          await ask.userChoice;
+        } catch {}
+      }
+    });
+  // Chrome's "Add to home screen" asks Install or Create shortcut; a
+  // shortcut opens in the browser, so it lands on this page again.
+  const already = en
+    ? `Already added? Open ${name} from its home-screen icon, not from a link or the browser.${how.way === 'android-chrome' || how.way === 'samsung' ? ' If the icon brings you back here, it was added as a shortcut: remove it and add it again with “Install”.' : ''}`
+    : `已經加入了？請從主畫面的圖示打開 ${name}，不要從連結或瀏覽器打開。${how.way === 'android-chrome' || how.way === 'samsung' ? '圖示打開又回到這一頁，表示加成了捷徑：刪掉它，重新加入並選「安裝」。' : ''}`;
   const gate = node('dialog', { class: 'q-gate q-install', 'aria-modal': 'true', style: `--q-accent:${APPS[app].color}` }, [
     node('div', { class: 'q-gate-box' }, [
       node('img', { class: 'q-gate-icon', src: './favicon.svg', alt: '', width: '72', height: '72' }),
       node('p', { class: 'q-gate-brand', text: 'ORBIT' }),
       node('h1', { class: 'q-gate-title', text: en ? `Add ${name} to your home screen` : `把 ${name} 加入主畫面` }),
-      node(
-        'ol',
-        { class: 'q-steps' },
-        steps.map(t => node('li', { text: t }))
-      )
+      lede ? node('p', { class: 'q-gate-lede', text: lede }) : null,
+      action,
+      spot ? tapPicture(spot, tap) : null,
+      node('ol', { class: 'q-steps q-install-steps' }, steps.map(stepItem)),
+      node('p', { class: 'q-gate-note', text: already })
     ])
   ]);
   keepOnTop(gate);
@@ -3080,18 +3220,9 @@ export function installGate(app, lang = detectLang()) {
   document.getElementById('loading')?.setAttribute('hidden', '');
   return true;
 }
-
-// An app opened inside another app's home-screen window (the owner,
-// 2026-10-23: it ran there unguarded): open it from its own icon, added
-// from Safari first; a way back to the app this window belongs to.
-function insideGate(app, home, lang) {
-  if (installCovered) return true;
-  installCovered = true;
-  const en = lang === 'en';
-  const name = appName(app);
-  const url = homeOf(app);
+function copyButton(url, en, primary = true) {
   const copy = node('button', {
-    class: 'q-btn',
+    class: primary ? 'q-btn primary block' : 'q-btn',
     type: 'button',
     text: en ? 'Copy the link' : '複製連結',
     onclick: async () => {
@@ -3101,22 +3232,31 @@ function insideGate(app, home, lang) {
       } catch {}
     }
   });
-  const steps = isIOS()
-    ? en
-      ? ['Open the link in Safari.', 'Add it to your home screen.', 'Open it from its new icon.']
-      : ['在 Safari 打開連結。', '加入主畫面。', '從新的圖示打開。']
-    : en
-      ? ['Open the link in Chrome.', 'Add it to your home screen.', 'Open it from its new icon.']
-      : ['在 Chrome 打開連結。', '加入主畫面。', '從新的圖示打開。'];
+  return copy;
+}
+
+// An app opened inside another app's home-screen window (the owner,
+// 2026-10-23: it ran there unguarded; iPhone only, see windowApp): open it
+// from its own icon, added from Safari first; a way back to the app this
+// window belongs to.
+function insideGate(app, home, lang) {
+  if (installCovered) return true;
+  installCovered = true;
+  const en = lang === 'en';
+  const name = appName(app);
+  const url = homeOf(app);
+  const steps = en
+    ? ['Tap “Copy the link”.', 'Open Safari and paste it into the address bar.', 'Tap Share {share}, then “Add to Home Screen” {add}.', `From then on, open ${name} from its own icon.`]
+    : ['點「複製連結」。', '打開 Safari，把連結貼到網址列。', '點分享鍵 {share}，再點「加入主畫面」{add}。', `之後從它自己的圖示打開 ${name}。`];
   const gate = node('dialog', { class: 'q-gate q-install', 'aria-modal': 'true', style: `--q-accent:${APPS[app].color}` }, [
     node('div', { class: 'q-gate-box' }, [
       node('img', { class: 'q-gate-icon', src: './favicon.svg', alt: '', width: '72', height: '72' }),
       node('p', { class: 'q-gate-brand', text: 'ORBIT' }),
       node('h1', { class: 'q-gate-title', text: en ? `Open ${name} from its icon` : `從主畫面打開 ${name}` }),
-      node('p', { class: 'q-gate-lede', text: en ? 'Every Orbit app opens from its own icon.' : '每個 Orbit App 都從自己的圖示打開。' }),
+      node('p', { class: 'q-gate-lede', text: en ? `Every Orbit app opens from its own icon, so ${name} can’t open inside ${appName(home)}.` : `每個 Orbit App 都從自己的圖示打開，${name} 不能在 ${appName(home)} 裡面開。` }),
       node('p', { class: 'q-qr-url', text: url.replace(/^https:\/\//, '') }),
-      copy,
-      node('ol', { class: 'q-steps' }, steps.map(t => node('li', { text: t }))),
+      copyButton(url, en, false),
+      node('ol', { class: 'q-steps q-install-steps' }, steps.map(stepItem)),
       node('a', { class: 'q-btn primary block', href: appUrl(home) }, [document.createTextNode(en ? `Back to ${APPS[home].short || appName(home)}` : `回到 ${APPS[home].short || appName(home)}`)])
     ])
   ]);
@@ -3126,51 +3266,10 @@ function insideGate(app, home, lang) {
   return true;
 }
 
-// A phone-only app on a computer: covers the page with where to open it
-// instead (a QR code the app draws, `qr` as SVG markup, and the link), then
-// how to add it to the home screen. Returns true when it covered the page.
-export function phoneOnlyGate(app, { lang = detectLang(), qr = '' } = {}) {
-  if (isPhoneOrTablet()) return false;
-  const en = lang === 'en';
-  const name = appName(app);
-  const url = homeOf(app);
-  const qrBox = node('div', { class: 'q-qr', role: 'img', 'aria-label': en ? `QR code for ${url}` : `${url} 的 QR code` });
-  qrBox.innerHTML = qr;
-  const copy = node('button', {
-    class: 'q-btn',
-    type: 'button',
-    text: en ? 'Copy the link' : '複製連結',
-    onclick: async () => {
-      try {
-        await navigator.clipboard.writeText(url);
-        copy.textContent = en ? 'Copied ✓' : '已複製 ✓';
-      } catch {}
-    }
-  });
-  const gate = node('dialog', { class: 'q-gate q-phone-only', 'aria-modal': 'true', style: `--q-accent:${APPS[app].color}` }, [
-    node('div', { class: 'q-gate-box' }, [
-      node('img', { class: 'q-gate-icon', src: './favicon.svg', alt: '', width: '72', height: '72' }),
-      node('p', { class: 'q-gate-brand', text: 'ORBIT' }),
-      node('h1', { class: 'q-gate-title', text: en ? `${name} is made for your phone` : `${name} 是手機 App` }),
-      node('p', { class: 'q-gate-lede', text: en ? 'It lives in your pocket, beside your day. Open it on your phone:' : '課表跟著你一整天，所以只在手機上使用。用手機打開：' }),
-      qrBox,
-      node('p', { class: 'q-qr-url', text: url.replace(/^https:\/\//, '') }),
-      copy,
-      node(
-        'ol',
-        { class: 'q-steps' },
-        (en
-          ? ['Scan the code with your phone’s camera (or open the link on it).', 'Add it to the home screen: Share → “Add to Home Screen” on iPhone, ⋮ → “Install app” on Android.', 'Sign in with your Orbit Pass or a device code: your schedule is already there.']
-          : ['用手機相機掃描上面的條碼（或在手機打開連結）。', '加入主畫面：iPhone 點「分享」→「加入主畫面」；Android 點 ⋮ →「安裝應用程式」。', '用 Orbit Pass 或裝置代碼登入，課表就在裡面。']
-        ).map(t => node('li', { text: t }))
-      )
-    ])
-  ]);
-  keepOnTop(gate);
-  document.documentElement.classList.add('q-signing-in');
-  document.getElementById('loading')?.setAttribute('hidden', '');
-  return true;
-}
+// Gone with phones-only (2026-10-31: every app runs on every screen). Kept
+// as a no-op only for an installed Class from before then, which still
+// imports it: a missing export would stop that page before it could update.
+export const phoneOnlyGate = () => false;
 
 // Keeps every open Orbit page on the latest deploy, at once, whatever the
 // person is doing (the owner's rule: an update never waits for a sheet to
@@ -3211,6 +3310,52 @@ async function kitLatest() {
     return `kit:${latest}`;
   } catch {
     return null;
+  }
+}
+
+// Whether a newer version's files are all on the phone, so the page can be
+// swapped for it (watchUpdates): each fetched through the service worker,
+// which checks it against its hash and keeps it. Swapping first left the new
+// page to fetch them itself: right after a deploy GitHub's CDN can still
+// answer with the old files for a while, so the new page got refused files
+// and sat on its loading screen (or opened half-styled) until the app was
+// closed and opened again. Now the page in use just runs on until the update
+// is all there, and the swap opens it from the phone at once. Only what the
+// page loaded is asked: the kit's files at their new hashes (orbit.kitFiles,
+// just noted by kitLatest), and a new deploy's page with every file it names
+// (unchanged ones are an instant answer from the service worker).
+async function updateReady(latest) {
+  if (typeof fetch === 'undefined') return true;
+  try {
+    const urls = new Set();
+    const kit = KIT();
+    const noted = JSON.parse(readStore('orbit.kitFiles') || 'null')?.files;
+    if (kit?.base && noted) {
+      const base = new URL(kit.base, location.href).href;
+      const used = new Set(['boot.js', 'orbit.css']);
+      for (const r of performance.getEntriesByType?.('resource') || []) if (r.name.startsWith(base)) used.add(r.name.slice(base.length).split('?')[0]);
+      for (const name of used) if (noted[name]) urls.add(`${base}${name}?v=${noted[name]}`);
+    }
+    if (!latest.startsWith('kit:')) {
+      const res = await fetch(location.pathname, { cache: 'no-cache', credentials: 'same-origin' });
+      const page = res.ok ? await res.text() : '';
+      // (The CDN still on the old page: not yet.)
+      if (/<meta name="build-version" content="([^"]*)"/.exec(page)?.[1] !== latest) return false;
+      for (const m of page.matchAll(/(?:src|href)="(\.[^"]+\?v=[0-9a-f]{12})"/g)) urls.add(new URL(m[1], location.href).href);
+    }
+    // (No service worker in charge, the first opening or a browser without one: checked here.)
+    const checked = Boolean(navigator.serviceWorker?.controller);
+    const sure = async (u, r) => {
+      if (!r.ok) return false;
+      const want = new URL(u).searchParams.get('v');
+      if (checked || !/^[0-9a-f]{12}$/.test(want) || !crypto?.subtle) return true;
+      const d = new Uint8Array(await crypto.subtle.digest('SHA-256', await r.arrayBuffer()));
+      return [...d.slice(0, 6)].map(b => b.toString(16).padStart(2, '0')).join('') === want;
+    };
+    const got = await Promise.all([...urls].map(u => fetch(u, { credentials: 'same-origin', cache: checked ? 'default' : 'no-cache' }).then(r => sure(u, r), () => false)));
+    return got.every(Boolean);
+  } catch {
+    return false;
   }
 }
 
@@ -3256,6 +3401,7 @@ export function watchUpdates({ current, key, every = 15_000 } = {}) {
   watching = { current, key };
   let checking = false;
   let retry = 0;
+  let notReady = 0;
   const channel = globalThis.BroadcastChannel ? new BroadcastChannel('orbit-updates') : null;
   async function apply(latest) {
     // (Music playing: not now. The check every few seconds, or the next opening, updates once it stops.)
@@ -3275,6 +3421,15 @@ export function watchUpdates({ current, key, every = 15_000 } = {}) {
       retry = setTimeout(() => check(true), wait + 50);
       return;
     }
+    // The new version's files on the phone first; until they are, this page
+    // runs on and looks again (each look a little later, up to half a minute).
+    if (!(await updateReady(latest))) {
+      clearTimeout(retry);
+      retry = setTimeout(() => check(true), (notReady = Math.min(30_000, notReady ? notReady * 2 : 5_000)));
+      return;
+    }
+    notReady = 0;
+    if (document.visibilityState === 'hidden' || sounding()) return;
     sessionStorage.setItem(flag, `${latest}|${n + 1}|${Date.now()}`);
     rememberPlace();
     // (Leaving: what the page still had on the way fails as the page goes, and says nothing of the network.)
@@ -3448,8 +3603,8 @@ keepStrips();
 // <html>: --q-kb (how much the keys cover at the foot), --q-vvh (the height
 // still seen); .q-kb while the keys are up. orbit.css keeps an open sheet to
 // its field (its hero and .q-kb-hide parts wait behind the keys) and runs it
-// under the keys with its button right above them (as Longshot's kit, proven
-// on an iPhone 2026-10-23), hides the tab bar, and
+// under the keys with its button right above them (proven on an iPhone
+// 2026-10-23), hides the tab bar, and
 // anything marked .q-kb-dock (a bar that belongs on top of the keys) sits
 // there, as does a bar fixed at the foot holding the field (.q-kb-docked).
 // A focused field is brought into view inside its own scroller, and the
@@ -3494,6 +3649,24 @@ function watchKeyboard() {
     root.style.setProperty('--q-kb', `${held ? held.keys : 0}px`);
     root.style.setProperty('--q-vvh', `${held ? held.vvh : Math.round(vv.height)}px`);
     root.classList.toggle('q-kb', up);
+    // The keys gone, the foot left behind: iOS 26 can keep the frame that
+    // fixed bars sit in where the keys had it (the page's height still
+    // shrunk, or the visible part still slid down: WebKit 297779), and the
+    // tab bar and what floats on it hang mid-screen over the page while it
+    // scrolls under and past them (Jay 2026-10-29, Transit 我的: the trip
+    // bar and the tabs over 釘選). --q-foot-gap is how far that frame's foot
+    // is above the screen's; orbit.css moves the foot's bars down by it.
+    // (Only right after the keys were up, and only what the visible part
+    // shows: measured against the whole screen, an installed app whose page
+    // starts under the status bar read that bar as a gap, and coming back to
+    // the app the tab bar was pushed off the foot, Jay 2026-10-29.)
+    if (up) keysWere = true;
+    const gap = up || !keysWere ? 0 : footGap();
+    if (!up && !gap) keysWere = false;
+    if (gap && !wasGap) unstick();
+    wasGap = gap > 0;
+    root.style.setProperty('--q-foot-gap', `${gap}px`);
+    root.classList.toggle('q-foot-stuck', gap > 0);
     for (const d of document.querySelectorAll('.q-kb-docked')) if (!up || !d.contains(document.activeElement)) d.classList.remove('q-kb-docked');
     // (Lifted once per field and keys, never on the scrolls and resizes it causes itself.)
     if (held?.lift) {
@@ -3506,6 +3679,15 @@ function watchKeyboard() {
     }
   };
   const unslide = () => globalThis.scrollTo?.(globalThis.scrollX, Math.max(0, globalThis.scrollY - vv.offsetTop));
+  // (The screen's foot: what the visible part reaches.)
+  const footGap = () => {
+    const gap = Math.round(vv.offsetTop + vv.height - globalThis.innerHeight);
+    // (A few px is rounding; more than half the screen is not this.)
+    return gap > 8 && gap < globalThis.innerHeight ? gap : 0;
+  };
+  // (Asked once as it starts: a scroll to where the page already is makes iOS lay its frame out again, and the gap often closes by itself.)
+  const unstick = () => setTimeout(() => (globalThis.scrollTo?.(globalThis.scrollX, globalThis.scrollY), soon()), 0);
+  let wasGap = false, keysWere = false;
   let held = null;
   // The field in what's left above the keys. One in a bar fixed at the
   // foot (a composer, a stake bar) rides on the keys with its bar; any
@@ -3556,6 +3738,9 @@ function watchKeyboard() {
   globalThis.addEventListener?.('resize', soon);
   document.addEventListener('focusin', () => setTimeout(soon, 60));
   document.addEventListener('focusout', () => setTimeout(soon, 60));
+  // (Back in the app: measured again.)
+  document.addEventListener('visibilitychange', () => document.hidden || soon());
+  globalThis.addEventListener?.('pageshow', soon);
   apply();
 }
 watchKeyboard();
@@ -3654,7 +3839,12 @@ export function fitNames(root = document) {
     // (The text against the room inside the padding: only the text scales.)
     const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     // (The box to the fraction of a pixel, less a pixel and a half: clientWidth and scrollWidth are rounded, and a text 0.1 px over its box is cut.)
-    const k = Math.min(1, (el.getBoundingClientRect().width - pad - 1.5) / ((el.scrollWidth - pad) / was));
+    const room = el.getBoundingClientRect().width - pad;
+    const text = (el.scrollWidth - pad) / was;
+    // (A box as wide as its own text (a flex item, an inline block) says nothing about the room: measured
+    // against itself it lost 1.5 px a pass, every redraw, down to 72%: "wheat" smaller than the other options.
+    // Snug: left as it is.)
+    const k = Math.abs(room - text * was) < 1 ? was : Math.min(1, (room - 1.5) / text);
     todo.push([el, key, base, was, wraps && k < 0.72 ? 'wrap' : Math.max(0.72, k)]);
   }
   for (const [el, key, base, was, k] of todo) {
@@ -4321,14 +4511,18 @@ const reducedMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: re
 //   Each tab keeps its place: switching back returns to where it was
 //   (select(id, { top: true }) starts it at the top instead).
 //   hash(id): the address for a tab ('#<id>' by default; null leaves it).
-// action: { icon, label, onTap } — the app's one main thing to do (Money's
-// 記一筆), a round button of its own beside the bar, as iOS 26 sets search
-// apart: always a thumb away, never one tab among the others.
+// action: { icon, label, onTap, id? } — the app's one main thing to do (Money's
+// 記一筆, Law's 問法律), a round button of its own beside the bar, as iOS 26
+// sets search apart: always a thumb away, never one tab among the others.
+// With an id it's a screen of its own: select(id) lights it (aria-pressed)
+// and no tab.
 export function tabBar({ tabs, onSelect, hash = id => `#${id}`, nav = document.getElementById('tabs'), label: ariaLabel = '', action = null } = {}) {
   const buttons = new Map();
+  let downOn = null;
   const places = {};
   const visited = new Set();
   let current = null;
+  let actBtn = null;
   nav.classList.add('q-tabbar');
   nav.setAttribute('role', 'tablist');
   if (ariaLabel) nav.setAttribute('aria-label', ariaLabel);
@@ -4341,7 +4535,21 @@ export function tabBar({ tabs, onSelect, hash = id => `#${id}`, nav = document.g
     const b = node('button', { class: 'q-tab', id: `tab-${tab.id}`, type: 'button', role: 'tab', 'data-tab': tab.id, 'aria-controls': `panel-${tab.id}`, 'aria-selected': 'false', tabindex: '-1' });
     b.innerHTML = `<span class="q-tab-icon">${icon(tab.icon)}<b class="q-tab-badge" hidden></b></span><span class="q-tab-label"></span>`;
     b.querySelector('.q-tab-label').textContent = tab.label;
-    b.addEventListener('click', () => (haptic(), tab.id === current ? again(tab.id) : onSelect(tab.id, { again: false })));
+    // (Chosen as the finger lands, as iOS's tab bar does, not ~0.1 s later as
+    // it lifts; the click that follows is then the same choice, not a second tap.)
+    b.addEventListener('pointerdown', e => {
+      if (!e.isPrimary || e.button !== 0 || tab.id === current || b.hidden) return;
+      downOn = { id: tab.id, t: Date.now() };
+      haptic();
+      choose(tab.id);
+    });
+    b.addEventListener('click', () => {
+      const landed = downOn?.id === tab.id && Date.now() - downOn.t < 1500;
+      downOn = null;
+      if (landed) return;
+      haptic();
+      tab.id === current ? again(tab.id) : choose(tab.id);
+    });
     buttons.set(tab.id, b);
   }
   nav.replaceChildren(...buttons.values());
@@ -4353,65 +4561,65 @@ export function tabBar({ tabs, onSelect, hash = id => `#${id}`, nav = document.g
     // (A drawn icon as it is; a name from the bar's own set, + by default.)
     act.innerHTML = /^<svg/.test(action.icon || '') ? action.icon : icon(ICONS[action.icon] ? action.icon : '<path d="M12 5v14M5 12h14"/>');
     act.addEventListener('click', () => (haptic(), action.onTap?.()));
+    if (action.id) act.setAttribute('aria-pressed', 'false');
     nav.after(act);
+    actBtn = act;
   }
   // The chosen tab's pill (the bar's ::before) slides to it on a spring:
   // its place and width as CSS variables, set without a slide the first time.
-  const pill = (still = false) => {
-    const b = buttons.get(current);
+  const pill = (still = false, id = current) => {
+    const b = buttons.get(id);
     if (!b || b.hidden || !b.offsetWidth) return;
     if (still) nav.style.setProperty('transition', 'none');
     nav.style.setProperty('--q-tab-x', `${b.offsetLeft}px`);
     nav.style.setProperty('--q-tab-w', `${b.offsetWidth}px`);
+    // (Down the side rail: its place from the top.)
+    nav.style.setProperty('--q-tab-y', `${b.offsetTop}px`);
+    nav.style.setProperty('--q-tab-h', `${b.offsetHeight}px`);
     if (still) requestAnimationFrame(() => requestAnimationFrame(() => nav.style.removeProperty('transition')));
   };
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => pill(true)).observe(nav);
-  // Scrolling down, the bar draws in to its icons; its labels come back at
-  // the top, or after a scroll back up of a good part of the screen in one
-  // go, as iOS's: not on a nudge up, nor on the page bouncing back at its foot
-  // (a fling's rubber band moved it up a few px and brought them back). Only
-  // a page with room to scroll (one that nearly fits, Transit's 交通 at 78 px,
-  // never draws it in: its labels would come back only at its very top), and
-  // never from what the page did itself: a page grown shorter pulling the
-  // scroll up, or a tab's own place put back (a change of tab shows the whole
-  // bar, as iOS's, the map's included).
-  let lastY = globalThis.scrollY || 0;
-  let lastMax = 0;
-  let dir = 0;
-  let turnY = lastY;
-  const root = document.documentElement;
-  const resetScroll = (y = globalThis.scrollY || 0) => {
-    root.classList.remove('q-tabs-small');
-    [lastY, dir, turnY] = [y, 0, y];
+  // (The bar stays whole while scrolling. It used to draw in to its icons on
+  // a scroll down; Jay 2026-10-30 had it looked at again and it went: it saved
+  // 10 px, hid the labels the icons need, laid the bar out again on every
+  // frame of a scroll, and an app's own jumps (a law's article, a field
+  // brought above the keys) folded it by mistake.)
+  // A tab answers the moment it's touched (Jay 2026-11-01: "smoothness and
+  // speed"): it lights and its pill slides in this frame, and the app draws
+  // the tab only after that has been painted. Drawing a tab takes 0.1–1 s on
+  // a mid-range phone (measured), and for that long the bar used to stay
+  // where it was, as if the tap hadn't landed. The page keeps showing the
+  // old tab until the new one is drawn, as iOS does.
+  const lit = id => {
+    for (const [tid, b] of buttons) {
+      const on = tid === id;
+      if (b.getAttribute('aria-selected') !== String(on)) b.setAttribute('aria-selected', String(on));
+      if (b.tabIndex !== (on ? 0 : -1)) b.tabIndex = on ? 0 : -1;
+    }
+    pill(false, id);
   };
-  globalThis.addEventListener?.(
-    'scroll',
-    () => {
-      const max = Math.max(0, root.scrollHeight - globalThis.innerHeight);
-      const y = Math.min(Math.max(globalThis.scrollY || 0, 0), max);
-      const shrunk = max < lastMax - 1 && y >= max - 1;
-      lastMax = max;
-      if (y < 40 || max < 200) return resetScroll(y);
-      if (shrunk) return void ([lastY, turnY] = [y, y]);
-      if (y > lastY) {
-        if (dir !== 1) [dir, turnY] = [1, lastY];
-        if (y - turnY > 12 && !reducedMotion()) root.classList.add('q-tabs-small');
-      } else if (y < lastY) {
-        if (dir !== -1) [dir, turnY] = [-1, lastY];
-        if (turnY - y > Math.max(160, globalThis.innerHeight * 0.3)) root.classList.remove('q-tabs-small');
-      }
-      lastY = y;
-    },
-    { passive: true }
-  );
+  let pending = 0;
+  let mend = 0;
+  const choose = id => {
+    lit(id);
+    cancelAnimationFrame(pending);
+    clearTimeout(mend);
+    // (After the next paint: a frame, then a task after it.)
+    pending = requestAnimationFrame(() => setTimeout(() => {
+      onSelect(id, { again: false });
+      // (An app that didn't open it after all, a gate or a refusal: the bar
+      // goes back to what's open.)
+      mend = setTimeout(() => current !== id && current != null && lit(current), 1500);
+    }, 0));
+  };
   nav.addEventListener('keydown', event => {
     const shown = [...buttons].filter(([, b]) => !b.hidden).map(([id]) => id);
     const i = shown.indexOf(current);
-    const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+    const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (!step || i < 0) return;
     event.preventDefault();
     const next = shown[(i + step + shown.length) % shown.length];
-    onSelect(next, { again: false });
+    choose(next);
     buttons.get(next)?.focus();
   });
   const api = {
@@ -4423,6 +4631,9 @@ export function tabBar({ tabs, onSelect, hash = id => `#${id}`, nav = document.g
       const first = current == null;
       if (changed && !first) places[current] = globalThis.scrollY || 0;
       current = id;
+      // (The action's own screen: it's lit, and no tab is, the pill hidden.)
+      if (action?.id) actBtn?.setAttribute('aria-pressed', String(id === action.id));
+      nav.classList.toggle('q-tab-none', !buttons.has(id));
       // (The same tab again, as an app's redraw asks: nothing written, the pill left.)
       if (changed) requestAnimationFrame(() => pill(first));
       for (const [tid, b] of buttons) {
@@ -4463,9 +4674,8 @@ export function tabBar({ tabs, onSelect, hash = id => `#${id}`, nav = document.g
       if (changed && !first) {
         // After the app has drawn the tab (it does so right after select).
         const y = top ? 0 : places[id] || 0;
-        resetScroll(y);
         globalThis.scrollTo?.(0, y);
-        if (y) requestAnimationFrame(() => (globalThis.scrollTo(0, y), resetScroll(globalThis.scrollY || 0)));
+        if (y) requestAnimationFrame(() => globalThis.scrollTo(0, y));
       }
     },
     // A count (a number or short text) on a tab's icon; 0/''/null hides it.

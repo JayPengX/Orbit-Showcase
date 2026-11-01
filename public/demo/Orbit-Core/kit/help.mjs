@@ -22,6 +22,13 @@ export const HELP = {
         '通行碼是 10 個字的代碼，由分享 Orbit 給你的人發給你。知道它就能用這個帳號，所以別給別人；它只顯示一次，請記在安全的地方。',
         '每個 App 右上角的頭像就是 Orbit Pass 的入口。'
       ]],
+      ['install', '加入主畫面', [
+        'iPhone、iPad 用 Safari：點分享鍵（iOS 26 先點網址列旁的 ⋯，再點「分享」），往下滑點「加入主畫面」，再點「加入」。iPhone 上的 Chrome 也可以：網址列右邊的分享鍵 →「加入主畫面」。',
+        'Android 用 Chrome：點右上角 ⋮ →「安裝應用程式」或「加到主畫面」，選「安裝」，不要選「建立捷徑」。三星網際網路：右下角 ≡ →「新增頁面至」→「主螢幕」。',
+        '在 LINE、Instagram、Facebook 裡點開的連結不能加入主畫面：先點右上角的選單，選「用瀏覽器開啟」，再照上面的步驟。',
+        '電腦不用安裝，直接在瀏覽器打開。想要自己的視窗：Chrome、Edge 點網址列右邊的安裝圖示；Mac 的 Safari 選「檔案」→「加入 Dock」。',
+        '加好以後，每次都從主畫面的圖示打開。Android 的圖示打開又回到加入的那一頁，表示加成了捷徑：刪掉它，重新加入並選「安裝」。'
+      ]],
       ['tabs', '四個分頁', [
         'Pass：上方是你的卡片（頭像、里程碑、帳號），點它換外觀。下面是這個 App 的設定、新增裝置、通知、除錯紀錄和帳戶安全。',
         '外觀：里程碑，和免費的頭像、頭像框。',
@@ -52,7 +59,7 @@ export const HELP = {
         '「帳戶安全」可以登出其他所有裝置，或更換通行碼（舊的立刻失效，新的只顯示一次）。忘了通行碼，就在還登入的裝置換一組。'
       ]],
       ['money', '錢在哪裡', [
-        'Orbit Pass 不放錢。餘額、每週薪水、信貸、紓困、財富等級和明細都在 Orbit Securities 的「資金」分頁。'
+        'Orbit Pass 不放錢。餘額、每週薪水、紓困、財富等級和明細都在 Orbit Securities 的「資金」分頁。'
       ]]
     ],
     en: [
@@ -60,6 +67,13 @@ export const HELP = {
         'Your account in every Orbit app: Sports, Transit, Weather, Class, Money, Words, Beats, Law and Securities. Each signs in with it and keeps its data on it, the same on any device.',
         'The pass is a 10-character code from whoever shared Orbit with you. Anyone who knows it can use the account, so keep it to yourself; it’s shown once, so write it down somewhere safe.',
         'The avatar at the top right of every app opens the Orbit Pass.'
+      ]],
+      ['install', 'Adding to the home screen', [
+        'iPhone and iPad, in Safari: tap Share (on iOS 26, tap ⋯ beside the address bar, then “Share”), scroll down to “Add to Home Screen”, then tap “Add”. Chrome on iPhone works too: Share at the right of the address bar → “Add to Home Screen”.',
+        'Android, in Chrome: tap ⋮ at the top right → “Install app” or “Add to Home screen”, and choose “Install”, not “Create shortcut”. Samsung Internet: ≡ at the bottom right → “Add page to” → “Home screen”.',
+        'A link opened inside LINE, Instagram or Facebook can’t be added: tap the menu at the top right, choose “Open in browser”, then follow the steps above.',
+        'On a computer there’s nothing to install: just use the browser. For a window of its own: in Chrome or Edge, tap the install icon at the right of the address bar; in Safari on a Mac, choose File → “Add to Dock”.',
+        'Once added, always open it from its home-screen icon. On Android, an icon that brings back the “add” page was added as a shortcut: remove it and add it again with “Install”.'
       ]],
       ['tabs', 'The four tabs', [
         'Pass: your card on top (avatar, milestones, account number); tap it to change your look. Below: this app’s settings, adding a device, notifications, the debug log and security.',
@@ -91,7 +105,7 @@ export const HELP = {
         'Security can sign out every other device or change the pass (the old one stops at once, the new one is shown once). Forgot it? Change it on a device that’s still signed in.'
       ]],
       ['money', 'Where the money is', [
-        'The Orbit Pass holds no money. Balance, weekly pay, loans, relief, wealth levels and every entry are in Orbit Securities’ 資金 tab.'
+        'The Orbit Pass holds no money. Balance, weekly pay, relief, wealth levels and every entry are in Orbit Securities’ 資金 tab.'
       ]]
     ]
   },
@@ -103,7 +117,7 @@ export const HELP = {
       ['tabs', '每個分頁', [
         '「首頁」：總資產和今日漲跌、為你推薦、漲跌幅前五名、全球市場，各分類清單（先列 15 檔）和搜尋（中文、英文或代號）；點任何標的看走勢、公司資料和下單。',
         '「資產」：淨值與走勢、配置、持股、現金與各幣別錢包、股利利息收入、定期定額和到價提醒。',
-        '「資金」：換匯（你付出／你會收到，兩邊都能輸入）、匯率看板、融資、信用帳戶、定存和借券出借；下面是你的帳戶：薪水、信貸、急難紓困、財富等級和「真相」。',
+        '「資金」：換匯（你付出／你會收到，兩邊都能輸入）、匯率看板、融資、信用帳戶、定存和借券出借；下面是你的帳戶：薪水、急難紓困、財富等級和「真相」。',
         '「紀錄」：交易明細、委託、統計分析（報酬、費用與稅、和只買大盤比），和回測。',
         '右上角：說明、重新整理和你的 Orbit Pass；漲跌的顏色在 Orbit Pass 的 Pass 分頁設定。'
       ]],
@@ -146,16 +160,13 @@ export const HELP = {
       ]],
       ['money', '錢怎麼算', [
         '你的錢都在 Securities：新帳號開戶金 NT$200,000，每週一固定發薪 NT$10,000，跟薪水一樣，存多存少都一樣；那週第一次打開 App 時入帳，沒打開的週下次補發。系統發的錢只有這些：開戶金、週薪、財富等級獎勵和急難紓困，都以新台幣存入，算投入的本金，不算報酬。',
-        '財富等級：身價（現金加持股，扣掉信貸）第一次到達一個等級時送一次獎勵：NT$30 萬小資族 NT$30,000、50 萬穩健 NT$50,000、百萬 NT$100,000、300 萬富裕 NT$250,000、千萬 NT$600,000、一億 NT$3,000,000。',
+        '財富等級：身價（現金加持股）第一次到達一個等級時送一次獎勵：NT$30 萬小資族 NT$30,000、50 萬穩健 NT$50,000、百萬 NT$100,000、300 萬富裕 NT$250,000、千萬 NT$600,000、一億 NT$3,000,000。',
         '「真相」（資金 › 真相）用你自己的紀錄算錢從哪裡來：系統發的、政府（證交稅、股利扣繳和二代健保，減去急難紓困）、和你自己的成績；還有一筆交易真正的成本。',
         '股利照各國規定預扣稅，除息日持有就有，現金在發放日入帳（有公布的照公布日期，否則台股約 4 週後、美股約 1 週後，遇假日順延到下一個交易日）；在那之前列為「待入帳」，算在淨值裡但不能花。',
         '餘額變負的（透支）時不能再花錢，每月計息 1%，「一鍵賣出補足」會找出最少要賣哪些來補。就像交割款沒付，2 天內沒補足就是違約交割：扣 7% 違約金、自動賣出持股，5 年內不能融資、融券。'
       ]],
-      ['loan', '信貸與急難紓困', [
-        '信貸（資金 › 信貸）跟銀行一樣：開戶滿 4 週可以申請，一次一筆。額度從 NT$100,000 起，每準時還清一筆加 NT$50,000，最多是月薪的 22 倍（約 NT$950,000，DBR 22 倍）；每週還款不能超過週薪的一半。年利率 12% 起，每筆準時還清少 1%（最低 6%），每次逾期加 1%（最高 16%）。開辦費 NT$3,000 從撥款扣除，簽約前會看到總費用年百分率。',
-        '期數 1、2、3 或 5 年，每週一發薪後自動扣款；1 年內提前還清收剩餘本金 2% 的違約金。扣款失敗就逾期並計違約金和遲延利息，餘額一夠就自動補扣。',
-        '逾期 3 期轉催收：全部到期（喪失期限利益），帳戶裡的錢先抵銷，之後每週薪水扣三分之一（強制執行），利息照算到還清為止。聯徵紀錄保留到還清後 1 年，期間不能再借，之後利率 16%、額度回到 NT$100,000。借來的錢不算身價，不會讓你升財富等級。',
-        '急難紓困：現金和股票（成本）合計低於 NT$2,000、沒有催收中的信貸、離發薪日超過 2 天，可以申請一次 NT$5,000。每 13 週一次、一年最多 3 次，會留在紀錄上。'
+      ['relief', '急難紓困', [
+        '現金和股票（成本）合計低於 NT$2,000、離發薪日超過 2 天，可以申請一次 NT$5,000。每 13 週一次、一年最多 3 次，會留在紀錄上。'
       ]]
     ],
     en: [
@@ -165,7 +176,7 @@ export const HELP = {
       ['tabs', 'The tabs', [
         'Home: your total and today’s change, for you, the top five up and down, world markets, lists by kind (15 at first) and search (Chinese, English or ticker); tap anything for its chart, company facts and the order ticket.',
         'Portfolio: net worth and its history, allocation, holdings, cash and each currency’s wallet, income, monthly plans and price alerts.',
-        'Money: exchange (you pay / you get, type either), the rates board, margin, the credit account, time deposits and lending shares; below them your account: pay, loans, relief, wealth levels and Truth.',
+        'Money: exchange (you pay / you get, type either), the rates board, margin, the credit account, time deposits and lending shares; below them your account: pay, relief, wealth levels and Truth.',
         'History: activity, orders, stats (returns, costs and taxes, you against just buying an index) and the backtest.',
         'Top right: help, refresh and your Orbit Pass; the colours for up and down are set in its Pass tab.'
       ]],
@@ -208,16 +219,13 @@ export const HELP = {
       ]],
       ['money', 'Money', [
         'Your money lives in Securities: a new account opens with NT$200,000, and every Monday pays a fixed NT$10,000, like a salary, the same however much you hold; it comes the first time that week you open the app, and a week you miss is paid when you’re back. The system gives money only as the opening money, the pay, wealth level rewards and emergency relief, all arriving as NT$ deposits, counted as money put in, not as return.',
-        'Wealth levels: the first time what you’re worth (cash and holdings, less a loan) reaches a level, its reward is paid once: NT$30,000 at NT$300,000, NT$50,000 at 500,000, NT$100,000 at a million, NT$250,000 at 3 million, NT$600,000 at 10 million and NT$3,000,000 at 100 million.',
+        'Wealth levels: the first time what you’re worth (cash and holdings) reaches a level, its reward is paid once: NT$30,000 at NT$300,000, NT$50,000 at 500,000, NT$100,000 at a million, NT$250,000 at 3 million, NT$600,000 at 10 million and NT$3,000,000 at 100 million.',
         'Truth (Money › Truth) works out from your own record where your money came from: what the system gave, the government (transaction tax, dividend withholding and the NHI premium, less relief) and your own result; and what a trade really costs.',
         'Dividends have each country’s withholding: held on the ex-date, the cash arrives on the pay day (the announced one where known, else about 4 weeks later in Taiwan and a week in the US, moved past holidays to the next trading day); until then it’s listed as on the way, counted in net worth but not spendable.',
         'With the balance below zero (an overdraft) nothing more can be spent, it costs 1% a month, and Sell to cover finds the fewest sales that cover it. Like an unpaid settlement, not covered within 2 days it’s a default: a 7% penalty, holdings sold, and no margin or short selling for 5 years.'
       ]],
-      ['loan', 'Loans and relief', [
-        'A personal loan (Money › Loan) works like a bank’s: after 4 weeks, one at a time. The limit starts at NT$100,000, grows NT$50,000 with each loan repaid on time, up to 22 months of pay (about NT$950,000, Taiwan’s DBR 22 rule), and an installment can’t take more than half the weekly pay. The rate starts at 12% a year, 1 point less per clean loan (6% at best) and 1 point more per late installment (16% at most). A NT$3,000 set-up fee comes off the money, and the APR with fees is shown before you sign.',
-        'Terms of 1, 2, 3 or 5 years, taken every Monday after the pay; paying off within a year costs 2% of what’s left. A missed installment is late, with charges, and is taken as soon as the balance covers it.',
-        'Three late and it goes to collection: the whole loan falls due, the balance is taken toward it, then a third of every weekly pay until it’s paid, with interest running. The record lasts a year after it’s paid: no loans, then 16% and a NT$100,000 limit. Borrowed money isn’t worth, so it never raises your wealth level.',
-        'Emergency relief: with cash and stocks (at cost) together under NT$2,000, no loan in collection, and payday more than 2 days away, you can get NT$5,000 once. Once every 13 weeks, 3 times a year at most, and it stays on your record.'
+      ['relief', 'Emergency relief', [
+        'With cash and stocks (at cost) together under NT$2,000 and payday more than 2 days away, you can get NT$5,000 once. Once every 13 weeks, 3 times a year at most, and it stays on your record.'
       ]]
     ]
   },
@@ -442,22 +450,21 @@ export const HELP = {
   money: {
     zh: [
       ['what', 'Orbit Money 是什麼', [
-        '你自己的記帳本：每天花了多少、每個帳戶還有多少、發票有沒有中獎。記的是你真實的錢，和 Securities 的遊戲錢完全分開，不會互相影響。資料存在你的 Orbit Pass 裡，換手機也在。'
+        '你自己的記帳本：每天花了多少、每個帳戶還有多少。記的是你真實的錢，和 Securities 的遊戲錢完全分開，不會互相影響。資料存在你的 Orbit Pass 裡，換手機也在。'
       ]],
       ['tabs', '每個分頁', [
         '「月曆」：這個月花了多少、收入和結餘，每天格子下面是當天的支出；點一天看那天的每一筆。右下角的 ＋ 隨時記一筆。',
         '「帳戶」：現金、銀行帳戶、悠遊卡等電子票證、電子支付、信用卡，各自的餘額；可以把某個帳戶設成不計入總資產（例如定存或別人的錢）。銀行帳戶可以加簽帳金融卡，信用卡設好結帳日、繳款日和從哪個帳戶繳。',
         '「統計」：週、月、年的支出，和上一期比較、每天平均、每個分類占多少，還有每月預算。',
-        '「發票」：手機條碼（結帳時給店員掃）、掃描紙本發票、匯入載具發票，開獎後自動對獎。'
+        '「更多」：拍照記帳、分類、到期提醒、固定收支和匯出。'
       ]],
       ['entry', '記一筆', [
         '選支出、收入或轉帳，用下面的鍵盤輸入金額（可以打 120+35 這樣相加），選分類、從哪個帳戶付、日期，要的話寫備註。常用的帳戶和分類會記住。',
         '轉帳是錢在你自己的帳戶之間移動（例如提款、儲值悠遊卡、繳卡費），不算支出。固定收支（房租、薪水、訂閱）設一次，到日子自動記上。'
       ]],
-      ['invoice', '發票與載具', [
-        '紙本發票：按「掃描發票」對準左右兩個 QR code，金額、日期、店家和品項都會帶進來。',
-        '載具裡的發票：財政部不開放個人直接讀取，所以在電子發票平台「查詢消費發票」按「匯出」，再到「匯入載具」選那個檔案；設定好信箱自動匯入的話，轉寄那封信就好。記過的發票不會重複記。',
-        '每期開獎後，掃過或匯入的發票會自動對獎，中了會列在最上面，寫著領獎期限。'
+      ['photo', '拍照記帳', [
+        '在記一筆或「更多」按「拍照」，拍或選一張照片：收據、發票、帳單、外送或付款 App 的截圖、轉帳通知、價格標籤都可以。AI 會讀出金額、日期、店家、品項，猜好分類和付款方式，你看過、改好再儲存。',
+        '如果已經記過同一筆（同樣金額、差不到一天），會問你要不要合併：收據的店家和品項併進原本那筆，不會記兩次。一張截圖裡有好幾筆，會一起列出來給你看過。'
       ]],
       ['money', '錢怎麼算', [
         'Orbit Money 只記你自己的帳，不用 Orbit 的錢，也不發錢。'
@@ -465,22 +472,21 @@ export const HELP = {
     ],
     en: [
       ['what', 'What Orbit Money is', [
-        'Your own books: what you spend each day, what each account holds, and whether an invoice won. It tracks your real money, kept apart from the play money in Securities. It lives on your Orbit Pass, the same on any phone.'
+        'Your own books: what you spend each day and what each account holds. It tracks your real money, kept apart from the play money in Securities. It lives on your Orbit Pass, the same on any phone.'
       ]],
       ['tabs', 'Each tab', [
         'Calendar: the month’s spending, income and what’s left, with each day’s spending under its date; tap a day for its entries. The + adds one any time.',
         'Accounts: cash, bank accounts, stored-value cards like EasyCard, e-payments and credit cards, each with its balance. An account can be left out of the total (a deposit, someone else’s money). Banks take debit cards; a credit card has its statement day, due day and the account that pays it.',
         'Stats: spending by week, month or year, against the last one, a day on average, by category, and monthly budgets.',
-        'Invoices: your mobile barcode for the till, paper invoices scanned, carrier invoices imported, and every one checked at the draw.'
+        'More: entries from a photo, categories, reminders, repeats and export.'
       ]],
       ['entry', 'Adding an entry', [
         'Pick spent, income or transfer, type the amount on the keypad (120+35 adds up), then the category, the account, the day and a note if you like. Your usual account and category are remembered.',
         'A transfer moves money between your own accounts (a withdrawal, an EasyCard top-up, a card bill) and isn’t spending. Repeats (rent, salary, subscriptions) are set once and added on their day.'
       ]],
-      ['invoice', 'Invoices and the carrier', [
-        'Paper invoices: tap Scan and point at both QR codes; amount, day, store and items come in.',
-        'Carrier invoices: the Ministry of Finance lets no person read them directly, so export them on the e-invoice platform and pick that file under Import. With import by mail set up, forward that mail instead. An invoice already in is never added twice.',
-        'After each draw, every invoice in your books is checked; a winner shows at the top with its claim date.'
+      ['photo', 'Entries from a photo', [
+        'Tap Photo in a new entry or under More, then take or pick a picture: a receipt, an invoice, a bill, a delivery or payment app’s screenshot, a transfer notice, a price tag. AI reads the amount, day, store and items and guesses the category and way to pay, for you to check before saving.',
+        'If the same one is already in (same amount, within a day), you’re asked whether to merge: the store and items go onto the entry you made, so nothing is counted twice. A screenshot with several shows them all for a look first.'
       ]],
       ['money', 'Money', ['Orbit Money only keeps your own books: it neither uses nor pays Orbit money.']]
     ]

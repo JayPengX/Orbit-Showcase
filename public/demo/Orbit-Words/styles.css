@@ -32,16 +32,16 @@ h1, h2, h3, p { margin: 0; }
 .center-spin { display: grid; place-items: center; padding: 40px 0; }
 
 /* ---- The page (this file comes after the kit's, so its rules win a tie) ---- */
-.page { padding: 0 max(16px, env(safe-area-inset-right)) calc(40px + var(--q-nav)) max(16px, env(safe-area-inset-left)); }
-.tab-panel .q-section { margin-top: 28px; }
-.tab-panel .q-section-head { margin-bottom: 10px; }
-.tab-panel .q-section-head h2 { font: 700 20px/25px var(--q-font); }
+.page { padding: 0 16px calc(40px + var(--q-nav)); }
+.tab-panel .q-section { margin-top: var(--q-s-5); }
+.tab-panel .q-section-head { margin-bottom: var(--q-s-3); }
+.tab-panel .q-section-head h2 { font: var(--q-t-title3); }
 
 /* ---- Shared bits ---- */
 .gl { display: inline-grid; place-items: center; flex: none; font-style: normal; }
 .gl svg { width: 100%; height: 100%; }
 /* The hero (the kit's .q-hero-card): its top line, the bar, tags, buttons. */
-.hero { gap: 10px; padding: 18px; }
+.hero { gap: var(--q-s-3); padding: var(--q-s-4); }
 .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
 .hero-top .q-hc-eyebrow { min-width: 0; }
 .hero-top .q-hc-eyebrow > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -53,9 +53,10 @@ h1, h2, h3, p { margin: 0; }
 .hero-bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.24); overflow: hidden; }
 .hero-bar > i { display: block; height: 100%; border-radius: inherit; background: #fff; transition: width 0.4s ease; }
 .hero-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.hero-tag { display: inline-flex; align-items: center; gap: 4px; min-height: 26px; padding: 0 10px; border-radius: 99px; background: rgba(255, 255, 255, 0.18); color: #fff; font: 600 13px/1 var(--q-font); white-space: nowrap; }
-.hero-tag .gl { width: 14px; height: 14px; }
-.hero-note { color: rgba(255, 255, 255, 0.86); font: 500 14px/18px var(--q-font); }
+/* Facts on the card are plain text, not capsules. */
+.hero-tag { display: inline-flex; align-items: center; gap: 4px; color: rgba(255, 255, 255, 0.86); font: 500 14px/18px var(--q-font); white-space: nowrap; }
+.hero-tag .gl, .hero-note .gl { width: 14px; height: 14px; }
+.hero-note { display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.86); font: 500 14px/18px var(--q-font); }
 .hero .q-hc-row { flex-wrap: nowrap; margin-top: 4px; }
 .hero .q-hc-btn { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 0 12px; white-space: nowrap; }
 .q-hc-btn .gl { width: 16px; height: 16px; }
@@ -68,8 +69,12 @@ h1, h2, h3, p { margin: 0; }
 .pick { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--q-label-3); color: #fff; }
 .pick.on { border-color: var(--accent); background: var(--accent); }
 .pick svg { width: 14px; height: 14px; stroke-width: 3; }
-.q-stats { --q-stats-n: 2; }
-.q-stat strong { font-size: 24px; }
+/* Four figures in one card, not four boxes. */
+.q-stats { --q-stats-n: 2; gap: var(--q-s-4) var(--q-s-5); padding: var(--q-s-4); border-radius: var(--q-r-card); background: var(--q-surface); }
+.q-stat { padding: 0; border-radius: 0; background: none; }
+.q-stat small { font-weight: 400; }
+.q-stat strong { font: var(--q-t-figure); font-size: 22px; line-height: 28px; }
+.chart-note { color: var(--q-label-2); font: var(--q-t-footnote); }
 /* A section head's menu (sort, filter). */
 .q-section-head .head-menu { display: inline-flex; align-items: center; gap: 2px; font: 500 15px/1 var(--q-font); }
 .head-menu .gl { width: 16px; height: 16px; }
@@ -86,20 +91,45 @@ h1, h2, h3, p { margin: 0; }
 /* A word as a headline, on one line beside its sound, never broken: the longer, the smaller (--len,
    shell.js wordEl), then the kit's .q-fit trims it to the exact room. Every headword is a wordEl. */
 .word-line { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.word { min-width: 0; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; font-size: min(34px, calc((var(--q-vw, 100vw) - 150px) / (var(--len, 8) * 0.6))); line-height: 1.15; }
+.word { min-width: 0; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; font-size: min(34px, calc((var(--q-vw, 100vw) - 150px) / (var(--len, 8) * 0.6))); line-height: 1.15; }
 .meaning { font-size: 16px; line-height: 1.5; }
-.tip { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 16px; background: var(--accent-wash); text-align: left; }
-.tip .gl { width: 18px; height: 18px; margin-top: 2px; color: var(--accent); }
-.tip p { font-size: 15px; line-height: 1.5; }
-.tip-line { color: var(--q-label-2); font: var(--q-t-footnote); }
 .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -6px -8px 0 0; }
-.diff { font-weight: 800; letter-spacing: 0.03em; }
+.diff { font-weight: 600; letter-spacing: 0; }
 .diff .bad { color: var(--loss); text-decoration: underline; }
-.diff.small { font-weight: 700; letter-spacing: 0.02em; }
+.diff.small { font-weight: 600; letter-spacing: 0; }
 
 /* ---- 今天 ---- */
-.wotd { display: grid; gap: 6px; padding: 16px 18px 18px; cursor: pointer; }
-.wotd .meaning { margin-top: 2px; }
+.wotd { display: grid; gap: var(--q-s-2); padding: var(--q-s-4); cursor: pointer; }
+.wotd .meaning { margin-top: 2px; font-size: 17px; }
+.wotd .word { font-size: min(28px, calc((var(--q-vw, 100vw) - 150px) / (var(--len, 8) * 0.6))); }
+/* 練習模式: every way to practise, two to a row (views/today.js). */
+.mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.mode-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 10px; row-gap: 6px; min-width: 0; padding: 12px; border: 0; border-radius: var(--q-r-cell); background: var(--q-surface); color: var(--q-label); font: inherit; text-align: left; }
+.mode-name { font: 500 16px/21px var(--q-font); white-space: nowrap; }
+.mode-hint { grid-column: 1 / -1; }
+.mode-hint { color: var(--q-label-2); font: var(--q-t-footnote); white-space: nowrap; }
+.mode-card[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--accent); }
+.mode-card:disabled { opacity: 0.5; }
+/* 拼字比賽: the card that starts the paper, and the paper itself (views/contest.js). */
+.contest-card { display: grid; gap: var(--q-s-3); padding: var(--q-s-4); }
+.contest-card .q-seg { margin: 0; }
+.contest-intro { font: var(--q-t-subhead); }
+.contest-top { display: grid; gap: 2px; }
+.contest-top strong { font: 600 17px/22px var(--q-font); }
+.contest-best { color: var(--q-label-2); font: var(--q-t-subhead); }
+.contest-part { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 4px 8px; }
+.contest-part strong { font: 600 17px/22px var(--q-font); white-space: nowrap; }
+.contest-part small { white-space: nowrap; }
+.contest-ask .speak.big { margin: 4px 0; }
+.contest-time { justify-self: stretch; height: 4px; border-radius: 99px; background: var(--q-fill-3); overflow: hidden; }
+.contest-time > i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.25s linear; }
+.contest-sentence { font: 500 19px/1.55 var(--q-font); text-align: left; justify-self: stretch; }
+.contest-sentence .blank { display: inline-block; min-width: 4em; border-bottom: 2px solid var(--accent); }
+.contest-sentence .filled { color: var(--accent); }
+.card-word.sentence { justify-items: stretch; gap: 8px; }
+.bank { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.bank .choice { justify-content: center; min-height: 48px; padding: 8px; text-align: center; font-size: 16px; overflow-wrap: anywhere; }
+.bank .choice.dim { opacity: 0.45; }
 
 /* ---- The round's choices (a sheet) ---- */
 .prefs-sheet .q-sheet-h:first-of-type { margin-top: 8px; }
@@ -109,18 +139,21 @@ h1, h2, h3, p { margin: 0; }
 
 /* ---- 複習 and 單字 ---- */
 .cat-seg { margin: 0 0 16px; }
-.empty-card { display: grid; justify-items: center; gap: 10px; padding: 32px 16px; text-align: center; }
+.empty-card { display: grid; justify-items: center; gap: var(--q-s-2); padding: var(--q-s-6) var(--q-s-4); text-align: center; }
 .empty-card p { color: var(--q-label-2); font: var(--q-t-subhead); }
 .tab-panel > .q-search, .q-section > .q-search { margin: 0 0 12px; }
-.level-chips { margin: 0 calc(-1 * max(16px, env(safe-area-inset-left))) 0; padding: 0 16px 4px; scroll-padding-inline: 16px; }
+.level-chips { margin: 0 -16px 0; padding: 0 16px 4px; scroll-padding-inline: 16px; }
 /* A word in a list: its sound, the word over its meaning (or how it went wrong), where it stands. */
 .words .wr { --q-ritem-sep: 60px; width: 100%; min-height: 60px; }
 .wr-main { flex: 1; min-width: 0; display: grid; gap: 1px; }
 .wr-top { display: flex; align-items: center; gap: 5px; min-width: 0; }
-.wr-main strong { overflow: hidden; font: 600 16px/21px var(--q-font); white-space: nowrap; text-overflow: ellipsis; }
-.wr-main small { overflow: hidden; font: var(--q-t-footnote); white-space: nowrap; }
+.wr-main strong { overflow: hidden; font: 500 16px/21px var(--q-font); white-space: nowrap; text-overflow: ellipsis; }
+.wr-main small { overflow: hidden; font: var(--q-t-footnote); white-space: nowrap; text-overflow: ellipsis; }
 .wr-main small.wrap { white-space: normal; }
 .wr .q-tag { flex: none; }
+.wr .speak { background: var(--q-fill-3); color: var(--q-label-2); }
+.wr-side { flex: none; color: var(--q-label-2); font: 500 13px/18px var(--q-font); white-space: nowrap; }
+.sheet-state { display: flex; align-items: center; justify-content: space-between; gap: var(--q-s-2); margin: 0 4px; font: var(--q-t-subhead); }
 .mini-star { display: inline-grid; flex: none; width: 13px; height: 13px; color: var(--q-orange); }
 .q-btn.more { display: flex; width: fit-content; margin: 12px auto 0; }
 /* How a word went wrong: a small tag, then the misspelling or the word it was taken for. */
@@ -129,11 +162,11 @@ h1, h2, h3, p { margin: 0; }
 .miss-note > .miss-mean { flex: 0 100 auto; min-width: 0; overflow: hidden; }
 /* (A row's word in the note gives way only once the meaning has, then shrinks to fit: never cut.) */
 .miss-note > .q-fit { flex: 0 1 auto; }
-.miss-tag { padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--q-red) 14%, transparent); color: var(--q-red); font-size: 11px; font-weight: 700; line-height: 1.6; }
-.miss-count { margin-left: auto; color: var(--q-label-2); font-size: 11px; font-weight: 700; }
+.miss-tag { color: var(--q-label-2); font-size: 12px; font-weight: 500; }
+.miss-count { margin-left: auto; color: var(--q-label-2); font-size: 12px; font-weight: 500; }
 
 /* ---- 進度 ---- */
-.chart-card, .levels-card, .memory-card { display: grid; gap: 14px; padding: 16px; border-radius: 22px; }
+.chart-card, .levels-card, .memory-card { display: grid; gap: var(--q-s-3); padding: var(--q-s-4); border-radius: var(--q-r-card); }
 .chart-seg { margin: 0; }
 .bars { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; height: 140px; }
 .bar-col { display: grid; grid-template-rows: 18px minmax(0, 1fr) 18px; justify-items: center; min-width: 0; }
@@ -146,7 +179,7 @@ h1, h2, h3, p { margin: 0; }
 .lv-row, .mem-row { display: grid; grid-template-columns: 5.2em minmax(0, 1fr) 3em; align-items: center; gap: 12px; font-size: 13px; }
 .mem-row { grid-template-columns: 6.6em minmax(0, 1fr) 3em; }
 .lv-name, .mem-row > span:first-child { color: var(--q-text-2); white-space: nowrap; }
-.lv-num, .mem-row > span:last-child { font-weight: 700; text-align: right; }
+.lv-num, .mem-row > span:last-child { font-weight: 500; text-align: right; }
 .stack { display: flex; gap: 2px; height: 12px; }
 .stack > i { display: block; min-width: 3px; border-radius: 4px; }
 .mastered { background: var(--accent); }
@@ -161,31 +194,31 @@ h1, h2, h3, p { margin: 0; }
 .m0 > i { background: color-mix(in srgb, var(--accent) 25%, var(--q-surface)); }
 .m1 > i { background: color-mix(in srgb, var(--accent) 50%, var(--q-surface)); }
 .m2 > i { background: color-mix(in srgb, var(--accent) 75%, var(--q-surface)); }
-.fit { display: flex; }
-.q-rowcard.after { margin-top: 12px; }
+.q-rowcard.after { margin-top: var(--q-s-3); }
 
 /* ---- A round, studying, flash cards: one card at a time, the tab bar stays ---- */
 .run-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; margin: 4px 0 16px; }
 .run-head .q-close .gl, .run-head .q-close svg, .q-sheet-head .q-close svg { width: 18px; height: 18px; }
 .run-bar { height: 8px; border-radius: 99px; background: var(--q-fill-3); overflow: hidden; }
 .run-bar > i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.3s; }
-.run-right { color: var(--accent); font: 700 15px/1 var(--q-font-rounded); white-space: nowrap; }
+.run-right { color: var(--q-label-2); font: 500 15px/1 var(--q-font-rounded); white-space: nowrap; }
 /* The question: what's asked over the word (or meaning, or sound), centred. */
-.ask-card { display: grid; justify-items: center; gap: 14px; padding: 18px 20px 24px; text-align: center; }
-.ask { color: var(--q-label-2); font: 600 13px/18px var(--q-font); letter-spacing: 0.02em; }
+.ask-card { display: grid; justify-items: center; gap: var(--q-s-3); padding: var(--q-s-4) var(--q-s-4) var(--q-s-5); text-align: center; }
+.ask { color: var(--q-label-2); font: var(--q-t-footnote); }
 .card-word { display: grid; justify-items: center; gap: 6px; min-width: 0; max-width: 100%; }
 .card-word .word-line { justify-content: center; max-width: 100%; }
 .ask-card .word.big { font-size: min(40px, calc((var(--q-vw, 100vw) - 170px) / (var(--len, 8) * 0.6))); }
-.meaning.big { font-size: 22px; font-weight: 700; line-height: 1.35; }
-.cloze { font-size: min(34px, calc((var(--q-vw, 100vw) - 110px) / (var(--len, 8) * 0.8))); font-weight: 800; letter-spacing: 0.18em; }
+.meaning.big { font-size: 22px; font-weight: 600; line-height: 1.35; }
+.cloze { font-size: min(34px, calc((var(--q-vw, 100vw) - 110px) / (var(--len, 8) * 0.8))); font-weight: 600; letter-spacing: 0.18em; }
 .diff-wrap { max-width: 100%; font-size: min(22px, calc((var(--q-vw, 100vw) - 110px) / (var(--len, 8) * 0.7))); }
 /* The answers. */
 .choices { display: grid; gap: 10px; margin-top: 16px; }
-.choice { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 10px 16px 10px 12px; border: 2px solid transparent; border-radius: 18px; background: var(--q-surface); text-align: left; font: 600 17px/1.3 var(--q-font); transition: transform var(--q-dur-snappy) var(--q-spring-snappy), border-color 0.2s, background-color 0.2s, opacity 0.2s; }
+.choice { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 10px 16px 10px 12px; border: 2px solid transparent; border-radius: var(--q-r-cell); background: var(--q-surface); text-align: left; font: 600 17px/1.3 var(--q-font); transition: transform var(--q-dur-snappy) var(--q-spring-snappy), border-color 0.2s, background-color 0.2s, opacity 0.2s; }
 .choice:active:not(:disabled) { transform: scale(0.97); }
 .choice:disabled { cursor: default; }
-.choice-n { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: var(--accent-wash); color: var(--accent); font: 700 14px/1 var(--q-font-rounded); }
-.choice-text { min-width: 0; }
+.choice-n { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--q-fill-3); color: var(--q-label-2); font: 500 14px/1 var(--q-font-rounded); }
+/* Every option one size, whatever its length (a shrunk one gave itself away): a long one wraps. */
+.choice-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 @media (hover: hover) { .choice:not(:disabled):hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); } }
 .choice.right { border-color: var(--win); background: color-mix(in srgb, var(--win) 12%, var(--q-surface)); }
 .choice.right .choice-n { background: var(--win); color: #fff; }
@@ -196,41 +229,40 @@ h1, h2, h3, p { margin: 0; }
 .slots, .tiles { display: grid; grid-template-columns: repeat(var(--n), minmax(0, var(--cell))); justify-content: center; gap: min(6px, calc(36px / var(--n))); width: 100%; }
 .slots { --cell: 34px; }
 .tiles { --cell: 44px; }
-.slot { aspect-ratio: 34 / 42; display: grid; place-items: center; border: 1.5px dashed var(--q-label-3); border-radius: min(10px, calc(80px / var(--n))); font-size: min(20px, calc(150px / var(--n))); font-weight: 800; }
+.slot { aspect-ratio: 34 / 42; display: grid; place-items: center; border: 1.5px dashed var(--q-label-3); border-radius: min(10px, calc(80px / var(--n))); font-size: min(20px, calc(150px / var(--n))); font-weight: 600; }
 .slot.filled { border-style: solid; border-color: var(--accent); }
 .slot.right { border-color: var(--win); color: var(--win); }
 .slot.wrong { border-color: var(--loss); color: var(--loss); }
 .letters { display: grid; justify-items: center; gap: 12px; margin-top: 16px; }
 .tile { aspect-ratio: 44 / 48; min-width: 0; padding: 0; border: 0; border-radius: min(12px, calc(90px / var(--n))); background: var(--accent); color: var(--accent-ink); font-size: min(20px, calc(170px / var(--n))); font-weight: 800; box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #000); }
-.tile:disabled { opacity: 0.15; box-shadow: none; }
+.tile:disabled { opacity: 0.15; }
 .spell-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 16px; }
-.spell-input { min-width: 0; padding: 12px 16px; border: 2px solid transparent; border-radius: 18px; background: var(--q-surface); color: var(--q-text); font: 700 20px/1.2 var(--q-font); letter-spacing: 0.03em; }
+.spell-input { min-width: 0; padding: 12px 16px; border: 2px solid transparent; border-radius: var(--q-r-cell); background: var(--q-surface); color: var(--q-text); font: 500 20px/1.2 var(--q-font); }
 .spell-input:focus { outline: none; border-color: var(--accent); }
 .spell-form .q-btn { min-height: 52px; }
 .aside { display: flex; justify-content: center; gap: 4px; margin-top: 12px; }
 .q-btn.muted-btn { color: var(--q-label-2); }
 /* The verdict, washed green or red; 下一題 pinned above the tab bar. */
 .answered { padding-bottom: 84px; }
-.verdict { --amb: var(--win); display: grid; gap: 10px; margin-top: 12px; padding: 16px 18px 18px; }
+.verdict { --amb: var(--win); display: grid; gap: var(--q-s-3); margin-top: var(--q-s-3); padding: var(--q-s-4); background: color-mix(in srgb, var(--amb) 10%, var(--q-surface)); }
 .verdict.bad { --amb: var(--loss); }
 .verdict-top { display: flex; align-items: center; gap: 8px; min-width: 0; margin-right: -8px; }
-.verdict-top > strong { flex: 1; min-width: 0; font: 700 18px/22px var(--q-font); white-space: nowrap; }
+.verdict-top > strong { flex: 1; min-width: 0; font: 600 18px/22px var(--q-font); white-space: nowrap; }
 .verdict-top .q-tile svg { stroke-width: 3; }
 .word.v-word { font-size: min(24px, calc((var(--q-vw, 100vw) - 120px) / (var(--len, 8) * 0.6))); line-height: 1.2; }
-.mixed { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 4px 8px; padding: 10px 14px; border: 0; border-radius: 14px; background: var(--q-fill-3); color: inherit; text-align: center; }
+.mixed { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 4px 8px; padding: 10px 14px; border: 0; border-radius: var(--q-r-cell); background: var(--q-fill-3); color: inherit; text-align: center; }
 .verdict .mixed { justify-content: flex-start; text-align: left; }
-.next-bar { position: fixed; left: var(--q-side, 0px); right: var(--q-side, 0px); bottom: calc(var(--q-nav) + 10px); z-index: 50; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
+.next-bar { position: fixed; left: var(--q-col-l, 0px); right: var(--q-col-r, 0px); bottom: calc(var(--q-nav) + 10px); z-index: 50; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
 .next-bar .q-btn { width: min(560px, 100%); pointer-events: auto; box-shadow: 0 10px 24px -10px rgb(0 0 0 / 0.45); }
 /* The round's end. */
 .round-end { padding-top: 12px; }
 .results .q-ritem { --q-ritem-sep: 56px; }
 .results .q-tile svg { stroke-width: 3; }
 /* A card to learn from (new words, flash cards). */
-.word-card { display: grid; justify-items: center; gap: 12px; min-height: 340px; align-content: start; padding: 18px 20px 22px; text-align: center; }
+.word-card { display: grid; justify-items: center; gap: var(--q-s-3); min-height: 340px; align-content: start; padding: var(--q-s-4); text-align: center; }
 .word-card .card-top { justify-self: stretch; }
 .word-card .card-word { gap: 10px; margin-top: 8px; }
 .word-card .word.big { font-size: min(44px, calc((var(--q-vw, 100vw) - 104px) / (var(--len, 8) * 0.6))); }
-.word-card .tip { justify-self: stretch; }
 .meaning.full { white-space: pre-line; font-size: 17px; line-height: 1.6; }
 .flash-card { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
 .flash-why { display: grid; justify-items: center; gap: 6px; max-width: 100%; }
@@ -240,9 +272,9 @@ h1, h2, h3, p { margin: 0; }
 .flip-hint .gl { width: 15px; height: 15px; }
 .flash-mixed { display: grid; gap: 6px; justify-self: stretch; }
 /* 測驗 stays in reach above the floating tab bar on a long flipped card. */
-.flash-test { position: sticky; bottom: calc(var(--q-bar-gap, 12px) + 72px); z-index: 2; box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.35); }
+.flash-test { position: sticky; bottom: calc(var(--q-nav, 74px) + 10px); z-index: 2; box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.35); }
 .spelt { display: grid; justify-items: center; gap: 4px; }
-.spelt-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; font-size: 18px; font-weight: 700; }
+.spelt-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; font-size: 18px; font-weight: 600; }
 .card-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 12px; }
 .card-nav .gl { width: 18px; height: 18px; }
 /* An answer, once (.just: the drawing right after it): the right choice
@@ -266,15 +298,14 @@ h1, h2, h3, p { margin: 0; }
 .sheet-word .meaning { margin-top: 10px; font-size: 17px; }
 .sheet-word .word-line > .word { font-size: min(36px, calc((var(--q-vw, 100vw) - 110px) / (var(--len, 8) * 0.6))); }
 .sheet-block .q-sheet-h { margin: 22px 4px 8px; }
-.link-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.link-chip { display: grid; max-width: 100%; padding: 8px 14px; border: 0; border-radius: 14px; background: var(--q-surface); text-align: left; }
-.link-chip small { overflow: hidden; color: var(--q-label-2); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
-.word-sheet .spelt { justify-items: start; padding: 12px 16px; border-radius: 18px; }
-.sheet-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 14px 8px; border-radius: 18px; background: var(--q-surface); text-align: center; }
-.sheet-stats > div { display: grid; gap: 2px; min-width: 0; }
-.sheet-stats strong { font: 700 20px/24px var(--q-font-rounded); white-space: nowrap; }
-.sheet-stats small { color: var(--q-label-2); font-size: 12px; white-space: nowrap; }
-.lapses { margin-top: 10px; }
+.word-sheet .spelt { justify-items: start; padding: var(--q-s-3) var(--q-s-4); border-radius: var(--q-r-cell); }
+.record-card .recall-bar { width: 100%; margin-top: 8px; }
+/* 學習紀錄 and the mixed-up words: rows of plain text, the sheet's one body size (17), values grey. */
+.record-card .q-ritem-title, .link-row .q-ritem-title { font-weight: 400; }
+.record-card .q-ritem-value { color: var(--q-label-2); font-weight: 400; }
+.record-card .late .q-ritem-value { color: var(--q-orange); }
+.record-card .q-ritem:has(.recall-bar) { align-items: start; }
+.record-note { margin: 8px 16px 0; font: var(--q-t-footnote); }
 .word-sheet > .q-btn.block { margin-top: 20px; }
 .word-sheet .none { padding: 4px; text-align: left; }
 
@@ -282,21 +313,79 @@ h1, h2, h3, p { margin: 0; }
 .hero-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .go-rail, .deck-rail { --q-rail-w: 148px; }
 .recent-rail { --q-rail-w: 150px; }
-.go-card, .deck, .recent-card { display: grid; align-content: start; justify-items: start; gap: 4px; min-width: 0; padding: 14px; border: 0; border-radius: 22px; background: var(--q-surface); color: var(--q-label); font: inherit; text-align: left; }
+.go-card, .deck, .recent-card { display: grid; align-content: start; justify-items: start; gap: 4px; min-width: 0; padding: 14px; border: 0; border-radius: var(--q-r-card); background: var(--q-surface); color: var(--q-label); font: inherit; text-align: left; }
 .go-card:disabled { opacity: 0.5; }
-.go-card .q-tile, .deck .q-tile { margin-bottom: 6px; }
-.go-val { font: 700 28px/32px var(--q-font-rounded, var(--q-font)); letter-spacing: -0.02em; }
-.go-title { font: 600 15px/20px var(--q-font); }
-.go-sub { color: var(--q-label-2); font: 12px/16px var(--q-font); overflow-wrap: anywhere; }
+.go-val { font: 600 22px/26px var(--q-font-rounded, var(--q-font)); }
+.go-title { font: 500 15px/20px var(--q-font); }
+.go-sub { color: var(--q-label-2); font: var(--q-t-footnote); overflow-wrap: anywhere; }
 .go-card .mini-bar { width: 100%; margin-top: 6px; }
 .deck { box-shadow: 0 -4px 0 -2px var(--q-fill-3), 0 -8px 0 -4px var(--q-fill-4); margin-top: 8px; }
-.recent-card { gap: 6px; }
-/* (A rail card's word: 122 px of room, 20 px at most.) */
-.word.rc-word { max-width: 100%; font-weight: 700; font-size: min(20px, calc(122px / (var(--len, 8) * 0.56))); line-height: 24px; }
-.rc-zh { color: var(--q-label-2); font: 13px/18px var(--q-font); white-space: nowrap; }
-.streak-card { display: grid; gap: 12px; padding: 16px; }
+.recent-card { gap: 2px; }
+/* (A rail card: the word, one size for every card, then its meaning and state in grey.) */
+.rc-word { max-width: 100%; overflow: hidden; font: 600 17px/22px var(--q-font); white-space: nowrap; text-overflow: ellipsis; }
+.rc-sub { max-width: 100%; overflow: hidden; color: var(--q-label-2); font: var(--q-t-footnote); white-space: nowrap; text-overflow: ellipsis; }
+.streak-card { display: grid; gap: var(--q-s-3); padding: var(--q-s-4); }
 .streak-top { display: flex; align-items: center; gap: 12px; }
 .streak-text { display: grid; gap: 2px; min-width: 0; }
-.streak-text strong { font: 700 22px/26px var(--q-font-rounded, var(--q-font)); }
+.streak-text strong { font: 600 22px/26px var(--q-font-rounded, var(--q-font)); }
 .streak-text small { color: var(--q-label-2); font: 13px/18px var(--q-font); }
 .q-section-head .q-sh-more { margin-left: auto; }
+
+/* The sheet's senses, example and forms (data/more.json) */
+.senses { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+.senses li { display: flex; gap: 8px; align-items: baseline; font-size: 17px; line-height: 1.45; }
+.sense-pos { flex: none; min-width: 36px; color: var(--q-label-2); font: 500 13px/1 var(--q-font-rounded); }
+.sense-zh { min-width: 0; }
+.word-sheet .example { display: grid; gap: 4px; padding: var(--q-s-3) var(--q-s-4); border-radius: var(--q-r-cell); }
+.ex-en { font-size: 17px; line-height: 1.45; }
+.ex-en strong { color: var(--q-accent, inherit); font-weight: 650; }
+.ex-zh { font-size: 15px; line-height: 1.45; }
+.forms { padding: 0 4px; font-size: 17px; }
+.forms span { display: inline-block; margin-right: 0.35em; white-space: nowrap; }
+.forms span:not(:last-child)::after { content: '\00a0·'; color: var(--q-label-2); }
+.word-sheet .credit { margin: 18px 4px 0; font-size: 12px; text-align: center; }
+
+/* ==== Every screen, either way up (Jay 2026-10-31; Orbit-Core DESIGN §10) ====
+   Wide (q-wide): 今天 and 進度 in two columns (three on q-w3), 複習 and 單字
+   their list beside the word opened (views/chrome.js columns, sheet.js
+   wordPane). A tab with one column (a round, the cards, the paper, an empty
+   list) stays a phone's reading width in the middle. */
+:root.q-wide { --q-page-max: 1180px; }
+.tab-col > :first-child { margin-top: 0; }
+.tab-col > .q-section:first-child .q-section-head { margin-top: 0; }
+:root.q-wide .tab-panel:not(:has(> .tab-cols)) { max-width: 720px; margin-inline: auto; }
+:root.q-wide .tab-cols .level-chips { margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; }
+/* The word beside the list: the sheet's own content on a card that stays in view while the list scrolls. */
+.word-pane { position: sticky; top: calc(env(safe-area-inset-top) + 12px); max-height: calc(100dvh - env(safe-area-inset-top) - 24px); overflow-y: auto; overscroll-behavior: contain; padding: 8px 16px 20px; border-radius: var(--q-r-card); background: var(--q-surface); }
+.word-pane .q-card, .word-pane .q-rowcard { background: var(--q-fill-4, var(--q-fill-3)); }
+.pane-head { display: flex; justify-content: flex-end; min-height: 36px; margin: 0 -8px -28px 0; }
+.pane-head .sheet-lead { position: relative; z-index: 1; }
+.word-pane .sheet-state { margin-right: 40px; }
+.wr[aria-current='true'] { background: color-mix(in srgb, var(--accent) 12%, var(--q-surface)); }
+/* A question beside its answers wherever the page is wide or short (a phone
+   on its side): the word stays in view while the answers are picked. */
+:root.q-wide .question { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 0 16px; align-items: start; }
+:root.q-wide .question > .ask-card { grid-column: 1; grid-row: 1; margin: 0; }
+:root.q-wide .question > .verdict { grid-column: 1; grid-row: 2; margin-top: 12px; }
+:root.q-wide .question > :not(.ask-card, .verdict) { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+:root.q-wide .question > .aside { grid-row: 3; }
+/* (下一題 under the verdict, in reach; on a phone on its side, pinned at the
+   foot of the answers' column, which leaves the verdict whole.) */
+:root.q-wide .next-bar { position: static; margin-top: 4px; padding: 0; }
+:root.q-wide .next-bar .q-btn { width: 100%; }
+:root.q-wide .answered { padding-bottom: 0; }
+@media (max-height: 520px) {
+  :root.q-wide .next-bar { position: fixed; left: calc(var(--q-mid) - 8px); right: calc(100vw - var(--q-mid) - min(376px, var(--q-vw) / 2)); margin: 0; padding: 0 16px; }
+  :root.q-wide .answered { padding-bottom: 84px; }
+  .flash-test { position: static; }
+}
+/* A phone on its side is short: the cards to learn from no taller than it. */
+@media (max-height: 520px) {
+  .word-card { min-height: 0; }
+  .run-head { margin-bottom: 10px; }
+  .choices { gap: 8px; }
+  .choice { min-height: 48px; padding-block: 6px; }
+}
+/* (A column has no edge to bleed to: its rails of cards wrap, every row full.) */
+.card-grid { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 10px; }
+.card-grid.deck-rail { row-gap: 18px; padding-top: 8px; }

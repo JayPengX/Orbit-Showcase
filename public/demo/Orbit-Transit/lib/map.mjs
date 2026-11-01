@@ -117,6 +117,11 @@ function domItems(make, selected = () => null) {
 
 // onDrag: the map moved by a finger (not by the app), e.g. to stop following you.
 export async function createMap(el, { provider = 'nlsc', key = '', center, zoom = 15, onPick = () => {}, onTap = () => {}, onIdle = () => {}, onPlace = () => {}, onDrag = () => {} } = {}) {
+  // A pinch (two fingers) or a wheel is the person's, however soon after one
+  // of the app's own fits (a zoom within 1.5 s of one counts as the app's:
+  // the owner, 2026-10-28, a pinch just after tapping a step snapped back).
+  el.addEventListener('touchstart', ev => ev.touches.length > 1 && onDrag(), { passive: true });
+  el.addEventListener('wheel', () => onDrag(), { passive: true });
   if (provider === 'google' && key) {
     try {
       await loadGoogle(key);
@@ -236,7 +241,9 @@ function googleMap(el, { center, zoom, onPick, onTap, onIdle, onPlace, onDrag })
     }
     place(rec) {
       const p = this.getProjection()?.fromLatLngToDivPixel(new g.LatLng(rec.it.lat, rec.it.lon));
-      if (p) rec.node.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      // The translate property, not transform: a selected marker's scale
+      // (.is-sel) then grows it in place, not its distance from the corner.
+      if (p) rec.node.style.translate = `${p.x}px ${p.y}px`;
     }
     draw() {
       for (const rec of this.items.els.values()) this.place(rec);

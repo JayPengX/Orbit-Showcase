@@ -5,6 +5,7 @@
 import { packProgress, unpackProgress, mergeProgress, mergeCal } from './words.mjs';
 import { mergeDays, mergeLog } from './practice.mjs';
 import { mergeMarks } from './review.mjs';
+import { mergeContests } from './contest.mjs';
 
 async function gzipB64(text) {
   const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'));
@@ -33,7 +34,7 @@ export const encodePayload = async state => `z3:${await gzipB64(JSON.stringify(p
 
 // Another copy (the pass's, the phone's, one a merge brought in) into this
 // one: per word the one answered last; days and logs the larger; bookmarks
-// the latest choice; the reviews for fitting the model together. The
+// the latest choice; the contests taken on either; the reviews for fitting the model together. The
 // settings (levels, the way to learn, the sound's speed) are the newer
 // copy's (`st`, when they were set; a copy from before `st` counts as the
 // oldest, and the other copy's then stand, as they always did). The studied
@@ -49,12 +50,13 @@ export function mergeCopy(state, theirs) {
     log: mergeLog(state.log, theirs.log),
     marks: mergeMarks(state.marks, theirs.marks),
     cal: mergeCal(state.cal, theirs.cal),
+    ct: mergeContests(state.ct, theirs.ct),
     study: [...new Set([...(state.study || []), ...(theirs.study || [])])].filter(k => !progress[k]?.b)
   };
   if ((theirs.st || 0) >= (state.st || 0)) {
     if (theirs.levels) out.levels = theirs.levels;
     if (theirs.mode) out.mode = theirs.mode;
-    if (theirs.opt?.rate) out.opt = { ...state.opt, rate: theirs.opt.rate };
+    if (theirs.opt?.rate || theirs.opt?.paper) out.opt = { ...state.opt, ...(theirs.opt.rate ? { rate: theirs.opt.rate } : {}), ...(theirs.opt.paper ? { paper: theirs.opt.paper } : {}) };
     // (A newer copy without a size means the usual 10.)
     if ([10, 20, 30].includes(theirs.opt?.size)) out.size = theirs.opt.size;
     else if ((theirs.st || 0) > (state.st || 0)) out.size = 10;

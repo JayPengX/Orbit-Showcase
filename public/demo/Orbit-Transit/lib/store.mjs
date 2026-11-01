@@ -20,6 +20,9 @@ export const DAYS = '日一二三四五六';
 export const LAYERS = { bike: 'YouBike', bus: W('公車站', 'Bus stops'), rail: W('火車・高鐵', 'Trains'), metro: W('捷運', 'Metro') };
 // A place's glyph: the name of one of ui.mjs's icons (drawn by look.mjs's placeTile).
 export const PLACE_ICONS = { home: 'home', work: 'work', school: 'school', pin: 'pin', star: 'star' };
+// What each icon is called (a screen reader's word for its chip).
+const ICON_NAMES = { home: ['家', 'Home'], work: ['公司', 'Work'], school: ['學校', 'School'], pin: ['地點', 'Place'], star: ['最愛', 'Favourite'] };
+export const iconName = k => W(...(ICON_NAMES[k] || ICON_NAMES.pin));
 
 export const emptyData = () => ({
   v: 1,
@@ -159,7 +162,7 @@ export function cleanData(d) {
     groups: groups.length ? groups : emptyData().groups,
     places: (Array.isArray(d.places) ? d.places : []).map(cleanPlace).filter(Boolean).slice(0, MAX_PLACES),
     trips: (Array.isArray(d.trips) ? d.trips : [])
-      .map(x => (x && coord(x.lat) != null ? { name: str(x.name, 40), lat: coord(x.lat), lon: coord(x.lon), t: Number(x.t) || 0, ...gidOf(x) } : null))
+      .map(x => (x && coord(x.lat) != null ? { name: str(x.name, 40), lat: coord(x.lat), lon: coord(x.lon), t: Number(x.t) || 0, ...gidOf(x), ...timesOf(x) } : null))
       .filter(Boolean)
       .slice(0, 10),
     trains: (Array.isArray(d.trains) ? d.trains : [])
@@ -189,6 +192,21 @@ export const mergeData = (mine, theirs) => (!theirs ? mine : !mine || (theirs.t 
 // A recent search or trip goes to the front, once.
 export function remember(list, item, key, max) {
   return [item, ...list.filter(x => key(x) !== key(item))].slice(0, max);
+}
+// The times a trip was planned to a place (`ts`, ms), the last dozen: when
+// the person goes there, for 建議's 常去 (suggest.mjs usualTrip).
+const MAX_TIMES = 12;
+const timesOf = x => {
+  const ts = (Array.isArray(x?.ts) ? x.ts : []).map(Number).filter(t => Number.isFinite(t) && t > 0).slice(-MAX_TIMES);
+  return ts.length ? { ts } : {};
+};
+// A place to the front of 最近; `went`: a trip planned to it now (one time a
+// half hour, however often it's planned again).
+export function rememberTrip(list, p, { now = Date.now(), went = false } = {}) {
+  const old = list.find(x => tripKey(x) === tripKey(p));
+  let ts = old?.ts || [];
+  if (went) ts = [...ts.filter(t => now - t > 30 * 60_000), now];
+  return remember(list, { name: p.name, lat: p.lat, lon: p.lon, t: now, ...(p.gid ? { gid: p.gid } : {}), ...timesOf({ ts }) }, tripKey, 10);
 }
 export const trainKey = x => `${x.from.sys}:${x.from.id}>${x.to.sys}:${x.to.id}`;
 export const tripKey = x => `${x.lat.toFixed(4)},${x.lon.toFixed(4)}`;

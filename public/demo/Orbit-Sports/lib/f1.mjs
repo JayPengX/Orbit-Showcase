@@ -194,6 +194,12 @@ export async function weekendCircuit(start) {
   if (!m?.circuit_key) return null;
   return (await circuitMap(m.circuit_key, year).catch(() => null)) || circuitMap(m.circuit_key, year - 1).catch(() => null);
 }
+// ---- A driver the F1 sites don't know (a practice's stand-in) ----
+// Who he is: Wikipedia's first lines ({ en, zh, url }; zh the Chinese
+// article's own, '' without one), through the F1 live host (f1-people.js).
+export const driverAbout = name => getJson(`https://f1-live.orbit/about.json?name=${encodeURIComponent(name)}`, { ttl: 7 * 24 * HOUR });
+// Where his head is in a TheSportsDB cutout ({ x, y, s }), so his round face is head and shoulders.
+export const cutoutFace = url => getJson(`https://f1-live.orbit/face.json?u=${encodeURIComponent(String(url).replace(/\/(small|medium|tiny)$/, ''))}`, { ttl: 30 * 24 * HOUR });
 // The weather at the circuit on the weekend's days there (Open-Meteo, no key,
 // through the proxy: one read a circuit for every phone): [{ date, code, hi,
 // lo, rain }] for the sessions' local dates within its 16 days, or [].
@@ -205,12 +211,15 @@ export async function circuitWeather(start, starts) {
   const off = Number(w?.utc_offset_seconds) || 0;
   const days = [...new Set(starts.map(s => new Date(Date.parse(s) + off * 1000).toISOString().slice(0, 10)))];
   const d = w?.daily || {};
-  return days
+  const out = days
     .map(date => {
       const i = (d.time || []).indexOf(date);
       return i < 0 || d.temperature_2m_max?.[i] == null ? null : { date, code: d.weather_code[i], hi: Math.round(d.temperature_2m_max[i]), lo: Math.round(d.temperature_2m_min[i]), rain: d.precipitation_probability_max?.[i] ?? null };
     })
     .filter(Boolean);
+  // (The circuit's height above the sea, Open-Meteo's for the spot: Mexico City's thin air at 2,240 m.)
+  out.elevation = Number.isFinite(w?.elevation) ? Math.round(w.elevation) : null;
+  return out;
 }
 export async function raceResult(start, sprint = false, en = false) {
   const year = new Date(start).getFullYear();

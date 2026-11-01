@@ -49,9 +49,11 @@
 // o how the last answer went (1 right, 2 missed), x [how this person
 // misspelt it, latest first] }.
 
+import { readContests } from './contest.mjs';
+
 export const LEVELS = [1, 2, 3, 4, 5, 6];
 // Which study modes a person can choose; 'smart' picks per word.
-export const MODES = ['smart', 'meaning', 'word', 'listen', 'letters', 'cloze', 'spell'];
+export const MODES = ['smart', 'meaning', 'word', 'listen', 'spell', 'sentence', 'letters', 'cloze'];
 // How many mix-ups, and misspellings, are remembered per word.
 const CONFUSED_KEEP = 4;
 const SPELT_KEEP = 3;
@@ -67,17 +69,46 @@ export function loadWords(rows) {
   return rows.map(([word, pos, level, zh, ph], i) => ({ i, word, key: keyOf(word), pos, level, zh, ph: ph || '' }));
 }
 
-// Hints (data/hints.json, levels 4 to 6): { key: [a line to remember it by,
-// [keys of words it's commonly confused with]] }, written once for every
-// learner (they were Orbit Words' AI signals). Rows that aren't that shape
-// are dropped.
+// Hints (data/hints.json, levels 4 to 6): { key: [keys of words it's
+// commonly confused with] }, written once for every learner. (The lines to
+// remember a word by went 2026-10-31: English restatements such as "Opt to
+// choose an option.", no help to a Taiwan student.) Rows that aren't that
+// shape are dropped.
 export function loadHints(raw) {
   const out = new Map();
   for (const [k, v] of Object.entries(raw || {})) {
-    if (!Array.isArray(v) || typeof v[0] !== 'string') continue;
-    out.set(k, { tip: v[0], common: Array.isArray(v[1]) ? v[1].filter(x => typeof x === 'string') : [] });
+    if (!Array.isArray(v)) continue;
+    const common = v.filter(x => typeof x === 'string');
+    if (common.length) out.set(k, { common });
   }
   return out;
+}
+
+// A word's example and forms (data/more.json): { key: [[forms], English
+// example, its Chinese] }, from Wiktionary and Tatoeba, written once.
+// Rows that aren't that shape are dropped; a part may be empty.
+export function loadMore(raw) {
+  const out = new Map();
+  for (const [k, v] of Object.entries(raw || {})) {
+    if (!Array.isArray(v)) continue;
+    const forms = Array.isArray(v[0]) ? v[0].filter(x => typeof x === 'string' && x) : [];
+    const en = typeof v[1] === 'string' ? v[1] : '';
+    const zh = typeof v[2] === 'string' ? v[2] : '';
+    if (forms.length || en) out.set(k, { forms, en: en && zh ? en : '', zh: en && zh ? zh : '' });
+  }
+  return out;
+}
+
+// A meaning's senses, one a line (「v. 意思是、意指」 → { pos: 'v.', text: '意思是、意指' }).
+export function senses(zh) {
+  return String(zh || '')
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(l => {
+      const m = l.match(/^([a-z]+\.)\s*(.*)$/i);
+      return m ? { pos: m[1], text: m[2] } : { pos: '', text: l };
+    });
 }
 
 // ---- The memory model --------------------------------------------------------------------
@@ -91,15 +122,16 @@ const FACTOR = 19 / 81;
 export const retrievability = (days, s) => (1 + (FACTOR * Math.max(0, days)) / Math.max(0.01, s)) ** DECAY;
 // How much a right answer is worth by how it was asked: recall from nothing
 // (dictation) proves the most, picking from four the least.
-const TYPE_WEIGHT = { meaning: 0.55, word: 0.7, listen: 0.75, letters: 0.85, cloze: 0.95, spell: 1.1 };
+const TYPE_WEIGHT = { meaning: 0.55, word: 0.7, listen: 0.75, sentence: 0.8, letters: 0.85, cloze: 0.95, spell: 1.1 };
 // Grades, as FSRS has them: 1 missed, 2 right but slow, 3 right, 4 right and quick.
 // Quick and slow, by how it was asked (ms): a choice, or per letter typed.
 export function gradeOf(correct, type, ms, word = '') {
   if (!correct) return 1;
   if (!(ms > 0)) return 3;
-  const choice = type === 'meaning' || type === 'word' || type === 'listen';
-  const slow = choice ? 9_000 : 6_000 + 900 * word.length;
-  const quick = choice ? 2_500 : 1_500 + 350 * word.length;
+  const choice = type === 'meaning' || type === 'word' || type === 'listen' || type === 'sentence';
+  // (A sentence is read first: half as long again.)
+  const slow = type === 'sentence' ? 14_000 : choice ? 9_000 : 6_000 + 900 * word.length;
+  const quick = type === 'sentence' ? 4_000 : choice ? 2_500 : 1_500 + 350 * word.length;
   return ms > slow ? 2 : ms < quick && !choice ? 4 : 3;
 }
 // How long until a word is asked again, by how hard it is for this person:
@@ -183,7 +215,7 @@ export function grade(p, correct, { now = Date.now(), chose = null, typed = '', 
   // Missed: due again today; else when recall falls to its mark (RETAIN).
   next.d = correct ? today + fuzz(Math.max(1, Math.round(intervalOf(next.s * factor, next.D))), keyOf(word), today) : today;
   if (!correct) {
-    next.h = how || { meaning: 'm', word: 'w', listen: 'e' }[type] || 's';
+    next.h = how || { meaning: 'm', word: 'w', sentence: 'w', listen: 'e' }[type] || 's';
     // Forgotten after it had been learnt: a lapse.
     if ((was.b || 0) >= 2) next.l = (was.l || 0) + 1;
     if (chose) next.c = [chose, ...(was.c || []).filter(k => k !== chose)].slice(0, CONFUSED_KEEP);
@@ -242,13 +274,6 @@ export function personalFactor(cal = []) {
   return Math.round(shrunk * 100) / 100;
 }
 
-// "Too easy": a word the person already knows, mastered and out of the way
-// for two months.
-export function markKnown(p, now = Date.now()) {
-  const was = p || { b: 0, d: 0, n: 0, r: 0, t: 0 };
-  return { ...was, s: 60, D: 2, b: 5, d: dayNum(now) + 60, t: now, m: 1 };
-}
-
 // ---- How a word is asked -----------------------------------------------------------
 //
 // Smart mode, per word by its box: what it's being trained in, not a
@@ -285,7 +310,7 @@ export function smartType(p, random = Math.random, word = null, used = {}) {
 // picked wrong, asked from the other side (its meaning was picked: now the
 // word from its meaning; the word, or by ear: its meaning); misspelt,
 // dictated again.
-export const retryType = (type, word = null) => (type === 'meaning' ? 'word' : type === 'word' || type === 'listen' ? 'meaning' : word && /\s/.test(word.word) ? 'word' : 'spell');
+export const retryType = (type, word = null) => (type === 'meaning' || type === 'sentence' ? 'word' : type === 'word' || type === 'listen' ? 'meaning' : word && /\s/.test(word.word) ? 'word' : 'spell');
 
 // ---- A round ---------------------------------------------------------------------------
 //
@@ -506,6 +531,18 @@ function zhOf(zh) {
   zhCache.set(zh, hit);
   return hit;
 }
+// Every meaning's terms worked out ahead, a slice at a time while the phone
+// is idle: the first question used to do all ~7,000 on the tap of 開始
+// (0.1–0.2 s of a mid-range phone's time before anything moved).
+export function warmMeanings(words, idle = globalThis.requestIdleCallback) {
+  if (!idle) return;
+  let i = 0;
+  const step = deadline => {
+    while (i < words.length && deadline.timeRemaining() > 2) zhOf(words[i++].zh);
+    if (i < words.length) idle(step, { timeout: 5000 });
+  };
+  idle(step, { timeout: 5000 });
+}
 // Two meanings with a term in common: both would be right.
 export function sameMeaning(a, b) {
   const x = zhOf(a).terms;
@@ -539,11 +576,15 @@ const samePos = (x, y) => {
 };
 // How each kind of question weighs the ways to be confused: by meaning
 // when the options are meanings, by spelling when they're spellings, by
-// spelling and sound when the word is only heard.
+// spelling and sound when the word is only heard, by its kind (part of
+// speech) when a sentence asks for it (句子填空, 拼字比賽's 單題), and there
+// away from words close in meaning: two options that both fit the sentence
+// (cabin and hut in "This ___ is a very special place.") is no question.
 const WEIGH = {
   meaning: { look: 1.2, mean: 1.8, pos: 0.8 },
   word: { look: 2, mean: 1.1, pos: 0.8 },
-  listen: { look: 2.4, mean: 0.4, pos: 0.4 }
+  listen: { look: 2.4, mean: 0.4, pos: 0.4 },
+  context: { look: 0.4, mean: -1.5, pos: 2.5 }
 };
 // The `n` words most likely to be picked instead of `word` in a question of
 // `type`: the ones this person has mixed it up with first (`confused`), then
@@ -565,6 +606,7 @@ export function distractors(word, words, n = 3, { type = 'meaning', confused = [
     if (c.key === word.key || !c.zh || it.phrase !== phrase || sameMeaning(c.zh, word.zh)) continue;
     const look = lookAlike(c.key, word.key);
     const mean = meaningAlike(c.zh, word.zh);
+    if (type === 'context' && mean > 0.5) continue;
     const s = w.look * look + w.mean * mean + w.pos * samePos(it, me) + 0.2 * (c.level === word.level) + (mistaken.get(c.key) || 0) + random() * 0.15;
     if (top.length === TOP && s <= floor) continue;
     let i = top.length;
@@ -705,15 +747,16 @@ export const hardest = (words, progress, n = 5) =>
 //   the studied batch waiting for its quiz; `cal`: reviews for fitting the
 //   model; `days` and `log`: answers, and right answers and seconds, per
 //   Taiwan day, practice.mjs; `marks`: bookmarked words, review.mjs; `opt`:
-//   { rate, size } the speed of the sound, the words per round when not 10). The app gzips it.
-export function packProgress({ progress, levels, mode, days = {}, study = [], cal = [], log = {}, marks = {}, opt = {}, size = 10, st = 0 }) {
+//   { rate, size } the speed of the sound, the words per round when not
+//   10; `ct`: the contests taken, contest.mjs). The app gzips it.
+export function packProgress({ progress, levels, mode, days = {}, study = [], cal = [], log = {}, marks = {}, opt = {}, size = 10, st = 0, ct = [] }) {
   const w = {};
   for (const [k, p] of Object.entries(progress)) {
     const row = [p.b || 0, p.d || 0, p.n || 0, p.r || 0, Math.round((p.t || 0) / 1000), p.m ? 1 : 0, p.l || 0, p.c || [], p.s ?? null, p.D ?? null, p.o || 0, p.x || [], p.h || 0];
     while (row.length > 6 && (row.at(-1) === null || row.at(-1) === 0 || (Array.isArray(row.at(-1)) && !row.at(-1).length))) row.pop();
     w[k] = row;
   }
-  return { v: 3, w, levels, mode, days, study, cal, log, marks, opt: size !== 10 ? { ...opt, size } : opt, ...(st ? { st } : {}) };
+  return { v: 3, w, levels, mode, days, study, cal, log, marks, opt: size !== 10 ? { ...opt, size } : opt, ...(st ? { st } : {}), ...(ct.length ? { ct } : {}) };
 }
 export function unpackProgress(obj) {
   if (obj?.v !== 3 || !obj.w) return null;
@@ -730,7 +773,8 @@ export function unpackProgress(obj) {
     log: obj2(obj.log),
     marks: obj2(obj.marks),
     opt: obj2(obj.opt),
-    st: Number.isFinite(obj.st) && obj.st > 0 ? obj.st : 0
+    st: Number.isFinite(obj.st) && obj.st > 0 ? obj.st : 0,
+    ct: readContests(obj.ct)
   };
 }
 

@@ -2,8 +2,8 @@
 // on a month, the day's entries), 帳戶 (cash, banks, 悠遊卡, e-wallets and
 // credit cards, with the cards on them; what's counted in the 總資產),
 // 統計 (where it went: by category, by day, against the budgets)
-// and 更多 (purchases brought in without typing, 對獎, the 手機條碼, the
-// categories, the repeats, the accounts put away, the books as a file).
+// and 更多 (拍照記帳: any receipt or screenshot into an entry; the categories,
+// the repeats, the accounts put away, the books as a file).
 //
 // This file starts the app, saves and opens tabs; the screens are views/*.mjs,
 // the books lib/*.mjs. Nothing here is Orbit's money: the books are the app's
@@ -11,16 +11,16 @@
 // the Pass's copy before anything is written (the kit's pass-sync.mjs).
 import * as kitUI from '#kit/ui.mjs';
 import { passSync } from '#kit/pass-sync.mjs';
-import { orbitSession, tabBar, topActions, installGate, watchUpdates, keepOffline, storedAccount, cachedPayload } from '#kit/orbit.mjs';
-import { decodeBooks, encodeBooks, mergeBooks, runRepeats, put } from './lib/books.mjs';
-import { state, hooks, lang, W, today } from './shell.mjs';
-import { useCats } from './lib/cats.mjs';
+import * as orbitKit from '#kit/orbit.mjs';
+import { orbitSession, tabBar, topActions, installGate, watchUpdates, keepOffline, storedAccount, cachedPayload, schedulePush, setNotifyOn, enablePush } from '#kit/orbit.mjs';
+import { decodeBooks, encodeBooks, mergeBooks, runRepeats, upgradeBooks, put } from './lib/books.mjs';
+import { state, hooks, lang, W, today, dayLabel } from './shell.mjs';
+import { useBooksCats, upgradeCats } from './lib/cats.mjs';
+import { reminders, remindTimes, upgradeRenew } from './lib/renew.mjs';
 import { renderCal } from './views/calendar.mjs';
 import { renderAccts } from './views/accounts.mjs';
 import { renderStats } from './views/stats.mjs';
-import { loadDraws } from './views/invoices.mjs';
 import { renderMore } from './views/more.mjs';
-import { checkMail } from './views/carrier-import.mjs';
 import { openEntry } from './views/entry.mjs';
 
 document.documentElement.lang = lang === 'en' ? 'en' : 'zh-Hant';
@@ -70,8 +70,39 @@ function sync({ soon = false } = {}) {
   if (!state.loaded) return Promise.resolve();
   return pass.sync();
 }
-document.addEventListener('visibilitychange', () => (document.visibilityState === 'hidden' ? sync() : state.loaded && checkMail()));
-hooks.changed = () => (stamp++, pass.changed(), keepLocal(), sync({ soon: true }), render());
+document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && sync());
+hooks.changed = () => (stamp++, pass.changed(), keepLocal(), sync({ soon: true }), render(), plan());
+
+// 到期提醒 as phone notices (kind 'renew', its switch in the Pass sheet): each
+// reminder at the times it's set to (更多 › 到期提醒, lib/renew.mjs remindTimes).
+function plan() {
+  const now = Date.now();
+  const items = reminders(state.books, today())
+    .filter(x => x.left != null && x.left >= 0)
+    .flatMap(x => {
+      const { r, due } = x;
+      const day = dayLabel(due, { week: false });
+      return remindTimes(r, x).map(({ n, at }) => ({
+        at,
+        title: r.roll ? W(n ? `${r.name} ${n === 1 ? '明天' : `${n} 天後`}續訂` : `${r.name} 今天續訂`, n ? `${r.name} renews in ${n} day${n === 1 ? '' : 's'}` : `${r.name} renews today`) : W(n ? `${r.name} ${n === 1 ? '明天' : `${n} 天後`}到期` : `${r.name} 今天到期`, n ? `${r.name} ends in ${n} day${n === 1 ? '' : 's'}` : `${r.name} ends today`),
+        body: r.roll ? W(`${day}會自動扣款。`, `Charged on ${day}.`) : W(n ? `${day}是最後一天，記得續。` : '今天是最後一天。', n ? `${day} is its last day.` : 'Today is its last day.'),
+        tag: `renew:${r.id}:${due}:${n}`,
+        kind: 'renew',
+        hash: 'cal'
+      }));
+    });
+  schedulePush(q, items.filter(x => x.at > now));
+}
+// Notices turned on from the app (月曆's 提醒我): this phone asked, the pass's switch on.
+hooks.notices = async () => {
+  if (!('Notification' in globalThis)) return false;
+  const p = await Notification.requestPermission().catch(() => 'denied');
+  if (p !== 'granted') return false;
+  setNotifyOn(true, q);
+  await enablePush(q, true);
+  plan();
+  return true;
+};
 hooks.render = () => render();
 
 // The first account every book has: cash (one fixed id, so two new phones
@@ -84,6 +115,8 @@ function settle() {
     changed = true;
   }
   if (runRepeats(b, today())) changed = true;
+  // (Books from before a change in what entries mean, brought up to date.)
+  if (upgradeBooks(b) + upgradeCats(b) + upgradeRenew(b)) changed = true;
   return changed;
 }
 
@@ -94,7 +127,7 @@ function render({ ifChanged = false } = {}) {
   if (!box) return;
   if (ifChanged && box.dataset.drawn === String(stamp)) return;
   box.dataset.drawn = String(stamp);
-  useCats(state.books.cats);
+  useBooksCats(state.books);
   VIEWS[state.tab](box);
   if (state.tab !== TABS[0]) box.prepend(kitUI.navTitle(TITLES[state.tab]));
 }
@@ -104,13 +137,15 @@ const tabNav = tabBar({
   onSelect: tab => showTab(tab),
   hash: id => `#${id}`,
   // 記一筆: the app's one main thing, its own button beside the tabs, on every tab.
-  action: { icon: kitUI.icons.plus, label: W('記一筆', 'Add an entry'), onTap: () => (useCats(state.books.cats), openEntry({ day: state.tab === 'cal' ? state.day : today() })) }
+  action: { icon: kitUI.icons.plus, label: W('記一筆', 'Add an entry'), onTap: () => {
+    useBooksCats(state.books);
+    openEntry({ day: state.tab === 'cal' ? state.day : today() });
+  } }
 });
 function showTab(tab) {
   state.tab = tab;
   tabNav.select(tab);
   render({ ifChanged: true });
-  if (tab === 'more') loadDraws().then(() => state.tab === 'more' && render());
 }
 const quietRefresh = () => {
   if (document.querySelector('dialog.q-sheet[open]') || document.activeElement?.tagName === 'INPUT') return;
@@ -144,10 +179,9 @@ async function boot() {
   keepLocal();
   show();
   pass.watch();
+  plan();
   await sync();
   for (const item of first?.inbox || []) q.dropInbox(item.id).catch(() => {});
-  // 載具 invoices that came by mail.
-  checkMail({ force: true });
 }
 if (!gated) boot();
 
@@ -170,5 +204,16 @@ setInterval(() => {
   if (settle()) hooks.changed();
   else quietRefresh();
 }, 60_000);
+
+// A turn of the phone or a window resized: the page laid out again for the
+// columns it has room for now (shell.mjs columns, flow).
+let fitNow = '';
+orbitKit.onScreen?.(fit => {
+  const key = `${fit.w3}${fit.wide}${globalThis.innerHeight > 600}`;
+  if (key === fitNow) return;
+  fitNow = key;
+  stamp++;
+  if (state.loaded) render();
+});
 
 keepOffline();

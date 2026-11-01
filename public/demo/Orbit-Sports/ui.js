@@ -4,8 +4,8 @@
 import { LEAGUES, SPORTS, leagueName, leagueLogo, leagueLogoDark } from './lib/leagues.mjs';
 import { sidesInOrder } from '#kit/catalog.mjs';
 import { logoPicture, countryFlag, flagUrl, flagEmoji, f1Driver } from '#kit/logos.mjs';
-import { keptTiming } from './lib/f1.mjs';
-import { espnHeadshot, espnCollegeHeadshot, smallPhoto, isFlag, personPhoto } from '#kit/photos.mjs';
+import { keptTiming, cutoutFace } from './lib/f1.mjs';
+import { espnHeadshot, espnCollegeHeadshot, smallPhoto, isFlag, isCutout, personPhoto } from '#kit/photos.mjs';
 import { liveLabel, liveNote, closeLabel, goalHead, withTimeout, liveParts } from './lib/live.mjs';
 import { stageTag } from './lib/stage.mjs';
 import { badgeOf } from './lib/leaders.mjs';
@@ -34,10 +34,14 @@ export function put(node, ...kids) {
   const list = kids.flat().filter(k => k != null && k !== false).map(k => (typeof k === 'string' ? document.createTextNode(k) : k));
   const keep = new Set(list.filter(k => k.parentNode === node));
   keepPictures(node, list, keep);
-  if (!keep.size) return node.replaceChildren(...list);
-  for (const c of [...node.childNodes]) if (!keep.has(c)) c.remove();
-  let at = node.firstChild;
-  for (const k of list) k === at ? (at = at.nextSibling) : node.insertBefore(k, at);
+  if (!keep.size) node.replaceChildren(...list);
+  else {
+    for (const c of [...node.childNodes]) if (!keep.has(c)) c.remove();
+    let at = node.firstChild;
+    for (const k of list) k === at ? (at = at.nextSibling) : node.insertBefore(k, at);
+  }
+  // (A tab's sections in columns: dealt once they're on the page, cols.)
+  if (list.some(k => k.classList?.contains('q-flow'))) kitUI.flowColumns?.(node);
 }
 // A picture's place: its <picture> (with the dark-screen <source>) or the <img> alone.
 const pictureOf = img => (img.parentNode?.tagName === 'PICTURE' ? img.parentNode : img);
@@ -74,6 +78,39 @@ function keepPictures(node, list, keep) {
       for (const a of ['alt', 'title']) img.hasAttribute(a) ? was.setAttribute(a, img.getAttribute(a)) : was.removeAttribute(a);
     }
   }
+}
+// Every screen (Orbit-Core DESIGN.md §10): on a wide screen a page's
+// sections stand in two columns, each a phone's width: what the tab answers
+// on the left, what goes with it on the right; on a phone, one column in the
+// same order. One side empty: the other alone, a phone's column, centred.
+export function cols(left, right) {
+  // (Jay 2026-11-01, an iPad: the answer's column long and the other's one
+  // shelf, half the screen empty.) The sections in the phone's order, dealt
+  // into columns once on the page (put → the kit's flowColumns): each to
+  // the shortest column so far; upright, one column as before.
+  const l = left.flat().filter(Boolean);
+  const r = right.flat().filter(Boolean);
+  if (!l.length && !r.length) return null;
+  // (Both sides: upright, spaced as the old two-column grid was, its first
+  // section's margin kept inside; one side: a plain block as before.)
+  return el('div', { class: `q-flow tab-flow${l.length && r.length ? ' tab-flow-both' : ''}` }, [...l, ...r]);
+}
+// Like cards of a list (a day's leagues, the teams followed) in as many
+// columns as the screen has room for, each card to the shortest so far, so
+// they read left to right, top to bottom as on a phone. weight: a card's
+// rough height.
+export function balanced(items, weight = () => 1, { most = 3, cls = '' } = {}) {
+  const list = items.filter(Boolean);
+  const fit = kitQ.screenFit();
+  const n = Math.min(most, list.length, fit.w3 ? 3 : fit.wide ? 2 : 1);
+  if (n < 2) return el('div', { class: `one-col ${cls}`.trim() }, list);
+  const columns = Array.from({ length: n }, () => ({ h: 0, kids: [] }));
+  for (const it of list) {
+    const c = columns.reduce((a, b) => (b.h < a.h - 0.5 ? b : a));
+    c.kids.push(it);
+    c.h += weight(it);
+  }
+  return el('div', { class: `q-cols balanced ${cls}`.trim(), style: `--n:${n}` }, columns.map(c => el('div', { class: 'col' }, c.kids)));
 }
 export const spinner = () => el('div', { class: 'center-spin' }, [el('div', { class: 'spinner' })]);
 export const empty = text => kitUI.empty({ title: text });
@@ -254,6 +291,26 @@ export const raceFlag = (e, cls = '') => (e?.country ? logoPicture(flagUrl(e.cou
 // their id or name, TheSportsDB's cutout), never a flag while a face can be
 // had; the flag (or, for a driver, their team's colour) only when there's none.
 // `p`: { id, name, en?, logo?, headshot?, flag? }.
+// A driver's TheSportsDB cutout (a stand-in's, a practice's young driver:
+// mostly half-body, his head small in the circle): zoomed to his head and
+// shoulders, as ESPN's headshots are, by where the F1 live host read his
+// head to be (f1-people.js face): scaled about that point, clipped back to
+// the circle. One already head-and-shoulders is left as it is.
+const faces = new Map();
+export function frameFace(img) {
+  const url = img.currentSrc || img.src;
+  if (!isCutout(url)) return;
+  const put = f => {
+    if (!f || !(f.s > 1.02) || (img.currentSrc || img.src) !== url) return;
+    const o = k => `${(((0.5 - f.s * f[k]) / (1 - f.s)) * 100).toFixed(2)}%`;
+    Object.assign(img.style, { objectFit: 'cover', objectPosition: '50% 50%', transformOrigin: `${o('x')} ${o('y')}`, transform: `scale(${f.s})`, clipPath: `circle(${(50 / f.s).toFixed(2)}% at ${(f.x * 100).toFixed(1)}% ${(f.y * 100).toFixed(1)}%)` });
+  };
+  const known = faces.get(url);
+  if (known && !(known instanceof Promise)) return put(known);
+  if (!known) faces.set(url, cutoutFace(url).then(f => (faces.set(url, f), f)).catch(() => (faces.delete(url), null)));
+  faces.get(url).then(put);
+}
+if (typeof document !== 'undefined') document.addEventListener('load', ev => ev.target?.tagName === 'IMG' && ev.target.classList.contains('f1-face') && frameFace(ev.target), true);
 export function personPic(p, league, cls = '') {
   const name = p?.en || p?.name || '';
   const flag = p?.flag || (isFlag(p?.logo) ? p.logo : '');
@@ -261,7 +318,7 @@ export function personPic(p, league, cls = '') {
   // one found before, ESPN's by id (a guess), then a search by name; the
   // driver's badge, the flag or the initials meanwhile or when there's none.
   const stand = () => (league === 'f1' ? driverBadge(name, cls) : flag ? logoPicture(flag, null, `logo ${cls} flag-pic`, () => initialsPic(name, cls)) : countryFlag(name) ? el('span', { class: `logo logo-flag ${cls}`, 'aria-hidden': 'true', text: countryFlag(name) }) : initialsPic(name, cls));
-  return personPhoto(name, league, { urls: [p?.headshot, isFlag(p?.logo) ? null : p?.logo].map(freshHeadshot), guess: freshHeadshot(espnHeadshot(league, p?.id)), later: [espnCollegeHeadshot(league, p?.id)], cls: `logo ${cls}`, fallback: stand });
+  return personPhoto(name, league, { urls: [p?.headshot, isFlag(p?.logo) ? null : p?.logo].map(freshHeadshot), guess: freshHeadshot(espnHeadshot(league, p?.id)), later: [espnCollegeHeadshot(league, p?.id)], cls: `logo ${cls}${league === 'f1' ? ' f1-face' : ''}`, fallback: stand });
 }
 // No picture: a drawing of what it is (a shield, a person), never letters (an older kit without the icons: the letters).
 function markPic(icon, name, cls) {
@@ -493,7 +550,7 @@ export function eventRow(e, { league = true, day = true, picked = false } = {}) 
   const sub = live && fieldNow(e) ? fieldNow(e).replace(sess && e.session ? `${e.session} · ` : '', '') : e.kind === 'field' ? (e.status.state === 'post' && ended?.field?.[0]?.name ? [said, (ctx.locale === 'en' ? `Won by ${ended.field[0].name}` : `冠軍 ${ended.field[0].name}`)].filter(Boolean).join(' · ') : [said, e.venue].filter(Boolean).join(' · ')) : e.venue;
   return el('button', { class: `event-row wide${live ? ' live' : ''}${mine ? ' mine' : ''}${sess ? ` sess-${e.sessionKey === 'Race' ? 'race' : 'other'}` : ''}`, type: 'button', disabled: e.status?.void ? true : null, onclick: () => ctx.openEvent(e) }, [
     el('div', { class: 'event-meta' }, [statusEl(e, day)]),
-    el('div', { class: 'event-title' }, [el('div', { class: 'sess-head' }, [raceFlag(e), sess, el('strong', { text: e.name })]), e.league === 'f1' && live ? f1Brief(e) : podium(e) || (sub ? el('small', { text: sub }) : null), rowTags(e, { league, picked })])
+    el('div', { class: 'event-title' }, [el('div', { class: 'sess-head' }, [raceFlag(e), sess, fitForms(el('strong'), [e.name])]), e.league === 'f1' && live ? f1Brief(e) : podium(e) || (sub ? el('small', { text: sub }) : null), rowTags(e, { league, picked })])
   ]);
 }
 
@@ -595,6 +652,40 @@ export const f1Shown = full => {
   const page = f1Driver(full).page;
   return page ? page.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ').replace(/\bHulkenberg\b/, 'Hülkenberg').replace(/\bPerez\b/, 'Pérez') : full;
 };
+// Words that must stay on one line in a narrow place, said several ways,
+// fullest first ("Charles Leclerc", "Leclerc"): the first that fits its box,
+// else the last a half point smaller at a time (down to 11px), again
+// whenever the box changes size (a phone turned, a column narrower).
+const fitsBox = n => {
+  if (n.scrollWidth > n.clientWidth + 0.5) return false;
+  const r = document.createRange();
+  r.selectNodeContents(n);
+  return r.getBoundingClientRect().width <= n.getBoundingClientRect().width + 0.1;
+};
+const formsWatch = typeof ResizeObserver === 'function'
+  ? new ResizeObserver(list => {
+      for (const { target: n } of list) {
+        if (!n.isConnected) {
+          formsWatch.unobserve(n);
+          continue;
+        }
+        if (!n.clientWidth) continue;
+        n.style.fontSize = '';
+        for (const f of n.__forms) if (((n.textContent = f), fitsBox(n))) break;
+        for (let i = 0; i < 12 && !fitsBox(n); i++) {
+          const size = parseFloat(getComputedStyle(n).fontSize) - 0.5;
+          if (size < 11) break;
+          n.style.fontSize = `${size}px`;
+        }
+      }
+    })
+  : null;
+export function fitForms(node, forms) {
+  node.__forms = [...new Set(forms.filter(Boolean))];
+  node.textContent = node.__forms[0] || '';
+  formsWatch?.observe(node);
+  return node;
+}
 export function f1Brief(e) {
   if (e?.league !== 'f1' || e.status?.state !== 'in') return null;
   const box = el('div', { class: 'f1-brief', 'data-f1-brief': e.id });
@@ -629,7 +720,7 @@ export function fillF1Brief(box, e) {
         return el('li', {}, [
           el('span', { class: 'pos num', text: String(c.pos) }),
           personPic({ ...espn, en: c.name }, 'f1', 'xs round'),
-          el('span', { class: 'f1-brief-name', text: f1Shown(c.name) }),
+          fitForms(el('span', { class: 'f1-brief-name' }), [f1Shown(c.name), f1Shown(c.name).split(' ').at(-1)]),
           el('span', { class: 'num f1-brief-v', text: race ? (i === 0 ? '' : c.gap) : c.best || (i === 0 ? '' : c.gap) || '' })
         ]);
       })
@@ -700,8 +791,9 @@ export function sessionTag(e) {
 export function sheet(title, { accent, league } = {}) {
   // The kit's sheet (a game's, a team's, a player's: large from the start, as iOS's, not rising to a spinner's and jumping up later).
   const body = el('div', { class: 'sheet-body' });
-  const head = league ? (() => { const f = document.createDocumentFragment(); f.append(leagueMark(league), el('span', { text: title })); return f; })() : title;
-  const s = kitUI.sheet({ title: head, body: [body], cls: `fx-sheet${league ? ' q-full' : ''}`, detent: league ? 'large' : '', label: title, closeLabel: ctx.t('close') });
+  // (The league's name a tap to its page in 賽事.)
+  const head = league ? (() => { const f = document.createDocumentFragment(); f.append(el('button', { class: 'sheet-league', type: 'button', onclick: () => ctx.openLeague?.(league) }, [leagueMark(league), el('span', { text: title })])); return f; })() : title;
+  const s = kitUI.sheet({ title: head, body: [body], cls: `fx-sheet${league ? ' q-full q-sheet-wide' : ''}`, detent: league ? 'large' : '', label: title, closeLabel: ctx.t('close') });
   if (league) s.head?.querySelector('h2')?.classList.add('sheet-lg');
   if (accent) s.el.style.setProperty('--q-accent', accent);
   return { dialog: s.el, body, close: s.close };
