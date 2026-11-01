@@ -53,7 +53,7 @@ export const APPS = [
       ['class/2', ['現在、下一節與剩餘時間', 'Now, next, and time left']],
       ['class/3', ['調課幾秒完成', 'Swap a class in seconds']],
       ['class/4', ['大考倒數', 'Count down to the big exam']],
-      ['class/5', ['匯入你的課表', 'Bring in your timetable']],
+      ['class/5', ['跟著真的飛機專注', 'Focus on a real flight']],
       ['class/6', ['拍下課表，AI 幫你讀', 'Snap it, AI reads it']]
     ],
     now: 'class/1',

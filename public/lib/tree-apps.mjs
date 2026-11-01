@@ -82,6 +82,13 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
         })
       ]
     }),
+    n('sports-career', 'user', ['球員的生涯', 'A player’s career'], ['選秀、待過的球隊、歷年數據', 'Draft, every team, each season'], {
+      p: ['球員頁只有今年的數字，看不出他是誰、從哪裡來。', 'A player’s page had only this year’s numbers, not who he is or where he came from.'],
+      i: ['每一種運動的球員和車手頁加上選秀、初登場、年資、待過的每一支球隊（年份、季數、出賽數，租借也算）、榮譽和歷年數據；球隊那一列點了就打開那支球隊。', 'Every sport’s player and driver page gains the draft, debut, years, each team with its years, seasons and games (loans too), honours and season by season; a team’s row opens that team.'],
+      r: ['一頁看完一個球員的整個生涯。', 'A whole career on one page.'],
+      tech: ['lib/career.mjs，打開頁面後在背景讀：NBA、MLB 從 ESPN，足球從 FotMob（名字和球隊對上、生日再確認），F1 從 Jolpica；中職沒有球員資料來源，所以沒有。', 'lib/career.mjs, read behind the page: NBA and MLB from ESPN, football from FotMob (matched by name and club, birthday checked), F1 from Jolpica; CPBL has no player source, so none there.'],
+      links: ['sports-data']
+    }),
     n('sports-limits', 'shield', ['省著用、不被擋', 'Thrifty, never blocked'], ['不超過來源的額度', 'Under every source’s limits'], {
       kids: [
         n('sports-today', 'calendar', ['一天的比分一次給', 'A whole day in one answer'], ['十幾個聯盟變成一個答案', 'A dozen leagues become one answer'], {
@@ -320,6 +327,13 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
           r: ['幾秒鐘就有一張課表，而且 AI 不會偷改。', 'A timetable in seconds, and AI never changes anything unseen.'],
           tech: ['/gemini、/nl-edit；提示詞和格式只放在伺服器，App 只送照片或句子，別人不能把它當免費 AI；每天全站上限 300 次。', '/gemini, /nl-edit; prompts and schemas live only on the server, the app sends only files or the sentence, so nobody can use it as a free AI; 300 a day in all.'],
           links: ['cloud-relay', 'cheap-caps']
+        }),
+        n('class-flight', 'clock', ['專注飛行', 'Focus flight'], ['跟著一架真的飛機讀書', 'Study along with a real plane'], {
+          p: ['普通的倒數計時很無聊，讀到一半就想拿起手機。', 'A plain countdown is dull; halfway through you reach for the phone.'],
+          i: ['選 25、50 或 90 分鐘，App 找出現在天上、大約那時候降落的真實航班；畫面是那架飛機在衛星地圖上飛，雲在下面飄，時間到它就落地。', 'Pick 25, 50 or 90 minutes and the app finds real planes in the air now that land about then; the screen is that plane flying over a satellite map, clouds drifting below, landing as the time runs out.'],
+          r: ['讀書的時間變成一趟飛行，降落時手機通知你。', 'Study time becomes a flight, with a notice when it lands.'],
+          tech: ['雲端的 /flight 從 15 個機場附近收集空中的客機（adsb.lol 位置、adsbdb 航線），手機自己挑最多 6 班；地圖是 Leaflet 加 Esri 衛星圖，只在這裡載入；src/flight*.js。', 'The cloud’s /flight gathers airliners in the air around 15 airports (adsb.lol positions, adsbdb routes) and the phone picks up to six; the map is Leaflet on Esri satellite imagery, loaded only here; src/flight*.js.'],
+          links: ['cloud-push']
         })
       ]
     }),
@@ -352,6 +366,12 @@ const words = n('words', 'book', ['Orbit Words', 'Orbit Words'], ['背得住的�
       i: ['每個字的意思從維基詞典重新寫成台灣學生的說法，最常用的放第一個，附 KK 音標、例句和詞形變化。', 'Every word’s senses rewritten from Wiktionary in Taiwan students’ wording, the main one first, with KK, an example and the word’s forms.'],
       r: ['查到的第一個意思就是考試會考的那個。', 'The first sense you see is the one the exam asks.'],
       tech: ['釋義參考 Wiktionary，例句來自 Tatoeba；整本字典隨 App 離線。', 'Senses from Wiktionary, examples from Tatoeba; the whole dictionary ships offline with the app.']
+    }),
+    n('words-contest', 'pencil', ['拼字比賽', 'Spelling contest'], ['照全國單字比賽的考卷形式', 'In the national contest’s shape'], {
+      p: ['Jay 要參加全國高中英文單字比賽，平常的練習和真的考卷不一樣。', 'Jay was entering the national high-school vocabulary contest, and everyday practice isn’t its paper.'],
+      i: ['照比賽實施計畫的形式出一份計時考卷：先聽英拼寫（每個字念兩次），再考詞彙題（單題和題組），四成出自你最弱的字；一般練習模式裡的其中一種。', 'A timed paper in the shape of the contest’s official plan: spelling by ear first (each word said twice), then vocabulary questions (single and sets), 40% from your weakest words; one mode among the everyday ones.'],
+      r: ['三種大小：20+20、50+50（40 分鐘，和比賽一樣）、50+100，每題 2 分。', 'Three sizes: 20+20, 50+50 (40 minutes, the contest’s) and 50+100, 2 points a question.'],
+      tech: ['lib/contest.mjs（PAPERS、題組每組 5 題）、views/contest.js；格式核對 115 學年度實施計畫，不抄任何一所學校的考卷。', 'lib/contest.mjs (PAPERS, sets of 5), views/contest.js; the shape checked against the 2026 official plan, never copied from any school’s paper.']
     }),
     n('words-offline', 'backpack', ['完全離線', 'Fully offline'], ['每個字都有真人錄音', 'A recording per word'], {
       p: ['在公車上沒網路也想背。', 'You want to study on the bus with no signal.'],
