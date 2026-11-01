@@ -186,7 +186,9 @@
       if (y === x) break;
       x = y;
     }
-    return x.replace(/([?&])(?:t|_)=\d+(?=&|$)/g, '$1').replace(/[?&]+$/, '').replace(/&&+/g, '&');
+    // (a cache-buster, the pass's token and a search's session token change
+    // between the recording and a viewing, so none of them names an answer)
+    return x.replace(/([?&])(?:t|_)=\d+(?=&|$)/g, '$1').replace(/([?&])(?:qt|s)=[\w.-]*(?=&|$)/g, '$1').replace(/[?&]+$/, '').replace(/&&+/g, '&');
   };
   const byKey = new Map();
   const byUrl = new Map();
