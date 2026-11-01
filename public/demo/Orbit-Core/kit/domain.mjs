@@ -8,7 +8,7 @@
 //                              sign-in is shared; site.js reads its repo's
 //                              Pages through, so an app's push still deploys it)
 //   https://<DOMAIN>/          Jay's own homepage, and /showcase/
-//   https://longshot.<DOMAIN>/ Longshot, on its own (its own origin)
+//   https://longshot.<DOMAIN>/ only a notice that Longshot has shut down (site.js)
 //   https://api.<DOMAIN>       the proxy (orbit-workers-proxy)
 //   <anything>@<DOMAIN>        Orbit Money's mail-in invoices
 // deploy.yml attaches the hostnames to their Workers. GitHub Pages stays
@@ -32,17 +32,19 @@ export function homes(domain, host) {
     home: d ? `https://${d}` : PAGES,
     // The pages allowed to call the Workers (http.js).
     origins: d ? [PAGES, `https://orbit.${d}`, `https://${d}`] : [PAGES],
-    // The proxy, as this page should reach it: api.<domain> from a page on the
-    // domain; workers.dev from anywhere else (GitHub Pages, a local preview,
-    // the Workers themselves).
-    api: on ? `https://api.${d}` : WORKERS_DEV,
+    // The proxy, as this page should reach it: from a page on the domain, at
+    // the page's own address under /api (a Cloudflare route to the proxy: no
+    // second connection, no CORS preflight; api.<domain> still answers);
+    // workers.dev from anywhere else (a local preview, the Workers themselves).
+    api: on ? `https://${h}/api` : WORKERS_DEV,
     // This page is on the domain.
     on,
     // A URL on the proxy, either address.
     isApi: url => {
       try {
-        const h = new URL(url, globalThis.location?.href).hostname;
-        return h.endsWith('.workers.dev') || (Boolean(d) && h === `api.${d}`);
+        const u = new URL(url, globalThis.location?.href);
+        const h = u.hostname;
+        return h.endsWith('.workers.dev') || (Boolean(d) && (h === `api.${d}` || ((h === `orbit.${d}` || h === d) && u.pathname.startsWith('/api/'))));
       } catch {
         return false;
       }

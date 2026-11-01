@@ -70,15 +70,47 @@ async function isTrue(url, response) {
     return false;
   }
 }
+// A request the network leaves hanging: nothing back in STALL_MS (or the
+// file not all in BODY_MS after that) is dropped and asked once more, fresh.
+// It had no limit: a phone's connection that went dead in its sleep (or a
+// stream the CDN never answered) held a file the page imports, and the app
+// sat on its loading screen; reloading asked the same dead connection, and
+// only closing the app and opening it again got it going (Sports, 2026-10-31).
+const STALL_MS = 8000;
+const BODY_MS = 30_000;
+async function fetchOnce(request, init) {
+  const ctl = new AbortController();
+  let timer = setTimeout(() => ctl.abort(), STALL_MS);
+  try {
+    const res = await fetch(request, { ...init, signal: ctl.signal });
+    // (A redirect or another site's answer goes as it came: only a plain file's body is waited for here.)
+    if (res.type !== 'basic' || res.status !== 200 || !res.body) return res;
+    clearTimeout(timer);
+    timer = setTimeout(() => ctl.abort(), BODY_MS);
+    const body = await res.arrayBuffer();
+    return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function fetchSure(request, init = {}) {
+  try {
+    return await fetchOnce(request, init);
+  } catch (error) {
+    // Offline is offline (the kept copies answer); a hung or cut one is asked again, past the browser's cache.
+    if (self.navigator?.onLine === false) throw error;
+    return fetchOnce(typeof request === 'string' ? request : request.url, { ...init, cache: 'reload', credentials: 'same-origin' });
+  }
+}
 // The CDN still on the old file: asked again past the browser's cache (which
 // may hold the same wrong copy for 10 minutes), a moment apart.
 const AGAIN_MS = [0, 1500, 3500];
 async function fetchTrue(request) {
-  const first = await fetch(request);
+  const first = await fetchSure(request);
   if (await isTrue(request.url, first)) return first;
   for (const wait of AGAIN_MS) {
     if (wait) await new Promise(done => setTimeout(done, wait));
-    const res = await fetch(request.url, { cache: 'reload', credentials: 'same-origin' }).catch(() => null);
+    const res = await fetchOnce(request.url, { cache: 'reload', credentials: 'same-origin' }).catch(() => null);
     if (res && (await isTrue(request.url, res))) return res;
   }
   return new Response('', { status: 503, statusText: 'Update not ready', headers: { 'X-Orbit-Stale': '1' } });
@@ -114,7 +146,7 @@ async function networkFirstNow(request, later) {
     // when unchanged): GitHub Pages lets browsers keep it 10 minutes, which
     // would open the last deploy's page right after a new one. By address,
     // since a navigation can't be re-sent with options.
-    const response = request.mode === 'navigate' ? await fetch(request.url, { cache: 'no-cache', credentials: 'same-origin', redirect: 'manual' }) : await fetch(request);
+    const response = request.mode === 'navigate' ? await fetchSure(request.url, { cache: 'no-cache', credentials: 'same-origin', redirect: 'manual' }) : await fetchSure(request);
     later(keep(request, response.clone()));
     return response;
   } catch (error) {
@@ -138,11 +170,20 @@ async function pageFirst(request, later) {
   return kept;
 }
 
+// The kit's boot.js is what mends an update that didn't finish (and draws
+// the loading screen the apps report to): refused while the CDN still had the
+// old one, nothing was left to mend it, and the app sat on a blank loading
+// screen until it was closed and opened again. It stands alone (no imports),
+// so another version of it (kept, else what came) beats none; never kept
+// under this address.
+const SELF_CONTAINED = /\/kit\/boot\.js$/;
 async function cacheFirst(request, later) {
   const cached = await caches.match(request);
   if (cached) return cached;
   try {
     const response = await fetchTrue(request);
+    if (response.headers.get('X-Orbit-Stale') && SELF_CONTAINED.test(new URL(request.url).pathname))
+      return (await caches.match(request, { ignoreSearch: true })) || fetchSure(request.url, { cache: 'reload', credentials: 'same-origin' });
     later(keep(request, response.clone()));
     return response;
   } catch (error) {
@@ -159,7 +200,8 @@ const ROUTES = { pageFirst, cacheFirst, networkFirst };
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.endsWith('/version.json')) return;
+  // (The proxy at the page's own /api/: its answers are the app's to keep, never this cache's.)
+  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname.endsWith('/version.json')) return;
   // What runs on after the answer: the event is kept alive until it's all done
   // (a save started while another was awaited is waited for too).
   const tail = [];

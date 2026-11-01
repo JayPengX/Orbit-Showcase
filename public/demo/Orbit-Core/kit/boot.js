@@ -26,12 +26,15 @@
   if (/iPhone|iPad|iPod|Android/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) document.documentElement.classList.add('q-touch');
   // The Worker's connection (DNS, TCP, TLS: two or three round trips on a
   // phone's link) opened now, while the app's files load, not at its first ask.
-  // (A page on the family's own domain reaches it at api.<domain>, domain.mjs API.)
-  var pre = document.createElement('link');
-  pre.rel = 'preconnect';
-  pre.href = /^(jaypengx\.github\.io|localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'https://orbit-workers-proxy.pengzjay.workers.dev' : 'https://api.' + location.hostname;
-  pre.crossOrigin = 'anonymous';
-  document.head.appendChild(pre);
+  // (A page on the family's own domain reaches it on its own connection, at
+  // /api: domain.mjs API; nothing to open.)
+  if (/^(jaypengx\.github\.io|localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    var pre = document.createElement('link');
+    pre.rel = 'preconnect';
+    pre.href = 'https://orbit-workers-proxy.pengzjay.workers.dev';
+    pre.crossOrigin = 'anonymous';
+    document.head.appendChild(pre);
+  }
   // The Orbit language (orbit.mjs detectLang's rule: the one picked in any app, else the
   // phone's), and the page's lang set to it, so nothing shows the other language first.
   var saved = '';
@@ -201,10 +204,21 @@
   // wrong is asked again past the browser's cache, which may keep a wrong
   // copy 10 minutes; nothing right is downloaded again. Says how many are
   // still wrong (the CDN still answering the old file).
+  // (Each ask with a time limit: one the connection left hanging held the
+  // mend, and the app, on 正在完成更新… until it was closed.)
+  var timed = function (u, init) {
+    var c = window.AbortController ? new AbortController() : null;
+    setTimeout(function () {
+      if (c) c.abort();
+    }, 10000);
+    var o = init || {};
+    if (c) o.signal = c.signal;
+    return fetch(u, o);
+  };
   var mend = function () {
     var urls = pageFiles();
     var one = function (u) {
-      return fetch(u)
+      return timed(u)
         .then(function (r) {
           return isTrue(u, r);
         })
@@ -212,7 +226,7 @@
           return false;
         })
         .then(function (ok) {
-          return ok || fetch(u, { cache: 'reload' }).then(function (r) {
+          return ok || timed(u, { cache: 'reload' }).then(function (r) {
             return isTrue(u, r);
           });
         })

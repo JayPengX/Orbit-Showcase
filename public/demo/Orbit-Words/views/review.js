@@ -3,13 +3,15 @@
 // weakest words and a test on them; under it the words, searched and sorted.
 // Each row opens the word's sheet.
 import { el, put, segmented, searchField, pagedList } from '../ui.js';
+import { empty as kitEmpty } from '#kit/ui.mjs';
 import { state, t, hooks, dueText } from '../shell.js';
 import { speakButton } from '../audio.js';
 import { shortMeaning, stateOf } from '../lib/words.mjs';
 import { CATS, SORTS, catCounts, reviewList, flashDeck, wordInfo, isMarked } from '../lib/review.mjs';
 import { startFlash, startRound } from './session.js';
-import { openWord, missNote } from './sheet.js';
-import { hero, heroPill, heroBtn, big, section, menuButton, tile, ico } from './chrome.js';
+import { openWord, missNote, wordPane } from './sheet.js';
+import * as kit from '#kit/orbit.mjs';
+import { hero, heroPill, heroBtn, big, section, menuButton, ico, columns } from './chrome.js';
 
 const view = { cat: 'wrong', sort: 'weak', query: '', deck: 20, picked: false };
 export const DECKS = [10, 20, 50];
@@ -21,7 +23,10 @@ export function renderReview(box) {
   if (!view.picked && !counts[view.cat]) view.cat = CATS.find(c => counts[c]) || 'wrong';
   const n = counts[view.cat];
   const cats = segmented(CATS.map(c => ({ id: c, label: t(`cat_${c}`) })), view.cat, c => ((view.cat = c), (view.picked = true), hooks.render()), 'cat-seg');
-  put(box, cats, n ? deckHero(n) : emptyCard(), n ? wordsSection() : null);
+  if (!n) return put(box, cats, emptyCard());
+  // Wide: the words beside the one opened (the first, until one is tapped).
+  const first = reviewList(state.words, state.progress, view.cat, { marks: state.marks, sort: view.sort, query: view.query })[0];
+  put(box, ...columns([[cats, deckHero(n), wordsSection()], [kit.screenFit?.().wide ? wordPane(first) : null]]));
 }
 
 // The category: its count, its flash cards (10, 20, 50 or all of them, up
@@ -37,7 +42,8 @@ function deckHero(n) {
     el('div', { class: 'q-hc-row' }, [heroBtn(t('flashStart'), () => startFlash(deck(), t(`cat_${view.cat}`)), { icon: 'cards' }), heroBtn(t('testThese'), () => startRound({ from: 'flash', list: deck() }), { ghost: true })])
   ]);
 }
-const emptyCard = () => el('div', { class: 'q-ambient empty-card', style: '--amb: var(--q-green)' }, [tile(view.cat === 'marked' ? 'star' : 'check', 'var(--q-green)', 'lg'), el('p', { text: t(`catEmpty_${view.cat}`) })]);
+// A list with nothing in it: the kit's empty state (a mark and the words), not a bare sentence.
+const emptyCard = () => el('div', { class: 'q-card empty-card' }, [kitEmpty({ icon: view.cat === 'marked' ? 'star' : 'check', tint: 'var(--q-green)', body: t(`catEmpty_${view.cat}`) })]);
 
 // The words: a search, a sort (the menu in the head), the list a page at a time.
 function wordsSection() {
@@ -53,16 +59,16 @@ function wordsSection() {
 
 // A word in a list: its sound, the word and its meaning (or how it went
 // wrong last time), and where it stands.
-const stateTone = info => (info.dueIn != null && info.dueIn <= 0 ? 'orange' : info.state === 'mastered' ? 'green' : info.state === 'learning' ? 'tint' : '');
 export function wordRow(w) {
   const p = state.progress[w.key];
   const info = wordInfo(p);
   const side = info.state === 'new' ? t('state_new') : info.dueIn != null && info.dueIn <= 0 ? dueText(info.dueIn) : t(`state_${stateOf(p)}`);
+  const overdue = info.dueIn != null && info.dueIn <= 0;
   const star = isMarked(state.marks, w.key) ? el('i', { class: 'mini-star', 'aria-label': t('mark') }) : null;
   if (star) star.innerHTML = ico('star');
-  return el('button', { class: 'q-ritem wr', type: 'button', onclick: () => openWord(w) }, [
+  return el('button', { class: 'q-ritem wr', type: 'button', 'data-key': w.key, onclick: () => openWord(w) }, [
     speakButton(w),
-    el('span', { class: 'wr-main' }, [el('span', { class: 'wr-top' }, [el('strong', { class: 'q-fit', text: w.word }), star]), (p?.o === 2 && missNote(w, p)) || el('small', { class: 'muted', text: shortMeaning(w.zh) })]),
-    el('small', { class: `q-tag ${stateTone(info)}`.trim(), text: side })
+    el('span', { class: 'wr-main' }, [el('span', { class: 'wr-top' }, [el('strong', { lang: 'en', class: 'q-fit', text: w.word }), star]), (p?.o === 2 && missNote(w, p)) || el('small', { lang: 'zh-Hant', class: 'muted', text: shortMeaning(w.zh) })]),
+    overdue ? el('small', { class: 'q-tag orange', text: side }) : el('small', { class: 'wr-side', text: side })
   ]);
 }

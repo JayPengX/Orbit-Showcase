@@ -87,7 +87,7 @@ const US = [
 
 const US_ETF = [
   ['SPY', 'SPDR 標普500', 'SPDR S&P 500'], ['VOO', 'Vanguard 標普500', 'Vanguard S&P 500'], ['IVV', 'iShares 標普500', 'iShares Core S&P 500'],
-  ['QQQ', '那斯達克100', 'Invesco QQQ (Nasdaq-100)'], ['VTI', '美國全市場', 'Vanguard Total Stock Market'], ['VT', '全世界股票', 'Vanguard Total World Stock'],
+  ['QQQ', '那斯達克100', 'Invesco QQQ'], ['VTI', '美國全市場', 'Vanguard Total Stock Market'], ['VT', '全世界股票', 'Vanguard Total World Stock'],
   ['VXUS', '美國以外全球', 'Vanguard Total International'], ['SCHD', '美國高股息', 'Schwab US Dividend Equity'], ['VYM', 'Vanguard 高股息', 'Vanguard High Div Yield'],
   ['DIA', '道瓊工業', 'SPDR Dow Jones'], ['IWM', '羅素2000小型股', 'iShares Russell 2000'], ['SOXX', '費城半導體', 'iShares Semiconductor'],
   ['SMH', 'VanEck 半導體', 'VanEck Semiconductor'], ['XLK', '科技類股', 'Technology Select Sector'], ['XLF', '金融類股', 'Financial Select Sector'],
@@ -111,7 +111,7 @@ const BOND_ETFS = [
   ['BND', '美國整體債券', 'Vanguard Total Bond Market', 'bond'], ['AGG', 'iShares 美國綜合債', 'iShares Core US Agg Bond', 'bond'],
   ['LQD', '投資級公司債', 'iShares IG Corporate Bond', 'bond'], ['HYG', '高收益債', 'iShares High Yield Corp Bond', 'bond'],
   ['TIP', '抗通膨公債', 'iShares TIPS Bond', 'bond'], ['EMB', '新興市場債', 'iShares JPM EM Bond', 'bond'], ['BNDX', '國際債券', 'Vanguard Total Intl Bond', 'bond'],
-  ['^IRX', '美債13週殖利率', 'US 13-week T-bill yield'], ['^FVX', '美債5年殖利率', 'US 5-year yield'],
+  ['^IRX', '美債13週殖利率', 'US 3-month yield'], ['^FVX', '美債5年殖利率', 'US 5-year yield'],
   ['^TNX', '美債10年殖利率', 'US 10-year yield'], ['^TYX', '美債30年殖利率', 'US 30-year yield']
 ];
 
@@ -327,6 +327,20 @@ export const PRODUCTS = PRODUCT_ORDER.map(id => PRODUCT_LIST.find(p => p.id === 
 export const SUBS = new Map(PRODUCTS.flatMap(p => p.subs.map(s => [s.id, { ...s, product: p.id }])));
 // A list's curated picks: its list's symbols it takes, then its extras.
 export const subPicks = sub => [...new Set([...(CATEGORIES.find(c => c.id === sub.cat)?.items || []).map(i => i[0]).filter(s => !sub.only || sub.only(s)), ...(sub.extra || [])])];
+// Each country's market one tap from 總覽 (Jay 2026-10-30: they were all
+// under 複委託): its flag, the list it opens (`sub`, or Taiwan's whole
+// product) and the index that says how its day is going.
+export const COUNTRIES = [
+  { id: 'tw', flag: 'TW', zh: '台股', en: 'Taiwan', product: 'tw', index: '^TWII' },
+  { id: 'us', flag: 'US', zh: '美股', en: 'US', sub: 'us', index: '^GSPC' },
+  { id: 'jp', flag: 'JP', zh: '日股', en: 'Japan', sub: 'jp', index: '^N225' },
+  { id: 'hk', flag: 'HK', zh: '港股', en: 'Hong Kong', sub: 'hk', index: '^HSI' },
+  { id: 'cn', flag: 'CN', zh: '陸股', en: 'China', sub: 'cn', index: '000001.SS' },
+  { id: 'kr', flag: 'KR', zh: '韓股', en: 'Korea', sub: 'kr', index: '^KS11' },
+  { id: 'eu', flag: 'EU', zh: '歐股', en: 'Europe', sub: 'eu', index: '^STOXX50E' }
+];
+// A 複委託 list's flag (its chip's), by its id.
+export const SUB_FLAGS = { us: 'US', usetf: 'US', jp: 'JP', hk: 'HK', cn: 'CN', kr: 'KR', eu: 'EU' };
 // 總覽's indexes: the world's, then the yields.
 export const MARKET_INDEXES = [...INDEXES.map(i => i[0]), '^IRX', '^FVX', '^TNX', '^TYX'];
 

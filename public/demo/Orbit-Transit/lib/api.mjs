@@ -197,6 +197,14 @@ export const rows = j => (Array.isArray(j) ? j : j && typeof j === 'object' ? Ob
 // ---- The rest of the proxy -------------------------------------------------------------------
 
 export const config = () => get('/transit/config');
+// The buses due at these stops (or on one route) from the Worker's copy of
+// the whole city's estimates (transit.js etaRows: one TDX call a city for
+// everyone): → { rows, at } (when the copy is from).
+export async function busEta(city, { stops = [], route = '' } = {}) {
+  const meta = {};
+  const got = await get(`/transit/eta?city=${encodeURIComponent(city)}&${stops.length ? `stops=${stops.map(encodeURIComponent).join(',')}` : `route=${encodeURIComponent(route)}`}`, { meta, wait: 8000 });
+  return { rows: Array.isArray(got) ? got : [], at: Date.now() - (meta.age || 0) * 1000 };
+}
 // Which of a city's bus routes have a bus on the road now: { at, routes: { RouteUID: n } } (transit.js running).
 export const busesRunning = city => get(`/transit/running?city=${encodeURIComponent(city)}`);
 export const searchPlaces = (q, { lat, lon, session: s } = {}, opts) => get(`/transit/search?q=${encodeURIComponent(q)}${lat != null ? `&lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}` : ''}${s ? `&s=${s}` : ''}`, opts);
@@ -235,18 +243,29 @@ async function readTownships() {
 // launch, and is never skipped (an ask suppressed once had left the app with
 // no location at all; the owner, 2026-10-21). Refused, it stops; the next
 // ask (a tap on 我的位置) starts it again.
-const geo = { id: null, last: null, fns: new Set(), waiting: new Set() };
+// `answered`: the watch running now has said anything (a fix or an error). One
+// that hasn't may be waiting on 「允許取用位置？」: never started over then, or
+// a second ask went up over the first (Jay 2026-10-30, asked twice on opening:
+// navigation's 5 s restart on coming back fired while the first ask was up).
+// Silent a minute (no ask is left up that long; a dead watch is): started over then.
+const UNANSWERED_MS = 60_000;
+const geo = { id: null, last: null, fns: new Set(), waiting: new Set(), answered: false, at: 0 };
+const restartable = () => geo.answered || Date.now() - geo.at > UNANSWERED_MS;
 const fixOf = p => ({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy, heading: p.coords.heading });
 function watchDevice(nav) {
   if (geo.id != null || !nav?.geolocation?.watchPosition) return;
+  geo.answered = false;
+  geo.at = Date.now();
   geo.id = nav.geolocation.watchPosition(
     p => {
+      geo.answered = true;
       const fix = fixOf(p);
       geo.last = { fix, t: Date.now() };
       for (const f of [...geo.fns]) f(fix);
       for (const w of [...geo.waiting]) w(fix);
     },
     err => {
+      geo.answered = true;
       const error = err?.code === 1 ? 'denied' : err?.code === 3 ? 'timeout' : 'unavailable';
       if (err?.code === 1) {
         nav.geolocation.clearWatch?.(geo.id);
@@ -254,7 +273,9 @@ function watchDevice(nav) {
       }
       for (const w of [...geo.waiting]) w({ error });
     },
-    { enableHighAccuracy: true, maximumAge: 10_000 }
+    // (Fresh fixes only: one the device kept up to 10 s had the dot that far
+    // behind, 160 m on a train; Jay 2026-10-30, 「slower than my grandma」.)
+    { enableHighAccuracy: true, maximumAge: 0 }
   );
 }
 // Back in the app and the watch silent (an iPhone can leave one stopped after the background): started again.
@@ -262,7 +283,7 @@ globalThis.document?.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible' || geo.id == null) return;
   const back = Date.now();
   setTimeout(() => {
-    if (geo.id == null || (geo.last && geo.last.t >= back) || document.visibilityState !== 'visible') return;
+    if (geo.id == null || !restartable() || (geo.last && geo.last.t >= back) || document.visibilityState !== 'visible') return;
     globalThis.navigator?.geolocation?.clearWatch?.(geo.id);
     geo.id = null;
     watchDevice(globalThis.navigator);
@@ -274,7 +295,7 @@ globalThis.document?.addEventListener('visibilitychange', () => {
 export function getPosition({ timeout = 8000, maximumAge = 60_000, kick = false } = {}, nav = globalThis.navigator) {
   if (!nav?.geolocation) return Promise.resolve({ error: 'unsupported' });
   if (geo.last && Date.now() - geo.last.t <= maximumAge) return Promise.resolve({ ...geo.last.fix });
-  if (kick && geo.id != null) {
+  if (kick && geo.id != null && restartable()) {
     nav.geolocation.clearWatch?.(geo.id);
     geo.id = null;
   }

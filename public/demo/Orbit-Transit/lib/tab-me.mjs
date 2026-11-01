@@ -9,11 +9,11 @@
 //   設定         which ways of moving to use, 每 30 分鐘換 YouBike, the maps app
 
 import { manageSheet, useBusCtx } from './bus-ui.mjs';
-import { MODES, PLACE_ICONS, DAYS, move } from './store.mjs';
+import { MODES, PLACE_ICONS, iconName, DAYS, move } from './store.mjs';
 import { TPASSES, tpassOf, passModes } from './tpass.mjs';
 import { sheet, sheetHead, icon, trainKind, stationLabel } from './ui.mjs';
 import { e, distText, meters, dayLabel, shown } from './util.mjs';
-import { COLOR, PLACE_COLOR, tile, section, rowCard } from './look.mjs';
+import { COLOR, PLACE_COLOR, tile, tpassTile, bikeTile, section, rowCard } from './look.mjs';
 
 import { W, en } from '#kit/lang.mjs';
 const $ = id => document.getElementById(id);
@@ -53,7 +53,7 @@ function render() {
   const pass = tpassOf(P.tpass);
   // The pass: its name and price big, what it covers as tags; the whole card picks another.
   // TPASS: one row in 設定 (the owner, 2026-10-21: a big card of it opening 我的 made no sense), its price beside its name.
-  const passRow = `<button class="q-ritem chevron" type="button" data-act="tpass">${tile('tra', COLOR.tra)}<span class="q-ritem-text"><span class="q-ritem-title">TPASS${pass ? ` ${e(shown(pass.name))} <span class="ot-pass-price">NT$${pass.price}</span>` : ''}</span><small>${e(pass ? passModes(pass).join('、') : W('沒有月票', 'No pass'))}</small></span></button>`;
+  const passRow = `<button class="q-ritem chevron" type="button" data-act="tpass">${tpassTile()}<span class="q-ritem-text"><span class="q-ritem-title">TPASS${pass ? ` ${e(shown(pass.name))} <span class="ot-pass-price">NT$${pass.price}</span>` : ''}</span><small>${e(pass ? passModes(pass).join('、') : W('沒有月票', 'No pass'))}</small></span></button>`;
   const places = D.places
     .map(p => `<button class="q-ritem chevron" type="button" data-place-edit="${e(p.id)}">${placeTile(p)}<span class="q-ritem-text"><span class="q-ritem-title">${e(shown(p.name))}</span>${p.address ? `<small>${e(p.address)}</small>` : ''}</span>${ctx.here ? `<span class="q-ritem-value">${e(distText(meters(ctx.here.lat, ctx.here.lon, p.lat, p.lon)))}</span>` : ''}</button>`)
     .join('');
@@ -77,9 +77,10 @@ function render() {
   const pins = D.pins
     .map(p => `<div class="q-ritem">${tile(p.from.sys === 'hsr' ? 'hsr' : 'tra', p.from.sys === 'hsr' ? COLOR.hsr : COLOR.tra)}<span class="q-ritem-text"><span class="q-ritem-title">${e(stationLabel(p.from))} → ${e(stationLabel(p.to))}</span><small>${p.kind === 'trainNo' ? `${e(trainKind(p.type || ''))} ${e(p.no)}${p.dep ? ` · ${e(p.dep)}` : ''}` : W('每一班', 'Every train')}</small></span><button class="q-icon-btn" type="button" data-pin-del="${e(p.id)}" aria-label="${W('刪除', 'Delete')}">${icon('trash')}</button></div>`)
     .join('');
-  $('me-main').innerHTML = `<div class="ot-page">
+  $('me-main').innerHTML = `<div class="ot-page"><div class="q-cols ot-cols"><div>
     ${section(W('行程', 'Trips'), rowCard(trips + addRow('add-trip', W('新增行程', 'Add a trip'))))}
     ${section(W('地點', 'Places'), rowCard(places + addRow('add-place', W('釘選地點', 'Pin a place'))))}
+    </div><div>
     ${section(
       W('釘選', 'Pinned'),
       rowCard(`<button class="q-ritem chevron" type="button" data-act="groups">${tile('bus', COLOR.bus)}<span class="q-ritem-text"><span class="q-ritem-title">${W('公車站牌', 'Bus stops')}</span>${D.groups.some(g => g.items.length) ? `<small>${D.groups.filter(g => g.items.length).map(g => e(`${g.name} ${g.items.length}`)).join(' · ')}</small>` : ''}</span>${Number(stops) ? `<span class="q-ritem-value">${stops}</span>` : ''}</button>${pins}${addRow('times', W('查時刻', 'Find times'))}`)
@@ -87,10 +88,10 @@ function render() {
     ${section(
       W('設定', 'Settings'),
       rowCard(`${passRow}<button class="q-ritem chevron" type="button" data-act="modes">${tile('route', COLOR.route)}<span class="q-ritem-text"><span class="q-ritem-title">${W('規劃使用', 'Routes use')}</span><small>${e(modesText(P.modes))}</small></span></button>
-        ${pass?.bike ? '' : `<div class="q-ritem">${tile('bike', COLOR.bike)}<span class="q-ritem-text"><span class="q-ritem-title">${W('每 30 分換車', 'Swap at 30 min')}</span></span><button class="q-switch" type="button" role="switch" data-act="bike30" aria-checked="${P.bike30}" aria-label="${W('每 30 分鐘換 YouBike', 'Swap YouBikes every 30 min')}"><i></i></button></div>`}
+        ${pass?.bike ? '' : `<div class="q-ritem">${bikeTile()}<span class="q-ritem-text"><span class="q-ritem-title">${W('每 30 分換車', 'Swap at 30 min')}</span></span><button class="q-switch" type="button" role="switch" data-act="bike30" aria-checked="${P.bike30}" aria-label="${W('每 30 分鐘換 YouBike', 'Swap YouBikes every 30 min')}"><i></i></button></div>`}
         <label class="q-ritem chevron ot-pick-row">${tile('pin', COLOR.place)}<span class="q-ritem-text"><span class="q-ritem-title">${W('導航 App', 'Maps app')}</span></span><span class="q-ritem-value">${P.maps === 'apple' ? W('Apple 地圖', 'Apple Maps') : W('Google 地圖', 'Google Maps')}</span><select id="me-maps" class="ot-cover" aria-label="${W('導航 App', 'Maps app')}"><option value="google" ${P.maps !== 'apple' ? 'selected' : ''}>${W('Google 地圖', 'Google Maps')}</option><option value="apple" ${P.maps === 'apple' ? 'selected' : ''}>${W('Apple 地圖', 'Apple Maps')}</option></select></label>`)
     )}
-  </div>`;
+  </div></div></div>`;
 }
 
 // The ways of moving the planner may use: all of them, or some left out.
@@ -153,7 +154,7 @@ document.addEventListener('change', ev => {
 function tpassSheet() {
   const now = ctx.data.prefs.tpass || '';
   const row = (id, name, sub) =>
-    `<button class="q-ritem" type="button" data-tp="${e(id)}" aria-pressed="${id === now}">${tile(id ? 'tra' : 'x', id ? COLOR.tra : 'var(--q-gray)')}<span class="q-ritem-text"><span class="q-ritem-title">${e(name)}</span>${sub ? `<small>${e(sub)}</small>` : ''}</span>${id === now ? `<span class="q-ritem-value ot-tick">${icon('check')}</span>` : ''}</button>`;
+    `<button class="q-ritem" type="button" data-tp="${e(id)}" aria-pressed="${id === now}">${id ? tpassTile() : tile('x', 'var(--q-gray)')}<span class="q-ritem-text"><span class="q-ritem-title">${e(name)}</span>${sub ? `<small>${e(sub)}</small>` : ''}</span>${id === now ? `<span class="q-ritem-value ot-tick">${icon('check')}</span>` : ''}</button>`;
   const d = sheet(`${sheetHead(W('選擇月票', 'Pick a pass'))}${rowCard(row('', W('沒有 TPASS', 'No TPASS'), '') + TPASSES.map(t => row(t.id, t.name, `NT$${t.price}${W(' / 月', ' a month')} · ${passModes(t).join('、')}`)).join(''))}`, 'ot-tpass-sheet');
   d.addEventListener('click', ev => {
     const b = ev.target.closest('[data-tp]');
@@ -172,7 +173,7 @@ function placeSheet(id) {
   let ic = p.icon;
   const d = sheet(`${sheetHead(W('編輯地點', 'Edit place'), p.address ? e(p.address) : '', placeTile(p))}
     <label class="ot-field"><span>${W('名稱', 'Name')}</span><input id="pl-name" maxlength="30" value="${e(p.name)}" placeholder="${W('家、公司、學校', 'Home, Work, School')}"></label>
-    <div class="ot-field"><span>${W('圖示', 'Icon')}</span><div class="q-chips ot-wrap-chips">${Object.entries(PLACE_ICONS).map(([k, v]) => `<button class="q-chip" type="button" data-icon="${k}" aria-pressed="${k === ic}" aria-label="${k}">${icon(v)}</button>`).join('')}</div></div>
+    <div class="ot-field"><span>${W('圖示', 'Icon')}</span><div class="q-chips ot-wrap-chips">${Object.entries(PLACE_ICONS).map(([k, v]) => `<button class="q-chip" type="button" data-icon="${k}" aria-pressed="${k === ic}" aria-label="${e(iconName(k))}">${icon(v)}</button>`).join('')}</div></div>
     <div class="ot-sheet-acts"><button class="q-btn" type="button" data-del="1">${icon('trash')} ${W('刪除', 'Delete')}</button>${at ? `<button class="q-btn" type="button" data-up="1">${icon('up')} ${W('上移', 'Move up')}</button>` : ''}<button class="q-btn primary" type="button" data-save="1">${W('儲存', 'Save')}</button></div>`);
   d.addEventListener('click', ev => {
     const b = ev.target.closest('[data-icon]');

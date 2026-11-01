@@ -16,7 +16,7 @@ import * as kitUI from '#kit/ui.mjs';
 import * as kit from '#kit/orbit.mjs';
 import { passSync } from '#kit/pass-sync.mjs';
 import { orbitSession, taipeiDay, tabBar, topActions, installGate, watchUpdates, schedulePush, notify, keepOffline, storedAccount, cachedPayload } from '#kit/orbit.mjs';
-import { loadWords, loadHints, keyOf, stateOf } from './lib/words.mjs';
+import { loadWords, loadHints, loadMore, keyOf, stateOf, warmMeanings } from './lib/words.mjs';
 import { DAILY_GOAL, streakAtRisk } from './lib/practice.mjs';
 import { catCounts } from './lib/review.mjs';
 import { decodePayload, encodePayload, mergeCopy } from './lib/copy.mjs';
@@ -26,7 +26,7 @@ import { renderToday } from './views/today.js';
 import { renderReview } from './views/review.js';
 import { renderBrowse } from './views/browse.js';
 import { renderProgress } from './views/progress.js';
-import { openWord, closeWord } from './views/sheet.js';
+import { openWord, closeWord, redrawWord } from './views/sheet.js';
 import { el, put, fitSenses, FIT_SENSES } from './ui.js';
 
 document.documentElement.lang = locale === 'zh' ? 'zh-Hant' : 'en';
@@ -115,7 +115,7 @@ function showTab(tab) {
 }
 // The open tab tapped again at the top: a finished round there is put away.
 function resetTab(tab) {
-  if (state.session?.home === tab && state.session.kind === 'round' && state.session.done) (state.session = null), render();
+  if (state.session?.home === tab && state.session.done) (state.session = null), render();
 }
 // A redraw that never interrupts a question or typing.
 const quietRefresh = () => !busy() && !(document.activeElement?.tagName === 'INPUT') && render();
@@ -127,6 +127,8 @@ watchUpdates({ current: VERSION, key: 'orbitWords', cachePrefix: 'orbit-words-' 
 topActions(q);
 tabNav.select(state.tab);
 q.on('wallet', quietRefresh);
+// A new kind of screen (turned on its side, a window made wider): the tab laid out again for it.
+kit.onScreen?.(() => state.loaded && quietRefresh());
 
 // Notices (the kit's: a banner on screen, a system notice in the background
 // once turned on in the account sheet): a streak that ends tonight, now
@@ -147,6 +149,7 @@ function checkStreak() {
 async function loadWordList() {
   state.words = loadWords(await fetch(`./data/words.json?v=${VERSION}`).then(r => r.json()));
   state.byKey = new Map(state.words.map(w => [w.key, w]));
+  warmMeanings(state.words);
 }
 // The hints come after the first screen: nothing on it waits for them. A
 // failed read leaves them out until the next opening (never saved empty).
@@ -155,6 +158,17 @@ async function loadHintList() {
     const res = await fetch(`./data/hints.json?v=${VERSION}`);
     if (!res.ok) throw new Error(String(res.status));
     state.hints = loadHints(await res.json());
+    if (!busy()) render();
+  } catch {}
+}
+// A word's example and forms, for its sheet and the contest's 填空: after the first screen too.
+async function loadMoreList() {
+  try {
+    const res = await fetch(`./data/more.json?v=${VERSION}`);
+    if (!res.ok) throw new Error(String(res.status));
+    state.more = loadMore(await res.json());
+    redrawWord();
+    // (今天's contest card waits for them: 填空's sentences.)
     if (!busy()) render();
   } catch {}
 }
@@ -187,6 +201,7 @@ async function boot() {
   show();
   pass.watch();
   loadHintList();
+  loadMoreList();
   await sync();
   for (const item of first?.inbox || []) q.dropInbox(item.id).catch(() => {});
   setTimeout(checkStreak, 2000);

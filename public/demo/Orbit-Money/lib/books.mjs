@@ -11,33 +11,44 @@
 //            wallet (電子支付: 悠遊付, LINE Pay…); other, from before, shows as wallet.
 //            open: the balance when it was added (a credit card's: what it owed, negative).
 //            inTotal: counted in the 總資產. brand: a logo key (brands.mjs).
+//            net: a credit card's network (visa, mastercard…: lib/networks.mjs), '' none.
 //            reload: a stored-value card's 自動加值 { on, from, amt, below } (autoReload;
 //            from '': nobody in the books pays, the balance just goes up).
 //            A credit card's pay: the account its bill is paid from; close / due: its
 //            statement and payment days of the month. closed: when it was put
 //            away (封存): out of every picker, its entries and balance kept.
-//   cards    { id: { id, acct, name, last4, closed? } } ways to pay under an account (a
+//   cards    { id: { id, acct, name, last4, net?, closed? } } ways to pay under an account (a
 //            debit card, Apple Pay or LINE Pay on a card…): they spend
-//            straight from their bank account.
-//   entries  { id: { id, d, k, amt, cat, sub, note, a, via, to, inv, rec } }
+//            straight from their bank account. net: its network; none, a card
+//            under a credit card is on the card's (netOfCard).
+//   entries  { id: { id, d, k, amt, cat, sub, note, a, via, to, inv, rec, fee, also } }
 //            sub: the finer kind under cat ('' none; lib/cats.mjs).
-//            d: the day, 'YYYY-MM-DD'. k: out | in | move | adj (a balance set by hand).
+//            d: the day, 'YYYY-MM-DD'. k: out | in | move | adj (a balance set by
+//            hand) | back (money back for a spend: a 退款, or a friend's share).
 //            amt: whole NT$, > 0 (adj: the change, either sign). a: the account it's
 //            paid from or into; via: the card used (a debit card's id); to: a move's
-//            other account. inv: the 發票 it came from ({ no, sid, seller, items }).
+//            other account. inv: the receipt it came from, read from a picture
+//            (拍照記帳; older ones from a 發票): { seller, items: [{ name, qty, price }], no?, day?, total? }.
 //            auto: 'reload' a card's 自動加值, for: the spend that set it off.
 //            rec: the repeat that made it.
+//            fee: a 手續費 on a spend or a move (ATM, 境外交易), paid from `a` too,
+//            counted as spending under 稅費 › 手續費 (FEE).
+//            also: [{ a, via, amt }] the part of a spend paid another way (LINE
+//            Points, a gift card); `a` pays the rest.
+//            back: of: the spend it comes off (its spending shrinks, on its own
+//            day); why: refund | friend; who: the friend; wait: 1 a friend's share
+//            not handed over yet (no balance moves until it is).
 //   budgets  { id: { id, cat ('' for everything), amt } } a month's limit.
 //   recur    { id: { id, k, amt, cat, sub, a, via, to, note, every, day, from } } every:
 //            month | week | year; day: the month's day (1–31, the last when the
 //            month is shorter), the weekday (0 Sunday) or 'MM-DD'; from: the first day.
 //   cats     { id: { id, k, parent, zh, icon, color, order, hidden, into } } the
 //            person's own categories and changes to the built-in ones (lib/cats.mjs).
-//   carrier  { code, u } the 手機條碼 (載具).
+//   renew    { id: { id, name, start, n, unit, roll, cat, sub, on, at } } 到期提醒 (lib/renew.mjs).
 
 import { addDays } from '#kit/format.mjs';
 
-export const COLLECTIONS = ['accts', 'cards', 'entries', 'budgets', 'recur', 'cats'];
+export const COLLECTIONS = ['accts', 'cards', 'entries', 'budgets', 'recur', 'cats', 'renew'];
 // Removed records are kept this long (a device away longer than this can't
 // bring one back: by then its copy is older than the removal).
 export const KEEP_GONE_MS = 120 * 86_400_000;
@@ -46,7 +57,7 @@ export const KEEP_GONE_MS = 120 * 86_400_000;
 export const ACCOUNT_KINDS = ['cash', 'bank', 'credit', 'ticket', 'wallet'];
 export const groupOf = kind => (ACCOUNT_KINDS.includes(kind) ? kind : 'wallet');
 
-export const emptyBooks = () => ({ accts: {}, cards: {}, entries: {}, budgets: {}, recur: {}, cats: {}, carrier: null, st: 0, opt: {} });
+export const emptyBooks = () => ({ accts: {}, cards: {}, entries: {}, budgets: {}, recur: {}, cats: {}, renew: {}, st: 0, opt: {} });
 
 let seq = 0;
 export const newId = (now = Date.now()) => `${now.toString(36)}${(seq++ % 1296).toString(36).padStart(2, '0')}${Math.random().toString(36).slice(2, 6)}`;
@@ -73,7 +84,7 @@ export function drop(books, col, id, now = Date.now()) {
 // What an account or a way to pay has on it: entries, repeats, ways to pay.
 export function historyOf(books, id) {
   return {
-    entries: live(books.entries).filter(e => e.a === id || e.to === id || e.via === id).length,
+    entries: live(books.entries).filter(e => touches(e).includes(id) || e.via === id || alsoOf(e).some(p => p.via === id)).length,
     recur: live(books.recur).filter(r => r.a === id || r.to === id || r.via === id).length,
     cards: live(books.cards).filter(c => c.acct === id).length
   };
@@ -103,8 +114,8 @@ export function moveAccount(books, from, to, now = Date.now()) {
   if (!a || a.del || !b || b.del || from === to) return;
   const swap = id => (id === from ? to : id);
   for (const e of live(books.entries)) {
-    if (e.a !== from && e.to !== from) continue;
-    const next = { ...e, a: swap(e.a), to: e.to ? swap(e.to) : e.to };
+    if (!touches(e).includes(from)) continue;
+    const next = { ...e, a: swap(e.a), to: e.to ? swap(e.to) : e.to, ...(e.also ? { also: e.also.map(p => ({ ...p, a: swap(p.a) })) } : {}) };
     if (next.k === 'move' && next.a === next.to) drop(books, 'entries', e.id, now);
     else put(books, 'entries', next, now);
   }
@@ -126,7 +137,10 @@ export function moveCard(books, from, to = '', now = Date.now()) {
   if (!c || c.del || from === to) return;
   const t = to && books.cards[to];
   for (const col of ['entries', 'recur'])
-    for (const e of live(books[col])) if (e.via === from) put(books, col, { ...e, via: to, a: t && !t.del ? t.acct : e.a }, now);
+    for (const e of live(books[col])) {
+      if (e.via === from) put(books, col, { ...e, via: to, a: t && !t.del ? t.acct : e.a }, now);
+      else if (e.also?.some(p => p.via === from)) put(books, col, { ...e, also: e.also.map(p => (p.via === from ? { ...p, via: to, a: t && !t.del ? t.acct : p.a } : p)) }, now);
+    }
   drop(books, 'cards', from, now);
 }
 
@@ -145,7 +159,7 @@ export function accountParts(books, id) {
     accts: [id, ...live(books.accts).filter(a => a.pay === id).map(a => a.id)],
     cards: live(books.cards).filter(c => c.acct === id).map(c => c.id),
     recur: live(books.recur).filter(r => r.a === id || r.to === id).map(r => r.id),
-    entries: live(books.entries).filter(e => e.a === id || e.to === id).map(e => e.id)
+    entries: live(books.entries).filter(e => touches(e).includes(id)).map(e => e.id)
   };
 }
 
@@ -155,20 +169,41 @@ export function dropAccount(books, id, now = Date.now()) {
   drop(books, 'accts', id, now);
   for (const c of live(books.cards)) if (c.acct === id) drop(books, 'cards', c.id, now);
   for (const r of live(books.recur)) if (r.a === id || r.to === id) drop(books, 'recur', r.id, now);
-  for (const e of live(books.entries)) if (e.a === id || e.to === id) drop(books, 'entries', e.id, now);
+  for (const e of live(books.entries)) if (touches(e).includes(id)) drop(books, 'entries', e.id, now);
   for (const a of live(books.accts)) if (a.pay === id) put(books, 'accts', { ...a, pay: '' }, now);
 }
 
 // ---- Balances ----------------------------------------------------------------------
 
+// The other ways a spend was paid (each > 0, together never more than it).
+export function alsoOf(e) {
+  let left = e?.k === 'out' ? Number(e.amt) || 0 : 0;
+  const out = [];
+  for (const p of Array.isArray(e?.also) ? e.also : []) {
+    const amt = Math.min(left, Math.round(Number(p?.amt) || 0));
+    if (!p?.a || !(amt > 0)) continue;
+    out.push({ a: p.a, via: p.via || '', amt });
+    left -= amt;
+  }
+  return out;
+}
+export const feeOf = e => (e && (e.k === 'out' || e.k === 'move') ? Math.max(0, Math.round(Number(e.fee) || 0)) : 0);
+// Every account an entry moves.
+export const touches = e => [...new Set([e.a, e.to, ...alsoOf(e).map(p => p.a)].filter(Boolean))];
+
 // What one entry does to one account (NT$, signed).
 export function effect(e, id) {
   if (!e || e.del) return 0;
   const amt = Number(e.amt) || 0;
-  if (e.k === 'adj') return e.a === id ? amt : 0;
-  if (e.k === 'out') return e.a === id ? -amt : 0;
-  if (e.k === 'in') return e.a === id ? amt : 0;
-  if (e.k === 'move') return (e.to === id ? amt : 0) - (e.a === id ? amt : 0);
+  if (e.k === 'adj' || e.k === 'in') return e.a === id ? amt : 0;
+  if (e.k === 'back') return e.a === id && !e.wait ? amt : 0;
+  if (e.k === 'out') {
+    const also = alsoOf(e);
+    let x = e.a === id ? -(amt - also.reduce((s, p) => s + p.amt, 0) + feeOf(e)) : 0;
+    for (const p of also) if (p.a === id) x -= p.amt;
+    return x;
+  }
+  if (e.k === 'move') return (e.to === id ? amt : 0) - (e.a === id ? amt + feeOf(e) : 0);
   return 0;
 }
 // Every account's balance up to and including `upto` ('YYYY-MM-DD', every day if not given).
@@ -177,7 +212,7 @@ export function balances(books, upto = '') {
   for (const a of accounts(books)) out[a.id] = Number(a.open) || 0;
   for (const e of live(books.entries)) {
     if (upto && e.d > upto) continue;
-    for (const id of [e.a, e.to]) if (id && id in out) out[id] += effect(e, id);
+    for (const id of touches(e)) if (id in out) out[id] += effect(e, id);
   }
   return out;
 }
@@ -208,8 +243,42 @@ export const shiftMonth = (ym, n) => {
 // What counts as spending and income in totals: out and in. A move between
 // one's own accounts is neither, nor is a balance set by hand; paying a credit
 // card bill (a move) isn't spending again either: the card's buys were.
-export const isSpend = e => e.k === 'out';
-export const isIncome = e => e.k === 'in';
+// Money back (a 退款, a friend's share) isn't income: it comes off its spend
+// (Jay 2026-10-27). A fee is spending of its own, under 稅費 › 手續費.
+export const FEE = { cat: 'tax', sub: 'tax:fee' };
+// What's come back for each spend (id → NT$).
+export function backs(books) {
+  const out = new Map();
+  for (const e of live(books.entries)) if (e.k === 'back' && e.of) out.set(e.of, (out.get(e.of) || 0) + (Number(e.amt) || 0));
+  return out;
+}
+// What a spend came to after what came back (never below 0).
+export const netOf = (e, back) => Math.max(0, (Number(e.amt) || 0) - (back.get(e.id) || 0));
+// The spending and income from `from` to `to` (either '' open), each a line
+// { e, d, k: 'out' | 'in', cat, sub, amt }: a spend less what came back for
+// it, its fee as a line of its own, an income. Money back for a spend that
+// isn't in the books (from before, 退款 logged as income) comes off its own day.
+export function lines(books, from = '', to = '') {
+  const back = backs(books);
+  const inRange = d => (!from || d >= from) && (!to || d <= to);
+  // (books.skip, a Set of category and sub ids (`<cat>/-` for one's entries
+  // with no sub), leaves those out: 統計's 不計入,
+  // Jay 2026-10-30, so every figure there is counted again without them.)
+  const skip = books.skip;
+  const out = [];
+  for (const e of live(books.entries)) {
+    if (!inRange(e.d)) continue;
+    const amt = Number(e.amt) || 0;
+    if (e.k === 'out') {
+      const net = netOf(e, back);
+      if (net) out.push({ e, d: e.d, k: 'out', cat: e.cat || 'other', sub: e.sub || '', amt: net });
+    } else if (e.k === 'in') out.push({ e, d: e.d, k: 'in', cat: e.cat || 'otherin', sub: e.sub || '', amt });
+    else if (e.k === 'back' && !(e.of && books.entries[e.of] && !books.entries[e.of].del)) out.push({ e, d: e.d, k: 'out', cat: e.cat || 'other', sub: e.sub || '', amt: -amt });
+    const fee = feeOf(e);
+    if (fee) out.push({ e, d: e.d, k: 'out', cat: FEE.cat, sub: FEE.sub, amt: fee, fee: true });
+  }
+  return skip?.size ? out.filter(l => !skip.has(l.cat) && !skip.has(l.sub || `${l.cat}/-`)) : out;
+}
 
 // The entries of a day, a month, or a range of days, newest made first.
 export const entriesOn = (books, day) => live(books.entries).filter(e => e.d === day).sort((a, b) => (b.t || b.u || 0) - (a.t || a.u || 0));
@@ -218,13 +287,8 @@ export const entriesIn = (books, from, to) => live(books.entries).filter(e => e.
 // Each day of a month: { out, in } (whole NT$).
 export function monthByDay(books, ym) {
   const days = {};
-  for (const e of live(books.entries)) {
-    if (!e.d?.startsWith(ym)) continue;
-    const day = (days[e.d] ||= { out: 0, in: 0, n: 0 });
-    if (isSpend(e)) day.out += e.amt;
-    else if (isIncome(e)) day.in += e.amt;
-    day.n++;
-  }
+  for (const e of live(books.entries)) if (e.d?.startsWith(ym)) (days[e.d] ||= { out: 0, in: 0, n: 0 }).n++;
+  for (const l of lines(books, `${ym}-01`, `${ym}-31`)) days[l.d][l.k] += l.amt;
   return days;
 }
 // A range's totals: spent, earned, and the spending by category (largest first).
@@ -233,19 +297,33 @@ export function totals(books, from, to) {
   let inc = 0;
   const cats = {};
   const incCats = {};
-  for (const e of entriesIn(books, from, to)) {
-    if (isSpend(e)) {
-      out += e.amt;
-      cats[e.cat || 'other'] = (cats[e.cat || 'other'] || 0) + e.amt;
-    } else if (isIncome(e)) {
-      inc += e.amt;
-      incCats[e.cat || 'other'] = (incCats[e.cat || 'other'] || 0) + e.amt;
+  for (const l of lines(books, from, to)) {
+    if (l.k === 'out') {
+      out += l.amt;
+      cats[l.cat] = (cats[l.cat] || 0) + l.amt;
+    } else {
+      inc += l.amt;
+      incCats[l.cat] = (incCats[l.cat] || 0) + l.amt;
     }
   }
   const sorted = o => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => ({ cat, amt }));
   return { out, in: inc, net: inc - out, cats: sorted(cats), incCats: sorted(incCats) };
 }
 export const monthTotals = (books, ym) => totals(books, `${ym}-01`, `${ym}-${String(monthDays(ym)).padStart(2, '0')}`);
+
+// One account's spending and income over a range: what left it for spends
+// and fees, less what came back into it; what came in as income.
+export function acctTotals(books, id, from, to) {
+  let out = 0;
+  let inc = 0;
+  for (const e of entriesIn(books, from, to)) {
+    const x = effect(e, id);
+    if (e.k === 'out' || e.k === 'back') out -= x;
+    else if (e.k === 'move' && e.a === id) out += feeOf(e);
+    else if (e.k === 'in') inc += x;
+  }
+  return { out: Math.max(0, out), in: inc };
+}
 
 // ---- Budgets -----------------------------------------------------------------------
 
@@ -332,9 +410,12 @@ export function cardBill(books, card, today) {
   let bill = 0;
   let paid = 0;
   for (const e of live(books.entries)) {
-    if (e.d >= opened && e.d <= closed) bill -= effect(e, card.id) < 0 ? effect(e, card.id) : 0;
+    // (Money back onto the card in the statement comes off it.)
+    const x = effect(e, card.id);
+    if (e.d >= opened && e.d <= closed && (x < 0 || e.k === 'back')) bill -= x;
     if (e.d > closed && e.k === 'move' && e.to === card.id) paid += e.amt;
   }
+  bill = Math.max(0, bill);
   const dueDay = Number(card.due) || 0;
   let due = '';
   if (dueDay) {
@@ -359,8 +440,7 @@ export function autoReload(books, e, now = Date.now()) {
   const a = books.accts[e.a];
   const r = a?.reload;
   // (No account behind it, left empty: paid by someone not in the books, a
-  // parent's card (Jay 2026-10-27). The card's balance just goes up: neither
-  // spending nor income.)
+  // parent's card (Jay 2026-10-27): it comes in as income, under 自動加值, Jay 2026-10-29.)
   const outside = !r?.from || !books.accts[r.from] || books.accts[r.from].del;
   if (!e || e.del || e.k !== 'out' || !r?.on || !(r.amt > 0) || r.from === a.id) return 0;
   const bal = balances(books, e.d)[a.id];
@@ -368,7 +448,7 @@ export function autoReload(books, e, now = Date.now()) {
   let n = 1;
   while (bal + n * r.amt < 0 && n < 20) n++;
   const base = { id: `${e.id}-r`, d: e.d, amt: n * r.amt, via: '', auto: 'reload', for: e.id, t: (e.t || now) - 1 };
-  put(books, 'entries', outside ? { ...base, k: 'adj', cat: '', note: '', a: a.id, to: '' } : { ...base, k: 'move', cat: '', note: '', a: r.from, to: a.id }, now);
+  put(books, 'entries', outside ? { ...base, k: 'in', cat: 'topup', sub: '', note: '', a: a.id, to: '' } : { ...base, k: 'move', cat: '', note: '', a: r.from, to: a.id }, now);
   return n * r.amt;
 }
 
@@ -422,18 +502,16 @@ export function mergeBooks(mine, theirs, now = Date.now()) {
   const newer = (theirs.st || 0) > (mine?.st || 0) ? theirs : mine || theirs;
   out.st = newer.st || 0;
   out.opt = { ...(newer.opt || {}) };
-  out.carrier = !mine?.carrier ? theirs.carrier || null : !theirs.carrier ? mine.carrier : (theirs.carrier.u || 0) > (mine.carrier.u || 0) ? theirs.carrier : mine.carrier;
   return out;
 }
 
 // The books as JSON for saving, and back (a copy that isn't the books is null:
 // never saved over).
-export const packBooks = books => ({ v: 1, ...Object.fromEntries(COLLECTIONS.map(c => [c, books[c] || {}])), carrier: books.carrier || null, st: books.st || 0, opt: books.opt || {} });
+export const packBooks = books => ({ v: 1, ...Object.fromEntries(COLLECTIONS.map(c => [c, books[c] || {}])), st: books.st || 0, opt: books.opt || {} });
 export function unpackBooks(x) {
   if (!x || x.v !== 1 || typeof x.accts !== 'object' || typeof x.entries !== 'object') return null;
   const b = emptyBooks();
   for (const c of COLLECTIONS) b[c] = x[c] && typeof x[c] === 'object' ? x[c] : {};
-  b.carrier = x.carrier || null;
   b.st = Number(x.st) || 0;
   b.opt = x.opt && typeof x.opt === 'object' ? x.opt : {};
   return b;
@@ -460,4 +538,89 @@ export async function decodeBooks(payload) {
   } catch {
     return null;
   }
+}
+
+// ---- The same payment logged twice ----------------------------------------------
+// A picture read (拍照記帳) of something already logged by hand (Jay
+// 2026-10-31: a NT$68 全家 typed in, then its receipt): the entry it most
+// likely is. The same kind and amount, on its day or a day either side (logged
+// late or early); its own day first, then one whose note or store names the
+// picture's store, then the latest. One already carrying a receipt is it only
+// when the store is the same and no two 發票號碼 differ; one with the same
+// 發票號碼 always is. `skip`: entries already taken by an earlier picture.
+// buy: { k, day, total, store, no } → the entry, or null.
+const words = s => String(s || '').toLowerCase().replace(/[\s·・,，.。-]+/g, '');
+export function sameAs(books, buy, { skip = new Set() } = {}) {
+  const k = buy.k || 'out';
+  const amt = Math.round(Number(buy.total) || 0);
+  if (!(amt > 0) || !buy.day) return null;
+  const all = live(books.entries).filter(e => e.k === k && !skip.has(e.id));
+  if (buy.no) {
+    const same = all.find(e => e.inv?.no === buy.no);
+    if (same) return same;
+  }
+  const near = new Set([buy.day, addDays(buy.day, -1), addDays(buy.day, 1)]);
+  const store = words(buy.store);
+  const named = e => Boolean(store) && [e.note, e.inv?.seller].some(x => {
+    const w = words(x);
+    return w && (w.includes(store) || store.includes(w));
+  });
+  const free = e => !e.inv || (named(e) && !(e.inv.no && buy.no)) || (!e.inv.no && !e.inv.seller && !(e.inv.items || []).length);
+  const score = e => (e.d === buy.day ? 4 : 0) + (named(e) ? 2 : 0);
+  return all.filter(e => e.amt === amt && near.has(e.d) && free(e)).sort((x, y) => score(y) - score(x) || (y.t || 0) - (x.t || 0))[0] || null;
+}
+// Several read at once (a screenshot of a list): each its own match, none taken twice.
+// → [{ buy, e }] (e null when it's new).
+export function matchBuys(books, list) {
+  const skip = new Set();
+  return list.map(buy => {
+    const e = sameAs(books, buy, { skip });
+    if (e) skip.add(e.id);
+    return { buy, e };
+  });
+}
+
+// ---- Money back --------------------------------------------------------------------
+
+// A friend's share not handed over yet: { e (the back), of (its spend) }, oldest first.
+export const owed = books =>
+  live(books.entries)
+    .filter(e => e.k === 'back' && e.wait)
+    .sort((a, b) => a.d.localeCompare(b.d))
+    .map(e => ({ e, of: books.entries[e.of] && !books.entries[e.of].del ? books.entries[e.of] : null }));
+// What's come back for one spend, each back entry.
+export const backsFor = (books, id) => live(books.entries).filter(e => e.k === 'back' && e.of === id);
+
+// ---- Older books brought up to date (on every open; nothing done twice) ------------
+
+// 退款 logged as income (its income category went 2026-10-27: money back
+// comes off what it was for) becomes money back for the spend it most likely
+// was: in the 90 days before it, at least its amount; the same amount, then
+// the same account, then the latest first. None: money back on its own day.
+// A 自動加值 nobody in the books paid for (an adj, before) becomes income,
+// under 自動加值 (Jay 2026-10-29: not 其他), as does a 其他 income that is one:
+// the app's own, or logged by hand with 加值 / top up in its note.
+// → how many entries changed.
+const TOPUP = /加值|儲值|top.?up|reload/i;
+export function upgradeBooks(books, now = Date.now()) {
+  let n = 0;
+  const all = live(books.entries);
+  const back = backs(books);
+  for (const e of all.sort((a, b) => a.d.localeCompare(b.d))) {
+    if ((e.k === 'adj' && e.auto === 'reload') || (e.k === 'in' && e.cat === 'otherin' && (e.auto === 'reload' || TOPUP.test(e.note || '')))) {
+      put(books, 'entries', { ...e, k: 'in', cat: 'topup', sub: '' }, now);
+      n++;
+    } else if (e.k === 'in' && e.cat === 'refund') {
+      const from = addDays(e.d, -90);
+      const score = x => (x.amt === e.amt ? 2 : 0) + (x.a === e.a ? 1 : 0);
+      const best = all
+        .filter(x => x.k === 'out' && x.d <= e.d && x.d >= from && netOf(x, back) >= e.amt)
+        .sort((x, y) => score(y) - score(x) || y.d.localeCompare(x.d))[0];
+      put(books, 'entries', { ...e, k: 'back', why: 'refund', of: best?.id || '', cat: best?.cat || 'other', sub: best?.sub || '' }, now);
+      if (best) back.set(best.id, (back.get(best.id) || 0) + e.amt);
+      n++;
+    }
+  }
+  for (const r of live(books.recur)) if (r.k === 'in' && r.cat === 'refund') put(books, 'recur', { ...r, cat: 'otherin', sub: '' }, now), n++;
+  return n;
 }

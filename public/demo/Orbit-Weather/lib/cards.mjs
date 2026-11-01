@@ -15,7 +15,7 @@ import { segHtml, escHtml as e } from '#kit/ui.mjs';
 import * as kitUI from '#kit/ui.mjs';
 import { uvGraph, rainGraph, airGraph, dayCharts, spark, mmKey, UV_STOPS, RAIN_STOPS, AQI_STOPS } from './graph.mjs';
 import { sunTimes, goldenHours } from './sun.mjs';
-import { placeLines, OLD_MS } from './api.mjs';
+import { placeLines, placeIn, OLD_MS } from './api.mjs';
 
 const HOUR = 3_600_000;
 
@@ -64,6 +64,15 @@ export function soonLine(f, now, tz) {
   const text = r.kind === 'start' ? (near ? W(`約 ${r.mins} 分鐘後下雨 · ${r.pop}%`, `Rain in ~${r.mins} min · ${r.pop}%`) : W(`${at}起下雨 · ${r.pop}%`, `Rain from ${at} · ${r.pop}%`)) : near ? W(`雨約 ${r.mins} 分鐘後減弱`, `Easing in ~${r.mins} min`) : W(`${at}後雨勢減弱`, `Easing by ${at}`);
   return `<p class="wx-soon wx-soon-${r.kind}">${glyph('umbrella', { size: 15 })}<span>${e(text)}</span></p>`;
 }
+
+// A station by its township's English name in English (信義 → Xinyi), else left out:
+// CWA names its stations only in Chinese.
+const stationName = name => {
+  if (!en) return e(name);
+  const base = String(name).replace(/\(.*\)$/, '');
+  for (const suffix of ['區', '鄉', '鎮', '市']) if (placeIn(base + suffix) !== base + suffix) return e(placeIn(base + suffix));
+  return '';
+};
 
 // What a page is called and what's said under it, one rule for the head's
 // title, the hero's eyebrow and the 地點 row.
@@ -204,7 +213,7 @@ export function dayOffSec(f, now) {
         const t0 = Math.min(...g.notes.map(x => x.at).filter(Boolean));
         const said = Number.isFinite(t0) ? announced(t0) : '';
         const sub = [when.join(W('、', ', ')), said].filter(Boolean).join(' · ');
-        const title = g.place || f.place?.county || W('全縣市', 'Whole county');
+        const title = placeIn(g.place || f.place?.county || '') || W('全縣市', 'Whole county');
         return `<div class="q-ritem wx-life wx-dayoff wx-dayoff-note">${tile(CLOSED.has(g.off) ? 'red' : g.off === 'wait' ? 'gray' : 'green')}<span class="q-ritem-text"><span class="q-ritem-title">${e(title)}</span><small class="q-fit">${e(sub)}</small></span><span class="q-tag ${tag[0]}">${tag[1]}</span></div>`;
       });
   };
@@ -380,7 +389,9 @@ export function rainSummary(hours, tz, now, { short = false } = {}) {
   }
   const top = peakFrom(next);
   const day = dateOf(next.t, tz) === dateOf(now, tz) ? '' : dayLabel(dateOf(next.t, tz), now, tz);
-  if (short) return next.t <= now ? W(`正在下 ${next.pop}%`, `Raining ${next.pop}%`) : W(`${day}${hourOf(next.t, tz)}時起 ${next.pop}%`, `${next.pop}% from ${day ? `${day} ` : ''}${hourOf(next.t, tz)}:00`);
+  // (In English a tile's day by its short name: "50% from Tomorrow 4:00" was cut at 320.)
+  const dayShort = day ? weekday(dateOf(next.t, tz)) : '';
+  if (short) return next.t <= now ? W(`正在下 ${next.pop}%`, `Raining ${next.pop}%`) : W(`${day}${hourOf(next.t, tz)}時起 ${next.pop}%`, `${next.pop}% from ${dayShort ? `${dayShort} ` : ''}${hourOf(next.t, tz)}:00`);
   const peak = top !== next && top.pop > next.pop ? W(`・最高 ${top.pop}%`, `, peak ${top.pop}%`) : '';
   return next.t <= now ? W(`正在下 ${next.pop}%${peak}`, `Raining ${next.pop}%${peak}`) : W(`${day ? `${day} ` : ''}${hourOf(next.t, tz)}時起 ${next.pop}%${peak}`, `${next.pop}% from ${day ? `${day} ` : ''}${hourOf(next.t, tz)}:00${peak}`);
 }
@@ -436,7 +447,7 @@ const SHOWN = 4;
 // One piece of advice, a row: its glyph on a colour tile, the name, what to
 // do, and a tag when the level asks for attention (or says go).
 const KIND_COLOR = { umbrella: 'blue', commute: 'indigo', move: 'indigo', wear: 'orange', temp: 'orange', sun: 'orange', run: 'green', laundry: 'teal', sleep: 'indigo', window: 'mint', mask: 'red', heat: 'red', wind: 'teal', thunder: 'purple', fog: 'cyan', diff: 'purple', weekend: 'pink', humid: 'cyan', carwash: 'blue' };
-const LEVEL_TAG = { yes: ['orange', W('留意', 'Heads up')], hot: ['orange', W('留意', 'Heads up')], bad: ['orange', W('留意', 'Heads up')], maybe: ['blue', W('可能', 'Maybe')], good: ['green', W('適合', 'Good')] };
+const LEVEL_TAG = { yes: ['orange', W('留意', 'Heads up')], hot: ['orange', W('留意', 'Heads up')], bad: ['orange', W('留意', 'Heads up')] };
 const lifeTile = ({ kind, level, title, text }) => {
   const tag = LEVEL_TAG[level];
   return `<div class="q-ritem wx-life lv-${e(level)} k-${e(kind)}"><span class="q-tile wx-life-icon" style="--t:var(--q-${KIND_COLOR[kind] || 'indigo'})">${glyph(ADVICE_GLYPH[kind] || 'bulb', { size: 22 })}</span><span class="q-ritem-text"><span class="q-ritem-title">${e(title)}</span><small>${e(text)}</small></span>${tag ? `<span class="q-tag ${tag[0]}">${tag[1]}</span>` : ''}</div>`;
@@ -619,7 +630,7 @@ export function infoCard(f, { now, lat, lon, page }) {
     [glyph('clock'), W('日照長度', 'Daylight'), s ? W(`${Math.floor(len / HOUR)} 小時 ${Math.round((len % HOUR) / 60_000)} 分`, `${Math.floor(len / HOUR)} h ${Math.round((len % HOUR) / 60_000)} min`) : '–', '', 'yellow'],
     [glyph('moon'), W('月相', 'Moon'), moon ? e(moon) : '–', d?.moon?.rise ? `${W('月出', 'Rise')} ${clock(d.moon.rise, f.tz)}${d.moon.set ? ` · ${W('月落', 'set')} ${clock(d.moon.set, f.tz)}` : ''}` : '', 'indigo'],
     [glyph('air'), W('PM10 / 臭氧', 'PM10 / ozone'), `${f.air?.pm10 ?? '–'} / ${f.air?.o3 ?? '–'}`, 'μg/m³ / ppb', 'green'],
-    [glyph('station'), W('附近測站', 'Nearest station'), n.station ? `${e(n.station.name)} ${n.station.temp != null ? deg(n.station.temp) : ''}` : '–', n.station ? W(`${n.station.km} 公里 · ${clock(n.station.at, f.tz)} 實測`, `${n.station.km} km · ${clock(n.station.at, f.tz)}`) : '', 'mint'],
+    [glyph('station'), W('附近測站', 'Nearest station'), n.station ? [stationName(n.station.name), n.station.temp != null ? deg(n.station.temp) : ''].filter(Boolean).join(' ') : '–', n.station ? W(`${n.station.km} 公里 · ${clock(n.station.at, f.tz)} 實測`, `${n.station.km} km · ${clock(n.station.at, f.tz)}`) : '', 'mint'],
     [glyph('pin'), W('位置', 'Location'), where.main ? e(where.main) : '–', where.sub ? e(where.sub) : '', 'red']
   ];
   const rows = items.map(([icon, k, v, sub, color]) => `<div class="q-ritem wx-info-row"><span class="q-tile sm" style="--t:var(--q-${color})">${icon}</span><span class="q-ritem-text"><span class="q-ritem-title">${k}</span>${sub ? `<small>${sub}</small>` : ''}</span><span class="q-ritem-value">${v}</span></div>`).join('');
@@ -629,7 +640,7 @@ export function infoCard(f, { now, lat, lon, page }) {
 // ---- 預報: the indicators, a rail of stat cards; the big graph in a sheet ----------------
 
 // A level's word on a stat: a tag in the level's colour, kept readable on light and dark.
-const levelTag = (text, color) => (text ? `<span class="q-tag tint wx-lv" style="--t:color-mix(in srgb, ${color} 62%, var(--q-label))">${e(text)}</span>` : '');
+const levelTag = text => (text ? `<span class="wx-lv">${e(text)}</span>` : '');
 // A stat, as plain data: its colour tile and level, its name, a big number (and its unit), one
 // line, a sparkline (`art`). With a graph to open (`key`) it is a button. The rail draws it as
 // statCard (HTML), 今日數據 as the kit's panelGrid (statPanel); `key` is the graph's page.
@@ -639,7 +650,7 @@ const statCard = ({ kind, key = '', title, big, unit = '', sub = '', art = '', l
   const tag = key ? 'button' : 'div';
   const open = key ? ` type="button" data-metric="${kind}" data-page="${e(key)}"` : '';
   return `<${tag} class="q-rail-card wx-stat k-${kind}${key ? ' q-press' : ''}"${open}>
-    <span class="wx-stat-head"><span class="q-tile sm" style="--t:var(--q-${TILE_COLOR[kind]})">${glyph(GLYPH_OF[kind], { size: 18 })}</span>${levelHtml || levelTag(level, levelColor)}</span>
+    <span class="wx-stat-head"><span class="wx-quiet-tile q-tile sm">${glyph(GLYPH_OF[kind], { size: 20 })}</span>${levelHtml || levelTag(level)}</span>
     <small>${title}</small>
     <strong class="wx-stat-val">${e(big)}${unit ? `<small>${e(unit)}</small>` : ''}</strong>
     <span class="wx-stat-sub">${e(sub)}</span>
@@ -701,7 +712,7 @@ function metricStats(f, opts) {
           unit: 'km/h',
           level: dir,
           levelColor: 'var(--q-teal)',
-          levelHtml: `<span class="q-tag tint wx-lv" style="--t:var(--q-teal)"><span class="wx-compass" style="--d:${w.dir ?? 0}deg">${glyph('locate', { size: 12 })}</span>${e(dir)}</span>`,
+          levelHtml: `<span class="wx-lv"><span class="wx-compass" style="--d:${w.dir ?? 0}deg">${glyph('locate', { size: 12 })}</span>${e(dir)}</span>`,
           sub: `${W(`${beaufort(w.speed)} 級`, `Force ${beaufort(w.speed)}`)}${w.gust ? ` · ${W(`陣風 ${Math.round(w.gust)}`, `gusts ${Math.round(w.gust)}`)}` : ''}`
         }
       : null
@@ -735,7 +746,7 @@ export function placesShelf(rows) {
 const METRIC_TITLES = { rain: W('降雨機率', 'Chance of rain'), uv: W('紫外線', 'UV index'), air: W('空氣品質', 'Air quality') };
 export function metricSheet(kind, f, opts) {
   const body = { rain: rainCard, uv: uvCard, air: airCard }[kind]?.(f, opts) || '';
-  return `<div class="q-sheet-head"><h2><span class="q-tile sm" style="--t:var(--q-${TILE_COLOR[kind]})">${glyph({ rain: 'umbrella', uv: 'sun', air: 'air' }[kind], { size: 18 })}</span>${METRIC_TITLES[kind]}</h2><button class="q-close" type="button" data-act="close" aria-label="${W('關閉', 'Close')}">×</button></div>${body}`;
+  return `<div class="q-sheet-head"><h2><span class="wx-quiet-tile q-tile sm">${glyph({ rain: 'umbrella', uv: 'sun', air: 'air' }[kind], { size: 18 })}</span>${METRIC_TITLES[kind]}</h2><button class="q-close" type="button" data-act="close" aria-label="${W('關閉', 'Close')}">×</button></div>${body}`;
 }
 
 // ---- The tabs ------------------------------------------------------------------------------
@@ -758,8 +769,15 @@ export function nowHtml(f, page, { now, cards, hidden, places } = {}) {
   const hero = heroHtml(f, { page, now });
   if (!f) return head + hero + (page.error ? failed(page) : waiting('wx-hours', 8));
   const show = shownCards(page, cards, hidden);
-  return head + hero + dayOffSec(f, now) + hourStrip(f, { now, key: page.key }) + (show.includes('days') ? daysList(f, { now, key: page.key }) : '') + panelGrid(f, { now, key: page.key, page }) + (show.includes('advice') ? adviceCards(f, { now, key: page.key }) : '') + placesShelf(places);
+  // (On a wide screen two columns, read in the phone's order: the sky, the
+  // hours and the days, then the details, the advice and the places.)
+  return head + cols(hero + dayOffSec(f, now) + hourStrip(f, { now, key: page.key }) + (show.includes('days') ? daysList(f, { now, key: page.key }) : ''), panelGrid(f, { now, key: page.key, page }) + (show.includes('advice') ? adviceCards(f, { now, key: page.key }) : '') + placesShelf(places));
 }
+// A page's two columns (kit .q-cols: one on a phone, side by side when there's room).
+const cols = (...parts) => {
+  const full = parts.filter(Boolean);
+  return full.length > 1 ? `<div class="q-cols wx-cols">${full.map(p => `<div class="wx-col">${p}</div>`).join('')}</div>` : full.join('');
+};
 
 // 預報: the indicators and the days, in the owner's order.
 const WEEK = { metrics: metricTiles, days: daysList };
@@ -767,7 +785,7 @@ export function weekHtml(f, page, { now, cards, hidden } = {}) {
   const head = headHtml(placeName(page).title);
   if (!f) return head + (page.error ? failed(page) : waiting('wx-metrics-sec', 3));
   const opts = { now, key: page.key, page };
-  return head + shownCards(page, cards, hidden).filter(k => WEEK[k]).map(k => WEEK[k](f, opts)).join('');
+  return head + cols(...shownCards(page, cards, hidden).filter(k => WEEK[k]).map(k => WEEK[k](f, opts)));
 }
 
 // 地點: each place a row (its picture, its name, where or when, its
@@ -784,11 +802,11 @@ export function placesHtml(rows, { brief, editing = false, canAdd = true } = {})
   };
   const list = rows.map(row).join('');
   const pins = rows.some(r => r.pin);
-  const add = canAdd ? `<button class="q-ritem chevron wx-add" type="button" data-act="add-pin"><span class="q-tile" style="--t:var(--q-green)">${glyph('plus')}</span><span class="q-ritem-text"><span class="q-ritem-title">${W('新增地點', 'Add a place')}</span></span></button>` : '';
+  const add = canAdd ? `<button class="q-ritem chevron wx-add" type="button" data-act="add-pin"><span class="wx-quiet-tile q-tile">${glyph('plus')}</span><span class="q-ritem-text"><span class="q-ritem-title">${W('新增地點', 'Add a place')}</span></span></button>` : '';
   const settings = `<div class="q-rowcard">
-      <label class="q-ritem wx-brief"><span class="q-tile" style="--t:var(--q-orange)">${glyph('bell')}</span><span class="q-ritem-text"><span class="q-ritem-title">${W('早晨天氣', 'Morning weather')}</span></span><input id="brief-time" class="wx-time" type="time" value="${e(brief)}"></label>
-      <button class="q-ritem chevron" type="button" data-act="layout"><span class="q-tile" style="--t:var(--q-indigo)">${glyph('layout')}</span><span class="q-ritem-text"><span class="q-ritem-title">${W('版面', 'Layout')}</span></span></button>
+      <label class="q-ritem wx-brief"><span class="wx-quiet-tile q-tile">${glyph('bell')}</span><span class="q-ritem-text"><span class="q-ritem-title">${W('早晨天氣', 'Morning weather')}</span></span><input id="brief-time" class="wx-time" type="time" value="${e(brief)}"></label>
+      <button class="q-ritem chevron" type="button" data-act="layout"><span class="wx-quiet-tile q-tile">${glyph('layout')}</span><span class="q-ritem-text"><span class="q-ritem-title">${W('版面', 'Layout')}</span></span></button>
     </div>`;
   const head = `<header class="q-page-head wx-head wx-head-row">${kitUI.navTitleHtml(W('地點', 'Places'))}${pins ? `<button class="wx-head-btn" type="button" data-act="edit-places" aria-pressed="${editing}">${editing ? W('完成', 'Done') : W('編輯', 'Edit')}</button>` : ''}</header>`;
-  return head + `<div class="q-rowcard wx-places">${list}${add}</div>` + sec('wx-settings', W('設定', 'Settings'), settings);
+  return head + cols(`<div class="q-rowcard wx-places">${list}${add}</div>`, sec('wx-settings', W('設定', 'Settings'), settings));
 }

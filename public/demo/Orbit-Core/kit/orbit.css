@@ -628,6 +628,9 @@ button,
   cursor: pointer;
   transition: transform var(--q-dur-snappy) var(--q-spring-snappy), background-color 0.2s, opacity 0.2s, color 0.2s;
 }
+.q-btn[hidden] {
+  display: none;
+}
 .q-btn:is(:active, [data-q-press]):not(:disabled) {
   transform: scale(0.96);
   transition-duration: 0.12s;
@@ -848,7 +851,7 @@ button,
 .q-tabbar.q-tabbar {
   position: fixed;
   z-index: 60;
-  left: 50%;
+  left: var(--q-mid, 50%);
   bottom: var(--q-bar-gap);
   display: grid;
   grid-auto-flow: column;
@@ -863,7 +866,7 @@ button,
   backdrop-filter: var(--q-glass-blur);
   box-shadow: var(--q-glass-rim), var(--q-glass-drop);
   transform: translateX(-50%);
-  transition: transform var(--q-dur-smooth) var(--q-spring-smooth), padding var(--q-dur-smooth) var(--q-spring-smooth);
+  transition: transform var(--q-dur-smooth) var(--q-spring-smooth);
 }
 .q-tabbar.q-tabbar::before {
   content: '';
@@ -908,7 +911,7 @@ button,
   font: 500 10px/12px var(--q-font);
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.2s, min-height var(--q-dur-smooth) var(--q-spring-smooth);
+  transition: color 0.2s;
 }
 .q-tab[hidden] {
   display: none;
@@ -934,7 +937,6 @@ button,
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: opacity 0.2s, height var(--q-dur-smooth) var(--q-spring-smooth);
 }
 .q-tab[aria-selected='true'] {
   color: var(--q-accent);
@@ -978,60 +980,59 @@ button,
   padding: 0;
 }
 /* The app's main action (tabBar's action): a round button of its own at the
-   bar's right, the two centred together; the bar gives it the room. */
+   bar's right, the two centred together; the bar gives it the room. It sits
+   on the bar's middle, a little smaller than the bar is tall (62), so it reads
+   as part of it, never a bigger thing beside it (Jay 2026-10-30: "too big and
+   fat"). */
+:root {
+  --q-act: 48px;
+  --q-act-room: calc(var(--q-act) + 10px);
+  --q-tb-w: min(calc(var(--q-vw) - 32px - var(--q-act-room)), calc(var(--q-tabs, 4) * 86px));
+}
 .q-tabbar.q-tabbar.q-tabbar-act {
-  left: calc(50% - (var(--q-tb-w) + 72px) / 2);
+  left: calc(var(--q-mid, 50%) - (var(--q-tb-w) + var(--q-act-room)) / 2);
   width: var(--q-tb-w);
   transform: none;
 }
 .q-tab-action {
   position: fixed;
   z-index: 60;
-  left: calc(50% + (var(--q-tb-w, 0px) + 72px) / 2 - 62px);
-  bottom: var(--q-bar-gap);
+  left: calc(var(--q-mid, 50%) + (var(--q-tb-w, 0px) + var(--q-act-room)) / 2 - var(--q-act));
+  bottom: calc(var(--q-bar-gap) + (62px - var(--q-act)) / 2);
   display: grid;
   place-items: center;
-  width: 62px;
-  height: 62px;
+  width: var(--q-act);
+  height: var(--q-act);
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: var(--q-accent);
   color: #fff;
-  box-shadow: var(--q-glass-drop), 0 8px 20px -8px color-mix(in srgb, var(--q-accent) 70%, transparent);
+  box-shadow: var(--q-glass-drop);
   cursor: pointer;
-  transition: transform var(--q-dur-bouncy) var(--q-spring-bouncy), width var(--q-dur-smooth) var(--q-spring-smooth), height var(--q-dur-smooth) var(--q-spring-smooth);
-}
-:root {
-  --q-tb-w: min(calc(var(--q-vw) - 32px - 72px), calc(var(--q-tabs, 4) * 86px));
+  transition: transform var(--q-dur-bouncy) var(--q-spring-bouncy);
 }
 .q-tab-action:active {
   transform: scale(0.92);
 }
+/* Its own screen open (tabBar's action.id): a thin light line inside its
+   edge, no tab's pill (a ring outside made it bigger than the bar). */
+.q-tab-action[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 55%, transparent), var(--q-glass-drop);
+}
+.q-tabbar.q-tab-none::before {
+  opacity: 0;
+}
 .q-tab-action svg {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.6;
+  stroke-width: 2.4;
   stroke-linecap: round;
-}
-.q-tabs-small .q-tab-action {
-  width: 52px;
-  height: 52px;
-  left: calc(50% + (var(--q-tb-w, 0px) + 72px) / 2 - 52px);
 }
 html.q-kb .q-tab-action {
   visibility: hidden;
-}
-
-/* Scrolling down: the bar draws in to its icons (orbit.mjs sets .q-tabs-small). */
-.q-tabs-small .q-tabbar .q-tab {
-  min-height: 44px;
-}
-.q-tabs-small .q-tabbar .q-tab-label {
-  height: 0;
-  opacity: 0;
 }
 
 /* ---- The tab bar's accessory: a glass bar just above it (iOS 26's bottom
@@ -1039,7 +1040,7 @@ html.q-kb .q-tab-action {
 .q-accessory {
   position: fixed;
   z-index: 59;
-  left: 50%;
+  left: var(--q-mid, 50%);
   bottom: calc(var(--q-nav) + 8px);
   display: flex;
   align-items: center;
@@ -1076,75 +1077,13 @@ html.q-kb .q-tab-action {
   }
 }
 
-/* ---- The dock (<html class="q-dock">): the tabs as one bar along the
-   column's foot instead of a capsule floating over the page, and the
-   accessory (an app's order bar) a row joined to its top edge, so nothing hovers
-   over content: the page ends where the dock begins. Its surface is the
-   page's own colour, never white in dark ---- */
-:root.q-dock {
-  --q-dock-bg: var(--q-page);
-  --q-dock-safe: max(env(safe-area-inset-bottom), var(--q-safe-bottom, 0px));
-  --q-bar-gap: 0px;
-  --q-nav: calc(52px + var(--q-dock-safe));
-}
-:root.q-dock .q-tabbar.q-tabbar {
-  left: var(--q-side);
-  right: var(--q-side);
-  bottom: 0;
-  width: auto;
-  padding: 0 8px var(--q-dock-safe);
-  border-radius: 0;
-  background: var(--q-dock-bg);
-  box-shadow: inset 0 var(--q-hairline) 0 var(--q-sep);
-  transform: none;
-}
-:root.q-dock .q-tabbar.q-tabbar::before,
-:root.q-dock .q-tabbar.q-tabbar::after {
-  display: none;
-}
-/* (Always its labels: the dock never shrinks while the page scrolls.) */
-:root.q-dock .q-tabbar.q-tabbar .q-tab {
-  min-height: 52px;
-  padding: 6px 2px 5px;
-}
-:root.q-dock .q-tabbar.q-tabbar .q-tab-label {
-  height: auto;
-  opacity: 1;
-}
-:root.q-dock .q-tabbar.q-tabbar .q-tab svg {
-  width: 24px;
-  height: 24px;
-}
-:root.q-dock .q-accessory {
-  left: var(--q-side);
-  right: var(--q-side);
-  bottom: var(--q-nav);
-  width: auto;
-  min-height: 0;
-  padding: 8px 16px;
-  border-radius: 0;
-  background: var(--q-dock-bg);
-  box-shadow: inset 0 var(--q-hairline) 0 var(--q-sep);
-  transform: none;
-  animation: q-dock-in var(--q-dur-smooth) var(--q-spring-smooth);
-}
-:root.q-dock .q-accessory:is(:active, [data-q-press]) {
-  transform: none;
-  background: color-mix(in srgb, var(--q-fill-3) 60%, var(--q-dock-bg));
-}
-@keyframes q-dock-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
 /* ---- Sheets: up from the foot on a spring, floating inside the screen's
    edges with its deep corners, a grabber, a centred title between glass
    circles; dragged down to close (orbit.mjs sheetSwipe) ---- */
 /* (Inside a sheet, its cells are a shade lifted from it, as iOS's are.) */
 .q-sheet {
   --q-surface: var(--q-sheet-cell, var(--q-grouped-2));
-  width: calc(var(--q-vw) - 16px);
+  width: var(--q-sheet-w);
   max-width: none;
   max-height: min(calc(100dvh - var(--q-top) - 16px), 900px);
   margin: auto auto 8px;
@@ -1157,13 +1096,36 @@ html.q-kb .q-tab-action {
   font-family: var(--q-font);
   box-sizing: border-box;
   overflow-y: auto;
+  /* Never sideways (Jay, many times; the last a date field 2026-10-31): a
+     sheet scrolls up and down only, whatever pokes past its side. */
+  overflow-x: hidden;
   overscroll-behavior: contain;
+}
+/* A date or time field fits its box: iPhone's Safari sizes one to its own
+   wheel's text and ignores width and min-width while it keeps the native
+   look, which pushed 新增固定收支's 開始 past the sheet's edge. */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'],
+input[type='month'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value,
+input[type='datetime-local']::-webkit-date-and-time-value,
+input[type='month']::-webkit-date-and-time-value {
+  min-width: 0;
 }
 /* A full-height sheet (iOS's large detent, .q-full): it meets the column's
    sides and foot, as iOS 26's does at full height, not floating 8 px in with
    the page behind showing down its sides. */
 dialog.q-sheet.q-full {
-  width: var(--q-vw);
+  width: var(--q-sheet-full-w);
   margin: auto auto 0;
   border-radius: var(--q-r-sheet) var(--q-r-sheet) 0 0;
 }
@@ -1912,7 +1874,7 @@ input[type='checkbox'][switch] {
 .q-banner {
   position: fixed;
   z-index: 2147483000;
-  left: 50%;
+  left: var(--q-mid, 50%);
   top: calc(var(--q-top) + 8px);
   transform: translateX(-50%);
   width: min(420px, calc(var(--q-vw) - 16px));
@@ -2013,7 +1975,7 @@ input[type='checkbox'][switch] {
 .q-toast {
   position: fixed;
   z-index: 2147482900;
-  left: 50%;
+  left: var(--q-mid, 50%);
   bottom: calc(var(--q-nav, 0px) + 12px);
   max-width: calc(var(--q-vw) - 32px);
   display: flex;
@@ -2034,7 +1996,7 @@ input[type='checkbox'][switch] {
 .q-net {
   position: fixed;
   z-index: 2147482800;
-  left: 50%;
+  left: var(--q-mid, 50%);
   bottom: calc(var(--q-nav, 0px) + 12px);
   display: flex;
   align-items: center;
@@ -2448,6 +2410,9 @@ dialog.q-moved::backdrop {
 }
 .q-gate-box {
   width: min(400px, 100%);
+  /* (Centred while it fits, from its top when it's taller than the screen,
+     a phone on its side: centred, its top went out of reach.) */
+  margin-block: auto;
   display: grid;
   justify-items: center;
   gap: 10px;
@@ -2601,23 +2566,64 @@ dialog.q-moved::backdrop {
 .q-steps li + li {
   margin-top: 6px;
 }
-
-/* ---- A phone-only app on a computer: a QR code to open it on the phone ---- */
-.q-qr {
-  width: 188px;
-  height: 188px;
-  margin: 10px auto 2px;
-  padding: 12px;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: var(--q-shadow-sm);
+/* The add-to-home-screen steps: each button drawn in as a small key, and
+   a phone with the first one ringed where it sits. */
+.q-install-steps li + li {
+  margin-top: 8px;
+}
+.q-key {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: 0 3px;
+  vertical-align: -7px;
   border: 1px solid var(--q-border);
+  border-radius: 8px;
+  background: var(--q-surface-2);
+  color: var(--q-accent);
 }
-.q-qr svg {
+.q-keep {
+  white-space: nowrap;
+}
+.q-glyph {
+  width: 18px;
+  height: 18px;
+}
+.q-tap {
+  margin: 6px 0 0;
+}
+.q-tap svg {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 76px;
+  height: auto;
 }
+.q-tap-phone {
+  fill: var(--q-surface);
+  stroke: var(--q-border);
+  stroke-width: 2;
+}
+.q-tap-bar,
+.q-tap-line {
+  fill: var(--q-surface-2);
+}
+.q-tap-ring {
+  fill: var(--q-surface);
+  stroke: var(--q-accent);
+  stroke-width: 3;
+}
+.q-tap-key {
+  fill: none;
+  stroke: var(--q-accent);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.q-tap-key circle {
+  fill: var(--q-accent);
+}
+
+/* ---- A link spelled out under a gate's title (the moved page) ---- */
 .q-qr-url {
   margin: 4px 0 8px;
   color: var(--q-muted);
@@ -2933,7 +2939,7 @@ dialog {
 .q-pass .q-section { margin-top: 14px; }
 .q-pass .q-section-head h2 { font-size: 17px; font-weight: 800; margin: 0 0 8px; }
 .q-pass p, .q-pass h3 { margin: 0; }
-.q-pass-toasts { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 3; display: grid; gap: 8px; width: min(420px, calc(var(--q-vw) - 32px)); pointer-events: none; }
+.q-pass-toasts { position: fixed; left: var(--q-mid, 50%); bottom: 24px; transform: translateX(-50%); z-index: 3; display: grid; gap: 8px; width: min(420px, calc(var(--q-vw) - 32px)); pointer-events: none; }
 .q-pass .toast { background: var(--q-surface); color: var(--q-text); border: 1px solid var(--q-border); border-radius: 12px; padding: 10px 14px; font-size: 14px; box-shadow: var(--q-shadow); }
 .q-pass .muted { color: var(--q-muted); }
 .q-pass .num { font-variant-numeric: tabular-nums; }
@@ -3054,66 +3060,6 @@ html.q-recording body::after {
 .q-team-disc { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; overflow: hidden; background: var(--team, #8a8f98); color: #fff; font-size: 0.62rem; font-weight: 800; }
 .q-team-disc .logo-wrap { display: contents; }
 .q-team-disc-img { width: 72%; height: 72%; object-fit: contain; }
-
-/* ---- Upright only (2026-10-10): a phone on its side, the page turned back
-   against it (orbit.mjs uprightTurn), so it stays upright on the glass.
-   The page's box is the upright screen's; what floats in the top layer
-   (sheets, alerts) is turned the same way. ---- */
-html[data-q-turn='-90'],
-html[data-q-turn='90'] {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--q-turn-w);
-  height: var(--q-turn-h);
-  overflow-x: hidden;
-  overflow-y: auto;
-  transform-origin: 0 0;
-}
-html[data-q-turn='-90'] {
-  transform: translateY(var(--q-turn-w)) rotate(-90deg);
-}
-html[data-q-turn='90'] {
-  transform: translateX(var(--q-turn-h)) rotate(90deg);
-}
-html[data-q-turn] body {
-  min-height: var(--q-turn-h);
-}
-/* The notch is at the phone's top, now a side of the landscape screen: its inset there. */
-html[data-q-turn='-90'] {
-  --q-top: max(env(safe-area-inset-left), 20px);
-}
-html[data-q-turn='90'] {
-  --q-top: max(env(safe-area-inset-right), 20px);
-}
-/* Sheets at the upright screen's foot, alerts in its middle. */
-html[data-q-turn] dialog[open] {
-  position: fixed;
-  inset: auto;
-  top: 0;
-  left: 0;
-  margin: 0;
-  transform-origin: 0 0;
-}
-html[data-q-turn] dialog.q-sheet[open] {
-  width: min(460px, calc(var(--q-turn-w) - 12px));
-  max-height: calc(var(--q-turn-h) * 0.88);
-}
-html[data-q-turn='-90'] dialog.q-sheet[open] {
-  transform: translateY(var(--q-turn-w)) rotate(-90deg) translate(calc((var(--q-turn-w) - 100%) / 2), calc(var(--q-turn-h) - 100% - 6px));
-}
-html[data-q-turn='90'] dialog.q-sheet[open] {
-  transform: translateX(var(--q-turn-h)) rotate(90deg) translate(calc((var(--q-turn-w) - 100%) / 2), calc(var(--q-turn-h) - 100% - 6px));
-}
-html[data-q-turn='-90'] dialog[open]:not(.q-sheet) {
-  transform: translateY(var(--q-turn-w)) rotate(-90deg) translate(calc((var(--q-turn-w) - 100%) / 2), calc((var(--q-turn-h) - 100%) / 2));
-}
-html[data-q-turn='90'] dialog[open]:not(.q-sheet) {
-  transform: translateX(var(--q-turn-h)) rotate(90deg) translate(calc((var(--q-turn-w) - 100%) / 2), calc((var(--q-turn-h) - 100%) / 2));
-}
-html[data-q-turn] dialog[open] {
-  animation: none;
-}
 
 /* Prose that runs onto more lines never leaves a word or a character alone
    on its last one (Transit's 交通 card ended on "現。" by itself), and a
@@ -3799,6 +3745,8 @@ div.q-ritem {
 }
 .q-match-side b {
   display: -webkit-box;
+  /* (Held to its column: centred in a flex column it would grow past the card, 特拉維夫夏普爾 at 320.) */
+  max-width: 100%;
   overflow: hidden;
   font: 600 15px/1.25 var(--q-font);
   text-align: center;
@@ -4205,7 +4153,7 @@ div.q-ritem {
   transition: height var(--q-dur-smooth) var(--q-spring-smooth), width 0.3s var(--q-ease), margin-bottom 0.3s var(--q-ease), border-radius 0.3s var(--q-ease), transform 0.36s var(--q-spring-snappy);
 }
 dialog.q-sheet[data-detent='large'] {
-  width: var(--q-vw);
+  width: var(--q-sheet-full-w);
   margin: auto auto 0;
   border-radius: var(--q-r-sheet) var(--q-r-sheet) 0 0;
 }
@@ -4237,7 +4185,7 @@ dialog.q-sheet[data-detent='large'] {
 .q-ptr {
   position: fixed;
   top: 0;
-  left: 50%;
+  left: var(--q-mid, 50%);
   z-index: 55;
   display: grid;
   place-items: center;
@@ -4765,7 +4713,7 @@ html.q-kb :is(dialog.q-sheet[open], .q-gate):focus-within :is(.q-sheet-hero, .q-
   display: none;
 }
 html.q-kb dialog.q-sheet[open] {
-  width: var(--q-vw);
+  width: var(--q-sheet-full-w);
   height: fit-content;
   max-height: calc(var(--q-vvh) + var(--q-kb) - 8px);
   margin: auto auto 0;
@@ -4801,6 +4749,13 @@ html.q-kb .q-gate:focus-within :is(.q-gate-brand, .q-gate-lede) {
 /* The tab bar waits behind the keys, not floating on them. */
 html.q-kb .q-tabbar {
   visibility: hidden;
+}
+/* The keys gone but the fixed bars' frame left short (orbit.mjs watchKeyboard,
+   --q-foot-gap): the bars at the foot moved down to the screen's foot.
+   (translate, apart from their own transform; an app marks its own foot
+   bars .q-foot.) */
+html.q-foot-stuck :is(.q-tabbar, .q-accessory, .q-toast, .q-net, .q-foot) {
+  translate: 0 var(--q-foot-gap);
 }
 /* A bar that belongs on top of the keys (a composer, a search's results bar). */
 html.q-kb .q-kb-dock {
@@ -4894,8 +4849,16 @@ html.q-kb .q-kb-docked {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0 calc(-1 * max(var(--q-margin, 16px), env(safe-area-inset-left))) 6px;
-  padding: 6px max(var(--q-margin, 16px), env(safe-area-inset-left)) 8px;
+  /* (The screen's safe edges are the page's own padding: <html>'s.) */
+  margin: 0 calc(-1 * var(--q-margin, 16px)) 6px;
+  padding: 6px var(--q-margin, 16px) 8px;
+}
+/* A phone on its side is short: the day bar scrolls with the page. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .q-day-bar {
+    position: relative;
+    top: auto;
+  }
 }
 .q-day-bar[hidden] {
   display: none;
@@ -5041,23 +5004,308 @@ html.q-kb .q-kb-docked {
   }
 }
 
-/* ---- One phone's column on every screen (Jay 2026-10-23: designed for
-   phones only). A phone's own width, from 320 px to a Pro Max's 440; on
-   anything wider (an iPad, a computer) the same phone layout in a centred
-   column, the page's background filling both sides. What's fixed (the tab
-   bar, the dock, banners, sheets, alerts) sits inside it: --q-vw is the
-   column's width, --q-side what's left beside it on each side. ---- */
+/* ---- Every screen, either way up (Jay 2026-10-31: "no longer stuck on
+   phone screen size and properly work on all resolution horizontal or
+   vertical"). The page is laid out for the screen it's on, a phone upright
+   or on its side, a tablet, a computer; <html> says which kind (orbit.mjs
+   screenFit): .q-tabrail (the tabs down the left side), .q-float (sheets as
+   cards in the middle), .q-wide and .q-w3 (room for two or three columns).
+   The page sits between the screen's safe edges (the notch and the home
+   bar on a phone on its side) and the rail, no wider than --q-page-max,
+   centred in what's left. An app raises --q-page-max where it lays its
+   pages out in columns (:root.q-wide { --q-page-max: 1180px }); until then a
+   page is one column no wider than 720, never one stretched across a
+   computer. What's fixed (the tab bar, banners, toasts, an accessory) sits
+   over the page: --q-vw is the page's width, --q-col-l and --q-col-r what's
+   beside it on the left and right, --q-mid its middle. ---- */
 :root {
-  --q-col-max: 440px;
-  --q-vw: min(100vw, var(--q-col-max));
-  --q-side: max(0px, (100vw - var(--q-col-max)) / 2);
+  --q-inset-l: env(safe-area-inset-left, 0px);
+  --q-inset-r: env(safe-area-inset-right, 0px);
+  --q-tabrail-w: 0px;
+  --q-left: calc(var(--q-inset-l) + var(--q-tabrail-w));
+  --q-right: var(--q-inset-r);
+  --q-page-max: 720px;
+  --q-avail: calc(100vw - var(--q-sbw, 0px) - var(--q-left) - var(--q-right));
+  --q-vw: min(var(--q-avail), var(--q-page-max));
+  --q-col-l: calc(var(--q-left) + (var(--q-avail) - var(--q-vw)) / 2);
+  --q-col-r: calc(var(--q-right) + (var(--q-avail) - var(--q-vw)) / 2);
+  --q-mid: calc(var(--q-col-l) + var(--q-vw) / 2);
+  /* A sheet: the page's width less its margins, up from the foot. */
+  --q-sheet-w: calc(var(--q-vw) - 16px);
+  --q-sheet-full-w: var(--q-vw);
+}
+:root {
+  padding-left: var(--q-left);
+  padding-right: var(--q-right);
 }
 :root > body {
-  max-width: var(--q-col-max);
+  max-width: var(--q-page-max);
   margin-inline: auto;
+}
+
+/* The rail: the same glass capsule standing down the left side, in the
+   middle of the screen's height, its tabs one under another, the app's
+   round action under it. A phone on its side has no height to spare for a
+   bar along its foot; a computer has width to spare beside the page.
+   Slim, as iPad's: a smaller mark and a pick that hugs it, concentric with
+   the capsule (Jay 2026-11-01: the first rail read bulky, its pick a big
+   blob). */
+html.q-tabrail {
+  --q-tabrail-bw: 60px;
+  --q-tabrail-w: calc(var(--q-tabrail-bw) + 20px);
+  /* (Beside the page, never stranded at the far edge of a big screen.) */
+  --q-tabrail-x: max(calc(var(--q-inset-l) + 10px), calc(var(--q-col-l) - var(--q-tabrail-bw) - 20px));
+  --q-tabrail-tab: 54px;
+  --q-tabrail-h: calc(var(--q-tabs, 4) * var(--q-tabrail-tab) + 8px);
+  /* (At the top, beside the page's first line, as iPad's sidebar: not
+     floating in the middle of a tall screen, Jay 2026-11-01.) */
+  --q-tabrail-top: calc(var(--q-top) + 12px);
+  /* (Nothing along the foot: what stood above the bar sits near the edge.) */
+  --q-nav: var(--q-bar-gap);
+}
+@media (max-height: 430px) {
+  html.q-tabrail {
+    --q-tabrail-tab: 50px;
+  }
+}
+html.q-tabrail .q-tabbar.q-tabbar {
+  left: var(--q-tabrail-x);
+  top: var(--q-tabrail-top);
+  bottom: auto;
+  grid-auto-flow: row;
+  grid-auto-columns: auto;
+  grid-auto-rows: var(--q-tabrail-tab);
+  width: calc(var(--q-tabrail-bw) - 8px);
+  max-height: calc(100dvh - 16px);
+  transform: none;
+}
+html.q-tabrail .q-tabbar.q-tabbar::before {
+  top: 0;
+  bottom: auto;
+  left: 4px;
+  right: 4px;
+  width: auto;
+  height: calc(var(--q-tab-h, 0px) - 4px);
+  border-radius: 999px;
+  transform: translateY(calc(var(--q-tab-y, 0px) + 2px));
+  transition: transform var(--q-dur-snappy) var(--q-spring-snappy), height var(--q-dur-snappy) var(--q-spring-snappy);
+}
+html.q-tabrail .q-tabbar.q-tabbar::after {
+  display: none;
+}
+html.q-tabrail .q-tab {
+  min-height: 0;
+  padding: 3px 2px 4px;
+  gap: 2px;
+}
+html.q-tabrail .q-tab-icon {
+  height: 24px;
+}
+html.q-tabrail .q-tab svg {
+  width: 22px;
+  height: 22px;
+}
+html.q-tabrail .q-tabbar.q-tabbar.q-tabbar-act {
+  top: var(--q-tabrail-top);
+  left: var(--q-tabrail-x);
+  width: calc(var(--q-tabrail-bw) - 8px);
+  transform: none;
+}
+html.q-tabrail .q-tab-action {
+  top: calc(var(--q-tabrail-top) + var(--q-tabrail-h) + 10px);
+  bottom: auto;
+  left: calc(var(--q-tabrail-x) + (var(--q-tabrail-bw) - var(--q-act)) / 2);
+}
+/* A phone on its side is short: the large titles a size down, as iOS's;
+   the sign-in screens without their big mark. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .q-gate-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+  .q-gate-brand {
+    display: none;
+  }
+  :root {
+    --q-t-large: 700 28px/34px var(--q-font);
+  }
+  .q-page-head {
+    padding: 4px 0 10px;
+  }
+}
+/* The top line on a phone on its side or a big screen: only round buttons
+   are in it (the account, refresh), so it takes no row of its own (Jay
+   2026-11-01: a band of nothing above the page, the avatar alone in it).
+   They stand at the foot of the rail, one over the other, as iPad's
+   sidebar keeps the account at its foot: never over the page's first line. */
+html.q-tabrail .q-appbar .q-appbar-inner {
+  min-height: 0;
+  height: 0;
+  padding: 0;
+  overflow: visible;
+}
+html.q-tabrail .q-appbar .q-actions {
+  position: fixed;
+  z-index: 60;
+  left: calc(var(--q-tabrail-x) + (var(--q-tabrail-bw) - 44px) / 2);
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  flex-direction: column;
+  margin: 0;
+}
+html.q-tabrail .q-appbar .q-actions:has(> :nth-child(2)) {
+  padding: 2px 0;
+}
+html.q-tabrail .q-day-bar:not(.flat) {
+  padding-top: 4px;
+}
+/* A phone on its side is short: the day strip's chips a size down. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .q-day-bar .q-day-strip .q-chip.day {
+    min-height: 42px;
+    padding: 3px 4px;
+    gap: 2px;
+    border-radius: 13px;
+  }
+  .q-day-bar .q-day-strip .q-chip.day > span {
+    font-size: 11px;
+  }
+  .q-day-bar .q-day-strip .q-chip.day small {
+    font-size: 14.5px;
+  }
+}
+/* An accessory (a player, an order bar) at the foot of the page, as wide
+   as it needs, never a strip across a computer. */
+html.q-tabrail .q-accessory,
+:root.q-float .q-accessory {
+  width: min(calc(var(--q-vw) - 32px), 560px);
+}
+
+/* Sheets on a tablet or a computer: a card in the middle of the screen,
+   every corner round, as iPad's form sheets; full-height ones a tall card.
+   On a phone on its side, still up from the foot, as wide as reads well. */
+html.q-tabrail:not(.q-float) {
+  --q-sheet-w: min(600px, calc(100vw - var(--q-inset-l) - var(--q-inset-r) - 16px));
+  --q-sheet-full-w: var(--q-sheet-w);
+}
+:root.q-float {
+  --q-sheet-w: min(600px, calc(100vw - 32px));
+  --q-sheet-full-w: min(720px, calc(100vw - 32px));
+}
+:root.q-float dialog.q-sheet {
+  margin: auto;
+  border-radius: var(--q-r-sheet);
+  max-height: min(calc(100dvh - 48px), 900px);
+}
+:root.q-float dialog.q-sheet:is(.q-full, [data-detent='large']) {
+  height: min(calc(100dvh - 48px), 900px);
+  max-height: none;
+  margin: auto;
+  border-radius: var(--q-r-sheet);
+}
+:root.q-float .q-sheet::before {
+  display: none;
+}
+html.q-tabrail:not(.q-float) dialog.q-sheet:is(.q-full, [data-detent='large']) {
+  border-radius: var(--q-r-sheet) var(--q-r-sheet) 0 0;
+}
+html.q-kb.q-float dialog.q-sheet[open] {
+  margin: auto auto 0;
+}
+
+/* Wide layouts an app can use: a page's sections in two (three) columns,
+   each of them a phone's column. .q-cols holds them; .q-span runs across. */
+.q-cols {
+  display: grid;
+  gap: 0 var(--q-s-5, 24px);
+  align-items: start;
+}
+.q-cols > * {
+  min-width: 0;
+}
+:root.q-wide .q-cols {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:root.q-w3 .q-cols.q-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+:root.q-wide .q-cols > .q-span {
+  grid-column: 1 / -1;
+}
+/* A page's sections dealt into columns (ui.mjs flowColumns): .q-flow,
+   laid as .q-flow-laid > .q-flow-col on q-wide. */
+:root.q-wide .q-flow:is(.q-flow-laid, .q-flow-measure) {
+  display: grid;
+  grid-template-columns: repeat(var(--q-flow-n, 2), minmax(0, 1fr));
+  gap: 0 var(--q-s-5, 24px);
+  align-items: start;
+}
+:root.q-wide .q-flow.q-flow-measure > * {
+  grid-column: 1;
+}
+:root.q-wide .q-flow-col > :first-child,
+:root.q-wide .q-flow.q-flow-measure > :first-child {
+  margin-top: 0;
 }
 .q-sheet {
   --q-margin: 16px;
+}
+
+/* Wide sheets (Jay 2026-11-01: a game opened on a phone on its side was all
+   too big, "a lot of scrolling", nothing seen at a glance). A sheet that
+   holds a whole page (a game, a team, a law, a stock) opts in with
+   .q-sheet-wide: on a phone on its side it takes the screen's width, on a
+   tablet or a computer up to 1080. It's a size container (q-sheet), so
+   what's in it lays out by the sheet's own width, never the screen's:
+   .q-sheet-cols puts its cards in two columns from 600, three from 1000,
+   read top to bottom then across (the phone's order); .q-sheet-pair sets
+   two things side by side (each side's line-up, two tables). A phone
+   upright is under 600: one column, as before. */
+html.q-tabrail:not(.q-float) dialog.q-sheet.q-sheet-wide {
+  width: calc(100vw - var(--q-inset-l) - var(--q-inset-r) - 16px);
+}
+:root.q-float dialog.q-sheet.q-sheet-wide {
+  width: min(1080px, calc(100vw - 48px));
+}
+dialog.q-sheet.q-sheet-wide {
+  container: q-sheet / inline-size;
+}
+@container q-sheet (min-width: 600px) {
+  .q-sheet-cols.q-sheet-cols {
+    display: block;
+    columns: 2;
+    column-gap: 12px;
+  }
+  .q-sheet-cols.q-sheet-cols > * {
+    break-inside: avoid;
+    margin: 0 0 12px;
+  }
+  .q-sheet-pair.q-sheet-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  .q-sheet-pair.q-sheet-pair > * {
+    margin: 0;
+  }
+}
+@container q-sheet (min-width: 1000px) {
+  .q-sheet-cols.q-sheet-cols:not(.q-sheet-cols-2) {
+    columns: 3;
+  }
+}
+/* A phone on its side is short: a sheet's head and handle tighter, so the
+   page under them starts higher. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .q-sheet-head {
+    padding: 10px var(--q-margin) 6px;
+    margin-bottom: 4px;
+  }
+  .q-sheet::before {
+    top: 3px;
+    margin: 3px auto -8px;
+  }
 }
 /* A menu over a sheet: solid, so its rows never mix with what's under them (Money's 付款方式 over the keypad). */
 dialog[open] .q-menu { background: var(--q-sheet); }

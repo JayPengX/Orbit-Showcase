@@ -1,6 +1,9 @@
 // The forecast and the place, from the proxy (signed in with the Orbit
 // Pass session), and where the device is.
 
+import * as kitLang from '#kit/lang.mjs';
+// A county or township in the reader's language (the kit's, once every phone has it).
+export const placeIn = name => kitLang.place?.(name) ?? name;
 import * as kit from '#kit/orbit.mjs';
 
 // (api.<domain> on the family's own domain: the kit's API, kit/domain.mjs.)
@@ -92,42 +95,69 @@ async function get(path, token, fetchFn) {
   }
   return res.json();
 }
+// A request that stalls (a dropped connection, an upstream that never
+// answers) never holds the page on 更新中: the first answer gets FIRST_MS,
+// the whole one REST_MS after it, then the request is dropped (the page
+// asks once more; the copy it has stays up meanwhile).
+export const FIRST_MS = 8000;
+export const REST_MS = 30_000;
 // The forecast for a point, or where the network says (`auto`): → { f, rest }.
 // When `f` isn't the last word (`more`, `refreshing`), the proxy sends the
 // whole answer on the same request the moment it's in: `rest`, a promise of
 // it (null when the request ends without it; then it's asked again).
-export async function fetchForecast(where, token, fetchFn = fetch) {
+export async function fetchForecast(where, token, fetchFn = fetch, { firstMs = FIRST_MS, restMs = REST_MS } = {}) {
   const path = where.auto ? '/weather?auto=1' : `/weather?lat=${where.lat.toFixed(4)}&lon=${where.lon.toFixed(4)}`;
-  const res = await fetchFn(`${PROXY}${path}&lines=1&qt=${encodeURIComponent(token)}`);
-  if (!res.ok) throw Object.assign(new Error(`/weather ${res.status}`), { status: res.status });
-  const reader = res.body?.getReader?.();
-  if (!reader) {
-    const [f, rest] = (res.text ? await res.text() : JSON.stringify(await res.json())).trim().split('\n');
-    return { f: JSON.parse(f), rest: Promise.resolve(rest ? JSON.parse(rest) : null) };
-  }
-  const text = new TextDecoder();
-  let buf = '';
-  const line = async () => {
-    for (;;) {
-      const nl = buf.indexOf('\n');
-      if (nl >= 0) {
-        const one = buf.slice(0, nl);
-        buf = buf.slice(nl + 1);
-        if (one.trim()) return JSON.parse(one);
-        continue;
-      }
-      const { done, value } = await reader.read();
-      if (done) {
-        const last = buf.trim();
-        buf = '';
-        return last ? JSON.parse(last) : null;
-      }
-      buf += text.decode(value, { stream: true });
+  const stop = new AbortController();
+  // (Raced as well as passed on: a read the signal doesn't reach ends too.)
+  const gone = new Promise((_, no) => stop.signal.addEventListener('abort', () => no(stop.signal.reason), { once: true }));
+  gone.catch(() => {});
+  const within = p => Promise.race([p, gone]);
+  const after = ms => setTimeout(() => stop.abort(Object.assign(new Error('/weather timeout'), { status: 0, timeout: true })), ms);
+  let timer = after(firstMs);
+  let reader = null;
+  try {
+    const res = await within(fetchFn(`${PROXY}${path}&lines=1&qt=${encodeURIComponent(token)}`, { signal: stop.signal }));
+    if (!res.ok) throw Object.assign(new Error(`/weather ${res.status}`), { status: res.status });
+    reader = res.body?.getReader?.();
+    if (!reader) {
+      const [f, rest] = (res.text ? await within(res.text()) : JSON.stringify(await within(res.json()))).trim().split('\n');
+      clearTimeout(timer);
+      return { f: JSON.parse(f), rest: Promise.resolve(rest ? JSON.parse(rest) : null) };
     }
-  };
-  const f = await line();
-  if (!f) throw Object.assign(new Error('/weather empty'), { status: 0 });
-  return { f, rest: line().catch(() => null) };
+    const text = new TextDecoder();
+    let buf = '';
+    const line = async () => {
+      for (;;) {
+        const nl = buf.indexOf('\n');
+        if (nl >= 0) {
+          const one = buf.slice(0, nl);
+          buf = buf.slice(nl + 1);
+          if (one.trim()) return JSON.parse(one);
+          continue;
+        }
+        const { done, value } = await within(reader.read());
+        if (done) {
+          const last = buf.trim();
+          buf = '';
+          return last ? JSON.parse(last) : null;
+        }
+        buf += text.decode(value, { stream: true });
+      }
+    };
+    const f = await line();
+    if (!f) throw Object.assign(new Error('/weather empty'), { status: 0 });
+    clearTimeout(timer);
+    timer = after(restMs);
+    const rest = line()
+      .catch(() => (reader.cancel().catch(() => {}), null))
+      .finally(() => clearTimeout(timer));
+    return { f, rest };
+  } catch (err) {
+    clearTimeout(timer);
+    reader?.cancel().catch(() => {});
+    if (!stop.signal.aborted) stop.abort();
+    throw err;
+  }
 }
 // The place: { county, town }.
 export const fetchWhere = (lat, lon, token, fetchFn = fetch) => get(`/weather/where?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}`, token, fetchFn);
@@ -138,9 +168,9 @@ export async function fetchPlaces(fetchFn = fetch) {
   return res.json();
 }
 
-// 「信義區」 and 「臺北市」 for the top of a page.
+// 「信義區」 and 「臺北市」 for the top of a page (Xinyi and Taipei in English).
 export function placeLines(place) {
   if (!place) return { main: '', sub: '' };
-  const main = place.town || '';
-  return { main: main || place.county || '', sub: main ? place.county || '' : '' };
+  const main = placeIn(place.town || '');
+  return { main: main || placeIn(place.county || ''), sub: main ? placeIn(place.county || '') : '' };
 }

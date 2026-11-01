@@ -1,67 +1,118 @@
-// 更多: everything that isn't the books themselves (Jay 2026-10-27: 發票 is
-// one feature, so the tab holds them all). First the ways purchases come in
-// without typing (a paper invoice scanned, a picture read, the 載具 file, the
-// mail-in), any prize to claim, then the tools as tiles: 對獎, the 手機條碼,
-// the categories, the repeats, the accounts put away, the books as a file.
-import { h, icons, tile, toast } from '#kit/ui.mjs';
+// 更多: everything that isn't the books themselves. First 拍照記帳 (any
+// receipt, bill or screenshot into an entry: views/photo.mjs; Jay 2026-10-31,
+// in place of the 發票 tools), then the tools as rows: the categories, 智慧帶入,
+// 到期提醒, the repeats, 預算 (only while none is set: once one is, it lives in
+// 統計), the accounts put away (when there are any), the books as a file.
+import { h, toast, sheet, toggle, tile } from '#kit/ui.mjs';
 import { live } from '../lib/books.mjs';
 import { catList, catName, subOf, catOf, glyph } from '../lib/cats.mjs';
-import { state, W, money, today, acctName, card, allAccounts } from '../shell.mjs';
-import { scanInvoice, invoiceState, wonCard, openInvoices, openBarcode } from './invoices.mjs';
-import { importCarrier, openMailSetup } from './carrier-import.mjs';
-import { readPicture } from './read.mjs';
+import { reminders } from '../lib/renew.mjs';
+import { guessScore, guessReplay } from '../lib/guess.mjs';
+import { openRenewals } from './renew.mjs';
+import { state, W, today, acctName, card, allAccounts, saved, columnsHere } from '../shell.mjs';
+import { snap } from './photo.mjs';
 import { openCats } from './cat-edit.mjs';
 import { openRepeats, openClosed, repeatsOf } from './accounts.mjs';
+import { openBudgets } from './stats.mjs';
 
 export function renderMore(box) {
-  const month = today().slice(0, 7);
-  const brought = live(state.books.entries).filter(e => e.inv?.no && e.d.startsWith(month));
-  const mailOn = Boolean(state.mail?.address);
-  const way = (glyphName, label, onclick) => h('button', { class: 'mn-way', type: 'button', onclick }, [h('span', { html: glyph(glyphName) }), label]);
-  const hero = h('section', { class: 'q-hero-card mn-hero mn-inhero' }, [
-    h('span', { class: 'q-hc-eyebrow' }, [h('span', { html: glyph('receipt') }), W('帶入消費，不用打字', 'Bring purchases in')]),
-    brought.length
-      ? h('span', { class: 'mn-in-stat' }, [h('b', { class: 'num', text: W(`${brought.length} 張發票`, `${brought.length} invoices`) }), h('small', { text: W(`這個月帶入 · ${money(brought.reduce((t, e) => t + (e.inv.total ?? e.amt), 0))}`, `this month · ${money(brought.reduce((t, e) => t + (e.inv.total ?? e.amt), 0))}`) })])
-      : h('span', { class: 'mn-in-stat' }, [h('b', { text: W('店家、金額、品項', 'Store, total, items') }), h('small', { text: W('自動填好，記下前先看過', 'filled in for you to check') })]),
-    h('button', { class: 'mn-hero-cta', type: 'button', onclick: () => scanInvoice() }, [h('span', { html: glyph('scan') }), W('掃描紙本發票', 'Scan a paper invoice')]),
-    h('div', { class: `mn-ways n${mailOn ? 3 : 2}` }, [
-      way('camera', W('截圖・收據', 'Screenshot'), () => readPicture()),
-      way('receipt', W('載具檔案', 'Carrier file'), () => importCarrier()),
-      mailOn ? way('mail', W('信箱匯入', 'By mail'), () => openMailSetup()) : null
-    ]),
-    state.mail?.confirm ? h('span', { class: 'mn-hero-tag', text: W(`Gmail 確認碼 ${state.mail.confirm.code}`, `Gmail code ${state.mail.confirm.code}`) }) : null
+  // 拍照記帳 first, as a row of its own with what it reads (Jay 10-31: the
+  // gold button with a caption under it floated; "ugly").
+  const snapRow = h('button', { class: 'q-ritem chevron mn-tool mn-snaprow', type: 'button', onclick: () => snap() }, [
+    tile(glyph('camera'), 'var(--q-accent)'),
+    h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: W('拍照記帳', 'Add from a photo') }), h('small', { text: W('收據、帳單、截圖，AI 幫你填好', 'Receipts, bills, screenshots: AI fills it in') })])
   ]);
+  // (Wide: every tool a card in one grid, 拍照記帳 the first of them.)
+  const wide = columnsHere() > 1;
+  const ways = wide ? null : h('section', { class: 'q-section' }, [h('div', { class: 'q-rowcard' }, [snapRow])]);
 
-  const inv = invoiceState();
-  const won = inv.won.length ? h('section', { class: 'q-section' }, [h('div', { class: 'q-section-head' }, [h('h2', { text: W('中獎了', 'Winners') })]), wonCard(inv.won)]) : null;
-
-  const carrier = state.books.carrier?.code || '';
   const reps = repeatsOf();
   const closed = allAccounts().filter(a => a.closed);
   const cats = catList('out').length + catList('in').length;
-  const tool = (icon, color, label, sub, onclick) => h('button', { class: 'mn-tool', type: 'button', onclick }, [tile(icon, color), h('b', { text: label }), h('small', { text: sub })]);
+  const next = reminders(state.books, today())[0];
+  const score = guessScore(state.books);
+  // Each tool: its tile, what it is (or where it stands), and a number when there is one.
+  const tool = (icon, color, label, sub, value, onclick) =>
+    h('button', { class: 'q-ritem chevron mn-tool', type: 'button', onclick }, [
+      tile(icon, color),
+      h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: label }), sub ? h('small', { text: sub }) : null]),
+      value ? h('span', { class: 'q-ritem-value num', text: value }) : null
+    ]);
+  const dueIn = next?.due ? Math.round((Date.parse(next.due) - Date.parse(today())) / 86_400_000) : null;
   const tools = h('section', { class: 'q-section' }, [
-    h('div', { class: 'q-section-head' }, [h('h2', { text: W('工具', 'Tools') })]),
-    h('div', { class: 'mn-tools' }, [
-      tool(icons.trophy, '#f59e0b', W('發票對獎', 'Invoices'), inv.count ? W(`${inv.count} 張`, `${inv.count}`) : W('自動對獎', 'Auto-checked'), () => openInvoices()),
-      tool(glyph('barcode'), '#3a3a3c', W('手機條碼', 'Barcode'), carrier || W('未設定', 'Not set'), () => openBarcode()),
-      tool(icons.list, '#6155f5', W('分類', 'Categories'), W(`${cats} 個`, `${cats}`), () => openCats()),
-      tool(glyph('repeat'), '#0088ff', W('固定收支', 'Repeats'), reps.length ? W(`${reps.length} 個`, `${reps.length}`) : W('房租、TPASS', 'Rent, TPASS'), () => openRepeats()),
-      tool(icons.lock, '#8e8e93', W('已封存', 'Put away'), closed.length ? W(`${closed.length} 個帳戶`, `${closed.length}`) : W('沒有', 'None'), () => openClosed()),
-      tool(icons.share, '#34c759', W('匯出', 'Export'), 'CSV', () => exportCsv())
+    h('div', { class: 'q-section-head q-list-head' }, [h('h2', { text: W('工具', 'Tools') })]),
+    h('div', { class: `q-rowcard${wide ? ' mn-tool-grid' : ''}` }, [
+      wide ? snapRow : null,
+      tool(glyph('grid'), '#8e8e93', W('分類', 'Categories'), W('改名、排序、加細項', 'Rename, reorder, add subs'), W(`${cats} 個`, `${cats}`), () => openCats()),
+      // (How often 記一筆's guesses were right, once there are a few.)
+      tool(glyph('spark'), '#af52de', W('智慧帶入', 'Smart fill'), W('照你的習慣先選好分類和付款', 'Picks what you usually log'), score.of >= 5 ? W(`猜中 ${pct(score.what, score.of)}`, `${pct(score.what, score.of)} right`) : '', () => openGuessing()),
+      // (TPASS, subscriptions, memberships: the soonest one.)
+      tool(glyph('bell'), '#ff9500', W('到期提醒', 'Reminders'), next?.due ? `${next.r.name} ${Number(next.due.slice(5, 7))}/${Number(next.due.slice(8))}` : W('TPASS、訂閱、會員到期前提醒', 'TPASS, subscriptions, memberships'), dueIn == null ? '' : dueIn <= 0 ? W('今天', 'Today') : W(`${dueIn} 天後`, `in ${dueIn} d`), () => openRenewals()),
+      // (Nothing set: no value at all; examples there read as if set. Jay 2026-10-27.)
+      tool(glyph('repeat'), '#30b0c7', W('固定收支', 'Repeats'), W('房租、薪水，到日子自動記', 'Rent, pay: logged on the day'), reps.length ? W(`${reps.length} 個`, `${reps.length}`) : '', () => openRepeats()),
+      live(state.books.budgets).length ? null : tool(glyph('target'), '#ff3b30', W('預算', 'Budget'), W('每月上限，統計裡看剩多少', 'A monthly cap, tracked in Stats'), '', () => openBudgets()),
+      closed.length ? tool(glyph('lock'), '#8e8e93', W('已封存', 'Put away'), W('不用的帳戶', 'Accounts no longer used'), W(`${closed.length} 個`, `${closed.length}`), () => openClosed()) : null,
+      tool(glyph('share'), '#0088ff', W('匯出', 'Export'), W('整本帳本存成試算表', 'All entries as a spreadsheet'), 'CSV', () => exportCsv())
     ])
   ]);
-  box.replaceChildren(hero, ...(won ? [won] : []), tools);
+  // (Wide: as many across as there's room for, and no lone card on the last
+  // row: 拍照記帳, the first, runs across what's left over.)
+  if (wide) {
+    const grid = tools.querySelector('.mn-tool-grid');
+    const n = columnsHere();
+    const left = grid.children.length % n;
+    grid.style.gridTemplateColumns = `repeat(${n}, minmax(0, 1fr))`;
+    if (left) snapRow.style.gridColumn = `span ${n - left + 1}`;
+  }
+  box.replaceChildren(...[ways, tools].filter(Boolean));
+}
+
+const pct = (n, of) => `${Math.round((n / of) * 100)}%`;
+
+// 智慧帶入 (Jay 2026-10-30): what 記一筆 guesses from, how often it's been
+// right lately, and whether it may use where the phone is (off until turned
+// on: the browser asks once; a place is kept to about 100 m, in the books only).
+function openGuessing() {
+  const b = state.books;
+  // (Few live guesses yet: the same guesses replayed on what's been logged, so there's a number from day one.)
+  const kept = guessScore(b);
+  const replayed = kept.of < 10 ? guessReplay(b) : null;
+  const r = replayed?.of >= 10 ? replayed : kept;
+  const geo = toggle({
+    checked: Boolean(b.opt?.geo),
+    label: W('用所在位置', 'Use where I am'),
+    onChange: on => {
+      b.opt = { ...b.opt, geo: on ? 1 : 0 };
+      b.st = Math.round(Date.now() / 1000);
+      saved();
+      // (Asked now, so the question comes from the switch, not later in 記一筆.)
+      if (on) navigator.geolocation?.getCurrentPosition(() => {}, () => toast(W('手機沒有允許位置，可在設定裡打開', 'Location isn’t allowed on this phone'), { tone: 'bad' }), { maximumAge: 300_000, timeout: 15_000 });
+    }
+  });
+  const row = (label, n) => h('div', { class: 'q-ritem mn-row' }, [h('span', { class: 'q-ritem-text' }, [h('span', { class: 'q-ritem-title', text: label })]), h('span', { class: 'q-ritem-value num', text: `${n} / ${r.of}` })]);
+  sheet({
+    title: W('智慧帶入', 'Smart fill'),
+    cls: 'mn-guess-sheet',
+    body: [
+      h('p', { class: 'mn-hint', text: W('記一筆時，照你自己記過的帳：差不多這個時間、平日或週末、同一個地方常記的，先選好收支、分類和付款方式。金額放在「常用」第一個，點了才填。', 'New entries start as what you usually log at this time, on this kind of day and in this place: kind, category and way to pay picked for you. The amount waits first in Usual until you tap it.') }),
+      h('div', { class: 'mn-switch-row' }, [h('span', {}, [h('b', { text: W('用所在位置', 'Use where I am') }), h('small', { text: W('只記到約 100 公尺，存在你自己的帳本裡', 'Kept to about 100 m, only in your own books') })]), geo]),
+      r.of >= 1 ? h('div', { class: 'q-section-head q-list-head' }, [h('h2', { text: r === replayed ? W(`用你記過的 ${r.of} 筆重猜`, `Replayed on your last ${r.of}`) : W(`最近 ${r.of} 筆猜中`, `Right in the last ${r.of}`) })]) : null,
+      r.of >= 1 ? h('div', { class: 'q-rowcard' }, [row(W('分類', 'Category'), r.what), row(W('付款方式', 'Way to pay'), r.pay), row(W('金額', 'Amount'), r.amt), ...(r.chips != null ? [row(W('金額在常用裡', 'Amount in Usual'), r.chips)] : [])]) : null
+    ]
+  });
 }
 
 // The books as a spreadsheet: every entry, oldest first (shared on a phone, saved elsewhere).
 async function exportCsv() {
-  const KIND = { out: W('支出', 'Spend'), in: W('收入', 'Income'), move: W('轉帳', 'Transfer'), adj: W('調整餘額', 'Balance fix') };
+  const KIND = { out: W('支出', 'Spend'), in: W('收入', 'Income'), move: W('轉帳', 'Transfer'), adj: W('調整餘額', 'Balance fix'), back: W('退款', 'Refund') };
+  const kindOf = e => (e.k === 'back' && e.why === 'friend' ? W(`${e.who || '朋友'}分攤`, `${e.who || 'Friend'}’s share`) : KIND[e.k] || e.k);
+  // (Another way a spend was paid: 「LINE Points 50」.)
+  const also = e => (Array.isArray(e.also) ? e.also.map(p => `${acctName(p.a)} ${p.amt}`).join(' ') : '');
   const q = v => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v ?? ''));
   const rows = live(state.books.entries)
     .sort((a, b) => a.d.localeCompare(b.d) || (a.t || 0) - (b.t || 0))
-    .map(e => [e.d, KIND[e.k] || e.k, e.k === 'out' || e.k === 'in' ? catName(catOf(e.cat), 'zh') : '', subOf(e.sub) ? catName(subOf(e.sub), 'zh') : '', e.k === 'out' ? -e.amt : e.amt, acctName(e.a), e.k === 'move' ? acctName(e.to) : card(e.via)?.name || '', e.note || '', e.inv?.no || '']);
-  const head = W('日期,種類,分類,細項,金額,帳戶,轉入／付款方式,備註,發票號碼', 'Date,Kind,Category,Sub,Amount,Account,To / paid with,Note,Invoice');
+    .map(e => [e.d, kindOf(e), e.k === 'out' || e.k === 'in' || e.k === 'back' ? catName(catOf(e.cat), 'zh') : '', subOf(e.sub) ? catName(subOf(e.sub), 'zh') : '', e.k === 'out' ? -e.amt : e.amt, e.k === 'back' && e.wait ? W('還沒給', 'Not yet') : acctName(e.a), e.k === 'move' ? acctName(e.to) : card(e.via)?.name || '', e.fee ? -e.fee : '', also(e), e.note || '', e.inv?.no || '']);
+  const head = W('日期,種類,分類,細項,金額,帳戶,轉入／付款方式,手續費,另付,備註,發票號碼', 'Date,Kind,Category,Sub,Amount,Account,To / paid with,Fee,Also paid with,Note,Invoice');
   const text = `﻿${[head, ...rows.map(r => r.map(q).join(','))].join('\n')}\n`;
   const name = `orbit-money-${today()}.csv`;
   const file = new File([text], name, { type: 'text/csv' });

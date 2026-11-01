@@ -13,7 +13,7 @@
 
 import * as kitUI from '#kit/ui.mjs';
 import { errorText, liveMs } from './api.mjs';
-import { stopsEta, etaRank } from './bus.mjs';
+import { stopsEta, etaRank, etaFor } from './bus.mjs';
 import { nearBusRows, nearBikes, inTime } from './near-ui.mjs';
 import { nearStops, keptNear, keepNear, nearMoved, openRoute, chooseGroup, useBusCtx, strip, fitStrips, busWhen, plannedAt } from './bus-ui.mjs';
 import { bikesAround } from './near.mjs';
@@ -206,7 +206,7 @@ function trips(now = Date.now()) {
 // and times from the bus packs, no proxy read), not 「尚未發車」.
 async function plannedTimes(items) {
   const todo = items.filter(r => {
-    const v = S.pinned.get(r.stopUID);
+    const v = etaFor(S.pinned, r);
     return !(v?.status === 0 && v.sec != null) && r.routeUID;
   });
   await Promise.all(
@@ -567,7 +567,7 @@ function pinnedBuses() {
     .flatMap(g => g.items)
     .map(it => {
       const r = sideOf(it);
-      const v = S.pinned.get(r.stopUID);
+      const v = etaFor(S.pinned, r);
       const live = v?.status === 0 && v.sec != null;
       const planned = live ? null : S.planned.get(r.stopUID);
       const at = live ? (v.t ?? S.pinnedAt) + v.sec * 1000 : planned?.at || null;
@@ -743,14 +743,26 @@ function render() {
   const box = $('panel-go');
   const keep = box.scrollTop;
   const railX = box.querySelector('.ot-places')?.scrollLeft || 0;
-  box.innerHTML = `<div class="ot-page">
+  // Two columns on a wide screen: your trips left, what's pinned and near right. Only the card and
+  // what's near (a new person): the card left and what's near beside it, never one column with half
+  // the screen empty beside it (Jay 2026-11-01).
+  const left = `${placesRail()}${rest.length ? section(W('行程', 'Trips'), rest.map(tripCard).join('')) : ''}`;
+  const pinned = pinnedHtml(lead.key);
+  const near = nearHtml(lead.key);
+  const one = !pinned && !near;
+  box.innerHTML = `<div class="ot-page${one ? ' ot-one' : ''}">
     ${navTitle(W('交通', 'Transit'))}
-    ${noticesHtml(S.notices)}
-    ${lead.html}
-    ${placesRail()}
-    ${rest.length ? section(W('行程', 'Trips'), rest.map(tripCard).join('')) : ''}
-    ${pinnedHtml(lead.key)}
-    ${nearHtml(lead.key)}
+    <div class="${one ? '' : 'q-cols ot-cols'}">
+      <div>
+        ${noticesHtml(S.notices)}
+        ${lead.html}
+        ${left}
+      </div>
+      <div>
+        ${pinned}
+        ${near}
+      </div>
+    </div>
   </div>`;
   kitUI.wireNavTitles(box);
   fitStrips(box);

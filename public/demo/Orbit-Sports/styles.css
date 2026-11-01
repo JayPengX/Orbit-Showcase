@@ -78,7 +78,7 @@ img { max-width: 100%; }
 
 /* ==== The frame: the page, its head, sections ==== */
 /* The page: the phone's 16 px in. */
-.page { --q-margin: 16px; padding: 4px max(var(--q-margin), env(safe-area-inset-right)) calc(40px + var(--q-nav)) max(var(--q-margin), env(safe-area-inset-left)); }
+.page { --q-margin: 16px; padding: 4px var(--q-margin) calc(40px + var(--q-nav)); }
 /* One head per tab: the small line over the large title, an action at the right. */
 .sp-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .sp-head-text { min-width: 0; }
@@ -210,12 +210,19 @@ img { max-width: 100%; }
 .hc-event { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .hc-event .race-flag.big { width: 36px; height: 36px; }
 .hc-event .sess-tag { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.hc-tags { display: flex; align-items: center; gap: 0; overflow: hidden; }
-.hc-tags > :not(:first-child)::before { content: '·'; margin: 0 6px; opacity: 0.6; }
-.hc-tags .q-tag { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.q-tag.on-hero { min-height: 0; padding: 0; background: none; color: rgba(255, 255, 255, 0.82); font-weight: 500; }
-.q-tag.on-hero.strong { flex: none; min-height: 22px; margin-left: 8px; padding: 0 8px; background: #fff; color: var(--hero-b); font: 600 12px/22px var(--q-font); }
-.hc-tags > .q-tag.on-hero.strong::before { content: none; }
+/* Its foot: the competition (name strong, stage soft), the TV channel behind
+   a TV mark, and 追蹤中 / 推薦 as a pill at the right edge; on a narrow
+   phone what doesn't fit goes to a second row whole, never cut. */
+.hc-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; min-width: 0; color: rgba(255, 255, 255, 0.78); font: 500 13px/18px var(--q-font); white-space: nowrap; }
+.hc-comp, .hc-tv { display: flex; align-items: center; min-width: 0; overflow: hidden; }
+.hc-comp { flex: 0 1 auto; gap: 6px; }
+.hc-comp b { flex: none; color: #fff; font-weight: 600; }
+.hc-comp span, .hc-tv > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.hc-tv { flex: 0 1 auto; gap: 5px; }
+.hc-tv-ico svg { display: block; width: 14px; height: 14px; opacity: 0.85; }
+.hc-mark { flex: none; display: inline-flex; align-items: center; gap: 4px; margin-left: auto; padding: 0 9px 0 7px; border-radius: 999px; background: #fff; color: var(--hero-b); font: 600 12px/24px var(--q-font); }
+.hc-mark svg { display: block; width: 13px; height: 13px; }
+.hc-mark.mine svg { fill: currentColor; }
 .hero-game .q-hc-btn { min-height: 42px; }
 .hero-game .q-hc-btn small { font-size: 12px; font-weight: 600; opacity: 0.7; }
 @media (prefers-reduced-motion: reduce) { .hc-dot { animation: none; } }
@@ -242,7 +249,7 @@ img { max-width: 100%; }
 .score-card .tv-line { display: flex; flex-wrap: wrap; gap: 6px; }
 /* First run: the sports as colour tiles, tapped in order. */
 .sport-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.sport-card { --t: var(--accent); position: relative; display: grid; align-content: space-between; gap: 18px; min-height: 132px; padding: 16px; border: 0; border-radius: var(--q-r-card, 22px); background: var(--q-surface); box-shadow: none; color: var(--q-label); text-align: left; }
+.sport-card { --t: var(--accent); position: relative; display: grid; align-content: space-between; gap: 18px; min-height: 132px; padding: 14px; border: 0; border-radius: 22px; background: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--t) 55%, #fff), transparent 60%), linear-gradient(150deg, color-mix(in srgb, var(--t) 70%, #000), var(--t)); box-shadow: 0 14px 28px -20px var(--t); color: #fff; text-align: left; }
 .sport-card.on { box-shadow: inset 0 0 0 2px var(--accent); }
 .sc-marks { display: flex; }
 .sport-card .league-badge { --s: 34px; box-shadow: 0 0 0 2px var(--q-surface), inset 0 0 0 1px var(--q-sep); }
@@ -263,7 +270,7 @@ img { max-width: 100%; }
 
 /* ==== 賽事: a league ==== */
 /* Every league on one rail (the search first), to the screen's edges. */
-.q-chips.league-rail { margin: 0 calc(-1 * max(var(--q-margin, 16px), env(safe-area-inset-left))) 4px; padding: 2px max(var(--q-margin, 16px), env(safe-area-inset-left)) 6px; scroll-padding-inline: var(--q-margin, 16px); }
+.q-chips.league-rail { margin: 0 calc(-1 * var(--q-margin, 16px)) 4px; padding: 2px var(--q-margin, 16px) 6px; scroll-padding-inline: var(--q-margin, 16px); }
 .league-rail .q-chip { padding-left: 6px; }
 .league-rail .q-chip .league-badge { --s: 24px; }
 /* A league tile's logo with its dark-screen version (cards.js leagueTile): the picture adds no box. */
@@ -273,6 +280,8 @@ img { max-width: 100%; }
 .league-rail .q-chip.all-chip { justify-content: center; padding: 0 18px; }
 .search-chip svg { display: block; width: 18px; height: 18px; }
 .q-seg.views { margin: 12px 0 4px; }
+/* 排名, 季後賽, 數據領先 (no date strip under the tabs): the card 16 below them, not 4 (Jay 10-27 "too less gap"). */
+.q-seg.views + :not(.q-day-bar) { margin-top: 12px; }
 .q-seg.views > button { padding-inline: 4px; font-size: 14px; }
 .by-day > .day-head:first-child { margin-top: 0; }
 .day-head { margin: 16px 4px 8px; color: var(--q-label-2); font: 600 13px/18px var(--q-font); }
@@ -403,7 +412,9 @@ img { max-width: 100%; }
 .sheet-lg { display: inline-flex; align-items: center; gap: 8px; }
 /* A league's sheet: its mark and name centred as every sheet's title, the ✕ at the right. */
 .q-sheet-head > h2.sheet-lg { justify-self: center; justify-content: center; min-width: 0; max-width: 100%; }
-.q-sheet-head > h2.sheet-lg > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.q-sheet-head > h2.sheet-lg > span:last-child, .sheet-league > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The league's mark and name: a tap to the league (賽事), drawn as the title it is. */
+.sheet-league { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .sheet-lg .lg-mark { --s: 28px; }
 /* A race weekend's country: a round flag before its name. */
 .race-flag { flex: none; width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
@@ -419,6 +430,17 @@ img { max-width: 100%; }
 .match-content > .stack { gap: 16px; }
 /* The line score and the game's moment, over 概況's cards (on every state's page, under the same tabs). */
 .match-top:not(:empty) { display: grid; gap: 12px; margin-bottom: 16px; }
+/* No row of tabs (one view only): the line score its own room under the follows, never against them. */
+.match-tabs:empty + .match-sub:empty + .match-top:not(:empty) { margin-top: 18px; }
+/* 數據's 球隊 or 球員: a small switch under the tabs, centred, never as wide as them. */
+.match-sub:not(:empty) { display: flex; justify-content: center; margin: -4px 0 14px; }
+.match-sub .q-seg { width: min(240px, 100%); }
+/* Loading: the tabs and cards in their shape. */
+.match-tabs-skel { display: flex; gap: 0; overflow: hidden; height: 40px; border-radius: 20px; background: var(--q-surface); }
+.match-tabs-skel > .skel { flex: 1; margin: 4px; border-radius: 16px; opacity: .5; }
+.match-tabs-skel > .skel:not(:first-child) { opacity: 0; }
+.match-skel { padding: 16px; }
+.match-skel .skel-block { gap: 12px; }
 .match-top[hidden] { display: none; }
 .match-top > .live-panel { margin: 0; }
 .match-content .replay-group { gap: 10px; }
@@ -512,6 +534,8 @@ tbody th.left small { color: var(--q-muted); font-weight: 500; }
 .roster-list { list-style: none; margin: 0; padding: 0; display: grid; }
 .roster-list li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; border-top: 1px solid var(--q-divider, var(--q-border)); }
 .roster-list li:first-child { border-top: 0; }
+.roster-list.no-num li { grid-template-columns: minmax(0, 1fr) auto; }
+.roster-list.no-num .jersey { display: none; }
 .roster-list li.sub { color: var(--q-text-2); }
 /* A long name on one line, a little smaller till it fits (fitLine). */
 .roster-list li .roster-name { max-width: 100%; text-align: left; line-height: 1.3; }
@@ -528,10 +552,14 @@ tbody th.left small { color: var(--q-muted); font-weight: 500; }
 .pill.W { background: var(--win); }
 .pill.D, .pill.T { background: var(--draw); }
 .pill.L { background: var(--loss); }
+}
 .wp-chart { display: block; width: 100%; height: 90px; }
 /* Which side the line leans to: the home side at the top, the away side at the bottom. */
 .wp-plot { position: relative; margin-top: 6px; }
 .wp-mid { stroke: var(--q-border); stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; }
+/* A game with no draw: the line itself, each side's lead shaded lightly under it. */
+.wp-line { fill: none; stroke: var(--q-text); stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.wp-shade { opacity: 0.32; }
 /* Races, tournaments, fight cards, draws */
 .field { list-style: none; margin: 8px 0 0; padding: 0; background: var(--q-surface); border: 1px solid transparent; border-radius: var(--q-radius); }
 .field .link.field-name { text-align: left; font-weight: 600; }
@@ -806,6 +834,7 @@ button.rc-chip { padding: 0; border: 0; background: none; color: inherit; font: 
 .standings.compact .extra { display: none; }
 .standings.compact .nm-full { display: none; }
 .standings.compact .nm-short { display: inline; }
+@media (max-width: 360px) { .standings .gp { display: none; } .standings th, .standings td { padding-inline: 4px; } }
 /* People in races, tournaments and fights */
 .field li.mine { background: var(--accent-wash); }
 /* A leader's line: the name, then the numbers under it (never cut). */
@@ -879,7 +908,7 @@ button.rc-chip { padding: 0; border: 0; background: none; color: inherit; font: 
 .live-line.base .live-text { display: grid; gap: 1px; min-width: 0; }
 .live-line.base .live-text > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 /* The head in the team's colour: a soft wash, the picture on a ring of it. */
-.player-hero.tinted { padding: 14px; border-radius: var(--q-r-card, 22px); background: var(--q-surface); border: 0; }
+.player-hero.tinted { padding: 14px; border-radius: 18px; background: linear-gradient(135deg, color-mix(in srgb, var(--hero) 22%, var(--q-surface)) 0%, var(--q-surface) 78%); border: 1px solid color-mix(in srgb, var(--hero) 30%, var(--q-border)); }
 .player-hero.tinted > .logo.round { box-shadow: 0 0 0 3px var(--q-surface), 0 0 0 5px var(--hero); }
 .hero-form { display: flex; align-items: center; gap: 4px; margin-top: 8px; min-width: 0; overflow: hidden; }
 .hero-form small { flex: none; margin-right: 2px; white-space: nowrap; }
@@ -1108,7 +1137,7 @@ table.game-log { border-collapse: separate; border-spacing: 0; }
 .wk-winner small { font-size: 11.5px; }
 /* A team's page. */
 .team-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 16px; margin: 4px 0 12px; border-radius: var(--q-r-card, 22px); background: var(--q-surface); border: 0; }
-.team-hero.tinted { background: var(--q-surface); }
+.team-hero.tinted { background: linear-gradient(135deg, color-mix(in srgb, var(--hero) 20%, var(--q-surface)) 0%, var(--q-surface) 80%); }
 .team-hero h3 { font-size: 21px; font-weight: 600; line-height: 1.2; }
 .team-hero-text { min-width: 0; display: grid; gap: 2px; }
 .team-hero-text small { font-size: 12.5px; }
@@ -1124,7 +1153,10 @@ table.game-log { border-collapse: separate; border-spacing: 0; }
 /* Under a card (傷兵): the section's room above its head, never tight on the card (Jay, 2026-10-21). */
 .q-card + .team-next { margin-top: 20px; }
 .team-next .mini-h { margin: 0 2px 6px; }
-.team-tab { margin-top: 10px; display: grid; gap: 10px; }
+.team-comps { margin: 0 0 12px; }
+.log-box { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.team-comps .q-chips { margin: 0; }
+.team-tab { margin-top: 10px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .res-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-top: 1px solid var(--q-divider, var(--q-border)); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .res-row:first-child { border-top: 0; }
 .res-row.abroad { cursor: default; }
@@ -1147,6 +1179,8 @@ table.game-log { border-collapse: separate; border-spacing: 0; }
 /* ---- F1 live board: the part or lap, the time left and the flag on top, then the cars in the result's own rows ---- */
 .live-board { display: grid; gap: 8px; }
 .lb-head { display: flex; align-items: center; gap: 8px; }
+/* A team's 隊內排行: its heading right over its chips (the stack's gap and the chips' own had left a hole, Jay 10-27). */
+.lb-team > .lb-head { margin: 4px 2px 0; }
 .lb-part { font-size: 18px; font-weight: 600; }
 .lb-clock { font-weight: 600; color: var(--q-muted); }
 .lb-flag { margin-left: auto; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--q-sunken); }
@@ -1172,7 +1206,7 @@ table.game-log { border-collapse: separate; border-spacing: 0; }
 .f1-brief-top { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
 .f1-brief-top li { display: grid; grid-template-columns: 14px auto minmax(0, 1fr) auto; align-items: center; gap: 6px; font-size: 13px; }
 .f1-brief-top .pos { font-weight: 600; color: var(--q-muted); text-align: center; }
-.f1-brief-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.f1-brief-name { min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; }
 .f1-brief-v { font-weight: 600; color: var(--q-muted); }
 .hc-brief { margin: 2px 0 12px; padding: 10px 12px; border-radius: 14px; background: rgba(0, 0, 0, 0.18); }
 .hc-brief .f1-brief { margin: 0; gap: 6px; }
@@ -1408,6 +1442,7 @@ table.game-log { border-collapse: separate; border-spacing: 0; }
 .rc-name > span { white-space: nowrap; }
 .rc-name .logo { width: 24px; height: 24px; flex: none; vertical-align: 0; font-size: 9.5px; }
 .views.race-part { margin: 4px 0 12px; }
+.q-seg.views.stat-part { width: min(240px, 100%); margin: 4px auto 12px; }
 /* The one follow button (sheets.js followButton): a small pill, the app's
    colour until followed, then quiet with a tick; the same on every page. */
 .follow-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; align-self: center; min-height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent, #fff); font: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
@@ -1451,7 +1486,7 @@ table.game-log { border-collapse: separate; border-spacing: 0; }
 .plays-jump { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .plays-jump::-webkit-scrollbar { display: none; }
 .plays-jump .q-chip { flex: none; }
-.plays li.period-head { scroll-margin-top: 128px; }
+.plays li.period-head { scroll-margin-top: 150px; }
 /* A player's team in their head: its logo and name, a tap to its page. */
 .hero-team { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 4px 0 2px; padding: 3px 10px 3px 4px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--hero, var(--q-text)) 16%, var(--q-sunken)); color: var(--q-text); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .hero-team:disabled { cursor: default; }
@@ -1474,7 +1509,6 @@ span.hero-team { cursor: default; }
 .zone-key i { width: 3px; height: 12px; border-radius: 2px; flex: none; }
 /* A zone's fight: every name under it, wrapping onto more lines (never cut short; a name kept whole). */
 .race-line.fight .race-t small { display: block; }
-.race-line.fight .race-t small .nm-one { white-space: nowrap; }
 .race-line.fight .race-t { min-width: 0; }
 /* The live panel's person as a tap: drawn as it was, a press dimming it. */
 button.lp-person.tap { all: unset; display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -1509,6 +1543,11 @@ button.lp-person.tap:active { opacity: 0.6; }
 .h2h-bar i.away { background: var(--away); }
 .h2h-bar i.draw { background: color-mix(in srgb, var(--q-muted) 60%, transparent); }
 .h2h-bar i.home { background: var(--home); }
+.h2h-pips { display: flex; justify-content: space-between; gap: 12px; }
+.h2h-pip-row { display: flex; gap: 4px; }
+.h2h-pip-row i { display: block; width: 18px; height: 6px; border-radius: 3px; background: var(--q-fill, color-mix(in srgb, var(--q-muted) 25%, transparent)); }
+.h2h-pip-row i.away { background: var(--away); }
+.h2h-pip-row i.home { background: var(--home); }
 /* (The race keeps room for five characters; the cars give way first.) */
 .race-weeks { display: grid; grid-template-columns: 18px minmax(96px, 1fr) repeat(var(--cols), minmax(38px, 56px)) 32px; column-gap: 6px; margin: 0 -2px; }
 .rw-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; min-height: 48px; padding: 6px 2px; border: 0; border-top: 1px solid var(--q-divider, var(--q-border)); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -1670,7 +1709,7 @@ button.lp-person.tap:active { opacity: 0.6; }
    for it under them); the scorer's face in the logos' column. */
 .live-line.base.goal { gap: 4px; }
 /* Apple TV's tile for a replay there (MLS): its mark on black, as the app's icon. */
-.replay-icon.apple { display: grid; place-items: center; background: #000; color: #fff; font: 600 15px/1 -apple-system, system-ui, sans-serif; letter-spacing: -0.02em; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+.replay-icon.apple { display: grid; place-items: center; background: #000; color: #fff; font: 700 15px/1 -apple-system, system-ui, sans-serif; letter-spacing: -0.02em; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
 /* No one named yet: an empty head, a player's face in outline (待定). */
 .logo.empty-face { --q-face-blank: color-mix(in srgb, var(--q-muted) 55%, transparent); display: inline-block; flex: none; background: radial-gradient(circle at 50% 40%, var(--q-face-blank) 0 17%, transparent 18%), radial-gradient(ellipse 36% 26% at 50% 96%, var(--q-face-blank) 0 98%, transparent 100%), var(--q-sunken); }
 /* ---- F1 數據, live: the head's race control, the compare, the stop window, the weather ---- */
@@ -1942,10 +1981,10 @@ button.team-tag:active, button.team-tap:active { opacity: 0.6; }
   font-size: 14px;
   text-align: center;
 }
-/* Narrow phones (320/375): nothing cut, no word split. A live game with no score says so on its own line under the name; opponent and suggestion names wrap at spaces; a head-to-head name shrinks rather than break; a key moment's chip sits under its words. */
+/* Narrow phones (320/375): nothing cut, no word split. A live game with no score says so on its own line under the name; opponent and suggestion names wrap at spaces; a head-to-head name shrinks rather than break; a key moment's words wrap beside its chip. */
 .h2h-name { overflow-wrap: normal; word-break: keep-all; font-size: clamp(11px, 3.4vw, 13px); }
-.wp-mo-go { grid-template-columns: minmax(0, 1fr); justify-items: start; row-gap: 4px; }
-.wp-mo-go > .wp-gain { justify-self: start; }
+/* A key moment: its words (two lines at most), its chip at the right (Jay 2026-10-31: the chip under each made the list loose). */
+.wp-mo-go { grid-template-columns: minmax(0, 1fr) auto; }
 .wp-mo-text .mo-main.one-line { white-space: normal; overflow-wrap: break-word; word-break: keep-all; }
 
 /* Home shelves (round 4): my leagues as logo tiles, my teams' places, a replay mark on a finished card. */
@@ -1958,17 +1997,19 @@ button.team-tag:active, button.team-tap:active { opacity: 0.6; }
    followed teams' tiles are glass, each logo its dark-screen version. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .hc-logo, :root:not([data-theme='light']) .suggest-tile { background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18); }
-  :root:not([data-theme='light']) .q-tag.on-hero.strong { background: rgba(255, 255, 255, 0.28); color: #fff; }
+  :root:not([data-theme='light']) .hc-mark { background: rgba(255, 255, 255, 0.28); color: #fff; }
 }
 :root[data-theme='dark'] .hc-logo, :root[data-theme='dark'] .suggest-tile { background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18); }
-:root[data-theme='dark'] .q-tag.on-hero.strong { background: rgba(255, 255, 255, 0.28); color: #fff; }
+:root[data-theme='dark'] .hc-mark { background: rgba(255, 255, 255, 0.28); color: #fff; }
 
 /* Last season's meetings (a game page with none this season yet): a row each, logos and scores. */
 .ls-games { display: grid; margin-top: 12px; border-top: 1px solid var(--q-divider, var(--q-border)); }
-.ls-game { display: grid; grid-template-columns: 3.2em 1fr auto 1fr 12px; align-items: center; gap: 10px; width: 100%; padding: 10px 0; border: 0; border-bottom: 1px solid var(--q-divider, var(--q-border)); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.ls-game { display: grid; grid-template-columns: 3.2em minmax(0, 1fr) 1em minmax(0, 1fr) 2.2em; align-items: center; gap: 10px; width: 100%; padding: 10px 0; border: 0; border-bottom: 1px solid var(--q-divider, var(--q-border)); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .ls-game:last-child { border-bottom: 0; }
 /* The game open now, among its series' meetings. */
-.ls-game.now { cursor: default; opacity: 1; background: var(--q-fill, var(--q-surface-2)); border-radius: 10px; padding-inline: 8px; margin-inline: -8px; width: calc(100% + 16px); }
+/* This game among them: a small 本場 tag where the others' arrow is, the row itself as the rest (Jay 2026-10-31: the raised box looked off). */
+.ls-game.now { cursor: default; opacity: 1; }
+.ls-game.now .ls-chev { font-size: 11px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 .ls-date { color: var(--q-label-2); font-size: 13px; }
 .ls-side { display: inline-flex; align-items: center; gap: 10px; color: var(--q-label-2); font-size: 17px; }
 .ls-side.right { justify-self: end; }
@@ -1977,7 +2018,8 @@ button.team-tag:active, button.team-tap:active { opacity: 0.6; }
 .ls-side.win b { font-weight: 600; }
 .ls-side .logo-wrap, .ls-side .logo { width: 22px; height: 22px; flex: none; object-fit: contain; }
 .ls-dash { color: var(--q-muted); }
-.ls-chev { color: var(--q-muted); font-size: 17px; }
+.ls-chev { color: var(--q-muted); font-size: 17px; justify-self: end; }
+.ls-dash { text-align: center; }
 /* A narrow phone: the line score's sides by their logos alone (the hero over it names them), never a name cut to 「塞爾..」. */
 @media (max-width: 360px) { .linescore .ls-who > span { display: none; } .linescore.innings tr > :first-child { padding-left: 8px; } }
 
@@ -2004,12 +2046,18 @@ button.team-tag:active, button.team-tap:active { opacity: 0.6; }
 .all-league .q-section-head { align-items: center; justify-content: flex-start; gap: 8px; }
 .all-league .q-section-head > .league-badge { --s: 24px; }
 .all-league .q-section-head h2 { flex: 1; min-width: 0; }
-.all-day > .day-head:first-child { margin-top: 4px; }
+.all-day > .day-head:first-child { margin-top: 0; }
+/* (The day's line names what follows: the first league sits right under it, Jay 2026-10-27 "so much gap".) */
+.all-day > .day-head + .q-section { margin-top: 8px; }
 .tv-guide + .section-sub { margin-top: 12px; }
 .set-follow.on + .set-acts { background: var(--q-fill-4, rgba(120,120,128,.08)); }
 /* A light day's games over on 首頁: the row, then who led each side, a line each under the scores (as a race's top three). */
 .recap-list { display: grid; gap: 12px; }
-.q-card.recap { overflow: hidden; border-radius: var(--q-r-card, 22px); }
+.q-card.recap { position: relative; overflow: hidden; border-radius: var(--q-r-card, 22px); transition: background-color 0.25s; }
+/* Pressed, the whole card lights (not the row above who led: a square band across its top, Jay 10-27); a followed game's edge runs the card's height. */
+.q-card.recap > .event-row { position: static; }
+.q-card.recap > .event-row:active { background: none; }
+.q-card.recap:has(> .event-row:active:not(:disabled)) { background-image: linear-gradient(var(--q-fill-4), var(--q-fill-4)); }
 .recap-best { display: grid; gap: 4px; margin-top: -6px; padding: 0 16px 14px 92px; }
 .recap-lead { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
 .recap-lead:disabled { opacity: 1; }
@@ -2132,33 +2180,53 @@ button.team-tag:active, button.team-tap:active { opacity: 0.6; }
 .stack.tight > .title-race { margin: 0; }
 .fight-teams .team-disc, .pd-team .team-disc { width: 18px; height: 18px; }
 /* 賽道: the outline beside its figures, the lap record, the weekend's weather; rows by hairlines, no boxes. */
-.cc-top { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: var(--q-s-4, 16px); }
-.cc-top.flat { grid-template-columns: minmax(0, 1fr); }
-.cc-map svg { display: block; width: 100%; height: auto; overflow: visible; }
-.cc-edge { fill: none; stroke: var(--q-fill-3, var(--q-sunken)); stroke-width: 7; stroke-linejoin: round; stroke-linecap: round; }
-.cc-line { fill: none; stroke: var(--q-text); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
-.cc-start { fill: var(--accent); stroke: var(--q-surface); stroke-width: 1.6; }
-.cc-facts { display: grid; }
-.cc-fact { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; padding: 8px 0; }
-.cc-fact + .cc-fact, .cc-record { border-top: 1px solid var(--q-divider); }
-.cc-fact small, .cc-record > small { font-size: 13px; color: var(--q-muted); white-space: nowrap; }
-.cc-fact strong { font-size: 16px; font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.cc-record { display: flex; align-items: baseline; justify-content: space-between; gap: var(--q-s-3, 12px); padding-top: var(--q-s-3, 12px); }
-.cc-v { display: grid; justify-items: end; gap: 2px; min-width: 0; }
-.cc-v strong { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.cc-v small { max-width: 100%; font-size: 13px; color: var(--q-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cc-wx { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--q-s-2, 8px); padding-top: var(--q-s-3, 12px); border-top: 1px solid var(--q-divider); }
-.cc-day { display: grid; justify-items: center; gap: 4px; }
-.cc-day small { font-size: 13px; color: var(--q-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.cc-day strong { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cc { display: grid; gap: var(--q-s-3, 12px); }
+/* The map on a panel of its own, the track drawn as a road on it. */
+.cc-map { border-radius: var(--q-r-cell, 14px); background: var(--q-fill-3, var(--q-sunken)); }
+.cc-map svg { display: block; width: 100%; height: auto; }
+.cc-edge { fill: none; stroke: var(--q-surface); stroke-width: 9; stroke-linejoin: round; stroke-linecap: round; }
+.cc-line { fill: none; stroke: var(--q-text); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.cc-dir { fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+.cc-sf { stroke: var(--q-text); stroke-width: 3.2; }
+.cc-sf-c { stroke: var(--q-surface); stroke-width: 3.2; stroke-dasharray: 2.4 2.4; }
+.cc-start-tag rect { fill: var(--accent); }
+.cc-start-tag text { font-size: 7.5px; font-weight: 700; letter-spacing: 0.04em; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+.cc-turn { font-size: 8.5px; font-weight: 600; fill: var(--q-muted); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--q-fill-3, var(--q-sunken)); stroke-width: 3px; stroke-linejoin: round; }
+/* Three big numbers in a row, the rest as chips. */
+.cc-big { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+.cc-big > span { display: grid; gap: 2px; min-width: 0; padding: 0 var(--q-s-2, 8px); }
+.cc-big > span:first-child { padding-left: 0; }
+.cc-big > span + span { border-left: 1px solid var(--q-divider); }
+.cc-big small { font-size: 12px; color: var(--q-muted); white-space: nowrap; }
+.cc-big strong { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cc-big em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--q-muted); }
+.cc-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.cc-chip { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; min-width: 0; padding: 8px 12px; border-radius: 12px; background: var(--q-fill-3, var(--q-sunken)); }
+.cc-chip small { font-size: 12px; color: var(--q-muted); }
+.cc-chip strong { font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cc-record { display: flex; align-items: center; justify-content: space-between; gap: var(--q-s-3, 12px); padding: 10px 12px; border-radius: var(--q-r-cell, 14px); background: var(--q-fill-3, var(--q-sunken)); }
+.cc-rec-k { display: grid; gap: 2px; min-width: 0; }
+.cc-rec-k small { font-size: 12px; color: var(--q-muted); }
+.cc-rec-k span { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-record > strong { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+/* Each day of the weekend on a line: the day, the sky, high and low, the chance of rain. */
+.cc-wx { display: grid; border-top: 1px solid var(--q-divider); }
+.cc-day { display: grid; grid-template-columns: 3.2em 24px minmax(0, 1fr) auto; align-items: center; gap: var(--q-s-3, 12px); padding: 8px 0; }
+.cc-day + .cc-day { border-top: 1px solid var(--q-divider); }
+.cc-day-k { font-size: 14px; color: var(--q-text-2, var(--q-muted)); }
+.cc-t strong { font-size: 16px; font-weight: 600; }
+.cc-t small { font-size: 14px; color: var(--q-muted); }
+.cc-rain { font-size: 13px; color: var(--q-muted); }
+.cc-rain.wet { color: #3b82f6; font-weight: 600; }
 .cc-sky { display: grid; width: 24px; height: 24px; }
 .cc-sky svg { width: 24px; height: 24px; }
 .cc-sky.sun { color: #f59e0b; }
 .cc-sky.cloud { color: var(--q-muted); }
 .cc-sky.rain { color: #3b82f6; }
 /* 去年這一站: the podium, second, first, third, the winner's step tallest (by height, not colour). */
+button.pd-step:active { opacity: 0.6; }
 .pd { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: var(--q-s-2, 8px); }
-.pd-step { display: grid; justify-items: center; gap: 4px; min-width: 0; }
+.pd-step { display: grid; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; justify-items: center; gap: 4px; min-width: 0; }
 .pd-step .pd-pic { width: 52px; height: 52px; }
 .pd-step.p1 .pd-pic { width: 64px; height: 64px; }
 .pd-name { max-width: 100%; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2168,4 +2236,185 @@ button.team-tag:active, button.team-tap:active { opacity: 0.6; }
 .pd-step.p1 .pd-block { height: 48px; color: var(--q-text); }
 .pd-step.p2 .pd-block { height: 32px; }
 .pd-step.p3 .pd-block { height: 24px; }
-@media (max-width: 360px) { .pd-name { font-size: 14px; } .cc-top { grid-template-columns: 84px minmax(0, 1fr); gap: var(--q-s-3, 12px); } }
+@media (max-width: 360px) { .pd-name { font-size: 14px; } .cc-big strong { font-size: 19px; } }
+
+/* A stand-in's sessions this season (an F1 driver the season's 22 don't include): the weekend, the session and car, where he finished. */
+.fp-outs { display: grid; }
+.fp-out { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--q-s-3, 12px); width: 100%; padding: 10px 0 10px 10px; border: 0; border-left: 3px solid var(--team, var(--q-divider)); background: none; color: inherit; font: inherit; text-align: left; }
+.fp-out + .fp-out { border-top: 1px solid var(--q-divider); }
+button.fp-out { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button.fp-out:active { opacity: 0.6; }
+.fp-out .race-flag { width: 28px; height: 28px; }
+.fp-out-main { display: grid; gap: 2px; min-width: 0; }
+.fp-out-main strong { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fp-out-main small { font-size: 13px; color: var(--q-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fp-out-pos { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.about-text { margin: 0; font-size: 15px; line-height: 1.6; }
+/* A player's career (資料's teams, 數據's seasons). */
+.career-teams .info-k { gap: 3px; }
+.career-teams .fact-mark strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.career-teams .info-v { color: var(--q-text-2, var(--q-muted)); font-weight: 600; }
+.career-teams li.q-press { cursor: pointer; }
+.season-team { display: inline-flex; align-items: center; gap: 6px; }
+.season-team .logo-wrap, .season-team .logo { width: 18px; height: 18px; object-fit: contain; }
+.season-team small { font-size: 11px; }
+/* (Every column on a 320 phone: nothing to scroll.) */
+table.career-seasons th, table.career-seasons td { padding-left: 4px; padding-right: 4px; }
+table.career-seasons th:first-child, table.career-seasons td:first-child { padding-left: 0; }
+table.career-seasons th:last-child, table.career-seasons td:last-child { padding-right: 0; }
+/* (A team row that opens its page: a › after its years.) */
+.career-teams li.q-press { grid-template-columns: minmax(0, 1fr) auto auto; }
+.career-teams .row-chev { color: var(--q-muted); font-size: 18px; line-height: 1; align-self: center; }
+
+/* ---- Every screen (Orbit-Core DESIGN.md §10): a phone upright or on its
+   side, a tablet, a computer. On a wide page (q-wide) the tabs lay out in
+   columns of a phone's width (ui.js cols, balanced): the answer on the
+   left, what goes with it on the right; like cards in a grid. ---- */
+:root.q-wide { --q-page-max: 1180px; }
+/* A tab's sections dealt into columns (ui.js cols, the kit's flowColumns:
+   .q-flow-laid > .q-flow-col): two, three on q-w3, each section whole. */
+:root.q-wide .balanced > .col > :first-child { margin-top: 0; }
+:root.q-wide .q-cols.balanced { grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); }
+.tab-flow-both { display: flow-root; }
+:root.q-wide .tab-flow { margin-top: 8px; }
+:root.q-wide .tab-flow > :first-child { margin-top: 0; }
+:root.q-wide .tab-flow.q-flow-laid .game-grid { columns: auto; }
+/* A rail of cards in a column: a grid of whole cards (one or two across as
+   the column has room), never a card cut at the column's edge. */
+:root.q-wide :is(.col, .q-flow-col) .q-rail { margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(auto-fill, minmax(var(--grid-min, 240px), 1fr)); overflow: visible; scroll-snap-type: none; }
+:root.q-wide :is(.col, .q-flow-col) .q-rail.league-rail { --grid-min: 76px; }
+/* A list of games as tiles side by side (賽事's day, a race series' weekends). */
+:root.q-wide .q-card.list.game-grid { overflow: visible; border-radius: 0; background: none; }
+:root.q-wide .game-grid > :is(.event-row, .watch-row, .fg-row) { border-radius: 22px; background: var(--q-surface); overflow: hidden; }
+:root.q-wide .game-grid > * + *::before { display: none; }
+/* Cards side by side in two columns (three on a computer), filled down
+   each in turn like a newspaper's, so a day's games keep their order and no
+   card is left alone half a row wide. */
+:root.q-wide :is(.game-grid, .team-cards) { display: block; columns: 2; column-gap: 12px; }
+:root.q-w3 :is(.game-grid, .team-cards) { columns: 3; }
+:root.q-wide :is(.game-grid, .team-cards) > * { break-inside: avoid; margin: 0 0 12px; }
+/* A race series' weekends, alike in height: a grid in date order. */
+:root.q-wide .wk-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+:root.q-wide .wk-cards > * { margin: 0; }
+:root.q-wide .wk-cards > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+:root.q-w3 .wk-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+:root.q-w3 .wk-cards > *,
+:root.q-w3 .wk-cards > :last-child:nth-child(odd) { grid-column: span 2; }
+:root.q-w3 .wk-cards > :nth-child(3n + 1):nth-last-child(2),
+:root.q-w3 .wk-cards > :nth-child(3n + 1):nth-last-child(2) + * { grid-column: span 3; }
+:root.q-w3 .wk-cards > :nth-child(3n + 1):last-child { grid-column: 1 / -1; }
+/* 賽事's tables on a wide page: every column and the full names; a league's
+   groups (the NBA's conferences, MLB's divisions) two side by side. */
+:root.q-wide .page .standings:not(.compact) .extra { display: table-cell; }
+:root.q-wide .page .standings:not(.compact) .nm-full { display: inline; }
+:root.q-wide .page .standings:not(.compact) .nm-short { display: none; }
+:root.q-wide .page .tables.many { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+:root.q-wide .page .tables.many > * { margin: 0; }
+/* 數據's ranking in two columns, read down each (1–10, then 11–20). */
+:root.q-wide .page .lb-list { display: block; columns: 2; column-gap: 32px; }
+:root.q-wide .page .lb-row { break-inside: avoid; }
+.team-cards > * { align-content: start; }
+:root.q-wide .sport-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+:root.q-wide .following-settings { max-width: 560px; }
+/* A phone on its side is short: the hero no taller than half the screen,
+   the sides tighter and 觀看 beside the foot line. */
+@media (max-height: 520px) {
+  .q-hero-card.hero-game { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; padding: 12px 14px; }
+  .hero-game > * { grid-column: 1 / -1; }
+  .hero-game > .hc-foot:not(:last-child) { grid-column: 1; align-self: center; }
+  .hero-game > .q-hc-row { grid-column: 2; align-self: center; }
+  .hero-game .q-hc-btn { min-height: 36px; }
+  .hc-logo { width: 38px; height: 38px; border-radius: 12px; }
+  .hc-logo .logo { width: 27px; height: 27px; }
+  .hc-logo .logo.round { width: 38px; height: 38px; }
+  .hc-name { font-size: 18px; line-height: 22px; }
+  .hc-score { font-size: 30px; line-height: 34px; }
+  .hc-status { padding: 4px 9px; }
+}
+@media (max-height: 520px) {
+  /* A game's head in a sheet: the sides smaller, so the tabs show on the first screen. */
+  .match-head { gap: 10px; padding-top: 0; }
+  .mh-team .logo.lg { width: 40px; height: 40px; }
+  .mh-side .q-chip { margin-top: 2px; min-height: 30px; padding-block: 0; font-size: 14px; }
+  .mh-score { font-size: 28px; }
+  .mh-time { font-size: 22px; }
+}
+@media (max-height: 520px) {
+  /* A team's or a player's head in a sheet: smaller, the tabs on the first screen. */
+  .team-hero { padding-block: 12px; }
+  .team-hero .logo.xl { width: 52px; height: 52px; }
+}
+/* A team's head on a narrow phone: 追蹤 under the name, so the name has the row (洛杉磯湖人 broke in two at 320). */
+@media (max-width: 360px) {
+  .team-hero { grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; }
+  .team-hero > :first-child { grid-row: 1 / 3; }
+  .team-hero > .team-hero-text { grid-column: 2; grid-row: 1; }
+  .team-hero > .follow-btn { grid-column: 2; grid-row: 2; justify-self: start; align-self: start; }
+  .team-hero .logo.xl { width: 52px; height: 52px; }
+}
+
+/* ---- A page in a sheet, laid out wide (Jay 2026-11-01: a game on a phone
+   on its side was all too big, "a lot of scrolling"). Game, team, player and
+   league sheets are the kit's .q-sheet-wide: the whole screen's width on a
+   phone on its side, up to 1080 on a tablet or a computer. By the sheet's
+   own width (the kit's q-sheet container): 概況's cards in two columns
+   (three from 1000; .q-sheet-cols), the line score beside what's on now,
+   each side's line-up and two tables side by side (.q-sheet-pair), 數據's
+   bars in two columns, one table with every column, 過程 a readable width. */
+@container q-sheet (min-width: 600px) {
+  .match-top:has(> :nth-child(2)) { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .match-top > .q-card { margin: 0; }
+  .stat-bars { display: block; columns: 2; column-gap: 32px; }
+  .stat-bars > .sb-legend { column-span: all; margin-bottom: 12px; }
+  .stat-bars > .stat-bar { break-inside: avoid; margin-bottom: 12px; }
+  .stat-bars > .sb-group { break-after: avoid; margin: 0 0 8px; }
+  .tables:not(.many) .standings:not(.compact) .extra { display: table-cell; }
+  .tables:not(.many) .standings:not(.compact) .nm-full { display: inline; }
+  .tables:not(.many) .standings:not(.compact) .nm-short { display: none; }
+  .match-content .plays-wrap { max-width: 720px; margin-inline: auto; }
+  /* A team's or a player's tab: its cards in two columns; one alone (a
+     list, a table) as wide as reads well. */
+  .team-tab:has(> :nth-child(2)) { display: block; columns: 2; column-gap: 12px; }
+  .team-tab:has(> :nth-child(2)) > * { break-inside: avoid; margin: 0 0 12px; }
+  .team-tab:has(> :nth-child(2)) > .stack { display: block; break-inside: auto; }
+  .team-tab:has(> :nth-child(2)) > .stack > * { break-inside: avoid; margin: 0 0 12px; }
+  .team-tab > :only-child { max-width: 760px; margin-inline: auto; }
+  /* A team's or a player's head: its numbers beside it, not under it. */
+  div:has(> .team-hero + .team-strip) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 12px; }
+  div:has(> .team-hero + .team-strip) > * { grid-column: 1 / -1; min-width: 0; }
+  div:has(> .team-hero + .team-strip) > .team-hero { grid-column: 1; margin: 4px 0 12px; }
+  div:has(> .team-hero + .team-strip) > .team-strip { grid-column: 2; margin: 4px 0 12px; align-items: stretch; }
+  div:has(> .team-hero + .team-strip) > .team-strip > .ts-cell { align-content: center; }
+  /* A race weekend: its hero across, then the day (timeline, result, chart)
+     on the left and the title fight, TV and circuit beside it. */
+  .sheet-body:has(> .wk-hero) { columns: 2; column-gap: 12px; }
+  .sheet-body:has(> .wk-hero) > .wk-hero { column-span: all; margin-bottom: 12px; }
+  .sheet-body:has(> .wk-hero) > :not(.wk-hero) { margin: 0 0 12px; break-inside: avoid; }
+  .sheet-body:has(> .wk-hero) > .race-box { display: block; break-inside: auto; }
+  .sheet-body:has(> .wk-hero) > .race-box > * { break-inside: avoid; margin: 0 0 12px; }
+}
+/* A phone on its side is short: a game's head on one line (each side's
+   crest, name, record and 追蹤 beside the score), 追蹤這場比賽 and 觀看
+   on the line under it, so the tabs and the first cards are on the first screen. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .q-sheet-wide .match-head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; padding: 0 0 8px; }
+  .q-sheet-wide .match-head > .mh-row { flex: 1 0 100%; align-items: center; gap: 12px; }
+  .q-sheet-wide .match-head > :not(.mh-row) { margin: 0; }
+  .q-sheet-wide .mh-row > .mh-side { display: flex; align-items: center; justify-content: flex-start; gap: 4px 10px; align-self: center; }
+  .q-sheet-wide .mh-row > .mh-side:first-child { flex-direction: row-reverse; }
+  .q-sheet-wide .mh-side > .mh-team { display: flex; align-items: center; gap: 8px; width: auto; flex: none; max-width: 60%; }
+  .q-sheet-wide .mh-side:first-child > .mh-team { flex-direction: row-reverse; }
+  .q-sheet-wide .mh-team .logo.lg { width: 36px; height: 36px; }
+  .q-sheet-wide .mh-side strong { font-size: 16px; }
+  .q-sheet-wide .mh-side small { flex: none; }
+  .q-sheet-wide .mh-side .q-chip { margin: 0; flex: none; }
+  .q-sheet-wide .mh-mid { padding-top: 0; gap: 2px; }
+  .q-sheet-wide .match-head > .watch-btn.wide { margin: 0; padding: 8px 16px; }
+  .q-sheet-wide .match-head > .watch-btn.wide:last-child { margin-bottom: 0; }
+}
+/* A phone on its side is short: a game's row a little tighter. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .event-row { padding-block: 10px; }
+}
+/* A tab with one section alone: as wide as reads well (a list of games keeps its columns). */
+:root.q-wide .tab-flow:not(.q-flow-laid) > :only-child:not(:has(.game-grid, .team-cards)) { max-width: 720px; margin-inline: auto; }
