@@ -135,6 +135,9 @@ const S = {
   'class-ai': {
     flow: [['camera', ['拍課表', 'Snap the timetable']], ['cloud', ['AI 讀出來', 'AI reads it']], ['check', ['看差異再存', 'Check the changes']]]
   },
+  'class-flight': {
+    flow: [['clock', ['選 25、50、90 分', 'Pick 25, 50, 90 min']], ['map', ['一架真的飛機', 'A real plane']], ['bell', ['降落就是時間到', 'It lands, time’s up']]]
+  },
 
   // ---- Words ----
   words: {
@@ -206,6 +209,10 @@ const S = {
   'kit-boot': {
     flow: [['swap', '0'], ['clock', ['4 秒', '4 s']], ['clock', ['12 秒', '12 s']], ['clock', ['30 秒', '30 s']], ['clock', ['60 秒', '60 s']]],
     nums: [['5', ['次重試，才說出了什麼事', 'tries before it says what’s wrong']]]
+  },
+  'kit-learn': {
+    flow: [['list', ['推薦幾個', 'Show picks']], ['check', ['記下你點的', 'Note what you open']], ['spark', ['下次排得更準', 'Better next time']]],
+    nums: [['0.5–1.6', ['分數的倍數', 'times the score']], [['30 天', '30 days'], ['半衰期', 'half-life']]]
   },
   'kit-rec': {
     flow: [['user', ['Jay 看到問題', 'Jay sees it']], ['history', ['一鍵複製紀錄', 'Copies the log']], ['check', ['修真正的原因', 'The real cause fixed']]]
@@ -387,6 +394,9 @@ const S = {
   'sports-home-league': {
     pairs: [[['Lech 只出現在歐霸', 'Lech only in the Europa League'], ['補上波蘭聯賽排名', 'Its Polish table added']]]
   },
+  'sports-career': {
+    tags: [['star', ['選秀', 'Draft']], ['calendar', ['初登場、年資', 'Debut, years']], ['list', ['生涯球隊', 'Every team']], ['trophy', ['榮譽', 'Honours']], ['chart', ['歷年數據', 'Each season']]]
+  },
   'sports-f1': {
     tags: [['map', ['賽道圖上的車', 'Cars on the map']], ['clock', ['圈速', 'Lap times']], ['target', ['輪胎', 'Tyres']], ['chart', ['勝率', 'Win chance']], ['flag', ['賽事指揮翻成中文', 'Race control in Chinese']]]
   },
@@ -446,6 +456,10 @@ const S = {
   },
   'words-hard': {
     tags: [['target', ['易混字', 'Look-alikes']], ['list', ['相近的意思', 'Close meanings']], ['pencil', ['離線做好的提示', 'Hints made offline']]]
+  },
+  'words-contest': {
+    flow: [['send', ['聽英拼寫', 'Spell by ear']], ['list', ['詞彙題', 'Vocabulary']], ['check', ['滿分 200', 'Out of 200']]],
+    nums: [['50 + 50', ['題，40 分鐘（比賽的形式）', 'questions, 40 minutes (the contest’s)']]]
   },
   'words-dict': {
     pairs: [[['mean：低劣的', 'mean: “inferior”'], ['mean：意思是', 'mean: “to signify”']]]

@@ -65,6 +65,13 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
       tech: ['boot.js；最多重試 5 次（0/4/12/30/60 秒）；kit sw.js 只保存內容雜湊對得上的檔案。', 'boot.js; up to 5 retries (0/4/12/30/60 s); the kit’s sw.js keeps only files whose bytes match their hash.'],
       links: ['fast-hash', 'ship-update']
     }),
+    n('kit-learn', 'spark', ['推薦會學', 'Picks that learn'], ['你跳過的會沉下去', 'What you pass over sinks'], {
+      p: ['推薦的比賽或股票一直出現你從來不點的。', 'Picks kept showing games or stocks you never open.'],
+      i: ['手機記下每次推薦了什麼、你點了哪個；常被跳過的同類（同一聯盟、球隊、產業、市場）分數變低，常點的變高，30 天後慢慢淡掉。', 'The phone notes what each list of picks showed and what you opened; the kinds you pass over (a league, a team, a sector, a market) score lower, those you open higher, fading over 30 days.'],
+      r: ['Sports 的今日推薦和 Securities 的為你推薦越用越懂你，而且資料不離開手機。', 'Sports’ 今日推薦 and Securities’ 為你推薦 get to know you, and nothing leaves the phone.'],
+      tech: ['kit feedback.mjs：每個 App 最多記 400 項，分數乘上 0.5 到 1.6，半衰期 30 天。', 'kit feedback.mjs: up to 400 items per app, a score times 0.5 to 1.6, a 30-day half-life.'],
+      links: ['sports-picks']
+    }),
     n('kit-rec', 'history', ['除錯紀錄', 'The debug log'], ['Jay 一鍵複製給 Claude', 'Jay copies it to Claude in one tap'], {
       p: ['Jay 看到問題，卻說不清楚發生什麼事。', 'Jay sees a problem but can’t say what happened.'],
       i: ['每個 App 都把慢的請求、錯誤記在手機上，Jay 從 Pass 視窗一鍵複製，貼給 Claude。', 'Every app logs slow calls and errors on the phone; Jay copies them from the Pass sheet and pastes them to Claude.'],
