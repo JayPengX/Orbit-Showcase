@@ -492,15 +492,15 @@ const securities = n('securities', 'chart', ['Orbit Securities', 'Orbit Securiti
   ]
 });
 
-const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己真正的錢：月曆、帳戶、發票', 'Your real money: calendar, accounts, invoices'], {
+const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己真正的錢：月曆、帳戶、拍照記帳', 'Your real money: calendar, accounts, photo entries'], {
   app: 'money',
   p: ['Jay 對原本的記帳 App 很不滿意。', 'Jay was fed up with his accounting app.'],
   i: ['做一個 Orbit 家族的記帳 App，和 Securities 的模擬金完全分開。', 'An Orbit accounting app, kept fully apart from Securities’ practice money.'],
-  r: ['月曆一眼看每天花多少，發票掃一下就記好。', 'Each day’s spending at a glance, invoices scanned in.'],
+  r: ['月曆一眼看每天花多少，拍一張照就記好一筆。', 'Each day’s spending at a glance, an entry from one photo.'],
   kids: [
     n('money-guess', 'spark', ['記一筆幾乎不用選', 'An entry nearly fills itself'], ['從你自己的紀錄猜', 'Guessed from your own entries'], {
       p: ['每記一筆都要選收支、分類、細項、付款方式，記帳很快就懶得記。', 'Every entry asked for its kind, category, sub-category and way to pay, so people soon stop logging.'],
-      i: ['從你過去最像現在的紀錄（同一個時段、星期幾、今天已經記過的）猜出全部，常用金額點一下就填好；分類也可以先選一組短的（學生、上班族、家庭）。', 'Guess it all from your past entries most like now (the hour, the weekday, what you logged today), with your usual amounts one tap away; and start from a short set of categories (student, office worker, family).'],
+      i: ['從你過去最像現在的紀錄（同一個時段、星期幾、今天已經記過的）猜出全部，常用金額點一下就填好；分類是一組大家都用的十二大類，每類兩到四個細項（YouBike、捷運、公車都在「交通 › 搭車」）。', 'Guess it all from your past entries most like now (the hour, the weekday, what you logged today), with your usual amounts one tap away; one broad set of twelve categories for everyone, each with two to four subs (YouBike, the MRT and buses all under Transport › Rides).'],
       r: ['大部分時候打開、點金額、儲存，就記好了。', 'Most of the time: open, tap the amount, save.'],
       tech: ['lib/cats.mjs 的猜測只讀本機帳本；金額不自動填，要點一下（Jay 10-30）。', 'The guesses in lib/cats.mjs read only the books on the phone; the amount is never filled without a tap (Jay 10-30).']
     }),
@@ -511,20 +511,14 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
       tech: ['lib/books.mjs（純函式、有測試）；存成 m1: + gzip。', 'lib/books.mjs (pure, tested); stored as m1: + gzip.'],
       links: ['pass-safe']
     }),
-    n('money-invoice', 'ticket', ['發票掃一下', 'Scan an invoice'], ['連明細一起記好', 'Items and all'], {
-      p: ['手打發票明細很麻煩。', 'Typing invoice details is a chore.'],
-      i: ['讀紙本發票上的兩個 QR code（各種編碼都讀得懂），自動對獎；依店名和品項猜分類。', 'Read both QR codes on a paper invoice (any encoding), check it against the receipt prize draw, and guess the category from the store and items.'],
-      r: ['一掃就是一筆完整的帳。', 'One scan, one complete entry.'],
-      tech: ['lib/invoice.mjs；BarcodeDetector，沒有就用 jsQR；代理 invoice.orbit 讀財政部開獎號碼和經濟部商號名稱。', 'lib/invoice.mjs; BarcodeDetector, else jsQR; the proxy’s invoice.orbit reads the draws and GCIS seller names.']
-    }),
-    n('money-carrier', 'send', ['載具發票的變通方法', 'A way round for carrier invoices'], ['財政部不給個人金鑰', 'No key for individuals'], {
-      p: ['財政部不發個人用的 AppID，App 沒辦法直接抓手機條碼裡的發票。', 'The Ministry of Finance won’t give individuals an AppID, so the app can’t pull carrier invoices.'],
-      i: ['在電子發票平台按「匯出」寄出 CSV，直接選檔，或把信轉寄到你 Pass 專屬的信箱，下次打開自動匯入；每張發票用號碼當編號，不會重複。', 'Export the CSV from the e-invoice site and pick it, or forward the mail to your Pass’s own address and it comes in on the next open; each invoice is keyed by its number, so nothing doubles.'],
-      r: ['不用一張張手打。', 'No typing them one by one.'],
-      tech: ['kit carrier-csv.mjs；Worker 的 email 處理（money-mail.js），等 Jay 的自有網域開好信箱。', 'The kit’s carrier-csv.mjs; the Worker’s email handler (money-mail.js), waiting on Jay’s own domain.']
+    n('money-photo', 'camera', ['拍照記帳', 'An entry from a photo'], ['任何一張圖都行', 'Any picture at all'], {
+      p: ['只會讀發票的功能太窄：收據、帳單、App 截圖、轉帳通知、價目牌都還是要手打。', 'A tool that only read invoices was too narrow: receipts, bills, app screenshots, transfer notices and price tags still had to be typed.'],
+      i: ['拍一張任何東西，AI 讀出金額、日期、店名、品項、分類和付款方式（只用你自己的分類和付款方式），變成一筆填好的帳，存之前先看一眼；已經記過一樣的（同金額、一天內），會問要不要合併，不會記兩次。', 'Photograph anything: AI reads the amount, day, store, items, category and way to pay (only from your own lists) into a filled-in entry to check before saving; one already logged (same amount, within a day) is offered to merge, never added twice.'],
+      r: ['一張照片就是一筆帳，原本的發票掃描、對獎和載具匯入都拿掉了。', 'One photo, one entry; the old invoice scanning, prize checking and carrier import are gone.'],
+      tech: ['views/photo.mjs；代理的 /money-read 用 Gemini Flash-Lite 讀圖並檢查（真的日期、整數金額、分類只能從清單裡選），每個 Pass 一天 30 次。', 'views/photo.mjs; the proxy’s /money-read reads the picture with Gemini Flash-Lite and checks it (real days, whole totals, categories only from the list), 30 a day a Pass.']
     }),
     n('money-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['真的錢不能亂編', 'Real money is never invented'], {
-      tech: ['從不自己生出帳目、餘額或分類；手機條碼在深色模式也維持黑白（收銀機需要對比）；帳戶只有五種：現金、銀行、信用卡、儲值卡、電子支付。', 'Never invents entries, balances or categories; the barcode stays black on white in dark mode (tills need it); five account kinds: cash, bank, credit card, stored-value card, e-payment.']
+      tech: ['從不自己生出帳目、餘額或分類；一組十二大類給所有人，不再先選「學生／上班族／家庭」；帳戶有現金、銀行、信用卡、儲值卡、電子支付。', 'Never invents entries, balances or categories; one set of twelve categories for everyone, no more picking student, office worker or family first; accounts are cash, bank, credit card, stored-value card and e-payment.']
     })
   ]
 });

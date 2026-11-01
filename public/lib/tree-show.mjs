@@ -35,7 +35,7 @@ const S = {
     nums: [['12 Mbps', ['Jay 的 4G', 'Jay’s 4G']], ['300–470', ['毫秒延遲', 'ms of delay']]]
   },
   cheap: {
-    nums: [['US$5', ['整個家族一個月', 'the whole family, a month']], ['NT$0', ['App 本身放在 GitHub Pages', 'the apps on GitHub Pages']]]
+    nums: [['US$5', ['整個家族一個月', 'the whole family, a month']], ['NT$0', ['App 本身的靜態檔案', 'the apps’ own files']]]
   },
   ship: {
     flow: [['pencil', ['修好', 'Fixed']], ['check', ['測試', 'Tested']], ['send', ['推上去', 'Pushed']], ['user', ['到你手機', 'On your phone']]]
@@ -163,7 +163,7 @@ const S = {
     nums: [['1–813', ['號釋字全收', 'every interpretation']], ['20/22', ['縣市地方法規', 'counties’ local rules']]]
   },
   'law-build': {
-    flow: [['clock', ['00:05–06:00 夜間補判決', 'Rulings filled 00:05–06:00']], ['list', ['03:30 建全部資料', 'All built 03:30']], ['book', ['GitHub Pages', 'GitHub Pages']]],
+    flow: [['clock', ['00:05–06:00 夜間補判決', 'Rulings filled 00:05–06:00']], ['list', ['03:30 建全部資料', 'All built 03:30']], ['book', ['放上 Cloudflare', 'Onto Cloudflare']]],
     nums: [[['3 年', '3 years'], ['各級法院判決', 'of court rulings']], ['NT$0', ['讀多少都免費', 'to read, however much']]]
   },
   'law-links': {
@@ -191,12 +191,12 @@ const S = {
 
   // ---- Money ----
   money: {
-    flow: [['camera', ['掃發票', 'Scan a receipt']], ['wallet', ['手機上的帳本', 'Books on the phone']], ['swap', ['逐筆合併到 Pass', 'Merged entry by entry']]],
+    flow: [['camera', ['拍一張照', 'Take a photo']], ['wallet', ['手機上的帳本', 'Books on the phone']], ['swap', ['逐筆合併到 Pass', 'Merged entry by entry']]],
     nums: [[['120 天', '120 days'], ['刪掉的紀錄也記得', 'a deletion is remembered']], [['≤ 1 MB', '≤ 1 MB'], ['整本帳', 'the whole book']]]
   },
   'money-calls': {
     tags: [['wallet', ['現金', 'Cash']], ['bank', ['銀行', 'Bank']], ['ticket', ['信用卡', 'Credit card']], ['bus', ['儲值卡', 'Stored-value card']], ['exchange', ['電子支付', 'E-payment']]],
-    rules: [['從不自己生出帳目、餘額或分類', 'Never invents entries, balances or categories'], ['條碼在深色模式也黑白', 'The barcode stays black and white in dark mode']]
+    rules: [['從不自己生出帳目、餘額或分類', 'Never invents entries, balances or categories'], ['一組十二大類給所有人', 'One set of twelve categories for everyone']]
   },
 
   // ---- The shared parts ----
@@ -230,7 +230,7 @@ const S = {
     nums: [[['2 秒', '2 s'], ['進行中的比分', 'live scores']], [['30 秒', '30 s'], ['報價', 'quotes']], [['24 小時', '24 h'], ['結束的比賽', 'a finished game']]]
   },
   'cloud-routes': {
-    tags: [['key', ['/eco 通行證', '/eco the pass']], ['chart', ['/stock 成交', '/stock fills']], ['bell', ['/push 通知', '/push notices']], ['sun', '/weather'], ['bus', '/transit'], ['ball', '/sports-proxy'], ['camera', ['/gemini 課表 AI', '/gemini timetable AI']], ['book', ['/law-ask 法律', '/law-ask law']], ['wallet', ['/money-mail 發票', '/money-mail receipts']], ['backpack', ['/data 倉庫', '/data storage']]]
+    tags: [['key', ['/eco 通行證', '/eco the pass']], ['chart', ['/stock 成交', '/stock fills']], ['bell', ['/push 通知', '/push notices']], ['sun', '/weather'], ['bus', '/transit'], ['ball', '/sports-proxy'], ['camera', ['/gemini 課表 AI', '/gemini timetable AI']], ['book', ['/law-ask 法律', '/law-ask law']], ['wallet', ['/money-read 拍照記帳', '/money-read photo entries']], ['backpack', ['/data 倉庫', '/data storage']]]
   },
   'cloud-push': {
     tags: [['school', ['課前提醒', 'Before class']], ['bus', ['公車到站', 'Bus arriving']], ['ball', ['比賽結果', 'Results']], ['chart', ['股價提醒', 'Price alerts']]]
@@ -486,14 +486,14 @@ const S = {
   'money-merge': {
     pairs: [[['兩台手機，後存的蓋掉先存的', 'Two phones, the later save wins'], ['一筆一筆合併', 'Merged entry by entry']]]
   },
-  'money-invoice': {
-    flow: [['camera', ['掃 QR Code', 'Scan the QR']], ['ticket', ['讀出品項和金額', 'Items and amount']], ['check', ['一筆完整的帳', 'A complete entry']]]
-  },
-  'money-carrier': {
-    flow: [['list', ['匯出發票 CSV', 'Export the CSV']], ['pencil', ['選檔匯入', 'Pick the file']], ['wallet', ['一次記好，不重複', 'All in, none doubled']]]
+  'money-photo': {
+    flow: [['camera', ['拍收據、帳單、截圖', 'Snap a receipt, bill or screenshot']], ['spark', ['AI 讀出金額和分類', 'AI reads amount and category']], ['check', ['看一眼再存', 'Check, then save']]]
   },
   'kit-look': {
     tags: [['spark', ['顏色', 'Colour']], ['pencil', ['字級', 'Type']], ['grid', ['圓角', 'Corners']], ['moon', ['深色模式', 'Dark mode']], ['play', ['彈簧動畫', 'Springs']]]
+  },
+  'kit-screens': {
+    pairs: [[['橫過來還是一條手機畫面', 'Sideways, still a phone’s column'], ['兩到三欄，分頁列在左邊', 'Two or three columns, tabs on the left']]]
   },
   'kit-ui': {
     tags: [['grid', ['底部分頁列', 'Tab bar']], ['list', ['滑上來的視窗', 'Sheets']], ['calendar', ['日期列', 'Day strip']], ['swap', ['分段按鈕', 'Segmented control']]]

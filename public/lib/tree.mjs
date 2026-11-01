@@ -18,7 +18,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
   p: ['每個 App 各寫一份按鈕、視窗、日期選擇，改一個地方要改九次，而且長得都不一樣。', 'Each app had its own buttons, sheets and date pickers: nine copies to fix, and none alike.'],
   i: ['兩個以上 App 會用到的東西都放進同一個「零件盒」，每個 App 打開時直接從那裡拿，不複製。', 'Anything two apps use goes in one kit; every app loads it from there, never copies it.'],
   r: ['改一次，九個 App 同時變好，而且看起來是同一家。', 'Fix it once and nine apps improve together, looking like one family.'],
-  tech: ['Orbit-Core/kit/，放在 GitHub Pages 上；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Orbit-Core/kit/ on GitHub Pages; each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
+  tech: ['Orbit-Core/kit/，放在 Cloudflare 上（orbit.jaypengx.com/Orbit-Core/kit/）；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Orbit-Core/kit/ on Cloudflare (orbit.jaypengx.com/Orbit-Core/kit/); each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
   kids: [
     n('kit-look', 'spark', ['外觀設計系統', 'One design system'], ['像 iPhone 原生 App', 'Looks native on an iPhone'], {
       p: ['網頁看起來就是網頁，不像 App。', 'Web pages look like web pages.'],
@@ -31,6 +31,12 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
       i: ['底部分頁列、從下往上滑的視窗、分段按鈕、清單、日期列（滑一下換一天）都做成共用零件。', 'The tab bar, sheets, segmented controls, lists and the swipeable day strip are shared pieces.'],
       r: ['學會一個 App，其他的都會用。', 'Learn one app and you know them all.'],
       tech: ['ui.mjs：sheet、segmented、dayBar/dayStrip/daySwipe、rowCard、tile、stats、toast；orbit.mjs：tabBar。', 'ui.mjs: sheet, segmented, dayBar/dayStrip/daySwipe, rowCard, tile, stats, toast; orbit.mjs: tabBar.']
+    }),
+    n('kit-screens', 'grid', ['每種螢幕都排好', 'Every screen laid out'], ['直的、橫的、平板、電腦', 'Upright, sideways, tablet, computer'], {
+      p: ['原本只照手機直拿來做：手機一橫過來，或在平板、電腦上打開，就只是中間一條窄窄的手機畫面。', 'The apps were made for a phone held upright: turned sideways, or opened on a tablet or computer, they were a narrow phone column in the middle.'],
+      i: ['共用零件先看螢幕多大：橫拿和電腦上，分頁列變成左邊一條細細的直欄；平板和電腦上，滑出來的視窗變成置中的卡片；頁面夠寬就排成兩到三欄，由左到右讀起來和手機的順序一樣。', 'The shared pieces read the screen first: sideways and on a computer the tab bar becomes a slim rail down the left; on a tablet or computer sheets become cards in the middle; a wide page becomes two or three columns, read in the phone’s order.'],
+      r: ['九個 App 在手機、平板、電腦上，直的橫的都好用（Jay 2026-10-31 的要求）。', 'All nine apps work on a phone, tablet or computer, either way up (Jay’s ask, 2026-10-31).'],
+      tech: ['orbit.mjs 的 screenFit()／onScreen()；html 上的 q-tabrail（直欄 60 寬）、q-float、q-wide、q-w3；Orbit-Core docs/DESIGN.md §10。', 'orbit.mjs screenFit()/onScreen(); the html marks q-tabrail (a 60-wide rail), q-float, q-wide, q-w3; Orbit-Core docs/DESIGN.md §10.']
     }),
     n('kit-brand', 'star', ['品牌：從程式畫出來的圖示', 'Brand: icons drawn by code'], ['每個 App 一個顏色、一顆行星', 'Each app a colour and a planet'], {
       p: ['九個圖示、分享卡片、主畫面圖示，手動做會不一致。', 'Nine icons, share cards and home-screen icons drawn by hand drift apart.'],
@@ -131,7 +137,7 @@ const cloud = n('cloud', 'cloud', ['雲端小幫手', 'The helper in the cloud']
       links: ['sports-trims', 'store-layers']
     }),
     n('cloud-routes', 'map', ['每個 App 的專屬路線', 'Each app’s own routes'], ['天氣、交通、法律、記帳…', 'Weather, transit, law, money…'], {
-      tech: ['/eco（Pass）、/stock（成交）、/push（通知）、/weather（天氣混合與颱風）、/transit（TDX、Google）、/sports-proxy 和 /sports-today、/gemini 和 /nl-edit（課表 AI）、/law-ask、/law-chat、/law-gist、/law-page（法律）、/money-mail（載具郵件）、/data（雲端倉庫公開讀取）、/config（Jay 設定的更新速度）。', '/eco (Pass), /stock (fills), /push (notices), /weather (blend and typhoon), /transit (TDX, Google), /sports-proxy and /sports-today, /gemini and /nl-edit (Class AI), /law-ask, /law-chat, /law-gist, /law-page (law), /money-mail (carrier mail), /data (public storage reads), /config (Jay’s live speeds).'],
+      tech: ['/eco（Pass）、/stock（成交）、/push（通知）、/weather（天氣混合與颱風）、/transit（TDX、Google）、/sports-proxy 和 /sports-today、/gemini 和 /nl-edit（課表 AI）、/law-ask、/law-chat、/law-gist、/law-page（法律）、/money-read（拍照記帳）、/data（雲端倉庫公開讀取）、/config（Jay 設定的更新速度）。', '/eco (Pass), /stock (fills), /push (notices), /weather (blend and typhoon), /transit (TDX, Google), /sports-proxy and /sports-today, /gemini and /nl-edit (Class AI), /law-ask, /law-chat, /law-gist, /law-page (law), /money-read (photo entries), /data (public storage reads), /config (Jay’s live speeds).'],
       links: ['sports', 'transit', 'weather', 'law', 'money']
     }),
     n('cloud-push', 'bell', ['App 關著也能通知', 'Notices with the app closed'], ['送之前先確認', 'Checked before sending'], {
@@ -200,7 +206,7 @@ const store = n('store', 'backpack', ['資料放在哪裡', 'Where data lives'],
       links: ['weather-squares']
     }),
     n('store-pages', 'book', ['靜態網站上的資料', 'Data on the static sites'], ['讀了不用錢', 'Free to read'], {
-      tech: ['GitHub Pages：Orbit Law 每天建好的法規、判決、法案（約 60 MB）；Words 的 6,169 個錄音；Securities 的上市清單。', 'GitHub Pages: Orbit Law’s daily-built laws, rulings and bills (about 60 MB); Words’ 6,169 recordings; Securities’ listing files.'],
+      tech: ['Cloudflare 上的靜態網站：Orbit Law 每天建好的法規、判決、法案（約 60 MB）；Words 的 6,169 個錄音；Securities 的上市清單。', 'Static sites on Cloudflare: Orbit Law’s daily-built laws, rulings and bills (about 60 MB); Words’ 6,169 recordings; Securities’ listing files.'],
       links: ['law-build', 'cheap-static']
     })
   ]
@@ -274,8 +280,8 @@ const cheap = n('cheap', 'coin', ['不超過額度、不花大錢', 'Staying und
       tech: ['Gemini 每條路由每天都有全站上限（課表 300、一句話修改 300、法律 300、法律摘要 200）和每人上限（問法律 30）；Google 地圖每月上限；Google 天氣一天 500 次以內、依時段放額度；AI 一定要使用者按了才問。', 'Gemini has a daily cap per route (Class 300, edits 300, law 300, law gists 200) and per Pass (Ask the law 30); Google Maps monthly caps; Google Weather under 500 a day, paced by the hour; AI only ever on a tap.'],
       links: ['law-ai', 'class-ai', 'weather-squares', 'transit-caps']
     }),
-    n('cheap-static', 'book', ['能放靜態網站就放', 'Static whenever possible'], ['GitHub Pages 免費', 'GitHub Pages is free'], {
-      tech: ['九個 App 本身、共用零件、Orbit Law 的全部資料都是靜態檔案放在 GitHub Pages，讀多少都不用錢。', 'All nine apps, the kit and every bit of Orbit Law’s data are static files on GitHub Pages: free however much they’re read.'],
+    n('cheap-static', 'book', ['能放靜態網站就放', 'Static whenever possible'], ['讀靜態檔案不用錢', 'Static files are free to read'], {
+      tech: ['九個 App 本身、共用零件、Orbit Law 的全部資料都是靜態檔案，放在 Cloudflare、Jay 自己的網域底下（2026-11-01 從 GitHub Pages 搬過來，GitHub 只放程式碼），讀多少都不用錢。', 'All nine apps, the kit and every bit of Orbit Law’s data are static files on Cloudflare under Jay’s own domain (moved off GitHub Pages on 2026-11-01; GitHub keeps only the code): free however much they’re read.'],
       links: ['store-pages']
     }),
     n('cheap-guard', 'shield', ['成本警衛會踩煞車', 'The guard brakes'], ['60% 放慢，90% 停', 'Slows at 60%, stops at 90%'], {
@@ -297,7 +303,7 @@ const ship = n('ship', 'send', ['改好之後怎麼到你手機', 'From a change
   r: ['從修好到 Jay 手機上看到，通常只要幾分鐘。', 'From fix to Jay’s phone usually takes minutes.'],
   kids: [
     n('ship-pages', 'check', ['自動上線流程', 'The automatic pipeline'], ['測試 → 壓縮 → 上線', 'Test → minify → publish'], {
-      tech: ['每個 repo 的 .github/workflows：npm test → scripts/stamp-version.mjs（壓縮、指紋、version.json）→ GitHub Pages。一次只跑一個部署，新的來就讓位，不取消（取消會寄信給 Jay）；永遠建主線最新的版本，不建觸發它的那個舊版本。', 'Each repo’s .github/workflows: npm test → scripts/stamp-version.mjs (minify, fingerprint, version.json) → GitHub Pages. One deploy at a time, stepping aside for newer ones and never cancelling (a cancel emails Jay); always builds main’s newest tree, not the commit that started it.'],
+      tech: ['每個 repo 的 .github/workflows：npm test → scripts/stamp-version.mjs（壓縮、指紋、version.json）→ Orbit-Core 的 deploy/cf-site.mjs 發佈到 Cloudflare。一次只跑一個部署，新的來就讓位，不取消（取消會寄信給 Jay）；永遠建主線最新的版本，不建觸發它的那個舊版本。', 'Each repo’s .github/workflows: npm test → scripts/stamp-version.mjs (minify, fingerprint, version.json) → Orbit-Core’s deploy/cf-site.mjs publishes it to Cloudflare. One deploy at a time, stepping aside for newer ones and never cancelling (a cancel emails Jay); always builds main’s newest tree, not the commit that started it.'],
       links: ['fast-hash']
     }),
     n('ship-workers', 'cloud', ['伺服器自動部署', 'The server deploys itself'], ['Cloudflare Workers', 'Cloudflare Workers'], {
