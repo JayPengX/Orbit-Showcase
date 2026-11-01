@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES_modules-F7DF1E?logo=javascript&logoColor=000"> <img alt="GitHub" src="https://img.shields.io/badge/GitHub-Pages-24292F?logo=github&logoColor=fff"> <img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub_Actions-daily_stats-2088FF?logo=githubactions&logoColor=fff"> <img alt="Tests" src="https://img.shields.io/badge/Tests-node_--test-339933?logo=nodedotjs&logoColor=fff">
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES_modules-F7DF1E?logo=javascript&logoColor=000"> <img alt="Cloudflare" src="https://img.shields.io/badge/Cloudflare-static-F38020?logo=cloudflare&logoColor=fff"> <img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub_Actions-daily_stats-2088FF?logo=githubactions&logoColor=fff"> <img alt="Tests" src="https://img.shields.io/badge/Tests-node_--test-339933?logo=nodedotjs&logoColor=fff">
 </p>
 
 The Orbit family of apps, shown the way a page does better than a PDF: the structure, the numbers, and the apps themselves running. Open to everyone, on phones and computers, with no sign-in.
@@ -41,7 +41,7 @@ The Orbit family of apps, shown the way a page does better than a PDF: the struc
 | Look | The kit in [Orbit-Core](https://github.com/JayPengX/Orbit-Core) plus `showcase.css` |
 | Numbers | `scripts/stats.mjs` counts commits, lines, tests and days from every Orbit repo's git history |
 | Demos | Recorded with Playwright through Orbit-Core's preview tool, then frozen into `public/demo/` |
-| Hosting | GitHub Pages, served at jaypengx.com by a Cloudflare Worker |
+| Hosting | Cloudflare (static files), at jaypengx.com |
 | Tests | `node --test` (`tests/content.test.mjs` checks the content rules) |
 
 ## How it works
@@ -49,7 +49,7 @@ The Orbit family of apps, shown the way a page does better than a PDF: the struc
 ```
 GitHub Actions, every push and daily at 00:17 Taipei
   clone every Orbit repo ─► scripts/stats.mjs ─► public/data/stats.json
-  npm test ─► stamp versions ─► GitHub Pages
+  npm test ─► stamp versions ─► Cloudflare
 
 scripts/demo/record.mjs <app>   the app served with made-up answers, its tour walked,
                                 every answer it got kept
@@ -104,7 +104,7 @@ Record a demo again: `node scripts/demo/record.mjs <app>`, then `node scripts/de
 
 ## Deploying
 
-Push to `main`. GitHub Actions recounts the numbers, runs the tests, stamps every file with its content hash (so a phone downloads only what changed) and publishes `public/` to GitHub Pages; the site Worker serves it at its jaypengx.com address. It also runs daily. There are no pull requests or release branches.
+Push to `main`. GitHub Actions recounts the numbers, runs the tests, stamps every file with its content hash (so a phone downloads only what changed) and publishes `public/` to Cloudflare at its jaypengx.com address (Orbit-Core `deploy/cf-site.mjs`). It also runs daily. There are no pull requests or release branches.
 
 ## Part of Orbit
 
