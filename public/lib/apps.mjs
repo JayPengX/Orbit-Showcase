@@ -67,8 +67,7 @@ export const APPS = [
       ['money/2', ['幾秒就記一筆', 'Log spending in seconds']],
       ['money/3', ['悠遊卡自動加值', 'EasyCard tops itself up']],
       ['money/4', ['錢花到哪裡，一圈看懂', 'Where the money went']],
-      ['money/5', ['發票品項一清二楚', 'Every item on the receipt']],
-      ['money/6', ['發票自動對獎', 'Invoices checked for prizes']]
+      ['money/5', ['十二大類，一眼分好', 'Twelve broad categories']]
     ]
   },
   {

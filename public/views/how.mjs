@@ -67,7 +67,7 @@ const SHORT = {
   'weather-county': ['颱風一縣一算', 'Once a county'],
   'class-ai': ['拍照匯入', 'Photo import'],
   'law-build': ['每天自己建', 'Built every day'],
-  'money-carrier': ['載具發票', 'Carrier invoices'],
+  'money-photo': ['拍照記帳', 'Photo entries'],
   'kit-brand': ['程式畫的圖示', 'Icons by code'],
   'kit-dayoff': ['假日和颱風假', 'Days off'],
   'kit-shared-logic': ['手機雲端同程式', 'One code, two places'],
