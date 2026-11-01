@@ -26,7 +26,7 @@ export const DEMOS = {
   ] },
   words: { app: 'words', repo: 'Orbit-Words', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], skip: ['data'], keep: ['fare', 'hit', 'how', 'military'].map(w => `data/audio/${w}.mp3`), tour: steps('words'), explore: [{ tap: '#tab-review' }, { tap: '#tab-today' }, { tap: '.wotd' }] },
   sports: { app: 'sports', repo: 'Orbit-Sports', clock: 'now', geo: [25.034, 121.565], tour: steps('sports'), explore: [], settle: 9000,
-    built: { 'nba-elta.json': 'https://jaypengx.github.io/Orbit-Sports/nba-elta.json' },
+    built: { 'nba-elta.json': 'https://orbit.jaypengx.com/sports/nba-elta.json' },
     // No betting anywhere in the showcase (Jay): the win chance cards come from betting prices, so they stay hidden.
     css: '.q-card:has(.wp){display:none!important}' },
   securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-symbol="^TWII"]' }], settle: 9000 },
