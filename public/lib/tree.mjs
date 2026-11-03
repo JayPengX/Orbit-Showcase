@@ -20,11 +20,25 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
   r: ['改一次，九個 App 同時變好，而且看起來是同一家。', 'Fix it once and nine apps improve together, looking like one family.'],
   tech: ['Orbit-Core/kit/，放在 Cloudflare 上（orbit.jaypengx.com/Orbit-Core/kit/）；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Orbit-Core/kit/ on Cloudflare (orbit.jaypengx.com/Orbit-Core/kit/); each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
   kids: [
-    n('kit-look', 'spark', ['外觀設計系統', 'One design system'], ['像 iPhone 原生 App', 'Looks native on an iPhone'], {
-      p: ['網頁看起來就是網頁，不像 App。', 'Web pages look like web pages.'],
-      i: ['一份樣式定義所有顏色、字級、圓角、彈簧動畫、玻璃質感，深色淺色都自動切換；每個 App 只換自己的主色。', 'One stylesheet sets every colour, type size, corner, spring and glass effect, light and dark; each app only swaps its own colour.'],
-      r: ['九個 App 一眼看得出是同一家，深色模式不會有刺眼的白塊。', 'Nine apps clearly one family; no glaring white in dark mode.'],
-      tech: ['orbit.css（iOS 字級與色彩、Liquid Glass、深淺色 token、每個 App 的 data-app 主色）。', 'orbit.css (iOS type and colour tokens, Liquid Glass, light/dark, data-app accents).']
+    n('kit-look', 'spark', ['Orbit 自己的外觀', 'Orbit’s own look'], ['九個 App 一起重新設計', 'All nine apps redesigned together'], {
+      p: ['Jay 覺得介面看起來很普通；第一版的新設計又太像別人家的 App（整頁天空的天氣、兩隊顏色混在一起的卡片），他不要抄。', 'Jay found the screens plain and generic; the first redesign looked too much like other companies’ apps (a sky filling Weather, cards blending two clubs’ colours), and he didn’t want a copy.'],
+      i: ['保留原本的深色頁面，卡片統一成石墨色；顏色只放在它代表的東西上（一支球隊、一條公車路線、一個花費分類），主色只用在「正在發生」和主要按鈕。一份樣式管所有字級、間距、圓角和動畫，九個 App 一起換。', 'Keep today’s dark page and make every card graphite; colour goes only on what it names (a team, a bus line, a spending category), and the app’s own colour only on what’s live and the main action. One stylesheet sets every type size, gap, corner and motion, and all nine apps changed together.'],
+      r: ['Jay 把九個 App 新舊並排看過，按下「全部上線」。', 'Jay looked at all nine side by side with the old ones and pressed “Ship all nine”.'],
+      tech: ['orbit.css 的 Orbit 外觀層（每個 App 的網頁 data-look="native"）、.q-band 顏色帶；規則寫在 Orbit-Core docs/DESIGN.md §11。', 'orbit.css’s Orbit look layer (each app’s page says data-look="native"), the .q-band colour row; the rules in Orbit-Core docs/DESIGN.md §11.']
+    }),
+    n('kit-help', 'book', ['每個 App 的說明', 'A guide in every app'], ['真的畫面，一頁一頁看', 'Real screens, one by one'], {
+      p: ['第一次打開的人不知道每個分頁在做什麼，說明只有一段文字。', 'Someone opening an app for the first time didn’t know what each tab did, and the guide was a paragraph of text.'],
+      i: ['每個 App 的說明都有一排 App 圖示可以切換，再一站一站介紹它的分頁和重要畫面，每一站配一張真的截圖（中英文、深色淺色各一張）。', 'Each app’s guide has a row of app marks to switch between, then a tour of its tabs and key screens, each stop with a real screenshot (Chinese and English, light and dark).'],
+      r: ['畫面改了，截圖用同一個工具重拍，說明永遠跟 App 一樣。', 'When a screen changes, one tool retakes its pictures, so the guide always matches the app.'],
+      tech: ['kit help.mjs 的 TOURS；tools/help-shots.mjs 用真資料拍，存成 WebP，每張用自己的內容雜湊載入。', 'kit help.mjs TOURS; tools/help-shots.mjs shoots on live data and saves WebP, each picture loaded by its own content hash.'],
+      links: ['ship-tools']
+    }),
+    n('kit-steady', 'shield', ['畫面不會跳', 'Nothing jumps'], ['資料更新時，你看的地方不動', 'New data never moves what you read'], {
+      p: ['比分或公車時間一更新，整頁就往上或往下跳，正在看的那一行不見了。', 'When a score or bus time refreshed, the page jumped and the line you were reading was gone.'],
+      i: ['共用零件記住你正在看的那一行和手指下的按鈕，重畫時把它們留在原位；還沒讀到的部分先用一樣大小的灰色格子佔位。', 'The shared pieces remember the line you’re reading and the button under your finger and keep them in place through a redraw; a part still loading holds its space with grey blocks of the same size.'],
+      r: ['一個工具像 iPhone 的 Safari 那樣捲動每一頁，有東西動了測試就不會過。', 'A tool scrolls every page the way an iPhone’s Safari does, and fails if anything moved.'],
+      tech: ['kit hold-place.mjs、steady-pics.mjs（圖片重畫不閃）；tools/live-scroll.mjs。', 'kit hold-place.mjs, steady-pics.mjs (pictures never flash on a redraw); tools/live-scroll.mjs.'],
+      links: ['ship-tests']
     }),
     n('kit-ui', 'list', ['介面零件', 'Interface pieces'], ['同一種日期選擇、同一種視窗', 'One date picker, one sheet'], {
       p: ['每個 App 的日期選擇都不一樣，Jay 用起來很混亂。', 'Every app picked days differently, which confused Jay.'],

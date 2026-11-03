@@ -183,6 +183,27 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           r: ['一路跟著你，不會亂跳。', 'It follows the trip without jumping around.'],
           tech: ['nav.mjs、navlive.mjs、buzz.mjs；ot.nav.v1 存在手機上。', 'nav.mjs, navlive.mjs, buzz.mjs; ot.nav.v1 kept on the phone.']
         }),
+        n('transit-chase', 'bike', ['騎 YouBike 追公車', 'Catch the bus by YouBike'], ['走路趕不上，就騎到前面幾站', 'Too late on foot? Ride ahead'], {
+          p: ['走到站牌時公車剛好開走，下一班要等很久。', 'You reach the stop just as the bus leaves, and the next is a long wait.'],
+          i: ['看即時資料裡那台車在哪，找它前面幾站中騎 YouBike 來得及、而且比它早 2 分鐘到的一站；早 3 分鐘以上到目的地才建議。導航中公車開走了也會問你要不要騎車追。', 'From where the bus really is now, find a stop further along its way you can reach by YouBike 2 minutes before it; suggested only when you arrive 3 or more minutes sooner. While navigating, it offers the chase once the bus has gone.'],
+          r: ['任何路線都能用，全部從即時資料算，不寫死任何一條。', 'Any route, all from live data, nothing hard-coded.'],
+          tech: ['lib/chase.mjs；TDX 的公車位置和到站預估。', 'lib/chase.mjs; TDX’s bus positions and estimates.'],
+          links: ['transit-bike']
+        }),
+        n('transit-ticket', 'train', ['照你買的那班車規劃', 'Planned around your ticket'], ['TPASS 以外的台鐵、高鐵也行', 'Any TRA or HSR train, past TPASS'], {
+          p: ['住在 TPASS 範圍內，規劃只會用月票能搭的車；可是有時候你已經買了高鐵票。', 'Inside a TPASS area plans kept to the pass’s trains, though sometimes you already hold an HSR ticket.'],
+          i: ['輸入車次、選日期，或在查時刻按「用這班規劃路線」：整趟路線就繞著那一班車排，先準時到車站，下車後再接著走。', 'Type a train number and pick the day, or tap 用這班規劃路線 in 查時刻: the whole trip is planned around that exact train, to its station in time and on from where it gets in.'],
+          r: ['買了票的那班車，就是規劃裡的那班車。', 'The train on your ticket is the train in your plan.'],
+          tech: ['lib/ticket.mjs、planner.mjs planTicket；車次從已經載入的時刻表找，不多讀資料。', 'lib/ticket.mjs, planner.mjs planTicket; the train found in the timetable already loaded, no extra read.'],
+          links: ['transit-rail']
+        }),
+        n('transit-aboard', 'bus', ['從你正在搭的車規劃', 'Plans from the ride you’re on'], ['不會從軌道中間叫你走路', 'Never a walk from the middle of the track'], {
+          p: ['在火車或公車上按規劃，App 會從你現在的位置走路出發，好像你站在鐵軌上。', 'Planning while on a train or bus started with a walk from where you were, as if you stood on the track.'],
+          i: ['最近幾分鐘的定位如果是火車或公車的速度、沿著路線走，就找出你在哪一班車上，從它接下來的站規劃。', 'If the last few minutes of fixes move at a train’s or bus’s pace along its line, it finds which run you’re on and plans from its stops ahead.'],
+          r: ['在車上也能直接問「怎麼回家」。', 'You can ask the way home while still on board.'],
+          tech: ['lib/aboard.mjs（trainAboard：時刻表加上 TDX 的誤點）。', 'lib/aboard.mjs (trainAboard: the timetable plus TDX’s delay).'],
+          links: ['transit-nav']
+        }),
         n('transit-bike', 'bike', ['YouBike 一定有車', 'YouBike with real bikes'], ['不會叫你去空站', 'Never sends you to an empty dock'], {
           p: ['規劃器會建議「附近的 YouBike 站」，到了卻沒車。', 'Planners suggest a nearby YouBike dock that turns out to be empty.'],
           i: ['YouBike 一定接真實站點；從腳踏車出發時只選現在有車的站；租借計時到 25 分鐘提醒（TPASS 前 30 分鐘免費）。', 'YouBike legs always end at real docks; starting on a bike, only docks with bikes now; the timer warns at 25 minutes (TPASS’s free half hour).'],
