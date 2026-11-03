@@ -504,7 +504,22 @@ const S = {
     flow: [['camera', ['拍收據、帳單、截圖', 'Snap a receipt, bill or screenshot']], ['spark', ['AI 讀出金額和分類', 'AI reads amount and category']], ['check', ['看一眼再存', 'Check, then save']]]
   },
   'kit-look': {
-    tags: [['spark', ['顏色', 'Colour']], ['pencil', ['字級', 'Type']], ['grid', ['圓角', 'Corners']], ['moon', ['深色模式', 'Dark mode']], ['play', ['彈簧動畫', 'Springs']]]
+    pairs: [[['整張卡片塗滿主色', 'A card filled with the app’s colour'], ['石墨色卡片，顏色只在它代表的東西上', 'Graphite cards, colour only on what it names']]]
+  },
+  'kit-help': {
+    flow: [['grid', ['選一個 App', 'Pick an app']], ['list', ['一站一站看', 'Stop by stop']], ['camera', ['真的截圖', 'Real screenshots']]]
+  },
+  'kit-steady': {
+    pairs: [[['更新時整頁跳動', 'The page jumped on a refresh'], ['你看的那一行留在原位', 'The line you read stays put']]]
+  },
+  'transit-chase': {
+    flow: [['walk', ['公車剛開走', 'The bus just left']], ['bike', ['騎到前面幾站', 'Ride ahead']], ['bus', ['早 2 分鐘到', 'There 2 min early']]]
+  },
+  'transit-ticket': {
+    flow: [['pencil', ['輸入車次', 'Type the number']], ['train', ['就搭那一班', 'That exact train']], ['flag', ['下車接著走', 'On from there']]]
+  },
+  'transit-aboard': {
+    flow: [['train', ['你在車上', 'You’re on board']], ['map', ['認出是哪一班', 'Which run it is']], ['flag', ['從下一站規劃', 'Planned from its stops']]]
   },
   'kit-screens': {
     pairs: [[['橫過來還是一條手機畫面', 'Sideways, still a phone’s column'], ['兩到三欄，分頁列在左邊', 'Two or three columns, tabs on the left']]]
