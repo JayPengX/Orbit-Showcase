@@ -8,7 +8,7 @@ MAP.md is this repo's map (README.md is the short public front page).
 
 - A change to how this app is built (a module, a data or sync path, a pattern) updates MAP.md
   in the same push; anything the kit or a Worker gains goes into `../Orbit-Core/CLAUDE.md`.
-- `npm test`, then `git push origin HEAD:main`.
+- Push with `sh ../Orbit-Core/tools/push.sh`: it rebases onto `origin/main`, runs what the deploy runs (tests against main's kit), and pushes main only if they pass (a red deploy mails Jay).
 - Audience: teachers and readers who know no tech. Plain everyday words, problem → idea → result,
   and technical names only inside the 技術細節 fold. Chinese first, English second.
 - Exceptions to the family rules: open to all (no Pass gate, no installGate), and its own side bar
