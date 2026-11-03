@@ -374,6 +374,65 @@
   --q-accent-wash: color-mix(in srgb, var(--q-accent) 20%, transparent);
 }
 
+/* 原生 Native's tokens (DESIGN §11), for an app whose page says <html data-look="native">:
+   the display face for big numbers, the graphite surface and its hairline
+   edge, what a band's colour deepens to, the tinted glyph's wash.
+   Dark: graphite, not black and grey. */
+html[data-look='native'][data-look='native'] {
+  --nv-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, system-ui, 'PingFang TC', 'Noto Sans TC', sans-serif;
+  --nv-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, system-ui, 'PingFang TC', sans-serif;
+  --q-r-card: 20px;
+  --nv-edge: rgba(0, 0, 0, 0.06);
+  --nv-lift: 0 1px 1px rgba(0, 0, 0, 0.03), 0 8px 24px -16px rgba(0, 0, 0, 0.2);
+  --nv-card: #ffffff;
+  --nv-card-up: #ffffff;
+  --nv-edge-up: rgba(0, 0, 0, 0.06);
+  --nv-deep: #000000;
+  --nv-glyph: #000000;
+  --nv-glyph-a: 88%;
+  --nv-wash: 14%;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-look='native'][data-look='native']:not([data-theme='light']) {
+    --q-bg-2: #151517;
+    --q-grouped-2: #151517;
+    --q-grouped-3: #1f1f22;
+    --q-elevated: #1d1d20;
+    --q-sep: rgba(255, 255, 255, 0.08);
+    --nv-edge: rgba(255, 255, 255, 0.1);
+    --nv-lift: none;
+    --nv-card: linear-gradient(180deg, #1a1a1d, #151518);
+    --nv-card-up: linear-gradient(180deg, #252528, #202023);
+    --nv-edge-up: rgba(255, 255, 255, 0.11);
+    --nv-glyph: #ffffff;
+    --nv-glyph-a: 80%;
+    --nv-wash: 17%;
+  }
+}
+html[data-look='native'][data-look='native'][data-theme='dark'] {
+  --q-bg-2: #151517;
+  --q-grouped-2: #151517;
+  --q-grouped-3: #1f1f22;
+  --q-elevated: #1d1d20;
+  --q-sep: rgba(255, 255, 255, 0.08);
+  --nv-edge: rgba(255, 255, 255, 0.1);
+  --nv-lift: none;
+  --nv-card: linear-gradient(180deg, #1a1a1d, #151518);
+  --nv-card-up: linear-gradient(180deg, #252528, #202023);
+  --nv-edge-up: rgba(255, 255, 255, 0.11);
+  --nv-glyph: #ffffff;
+  --nv-glyph-a: 80%;
+  --nv-wash: 17%;
+}
+
+/* On a sheet (dark: the sheet is the cards' own grey), a card is a shade
+   lifted from it, as iOS's cells are, so its edge shows (Jay 2026-11-03:
+   "too black, no border"). A panel that isn't a kit sheet says .q-raised. */
+html[data-look='native'] :is(.q-sheet, .q-raised) {
+  --nv-card: var(--nv-card-up);
+  --nv-edge: var(--nv-edge-up);
+}
+
 /* The page: San Francisco, smoothed as iOS draws it, on the grouped background. */
 html {
   -webkit-font-smoothing: antialiased;
@@ -1526,13 +1585,14 @@ dialog.q-sheet.q-full {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* A section head's way to all of it (全部 9 ›): quiet grey words, never accent text (RULEBOOK 11-03). */
 .q-section-head a,
 .q-section-head button:not(.q-tag) {
   flex: none;
   border: 0;
   background: none;
-  color: var(--q-accent);
-  font: 400 17px/1 var(--q-font);
+  color: var(--q-text-2);
+  font: 500 15px/1 var(--q-font);
   text-decoration: none;
   cursor: pointer;
 }
@@ -1698,58 +1758,86 @@ dialog.q-sheet.q-full {
   font-size: 15px;
 }
 
-/* ---- Switches: iOS 26's wide capsule; the native one where Safari draws it ---- */
+/* ---- Switches: Orbit's own (Jay 2026-11-03: "doesn't have the smoothness").
+   A round knob on a capsule; it glides over on a spring as the track's colour
+   eases in, stretches toward its way while pressed, and follows a finger
+   dragged across it (kit/orbit.mjs switchGlide sets .q-sw-drag, --q-sw-x and
+   --q-sw-p while it does). On: aria-checked, .on, or a checked input just
+   before it (a label's hidden checkbox). ---- */
 .q-switch {
+  --q-sw-w: 52px;
+  --q-sw-h: 32px;
+  --q-sw-knob: calc(var(--q-sw-h) - 4px);
+  --q-sw-grow: 7px;
+  --q-sw-on: var(--q-green);
+  --q-sw-run: calc(var(--q-sw-w) - 4px - var(--q-sw-knob));
   position: relative;
+  display: inline-block;
   flex: 0 0 auto;
-  width: 64px;
-  height: 28px;
+  width: var(--q-sw-w);
+  height: var(--q-sw-h);
   padding: 0;
   border: 0;
   border-radius: 999px;
   background: var(--q-fill-1);
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.06);
   cursor: pointer;
-  transition: background-color 0.3s;
+  vertical-align: middle;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.28s cubic-bezier(0.3, 0, 0.2, 1), box-shadow 0.28s;
 }
 .q-switch::after {
   content: '';
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 38px;
-  height: 24px;
+  width: var(--q-sw-knob);
+  height: var(--q-sw-knob);
   border-radius: 999px;
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14), 0 0.5px 1px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  will-change: transform;
   transition: transform var(--q-dur-bouncy) var(--q-spring-bouncy), width var(--q-dur-snappy) var(--q-spring-snappy);
 }
 .q-switch:is(:active, [data-q-press])::after {
-  width: 44px;
+  width: calc(var(--q-sw-knob) + var(--q-sw-grow));
 }
-.q-switch[aria-checked='true'] {
-  background: var(--q-green);
+.q-switch:is([aria-checked='true'], .on),
+:checked + .q-switch {
+  background: var(--q-sw-on);
+  box-shadow: inset 0 0 0 0.5px transparent;
 }
-.q-switch[aria-checked='true']::after {
-  transform: translateX(22px);
+.q-switch:is([aria-checked='true'], .on)::after,
+:checked + .q-switch::after {
+  transform: translateX(var(--q-sw-run));
 }
-.q-switch[aria-checked='true']:is(:active, [data-q-press])::after {
-  transform: translateX(16px);
+.q-switch:is([aria-checked='true'], .on):is(:active, [data-q-press])::after,
+:checked + .q-switch:is(:active, [data-q-press])::after {
+  transform: translateX(calc(var(--q-sw-run) - var(--q-sw-grow)));
 }
-.q-switch:focus-visible {
+/* Under a finger dragging it: the knob where the finger has it, the track's
+   colour as far along as the knob is. */
+.q-switch.q-sw-drag.q-sw-drag {
+  background: color-mix(in srgb, var(--q-sw-on) calc(var(--q-sw-p, 0) * 100%), var(--q-fill-1));
+  transition: none;
+}
+.q-switch.q-sw-drag.q-sw-drag::after {
+  width: calc(var(--q-sw-knob) + var(--q-sw-grow));
+  transform: translateX(var(--q-sw-x, 0px));
+  transition: width var(--q-dur-snappy) var(--q-spring-snappy);
+}
+.q-switch:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.q-switch:focus-visible,
+:focus-visible + .q-switch {
   outline: 2px solid var(--q-accent);
   outline-offset: 2px;
 }
 input[type='checkbox'][switch] {
   accent-color: var(--q-green);
-}
-.q-switch.on {
-  background: var(--q-green);
-}
-.q-switch.on::after {
-  transform: translateX(22px);
-}
-.q-switch.on:is(:active, [data-q-press])::after {
-  transform: translateX(16px);
 }
 
 /* ---- Sheet foot: a primary button pinned to a kit sheet's bottom edge ---- */
@@ -1993,6 +2081,13 @@ input[type='checkbox'][switch] {
   transform: translateX(-50%);
   animation: q-toast-in var(--q-dur-bouncy) var(--q-spring-bouncy);
 }
+/* (Over a sheet: a popover in the top layer, ui.mjs toast; the browser's popover box undone.) */
+.q-toast[popover] {
+  inset: auto auto calc(var(--q-nav, 0px) + 12px) var(--q-mid, 50%);
+  margin: 0;
+  border: 0;
+  overflow: visible;
+}
 .q-net {
   position: fixed;
   z-index: 2147482800;
@@ -2157,6 +2252,30 @@ input[type='checkbox'][switch] {
   to {
     background-position: 0 0;
   }
+}
+/* A part still being read (ui.mjs waiting): the real card's own shape, its
+   words and pictures the same shimmer, its title as is; nothing to tap. */
+.q-wait {
+  pointer-events: none;
+}
+/* (Words a rounded bar; a face or a picture keeps its own round.) */
+.q-wait .q-wait-bit:not(:empty) {
+  border-radius: 6px;
+}
+.q-wait .q-wait-bit {
+  border-color: transparent !important;
+  background: linear-gradient(100deg, var(--q-fill-3) 30%, var(--q-fill-4) 50%, var(--q-fill-3) 70%) 0 0 / 300% 100% !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none !important;
+  animation: q-shimmer 1.4s ease-in-out infinite;
+}
+.q-wait img.q-wait-bit {
+  object-position: -999px 0;
+}
+.q-wait :is(svg, picture, canvas, video).q-wait-bit > * {
+  visibility: hidden;
 }
 
 /* ---- A count or a mark on something ---- */
@@ -2327,6 +2446,7 @@ input[type='checkbox'][switch] {
   .q-chip,
   .q-seg::before,
   .q-seg > button,
+  .q-switch,
   .q-switch::after,
   .q-tabbar.q-tabbar,
   .q-tabbar.q-tabbar::before,
@@ -2346,7 +2466,8 @@ input[type='checkbox'][switch] {
   .q-accessory,
   .q-panel-in,
   .q-bump,
-  .q-skel {
+  .q-skel,
+  .q-wait .q-wait-bit {
     animation: none;
   }
   ::view-transition-old(*),
@@ -2952,12 +3073,47 @@ dialog {
 .q-pass .q-btn.block { width: 100%; }
 .q-pass .q-chips.small .q-chip { min-height: 30px; padding: 0 12px; font-size: 13px; }
 .q-pass .app-card.here { border-color: var(--accent); }
-.q-pass .help-list { display: grid; gap: 12px; margin: 10px 0 14px; }
-.q-pass .help-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
-.q-pass .help-card p { font-size: 14.5px; line-height: 1.7; color: var(--q-text-2); }
-.q-pass .help-card p + p { margin-top: 8px; }
-.q-pass .help-card.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
-.q-pass .help-list .q-card + .q-card { margin-top: 0; }
+/* 說明 (pass.mjs renderHelp, help.mjs): which app's guide (a row of marks),
+   the app's head, what it is, a tour of its screens (each its real
+   screenshot, help-shots.mjs, held at its size so nothing moves in), then
+   the questions, one folded row each. */
+.q-pass .hp { display: grid; gap: var(--q-s-5); container: hp / inline-size; }
+.q-pass .hp-apps { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * var(--q-margin)); padding: 0 var(--q-margin); scroll-padding: 0 var(--q-margin); }
+.q-pass .hp-apps::-webkit-scrollbar { display: none; }
+.q-pass .hp-app { flex: 0 0 auto; display: grid; justify-items: center; gap: 4px; width: 64px; padding: 8px 0 7px; border: 0; border-radius: var(--q-r-cell); background: none; color: var(--q-label-2); font: 500 12px/14px var(--q-font); white-space: nowrap; cursor: pointer; }
+.q-pass .hp-app img { border-radius: 9px; }
+.q-pass .hp-app[aria-selected='true'] { background: var(--q-fill-3); color: var(--q-label); font-weight: 600; }
+.q-pass .hp-head { display: flex; align-items: center; gap: 14px; }
+.q-pass .hp-head > img { flex: 0 0 auto; border-radius: 13px; }
+.q-pass .hp-head-text { display: grid; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.q-pass .hp-head-text h3 { font: var(--q-t-title2); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q-pass .hp-head-text small { font: var(--q-t-subhead); color: var(--q-label-2); }
+.q-pass .hp-go { flex: 0 0 auto; min-height: 32px; padding: 0 16px; border-radius: 999px; background: var(--accent); border-color: transparent; color: #fff; font-weight: 600; }
+.q-pass .hp-what { display: grid; gap: 8px; margin-top: calc(-1 * var(--q-s-2)); }
+.q-pass .hp-what p { font: var(--q-t-body); line-height: 1.6; color: var(--q-label); }
+.q-pass .hp-tour, .q-pass .hp-more { display: grid; gap: 12px; }
+.q-pass .hp-tour .q-list-head, .q-pass .hp-more .q-list-head { margin: 0 0 -4px; padding: 0 4px; }
+.q-pass .hp .q-card + .q-card { margin-top: 0; }
+.q-pass .hp-stop { padding: 12px; display: grid; gap: 12px; overflow: hidden; }
+/* A screenshot: the screen's top, its own size held (aspect-ratio) before
+   it's read, fading out at its foot: the screen goes on below. */
+.q-pass .hp-shot { display: block; border-radius: 14px; overflow: hidden; background: var(--q-fill-4); box-shadow: inset 0 0 0 0.5px var(--q-sep); -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); }
+.q-pass .hp-shot img { display: block; width: 100%; height: auto; aspect-ratio: 480 / 440; object-fit: cover; object-position: top; }
+.q-pass .hp-stop-text { display: grid; gap: 4px; padding: 0 4px 4px; }
+.q-pass .hp-stop-text h5 { font: var(--q-t-headline); margin: 0; }
+.q-pass .hp-stop-text p { font: var(--q-t-subhead); line-height: 1.55; color: var(--q-label-2); margin: 0; }
+@container hp (min-width: 500px) {
+  .q-pass .hp-stop { grid-template-columns: 200px minmax(0, 1fr); align-items: center; gap: 18px; }
+}
+.q-pass .hp-folds { padding: 0; overflow: hidden; }
+.q-pass .hp-fold + .hp-fold { border-top: 0.5px solid var(--q-sep); }
+.q-pass .hp-fold summary { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px; font: var(--q-t-body); font-weight: 500; color: var(--q-label); cursor: pointer; list-style: none; }
+.q-pass .hp-fold summary::-webkit-details-marker { display: none; }
+.q-pass .hp-fold summary span:first-child { flex: 1 1 auto; min-width: 0; }
+.q-pass .hp-chev { display: grid; color: var(--q-label-3, var(--q-label-2)); transition: transform var(--q-dur-fast, .2s) ease; }
+.q-pass .hp-fold[open] .hp-chev { transform: rotate(90deg); }
+.q-pass .hp-fold-body { display: grid; gap: 10px; padding: 0 16px 16px; }
+.q-pass .hp-fold-body p { font: var(--q-t-subhead); line-height: 1.65; color: var(--q-label-2); margin: 0; }
 
 
 .q-pass .looks { display: grid; gap: 10px; }
@@ -3283,6 +3439,31 @@ html.q-recording body::after {
   background: color-mix(in srgb, var(--t) 16%, transparent);
   color: var(--t);
   box-shadow: none;
+}
+
+/* An add row (新增行程, 釘選地點, 新增帳戶…): the plus alone in the tile's column, no box,
+   pill or wash behind it, the plus in the accent and the words in the label's colour
+   (Jay 2026-11-03: the plus on a green pill "make the UI look cheap"; never accent words). <button class="q-ritem q-add"><span
+   class="q-add-i">+</span><span class="q-ritem-text"><span class="q-ritem-title">… */
+.q-ritem.q-add {
+  min-height: 48px;
+}
+.q-add-i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 24px;
+  color: var(--q-accent);
+}
+.q-add-i svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+.q-ritem.q-add .q-ritem-title {
+  color: var(--q-label);
+  font-weight: 500;
 }
 
 .q-rowcard {
@@ -3642,7 +3823,7 @@ div.q-ritem {
   min-height: 44px;
   margin: -12px 0 -12px auto;
   padding: 0 0 0 12px;
-  color: var(--q-blue);
+  color: var(--q-text-2);
   font: 500 15px/1 var(--q-font);
 }
 .q-sh-more svg {
@@ -4766,6 +4947,9 @@ html.q-kb .q-kb-docked {
   bottom: calc(var(--q-kb) + 8px) !important;
 }
 
+/* A grid of like tiles that never ends on a part row (orbit.mjs fullRows): the tiles past its last full row. */
+.q-rows-full > .q-cut { display: none; }
+
 /* ---- Grids that never leave a hole: the kit's panels, and any app grid
    marked .q-even (2 columns) or .q-even3 (3): a lone last card spans the
    row, two left in a row of three share it ---- */
@@ -5233,19 +5417,23 @@ html.q-kb.q-float dialog.q-sheet[open] {
   grid-column: 1 / -1;
 }
 /* A page's sections dealt into columns (ui.mjs flowColumns): .q-flow,
-   laid as .q-flow-laid > .q-flow-col on q-wide. */
-:root.q-wide .q-flow:is(.q-flow-laid, .q-flow-measure) {
+   laid as .q-flow-laid > .q-flow-col on q-wide (in a wide sheet, by its width). */
+:is(:root.q-wide, dialog.q-sheet-wide) .q-flow:is(.q-flow-laid, .q-flow-measure) {
   display: grid;
   grid-template-columns: repeat(var(--q-flow-n, 2), minmax(0, 1fr));
   gap: 0 var(--q-s-5, 24px);
   align-items: start;
 }
-:root.q-wide .q-flow.q-flow-measure > * {
+:is(:root.q-wide, dialog.q-sheet-wide) .q-flow.q-flow-measure > * {
   grid-column: 1;
 }
-:root.q-wide .q-flow-col > :first-child,
-:root.q-wide .q-flow.q-flow-measure > :first-child {
+:is(:root.q-wide, dialog.q-sheet-wide) .q-flow-col > :first-child,
+:is(:root.q-wide, dialog.q-sheet-wide) .q-flow.q-flow-measure > :first-child {
   margin-top: 0;
+}
+/* (In a sheet, the columns as close as its cards: 12, as .q-sheet-cols.) */
+:root dialog.q-sheet-wide .q-flow:is(.q-flow-laid, .q-flow-measure) {
+  column-gap: 12px;
 }
 .q-sheet {
   --q-margin: 16px;
@@ -5545,5 +5733,374 @@ dialog[open] .q-menu { background: var(--q-sheet); }
   dialog.q-sheet.q-share {
     width: 480px;
     margin: auto;
+  }
+}
+
+/* ---- A list's more (ui.mjs moreToggle / moreHtml): 再看 7 則 / 收起 ----
+   A quiet bar the list's width: grey words and a chevron that turns as it
+   opens, a soft fill, pressed like every button. Never accent-coloured text
+   (Jay 2026-11-03). Inside a card it sits 8 under the list. */
+.q-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 36px;
+  margin: var(--q-s-2) 0 0;
+  padding: 0 var(--q-s-3);
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: var(--q-fill-4);
+  color: var(--q-text-2);
+  font: 600 14px/1.2 var(--q-font);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--q-dur-snappy) var(--q-spring-snappy), background-color 0.2s;
+}
+.q-more[hidden] {
+  display: none;
+}
+.q-more:is(:active, [data-q-press]) {
+  transform: scale(0.98);
+  background: var(--q-fill-3);
+  transition-duration: 0.12s;
+}
+@media (hover: hover) {
+  .q-more:hover {
+    background: var(--q-fill-3);
+  }
+}
+.q-more svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  opacity: 0.8;
+  transition: transform var(--q-dur-snappy) var(--q-spring-snappy);
+}
+.q-more[aria-expanded='true'] svg,
+details[open] > summary.q-more svg {
+  transform: rotate(180deg);
+}
+/* A way on to another view (goBar: 全部球隊數據 ›): the same bar, a › for where it goes. */
+.q-more-go .q-more-chev {
+  font-size: 17px;
+  line-height: 1;
+  margin-top: -1px;
+}
+/* (A disclosure drawn as the bar: <summary class="q-more">.) */
+summary.q-more {
+  list-style: none;
+}
+summary.q-more::-webkit-details-marker {
+  display: none;
+}
+
+/* Room held at a page's or sheet's end after a redraw made it shorter than where the person was (hold-place.mjs), given back as they scroll up. */
+.q-hold-room::after { content: ''; display: block; height: var(--q-hold-room, 0); pointer-events: none; }
+/* A sheet sized to its content keeps the tallest it has been while open
+   (hold-place.mjs, --q-sheet-floor): a day with fewer rows or a part with
+   less in it never pulls it down under the finger. Never past the screen,
+   and not while the keys are up (the sheet follows them then). */
+html:not(.q-kb) dialog.q-sheet[open]:not([data-detent]):not(.q-leaving) {
+  min-height: min(var(--q-sheet-floor, 0px), calc(100dvh - var(--q-top) - 16px), 900px);
+}
+
+
+/* -- 原生 Native (Jay 2026-11-03, docs/DESIGN.md §11): the look every app is
+   moving to, one app at a time; an app that has moved says so on its page,
+   <html data-look="native">, and the rest keep today's look until their turn.
+   Surfaces are graphite lit from above with a hairline edge, heroes too;
+   colour is information, inset on them (.q-band); big numbers are light and tabular; a
+   single-choice filter row is text tabs; icons are tinted glyphs; the day
+   strip's chosen day sits on a quiet plate. ([data-look] twice where the kit's
+   own rule is as specific.) -- */
+html[data-look='native'] :is(.q-card, .q-rowcard, .q-list, .q-rail-card, .q-action) {
+  background: var(--nv-card);
+  box-shadow: inset 0 0 0 0.5px var(--nv-edge), inset 0 1px 0 rgba(255, 255, 255, 0.035), var(--nv-lift);
+}
+/* (Weight by role; big numbers light and tabular.) */
+html[data-look='native'] .q-section-head h2 {
+  font: 600 21px/26px var(--q-font);
+  letter-spacing: -0.015em;
+}
+html[data-look='native'] .q-ritem-title {
+  font-weight: 500;
+}
+html[data-look='native'] :is(.q-focus-value, .q-hc-big) {
+  font-family: var(--nv-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+}
+html[data-look='native'] :is(.num, .q-ritem-value) {
+  font-variant-numeric: tabular-nums;
+}
+/* (A hero is a graphite card like the rest, never filled with the app's
+   colour: colour is information, inset on it (.q-band below), and the app's
+   colour marks only what's live and the main action. Jay 2026-11-03.) */
+html[data-look='native'] :is(.q-hero-card, .q-focus) {
+  --q-focus-2: var(--q-label-2);
+  background: var(--nv-card);
+  color: var(--q-label);
+  box-shadow: inset 0 0 0 0.5px var(--nv-edge), inset 0 1px 0 rgba(255, 255, 255, 0.035), var(--nv-lift);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) :is(.q-hc-sub, .q-focus-label, .q-focus-sub, .q-focus-figs small) {
+  color: var(--q-label-2);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-focus-value {
+  color: var(--q-label);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-hc-pill {
+  background: var(--q-fill-3);
+  color: var(--q-label);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-hc-pill > i {
+  background: var(--q-accent);
+  color: #ffffff;
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-hc-btn {
+  background: var(--q-accent);
+  color: #ffffff;
+  box-shadow: none;
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-hc-btn.ghost {
+  background: var(--q-fill-3);
+  color: var(--q-label);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-focus-bar {
+  background: var(--q-fill-3);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-focus-bar > i {
+  background: var(--q-accent);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-focus-bar.over > i {
+  background: var(--q-red);
+}
+html[data-look='native'][data-look='native'] :is(.q-hero-card, .q-focus) .q-focus-figs b.in {
+  color: var(--q-good);
+}
+/* (An inset coloured row, .q-band with --band: a team, a bus line, a
+   category or a class on its own colour, white over it, a mark at its start;
+   the Sports hero's club rows, as Jay liked them.) */
+html[data-look='native'] .q-band {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 14px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--band, var(--q-gray)) 92%, var(--nv-deep)) 0%, color-mix(in srgb, var(--band, var(--q-gray)) 62%, var(--nv-deep)) 100%);
+  color: #ffffff;
+}
+html[data-look='native'] .q-band-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.22);
+  font: 700 15px/1 var(--q-font);
+}
+html[data-look='native'] .q-band-text {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+  min-width: 0;
+}
+html[data-look='native'] .q-band-text b {
+  overflow: hidden;
+  font: 600 17px/22px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-look='native'] .q-band-text small {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.74);
+  font: 500 13px/17px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-look='native'] .q-band-end {
+  flex: none;
+  font: 600 20px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+/* (A single-choice filter row, .q-chips.q-texttabs: text tabs, the chosen one
+   underlined. A multiple choice, a pin's weekdays, stays chips.) */
+html[data-look='native'] .q-chips.q-texttabs > .q-chip {
+  min-height: 36px;
+  padding: 0 2px;
+  margin-right: 18px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--q-label-2);
+  font: 500 16px/1 var(--q-font);
+}
+html[data-look='native'][data-look='native'] .q-chips.q-texttabs > .q-chip:is([aria-pressed='true'], [aria-selected='true'], .on) {
+  background: transparent;
+  color: var(--q-label);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--q-label);
+}
+/* (The day strip: today's capsules, the chosen day on a quiet plate, today's date in the app's colour.) */
+html[data-look='native'][data-look='native'] .q-day-strip .q-chip.day:not([aria-pressed='true']) {
+  background: transparent;
+}
+html[data-look='native'][data-look='native'] .q-day-strip .q-chip.day[aria-pressed='true'] {
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  box-shadow: none;
+}
+html[data-look='native'][data-look='native'] .q-day-strip .q-chip.day[aria-pressed='true'] > span,
+html[data-look='native'][data-look='native'] .q-day-strip .q-chip.day[aria-pressed='true'] small {
+  color: var(--q-label);
+}
+html[data-look='native'][data-look='native'] .q-day-strip .q-chip.day.is-today:not([aria-pressed='true']) small {
+  color: var(--accent, var(--q-accent));
+}
+/* (Tags are text: grey for a fact, its colour for an exception; only .solid is filled.) */
+html[data-look='native'] .q-tag:not(.solid) {
+  min-height: 0;
+  padding-inline: 0;
+  background: none;
+  font-weight: 500;
+}
+/* (A tag at a row's end is the row's value: the size of .q-ritem-value, not a
+   12 px whisper beside a 16 px title. Tags under the title stay small.) */
+html[data-look='native'] :is(.q-ritem, .q-cell) > .q-tag:not(.solid) {
+  flex: none;
+  font: 500 15px/20px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+/* (Icons: the glyph in its colour on a faint wash of it, never a filled square.) */
+html[data-look='native'] .q-tile:not(.q-place) {
+  background: color-mix(in srgb, var(--t) var(--nv-wash), transparent);
+  color: color-mix(in srgb, var(--t) var(--nv-glyph-a), var(--nv-glyph));
+  box-shadow: none;
+}
+/* (Inside a sheet or a card a button lies flat: a quiet fill, no glass, rim or drop. Glass
+   is for what floats over a map or a picture; inside a surface it read as old 3D buttons
+   (Jay 2026-11-03, Transit's 路線 sheet: "the glassy 3D button design still quite a lot of
+   places"). A button that floats over a map inside one keeps it with .q-glass.) */
+html[data-look='native'] :is(.q-sheet, .q-rowcard, .q-list, .q-section) :is(.q-icon-btn, .q-close):not(.q-glass) {
+  background: var(--q-fill-3);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+html[data-look='native'] :is(.q-sheet, .q-rowcard, .q-list, .q-section) .q-icon-btn:not(.q-glass):is(:active, [data-q-press]):not(:disabled) {
+  transform: scale(0.94);
+  background: var(--q-fill-2);
+}
+
+/* ---- Reorder (ui.mjs reorder, Jay 2026-11-03): rows put in order by the
+   grip at their end. Held, the row lifts off the list (a lighter plate, a
+   soft shadow, the grip in the app's colour) and follows the finger; the
+   rows it passes slide aside on a spring; let go, it settles in. ---- */
+.q-grip {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -6px -10px -6px -2px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: none;
+  color: var(--q-label-3);
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-grip svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+/* A row that opens (its page, its sheet) and has a grip: the part that opens is a button inside it. */
+.q-row-open {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  margin: -8px 0;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-row-open:is(:active, [data-q-press]) {
+  opacity: 0.6;
+}
+.q-grip:focus-visible {
+  outline: 2px solid var(--q-accent);
+  outline-offset: -6px;
+}
+.q-reorder.q-reordering {
+  overflow: visible;
+}
+.q-reordering,
+.q-reordering * {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: grabbing;
+}
+.q-reorder-shift {
+  transition: transform 0.26s var(--q-spring-smooth);
+}
+.q-reorder-lift,
+.q-reorder-land {
+  position: relative;
+  z-index: 2;
+  border-radius: var(--q-r-cell);
+  background: linear-gradient(var(--q-fill-4), var(--q-fill-4)), var(--q-surface);
+  box-shadow: 0 0 0 0.5px var(--q-sep), 0 14px 32px -10px rgba(0, 0, 0, 0.45);
+}
+.q-reorder-lift {
+  scale: 1.02;
+  transition: scale 0.18s var(--q-spring-snappy);
+}
+.q-reorder-land {
+  scale: 1;
+  transition: transform 0.2s var(--q-spring-snappy), scale 0.2s var(--q-spring-snappy);
+}
+.q-reorder-lift::before,
+.q-reorder-land::before,
+.q-reorder-lift + *::before {
+  opacity: 0;
+}
+.q-reorder-lift .q-grip {
+  color: var(--q-accent);
+}
+html[data-look='native'] :is(.q-reorder-lift, .q-reorder-land) {
+  background: linear-gradient(var(--q-fill-4), var(--q-fill-4)), var(--nv-card);
+}
+@media (prefers-reduced-motion: reduce) {
+  .q-reorder-shift,
+  .q-reorder-lift,
+  .q-reorder-land {
+    transition: none;
+    scale: none;
   }
 }

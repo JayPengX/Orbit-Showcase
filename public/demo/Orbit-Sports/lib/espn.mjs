@@ -1173,13 +1173,24 @@ export function parseSummary(data, league) {
     }
     const wins = {};
     let draws = 0;
-    const done = (s.events || []).filter(ev => ev.statusType?.completed || ev.status === 'post');
+    // (The meetings before this game only: a finished game's page never counts its own result among them.)
+    const self = String(data?.header?.id ?? '');
+    const start = Date.parse(data?.header?.competitions?.[0]?.date || '') || Infinity;
+    const before = ev => String(ev.id) !== self && !(Date.parse(ev.date) >= start);
+    // (The last five at most, the newest first: what ESPN lists, and all the card speaks of.)
+    const done = (s.events || []).filter(ev => (ev.statusType?.completed || ev.status === 'post') && before(ev)).sort((x, y) => Date.parse(y.date) - Date.parse(x.date)).slice(0, H2H_MAX);
     for (const ev of done) {
-      const winner = (ev.competitors || []).find(c => c.winner);
-      if (winner) wins[String(winner.team?.id)] = (wins[String(winner.team?.id)] || 0) + 1;
+      const { winner } = meetingResult(ev);
+      if (winner) wins[winner] = (wins[winner] || 0) + 1;
       else draws++;
     }
-    return { summary: '', events, h2h: { n: done.length, wins, draws } };
+    // (Each meeting too, both sides with their scores: the card's rows, the newest first; a shootout's `pens`.)
+    const pens = new Map(done.map(ev => [String(ev.id), meetingResult(ev).pens]));
+    const games = events
+      .filter(ev => ev.done && ev.home && ev.away && pens.has(ev.id))
+      .map(({ id, date, home, away }) => ({ id, date, home, away, ...(pens.get(id) ? { pens: true } : {}) }))
+      .sort((x, y) => Date.parse(y.date) - Date.parse(x.date));
+    return { summary: '', events, games, h2h: { n: done.length, wins, draws } };
   });
   const form = (data?.lastFiveGames || []).map(t => ({ team: String(t.team?.id ?? ''), games: (t.events || []).map(ev => ({ result: ev.gameResult || '', score: ev.score || '', opp: ev.opponent?.abbreviation || ev.opponent?.displayName || '', date: ev.gameDate })) }));
   const table = (data?.standings?.groups || []).flatMap(g =>
@@ -1267,6 +1278,21 @@ export const espnSummary = (league, id) => getJson(`${SITE}/${LEAGUES[league].es
 // away }] }, or null. Not football's (its head-to-head is every meeting).
 const playedSeries = s => (s?.events || []).some(ev => /\d/.test(ev.score || '') && ev.done);
 // A meeting's two sides, home and away: { id, abbr, name, short, logo, score, winner }.
+// Football's head-to-head: the last five meetings at most (ESPN lists five).
+export const H2H_MAX = 5;
+// A meeting's result by its score (Jay 2026-11-03: a 3-3 counted as 曼聯's win):
+// the side with more goals won; level is a draw, even one a shootout settled
+// (ESPN marks the shootout's winner: `pens`, its side's id in `shootout`).
+export function meetingResult(ev) {
+  const list = ev?.competitors || [];
+  const goals = list.map(c => Number.parseFloat(c.score?.displayValue ?? c.score?.value ?? c.score));
+  const flagged = list.find(c => c.winner);
+  const id = c => String(c?.team?.id ?? c?.id ?? '');
+  if (list.length !== 2 || !goals.every(Number.isFinite)) return { winner: flagged ? id(flagged) : null, pens: false };
+  if (goals[0] !== goals[1]) return { winner: id(list[goals[0] > goals[1] ? 0 : 1]), pens: false };
+  const pens = Boolean(flagged) || /PEN/.test(ev?.statusType?.name || '');
+  return { winner: null, pens, ...(flagged ? { shootout: id(flagged) } : {}) };
+}
 const meetingSide = c => ({ id: String(c.team?.id ?? c.id ?? ''), abbr: c.team?.abbreviation || '', name: c.team?.displayName || '', short: c.team?.shortDisplayName || '', logo: logoOf(c.team), score: String(c.score?.displayValue ?? c.score ?? ''), winner: Boolean(c.winner) });
 function meetingSides(list = []) {
   const h = list.find(c => c.homeAway === 'home');
@@ -1834,8 +1860,22 @@ export function parseSchedule(data, league) {
     const lg = own || league;
     const home = withLogo(lg, parseSide(comp?.competitors?.find(c => c.homeAway === 'home')));
     const away = withLogo(lg, parseSide(comp?.competitors?.find(c => c.homeAway === 'away')));
-    return { id: String(e.id), league: lg, kind: 'match', name: e.name, short: e.shortName, ...startOf(e.date, comp), status: overByRule(parseStatus(comp?.status), away, home, lg), home, away, venue: comp?.venue?.fullName || '', note: comp?.notes?.[0]?.headline || '', ...(own ? {} : { other: e.league?.name || e.league?.abbreviation || '' }) };
+    return { id: String(e.id), league: lg, kind: 'match', name: e.name, short: e.shortName, ...startOf(e.date, comp), status: overByRule(parseStatus(comp?.status), away, home, lg), home, away, venue: comp?.venue?.fullName || '', note: comp?.notes?.[0]?.headline || '', ...(e.season?.year ? { seasonYear: Number(e.season.year), seasonName: e.season.displayName || '' } : {}), ...(own ? {} : { other: e.league?.name || e.league?.abbreviation || '' }) };
   });
+}
+// Where a team's games to come cross into its league's next season (Jay
+// 2026-11-01: Miami's list ran from Decision Day 11/8 straight into 2/20,
+// "is this cross season?"): the first of the club's own league's games in a
+// later season than its first one to come. → { at, name: '2027' | '2026-27' }
+// or null. (A cup's or a friendly's season never counts: a cup can name another year.)
+export function seasonBreak(games, league) {
+  const own = games.filter(g => g.league === league && g.seasonYear);
+  if (!own.length) return null;
+  const first = own[0].seasonYear;
+  const next = own.find(g => g.seasonYear > first);
+  if (!next) return null;
+  const name = (String(next.seasonName).match(/\d{4}(?:[-/]\d{2,4})?/) || [String(next.seasonYear)])[0].replace('/', '-');
+  return { at: games.indexOf(next), name };
 }
 // A team's season: its results and the games to come. A soccer club's across
 // all its competitions: ESPN gives the results, and the fixtures on their own.
@@ -2022,11 +2062,13 @@ async function f1Leaders(league) {
     if (d?.MRData) return d;
     throw new Error('empty');
   };
-  const first = await page(f1ResultsUrl());
+  // The first page and the poles together, then the other pages together,
+  // a quarter of a second apart (Jolpica's four a second): two waits, not
+  // seven one after another (F1's 數據 was the slowest by far, Jay 2026-11-03).
+  const [first, poles] = await Promise.all([page(f1ResultsUrl()), page(f1PolesUrl()).catch(() => null)]);
   const total = Number(first?.MRData?.total) || 0;
-  const rest = [];
-  for (let i = 1; i < Math.min(10, Math.ceil(total / 100)); i++) rest.push(await page(f1ResultsUrl(i * 100)));
-  const poles = await page(f1PolesUrl()).catch(() => null);
+  const n = Math.min(10, Math.ceil(total / 100));
+  const rest = await Promise.all(Array.from({ length: Math.max(0, n - 1) }, (_, k) => new Promise(r => setTimeout(r, 260 * k)).then(() => page(f1ResultsUrl((k + 1) * 100)))));
   const drivers = ((await table) || []).flatMap(g => g.rows || []).filter(r => r.athlete);
   return parseF1Leaders([first, ...rest], poles, drivers);
 }
@@ -2177,12 +2219,23 @@ export async function roster(league, id, home = '') {
   const path = home && LEAGUES[league].espn.startsWith('soccer/') ? `soccer/${home}` : LEAGUES[league].espn;
   return parseRoster(await getJson(`${SITE}/${path}/teams/${encodeURIComponent(id)}/roster`, { ttl: 60 * 60_000 }));
 }
+// Whether pregameLineups has anything to read for a game (a game to come:
+// MLB's within three days, football's within two, the NBA's within ten), so
+// the game's page holds 先發陣容's place only where one is coming.
+export function asksLineups(e, now = Date.now()) {
+  if (e?.kind !== 'match' || e.status?.state !== 'pre') return false;
+  const ahead = Date.parse(e.start) - now;
+  const sides = Boolean(e.home?.id && e.away?.id);
+  if (e.league === 'mlb') return ahead <= 3 * 86_400_000;
+  if (LEAGUES[e.league]?.sport === 'soccer') return sides && ahead <= 2 * 86_400_000;
+  return Boolean(CORE_LINEUPS[e.league] && LEAGUES[e.league]?.espn && sides && ahead <= 10 * 86_400_000);
+}
 // Who starts a game to come (lib/lineups.mjs): MLB's probable pitchers and
 // batting orders ({ kind: 'mlb', pitchers, order }); an NBA
 // side's starters once announced ({ kind: 'core', away, home, pending: none
 // yet }), asked only near the start; else null.
 export async function pregameLineups(e, now = Date.now()) {
-  if (e?.kind !== 'match' || e.status?.state !== 'pre') return null;
+  if (!asksLineups(e, now)) return null;
   const ahead = Date.parse(e.start) - now;
   if (e.league === 'mlb') {
     if (ahead > 3 * 86_400_000) return null;
@@ -2289,6 +2342,9 @@ export function parseAthlete(data) {
     position: a.position?.displayName || '',
     team: a.team?.displayName || '',
     teamId: String(a.team?.id ?? ''),
+    // ESPN can name an all-star side as his team (Carles Gil: MLS All-Stars,
+    // a New England player; Jay 2026-11-03): athlete() puts his club in.
+    allStar: Boolean(a.team?.isAllStar),
     teamColor: a.team?.color ? `#${a.team.color}` : '',
     teamLogo: a.team?.logos?.[0]?.href || a.team?.logo || '',
     age: a.age || null,
@@ -2313,7 +2369,29 @@ export function parseAthlete(data) {
   };
 }
 export async function athlete(league, id) {
-  return parseAthlete(await getJson(`${COMMON}/${LEAGUES[league].espn}/athletes/${encodeURIComponent(id)}`, { ttl: 60 * 60_000 }));
+  const a = parseAthlete(await getJson(`${COMMON}/${LEAGUES[league].espn}/athletes/${encodeURIComponent(id)}`, { ttl: 60 * 60_000 }));
+  a.stats.title = seasonNotAhead(a.stats.title);
+  if (!a.allStar) return a;
+  // His club: the side he played his last games for (his overview, the read
+  // his page makes anyway), named by its own team record. None found: no team, never the all-stars.
+  const ov = await getJson(`${COMMON}/${LEAGUES[league].espn}/athletes/${encodeURIComponent(id)}/overview`, { ttl: 60 * 60_000 }).catch(() => null);
+  const clubId = clubOfOverview(ov);
+  const t = clubId ? (await getJson(`${SITE}/${clubPath(league)}/teams/${encodeURIComponent(clubId)}`, { ttl: 24 * 3_600_000 }).catch(() => null))?.team : null;
+  return Object.assign(a, { allStar: false, team: t?.displayName || '', teamId: t ? String(clubId) : '', teamColor: t?.color ? `#${t.color}` : '', teamLogo: t?.logos?.[0]?.href || t?.logo || '' });
+}
+// The club a player's overview has him playing for: the side of his newest
+// game that isn't an all-star game's.
+export function clubOfOverview(ov) {
+  const games = Object.values(ov?.gameLog?.events || {}).filter(g => g?.team?.id != null && !g.team.isAllStar);
+  games.sort((x, y) => Date.parse(y.gameDate || 0) - Date.parse(x.gameDate || 0));
+  return games[0] ? String(games[0].team.id) : '';
+}
+// A season named by one year can't be ahead of this one: ESPN's MLS moved to
+// "2027" while 2026's numbers were still the ones on the card (32 starts, 13
+// goals: "2027年MLS數據"). A split season ("2026-27") is left as it is.
+export function seasonNotAhead(title, now = Date.now()) {
+  const year = new Date(now + 8 * 3_600_000).getUTCFullYear();
+  return String(title || '').replace(/\b(\d{4})\b(?![-–\/]\d)/, (y, n) => (Number(n) > year ? String(year) : y));
 }
 // A driver's championship this season, from the drivers' table: place,
 // points, the gap, and each race's points in order ([code, points]; a race

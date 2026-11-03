@@ -9,12 +9,12 @@
 //               when the next ones come (a train's last station to the
 //               place: 竹中 → 5608 → 竹東高中)
 
-import { tdx, rows } from './api.mjs';
-import { routeStops, routeSchedule, stopTimes, routeCity } from './bus.mjs';
+import { tdx, rows, busEta } from './api.mjs';
+import { routeStops, routeSchedule, stopTimes, routeCity, runsOn, busEtaMended } from './bus.mjs';
 import { stationsAround, etaAround, etaStops } from './near.mjs';
 import { finish, walkLeg } from './plan.mjs';
 import { stoppedNow, ensureBus, routeStatus } from './service.mjs';
-import { meters, walkSec, zh, tw, twAt, addDays, etaAge, routeNorm, sameRoute, isRide, RAIL } from './util.mjs';
+import { meters, walkSec, zh, tw, twAt, addDays, etaAge, etaOld, ETA_GHOST, routeNorm, sameRoute, isRide, RAIL } from './util.mjs';
 
 import { W } from '#kit/lang.mjs';
 const MIN = 60_000;
@@ -42,6 +42,8 @@ export function liveTimes(list, name, now = Date.now(), { dir = null, routeUID =
     const st = status(r);
     // (From when TDX made the estimate, not from now: util.mjs etaAge.)
     const made = now - etaAge(r, now) * 1000;
+    // (A tracker quiet for 15 minutes is no bus: util.mjs ETA_GHOST.)
+    if ((etaOld(r, now) ?? 0) > ETA_GHOST) continue;
     if (r.EstimateTime != null && st === 0) times.push({ at: made + Number(r.EstimateTime) * 1000, last: r.IsLastBus === true, plate: r.PlateNumb || '' });
     for (const x of r.Estimates || []) if (Number.isFinite(Number(x.EstimateTime))) times.push({ at: made + Number(x.EstimateTime) * 1000, last: x.IsLastBus === true, plate: x.PlateNumb || '' });
     if (st === 1 && r.NextBusTime) times.push({ at: Date.parse(r.NextBusTime), last: r.IsLastBus === true, plate: '', planned: true });
@@ -134,6 +136,10 @@ export async function officialPlan(plan, now = Date.now(), opts = {}) {
 // the timetable's own times there, or (公路客運 often lists only when a bus
 // leaves its first stop, the same time at every stop) the first stop's plus
 // the ride from it; else its headway (every 15–20 minutes) from `after`.
+// A stop the timetable doesn't time itself: no times of its own, or the
+// first stop's again (公路客運). Its times are then the first stop's plus a
+// ride guessed from the distance.
+const guessedAt = (here, first) => !here.length || (first.length > 0 && first.join() === here.join());
 export function departuresAt(sched, w, i, after, n = 4) {
   if (!sched?.length) return [];
   const d = tw(after);
@@ -143,7 +149,7 @@ export function departuresAt(sched, w, i, after, n = 4) {
   let shift = 0;
   if (i > 0) {
     const first = at(0).times;
-    if (!times.length || (first.length && first.join() === times.join())) {
+    if (guessedAt(here.times, first)) {
       times = first;
       shift = rideTime(w, 0, i) * 1000;
     }
@@ -187,14 +193,66 @@ export function nextUnseen(sched, w, i, lives, now = Date.now()) {
   }
   return p;
 }
+// The timetable's runs at stop i of a way from 2 minutes ago, each with the
+// bus TDX sees coming that is it (`seen`: moments at that stop): a bus is the
+// earliest run not yet taken it can be, 25 minutes late to 10 early (as
+// liveTrusted). → [{ t, seen }] (seen: that bus's moment, or null).
+export function runsSeen(sched, w, i, seen, now = Date.now(), n = 6) {
+  const runs = departuresAt(sched, w, i, now - 2 * MIN, n + seen.length).map(t => ({ t, seen: null }));
+  for (const a of [...seen].sort((x, y) => x - y)) {
+    const r = runs.find(x => x.seen == null && x.t >= a - 25 * MIN && x.t <= a + 10 * MIN);
+    if (r) r.seen = a;
+  }
+  return runs;
+}
+// The bus a ride was timed for (`dep`: its time at the stop) as TDX sees it
+// now: the moment it's really there, or null (not seen; nothing to go by).
+// Without a timetable, the first bus seen within that window of it.
+// (The owner, 2026-11-03: the bus 2 minutes away and the trip still on the
+// timetable's time, saying hurry and you'll make it.)
+export function seenAt(sched, w, i, seen, dep, now = Date.now()) {
+  if (sched?.length && w) return runsSeen(sched, w, i, seen, now).find(x => Math.abs(x.t - dep) < MIN)?.seen ?? null;
+  return [...seen].sort((x, y) => x - y).find(a => dep >= a - 25 * MIN && dep <= a + 10 * MIN) ?? null;
+}
+// The first run at stop i you can be there for (`ready`) that isn't a bus
+// already seen: { at, live } (live: a seen bus's moment), or null.
+export function nextCatchable(sched, w, i, seen, ready, now = Date.now()) {
+  const live = [...seen].sort((x, y) => x - y).find(a => a >= ready - 30_000);
+  const run = sched?.length && w ? runsSeen(sched, w, i, seen, now, 12).find(x => x.seen == null && x.t >= ready - 30_000) : null;
+  if (live != null && (!run || live <= run.t + MIN)) return { at: live, live: true };
+  return run ? { at: run.t, live: false } : null;
+}
+
 // Whether a live estimate (a bus due at the stop at `at`) is a bus in
 // service: one the timetable has due about then (25 minutes late at most, 10
 // early). A driver resting with the tracker on shows a bus 'coming' at the
 // terminal long before it leaves. No timetable for the way: taken as it is.
+//
+// A stop the timetable doesn't time (快捷8號 to 竹北 lists 台大竹東分院 →
+// 砂石廠 only; 東光 on is the first stop's time plus a ride guessed from the
+// distance, often 10 minutes slower than the bus): a bus is in service if a
+// run left the first stop by then (10 minutes' grace) and it's no later than
+// that ride and 25 minutes. A bus seen at 東海 at 17:49, its guessed 18:00,
+// is the 17:00 from 台大竹東分院 (2026-11-03), not a bus resting.
 export function liveTrusted(sched, w, i, at) {
   if (!sched?.length || !nextRun(sched, w, 0, at - 86_400_000)) return true;
   const t = departuresAt(sched, w, i, at - 25 * MIN, 1)[0];
-  return t != null && t <= at + 10 * MIN;
+  if (t != null && t <= at + 10 * MIN) return true;
+  if (i === 0) return false;
+  const d = tw(at);
+  const times = k => stopTimes(sched, { stopUID: w.stops[k].uid, name: w.stops[k].name, dir: w.dir }, d.date, d.dow).times;
+  if (!guessedAt(times(i), times(0))) return false;
+  const left = departuresAt(sched, w, 0, at - rideTime(w, 0, i) * 1000 - 25 * MIN, 1)[0];
+  return left != null && left <= at + 10 * MIN;
+}
+
+// An official bus leg's way and stop on it, with its timetable: { w, i, sched }, or null.
+export async function wayAt(l, { stops = routeStops, schedule = routeSchedule } = {}) {
+  if (!l.route?.uid) return null;
+  const route = { uid: l.route.uid, name: l.short || l.name, city: l.route.city || routeCity(l.route.uid) };
+  const [ways, sched] = await Promise.all([stops(route, l.from).catch(() => []), schedule(route, l.from).catch(() => [])]);
+  const w = ways.find(x => x.dir === l.route.dir && x.stops.some(y => y.uid === l.route.stopUID));
+  return w ? { w, i: w.stops.findIndex(y => y.uid === l.route.stopUID), sched } : null;
 }
 
 // Which way of a route a ride is, and its stops: the way where the stop
@@ -252,7 +310,7 @@ export async function busTimes(plan, { near = etaAround, now = Date.now() } = {}
 // plan had you leave for the bus it was made around (it left at 19:05 for the
 // timetable's 19:15, and skipped the live 19:06 a walk away; the owner,
 // 2026-10-12). Without it, from the plan's own start.
-export async function adjustPlan(plan, now = Date.now(), { near = etaAround, start = null } = {}) {
+export async function adjustPlan(plan, now = Date.now(), { near = etaAround, start = null, stops = routeStops, schedule = routeSchedule } = {}) {
   let legs = plan.legs.map(l => ({ ...l }));
   let changed = false;
   let miss = '';
@@ -291,13 +349,24 @@ export async function adjustPlan(plan, now = Date.now(), { near = etaAround, sta
     const before = legs.slice(0, i).reduce((a, x) => a + (x.dur || 0) * 1000, 0);
     // When you can be at the stop: now plus the walk (or ride) to it, else after the leg before.
     const ready = i === first ? Math.max(now, start ?? legs[0].dep ?? now) + before : (legs[i - 1]?.arr ?? l.dep) + 30_000;
-    const bus = times.find(t => t.at >= ready - 30_000);
+    let bus = times.find(t => t.at >= ready - 30_000);
+    // None you can be there for, and the bus this ride was timed for is one
+    // TDX sees coming sooner (its timetable's 17:30 due at 17:22): that one's
+    // gone for you; the timetable's next run that isn't it.
+    if (!bus && l.route?.uid) {
+      const seen = times.filter(t => !t.planned).map(t => t.at);
+      const x = seen.length ? await wayAt(l, { stops, schedule }).catch(() => null) : null;
+      const was = x && seenAt(x.sched, x.w, x.i, seen, l.dep, now);
+      const nx = was != null && was < ready - 30_000 ? nextCatchable(x.sched, x.w, x.i, seen, ready, now) : null;
+      if (nx && !nx.live) bus = { at: nx.at, planned: true, last: false, sched: true };
+    }
     if (!bus) {
       if (stopped) off = stopped === 3 ? W(`${l.short || l.name} 末班已過`, `${l.short || l.name}: last one gone`) : W(`${l.short || l.name} 今日未營運`, `${l.short || l.name}: not running today`);
       if (stopped === 4) dead = true;
       continue;
     }
-    legs[i].live = { at: bus.at, planned: Boolean(bus.planned), last: bus.last };
+    // (A run of the timetable, not a bus seen: re-timed, not live.)
+    if (!bus.sched) legs[i].live = { at: bus.at, planned: Boolean(bus.planned), last: bus.last };
     // The buses after it, for the route's other times (moreBuses).
     // (Not waited for here: the planner waits for them all at once, beside the bikes.)
     if (i === first) legs[i].nextP = laterBuses(list, l, bus.at, { now, n: DAY_BUSES });
@@ -353,23 +422,40 @@ export async function stoppedOn(legs, now = Date.now()) {
 const BUS_M_MIN = 350; // about 21 km/h, stops included roughly
 const STOP_SEC = 20;
 
-// How long a bus takes from stop i to stop j of a way: the timetable's own
-// minutes when a trip lists both, else the distance along its stops.
-export function rideTime(way, i, j, sched = null) {
+// How long a bus takes from stop i to stop j of a way by its timetable: the
+// run you'd be on (`at`: when it's at stop i; the run there nearest then, on
+// a day it runs), else the day's usual ride (the middle of its runs'); with no
+// run listing both stops, the distance along its stops. Never the first run
+// it lists: 5608's 05:34 has 竹東高中 → 豐邦公司 in 7 minutes, and that stood
+// for every hour (the owner, 2026-11-03). (A timetable's times between its
+// ends can be far off: its 15:23 says 10 minutes, the bus took 23. liveRide first.)
+export function rideTime(way, i, j, sched = null, at = null) {
   if (sched?.length) {
     const a = way.stops[i].uid;
     const b = way.stops[j].uid;
+    const hm = s => {
+      const [h, m] = String(s?.DepartureTime || s?.ArrivalTime || '').split(':').map(Number);
+      return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
+    };
+    const d = at != null ? tw(at) : null;
+    const runs = [];
     for (const r of sched) {
       if (Number(r.Direction) !== way.dir) continue;
       for (const t of r.Timetables || []) {
-        const x = (t.StopTimes || []).find(s => s.StopUID === a);
-        const y = (t.StopTimes || []).find(s => s.StopUID === b);
-        const hm = s => {
-          const [h, m] = String(s.DepartureTime || s.ArrivalTime || '').split(':').map(Number);
-          return Number.isFinite(h) ? h * 60 + m : null;
-        };
-        if (x && y && hm(x) != null && hm(y) != null && hm(y) > hm(x)) return (hm(y) - hm(x)) * 60;
+        const x = hm((t.StopTimes || []).find(s => s.StopUID === a));
+        const y = hm((t.StopTimes || []).find(s => s.StopUID === b));
+        if (x == null || y == null || y <= x) continue;
+        runs.push({ x, ride: (y - x) * 60, today: d ? runsOn(t, d.date, d.dow) : true });
       }
+    }
+    if (runs.length) {
+      if (d) {
+        const day = runs.some(r => r.today) ? runs.filter(r => r.today) : runs;
+        const near = day.reduce((p, r) => (Math.abs(r.x - d.min) < Math.abs(p.x - d.min) ? r : p));
+        if (Math.abs(near.x - d.min) <= 45) return near.ride;
+      }
+      const rides = runs.map(r => r.ride).sort((p, q) => p - q);
+      return rides[rides.length >> 1];
     }
   }
   let m = 0;
@@ -377,6 +463,34 @@ export function rideTime(way, i, j, sched = null) {
   return Math.round(((m * 1.15) / BUS_M_MIN) * 60 + (j - i - 1) * STOP_SEC);
 }
 
+
+// How long a bus takes from stop i to stop j as TDX sees its buses now
+// (`list`: the route's estimates, a row a stop: its next bus and when): a hop
+// between two stops in a row that show the same bus is that bus's; the hops
+// no bus spans now at the pace of those that are. null when under half the
+// way is seen. TDX's estimates had 5608's 15:23 from 竹東高中 at 豐邦公司 at
+// 15:46 from the start and it was (its timetable: 15:33; 2026-11-03).
+export function liveRide(list, w, i, j) {
+  const by = new Map();
+  for (const r of list || []) if (Number(r.Direction) === w.dir && !by.has(r.StopUID)) by.set(r.StopUID, r);
+  let sec = 0;
+  let seenM = 0;
+  let gapM = 0;
+  for (let k = i; k < j; k++) {
+    const p = w.stops[k];
+    const q = w.stops[k + 1];
+    const m = p.lat != null && q.lat != null ? meters(p.lat, p.lon, q.lat, q.lon) : 0;
+    const a = by.get(p.uid);
+    const b = by.get(q.uid);
+    const bus = a?.PlateNumb && a.PlateNumb !== '-1' && a.PlateNumb === b?.PlateNumb;
+    if (bus && a.EstimateTime != null && b.EstimateTime != null && b.EstimateTime >= a.EstimateTime) {
+      sec += b.EstimateTime - a.EstimateTime;
+      seenM += m;
+    } else gapM += m;
+  }
+  if (!seenM || seenM < gapM) return null;
+  return Math.round((sec * (seenM + gapM)) / seenM);
+}
 
 // The buses from within `fromM` of a to within `toM` of b with no change,
 // leaving after `at`: up to `n` plans [walk, bus, walk], soonest there first.
@@ -407,7 +521,8 @@ export async function busLink(a, b, at = Date.now(), { fromM = 450, toM = 700, n
   // Each line looked at side by side (its stops and timetable are asks of their own).
   await Promise.all([...cands.values()].slice(0, routes).map(async c => {
     const route = { uid: c.uid, name: c.route, city: routeCity(c.uid) };
-    const [ways, sched] = await Promise.all([routeStops(route, a).catch(() => null), routeSchedule(route, a).catch(() => [])]);
+    // (Its buses on the road now, for how long the ride takes: soon ones only.)
+    const [ways, sched, onRoad] = await Promise.all([routeStops(route, a).catch(() => null), routeSchedule(route, a).catch(() => []), at - now < 90 * MIN ? busEtaMended(route.city, { route: c.uid }).then(x => x.rows, () => []) : []]);
     if (!ways) return void trace?.why.push(`${c.route}: no stops`);
     const boardUIDs = new Set(boards.flatMap(s => s.stops.filter(x => x.routeUID === c.uid).map(x => x.stopUID)));
     const alightUIDs = new Set(there.get(c.uid).map(x => x.stopUID));
@@ -444,10 +559,13 @@ export async function busLink(a, b, at = Date.now(), { fromM = 450, toM = 700, n
       dep = t.at;
       isLive = !t.planned;
     } else if (sched.length) {
-      dep = departuresAt(sched, w, i, ready - 30_000, 1)[0] ?? null;
+      // (Never the run a bus already seen is, gone before you're there.)
+      const seen = lt.times.filter(x => !x.planned).map(x => x.at);
+      dep = (seen.length ? nextCatchable(sched, w, i, seen, ready, now)?.at : departuresAt(sched, w, i, ready - 30_000, 1)[0]) ?? null;
     }
     if (dep == null || dep - ready > 75 * MIN) return void trace?.why.push(`${c.route}: ${dep == null ? 'no bus now' : 'next in over 75 min'}`);
-    const ride = rideTime(w, i, j, sched);
+    // TDX's buses on the road first, its timetable's run else.
+    const ride = (dep - now < 90 * MIN && liveRide(onRoad, w, i, j)) || rideTime(w, i, j, sched, dep);
     const bus = { mode: 'bus', name: c.route, short: c.route, headsign: w.headsign, from: { name: bs.name, lat: bs.lat, lon: bs.lon }, to: { name: as.name, lat: as.lat, lon: as.lon }, dep, arr: dep + ride * 1000, dur: ride, stops: j - i, dist: Math.round(meters(bs.lat, bs.lon, as.lat, as.lon) * 1.3), agency: '', route: { uid: c.uid, city: route.city, dir: w.dir, stopUID: bs.uid }, ...(isLive ? { live: { at: dep } } : {}) };
     // The buses after it (its card's times): TDX's, else the timetable's, else its headway.
     const later = lt.times.filter(x => x.at > dep + MIN).map(x => x.at);

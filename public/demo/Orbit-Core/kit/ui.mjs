@@ -11,11 +11,15 @@
 //   and icons, tile, pageHead, rowCard, tag, rail, stats, section, sectionHead, logoTile,
 //   matchCard, liveStrip, actionGrid, sheetHero, sheetFoot, confirm, stakeInput, stockRow,
 //   ballRow, placeTile, progressRing, monthCalendar, panelGrid, leagueTile, ready (lift the
-//   loading screen); toast's action / batch and segmented's count (see each below).
+//   loading screen), reorder + grip (a list put in order by dragging); toast's action / batch
+//   and segmented's count (see each below).
 
 // { tab: 'ipo' } as data-tab="ipo" attributes (a builder's `data`, for taps wired by delegation).
 // (By path, not #kit/: a page whose import map predates format.mjs still loads ui.mjs.)
 import { DASH, pct, price as fmtPrice, twDay, addDays as dayAdd } from './format.mjs';
+// (A live redraw never moves the page: the kit holds every scroller's place, hold-place.mjs.)
+export { scrollBusy, freshScreen } from './hold-place.mjs';
+import { letGo } from './hold-place.mjs';
 
 const dataProps = (data = null) => Object.fromEntries(Object.entries(data || {}).filter(([, v]) => v != null && v !== false).map(([k, v]) => [`data-${String(k).replace(/[^a-z0-9-]/gi, '')}`, v === true ? '' : String(v)]));
 const reduced = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -148,14 +152,18 @@ export function dayStrip(s, { days = [], current = null, onPick = () => {}, labe
     };
     // Whole days only: as many chips as fit, sharing the row's width (never one
     // cut in half beside the 📅), each at least 62px (the date with room on iPhone's
-    // wider digits); the row comes to rest on a chip's edge.
+    // wider digits); the row comes to rest on a chip's edge. (The look can say
+    // otherwise: Native's week row is seven days, each at least 40px:
+    // --q-day-n and --q-day-min on the row.)
     s.fit = () => {
       const r = s.row;
       if (!r.clientWidth) return;
       const cs = getComputedStyle(r);
       const room = r.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const gap = parseFloat(cs.columnGap) || 0;
-      const n = Math.max(1, Math.floor((room + gap) / (62 + gap)));
+      const least = parseFloat(cs.getPropertyValue('--q-day-min')) || 62;
+      const most = parseFloat(cs.getPropertyValue('--q-day-n')) || Infinity;
+      const n = Math.max(1, Math.min(most, Math.floor((room + gap) / (least + gap))));
       const w = `${Math.floor(((room - gap * (n - 1)) / n) * 10) / 10}px`;
       if (r.style.getPropertyValue('--q-day-w') !== w) {
         r.style.setProperty('--q-day-w', w);
@@ -538,7 +546,17 @@ export function toast(text, { tone = '', ms = 2200, action = null, batch = '' } 
       );
     }
   }
-  document.body.append(t);
+  // Over an open sheet (a modal dialog: the page under it is inert, its 復原
+  // couldn't be tapped): inside the sheet, as a popover in the top layer
+  // above it, so it sits at the screen's foot whatever the sheet's scroll.
+  const over = [...(document.querySelectorAll?.('dialog[open]') || [])].at(-1);
+  if (over && typeof t.showPopover === 'function') {
+    over.append(t);
+    try {
+      t.setAttribute('popover', 'manual');
+      t.showPopover();
+    } catch {}
+  } else document.body.append(t);
   mine.timer = setTimeout(close, ms);
   lastToast = batch ? mine : null;
   return t;
@@ -618,10 +636,235 @@ export function toggle({ checked = false, onChange = () => {}, label = '' } = {}
   b.addEventListener('click', () => {
     const on = b.getAttribute('aria-checked') !== 'true';
     b.setAttribute('aria-checked', String(on));
-    tick();
+    // (Felt and dragged by orbit.mjs's switchGlide, as every switch is.)
     onChange(on);
   });
   return b;
+}
+
+// ---- Reorder: a list put in order by its grips (Jay 2026-11-03) ----
+// One way in every app to put rows in order: each row carries a grip (three
+// lines, `grip()` / `gripHtml()`) at its end; a finger on it lifts the row,
+// the row follows the finger, the others slide aside to make its room, and
+// it settles where it's let go. No arrows, no tap-then-往後.
+//   reorder(container, { items, onChange, label })
+// container: the box holding the rows (a .q-list, a .q-rowcard); items: the
+// rows inside it (default its children with data-q-key); onChange(keys,
+// { from, to }) once a row has moved, keys in their new order (the row's
+// data-q-key), the DOM already in that order (the app saves; it needn't
+// redraw). Wired once on the container by delegation, so the app may
+// redraw the rows inside it. On a touch screen the grip is held still a
+// moment (HOLD_MS) before the row lifts: a swipe through it scrolls the
+// list, as everywhere else. Keyboard: the grip is a button, ↑ and ↓ move
+// its row one place. Returns a function that unwires it.
+const GRIP_HOLD_MS = 150;
+const GRIP_SLOP = 8;
+const GRIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14"/></svg>';
+export function grip(label = kitW('拖曳排序', 'Drag to reorder')) {
+  return h('button', { class: 'q-grip', type: 'button', 'aria-label': label, 'data-no-sheet-swipe': '', html: GRIP_SVG });
+}
+export function gripHtml(label = kitW('拖曳排序', 'Drag to reorder')) {
+  return `<button class="q-grip" type="button" aria-label="${escHtml(label)}" data-no-sheet-swipe>${GRIP_SVG}</button>`;
+}
+// Where a row lifted from `from` lands with its middle at `y`: rows are
+// [{ top, height }] as laid out before the lift (pure, for the tests).
+export function reorderSlot(rows, from, y) {
+  let to = from;
+  for (let j = from + 1; j < rows.length; j++) if (y > rows[j].top + rows[j].height / 2) to = j;
+  for (let j = from - 1; j >= 0; j--) if (y < rows[j].top + rows[j].height / 2) to = j;
+  return to;
+}
+// keys with the one at `from` moved to `to` (pure).
+export function moveKey(keys, from, to) {
+  const out = [...keys];
+  if (from < 0 || from >= out.length || to < 0 || to >= out.length) return out;
+  out.splice(to, 0, ...out.splice(from, 1));
+  return out;
+}
+const scrollBoxOf = n => {
+  for (let k = n?.parentElement; k && k !== document.body && k !== document.documentElement; k = k.parentElement) {
+    if (k.scrollHeight > k.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(k).overflowY)) return k;
+  }
+  return document.scrollingElement;
+};
+export function reorder(container, { items = ':scope > [data-q-key]', onChange = () => {}, label = '' } = {}) {
+  if (!container) return () => {};
+  container.__qReorder?.();
+  container.classList.add('q-reorder');
+  if (label) container.setAttribute('aria-label', label);
+  const rowsOf = () => [...container.querySelectorAll(items)];
+  const keyOf = n => n.getAttribute('data-q-key');
+  const done = (from, to) => from !== to && onChange(rowsOf().map(keyOf), { from, to });
+  // The DOM in its new order (the row put before the one now after it).
+  const place = (list, row, to) => {
+    const rest = list.filter(n => n !== row);
+    const after = rest[to];
+    if (after) after.before(row);
+    else rest.at(-1)?.after(row);
+  };
+  let g = null;
+  const viewOf = s => (s === document.scrollingElement ? { top: 0, bottom: innerHeight } : s.getBoundingClientRect());
+  const clear = list => {
+    for (const n of list) {
+      n.style.transform = '';
+      n.style.transition = '';
+      n.classList.remove('q-reorder-lift', 'q-reorder-shift');
+    }
+    container.classList.remove('q-reordering');
+  };
+  const paint = () => {
+    const { row, list, rows, from, s, y0, s0 } = g;
+    const r = rows[from];
+    const top = rows[0].top;
+    const bottom = rows.at(-1).top + rows.at(-1).height;
+    // Within the list's own ends (never dragged out of it).
+    const dy = Math.max(top - r.top, Math.min(bottom - r.top - r.height, g.y - y0 + (s.scrollTop - s0)));
+    row.style.transform = `translate3d(0, ${dy}px, 0)`;
+    const to = reorderSlot(rows, from, r.top + dy + r.height / 2);
+    if (to !== g.to) {
+      g.to = to;
+      tick();
+    }
+    // The rows between make room: each slides by the lifted row's step.
+    list.forEach((n, j) => {
+      if (n === row) return;
+      const by = from < to && j > from && j <= to ? -g.step : from > to && j < from && j >= to ? g.step : 0;
+      n.style.transform = by ? `translate3d(0, ${by}px, 0)` : '';
+    });
+  };
+  // Near the top or the foot of what scrolls: it scrolls, the row with it.
+  const roll = () => {
+    if (!g?.lifted) return;
+    const v = viewOf(g.s);
+    const edge = 56;
+    const sp = g.y < v.top + edge ? -Math.ceil((v.top + edge - g.y) / 5) : g.y > v.bottom - edge ? Math.ceil((g.y - (v.bottom - edge)) / 5) : 0;
+    if (sp) {
+      const before = g.s.scrollTop;
+      g.s.scrollTop = before + sp;
+      if (g.s.scrollTop !== before) paint();
+    }
+    g.raf = requestAnimationFrame(roll);
+  };
+  const lift = () => {
+    if (!g || g.lifted || g.scrolling) return;
+    const list = rowsOf();
+    const from = list.indexOf(g.row);
+    if (from < 0 || list.length < 2) return void (g = null);
+    // (Rows as laid out at the lift, in the view; a scroll since is added back in paint.)
+    const s0 = g.s.scrollTop;
+    const rows = list.map(n => {
+      const b = n.getBoundingClientRect();
+      return { top: b.top, height: b.height };
+    });
+    // (Its step: its own height and the gap between rows, rows of any height.)
+    const r = rows[from];
+    const gap = rows[from + 1] ? rows[from + 1].top - (r.top + r.height) : r.top - (rows[from - 1].top + rows[from - 1].height);
+    g = { ...g, lifted: true, list, rows, from, to: from, s0, y0: g.y, step: r.height + Math.max(0, gap) };
+    letGo();
+    tick();
+    container.classList.add('q-reordering');
+    for (const n of list) n.classList.add(n === g.row ? 'q-reorder-lift' : 'q-reorder-shift');
+    g.raf = requestAnimationFrame(roll);
+  };
+  const move = e => {
+    if (!g || e.pointerId !== g.id) return;
+    if (e.cancelable) e.preventDefault();
+    if (g.lifted) {
+      g.y = e.clientY;
+      return paint();
+    }
+    if (g.scrolling) {
+      // (The grip owns the touch, touch-action none: the list is scrolled by hand.)
+      g.s.scrollTop -= e.clientY - g.y;
+      g.y = e.clientY;
+      return;
+    }
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.yStart;
+    if (dx * dx + dy * dy < GRIP_SLOP * GRIP_SLOP) return;
+    clearTimeout(g.arm);
+    if (g.touch) {
+      g.scrolling = true;
+      g.y = e.clientY;
+    } else {
+      g.y = e.clientY;
+      lift();
+      if (g?.lifted) paint();
+    }
+  };
+  const end = e => {
+    if (!g || (e && e.pointerId != null && e.pointerId !== g.id)) return;
+    const was = g;
+    g = null;
+    clearTimeout(was.arm);
+    cancelAnimationFrame(was.raf);
+    removeEventListener('pointermove', move);
+    removeEventListener('pointerup', end);
+    removeEventListener('pointercancel', end);
+    removeEventListener('blur', end);
+    if (!was.lifted) return;
+    const { row, list, rows, from, to } = was;
+    // The row settles into its place, then the DOM takes the order.
+    const land = (from < to ? rows[to].top + rows[to].height - rows[from].height : rows[to].top) - rows[from].top;
+    const finish = () => {
+      if (row.__qLand !== finish) return;
+      row.__qLand = null;
+      clear(list);
+      place(list, row, to);
+      done(from, to);
+    };
+    row.__qLand = finish;
+    if (reduced()) return finish();
+    row.style.transition = 'transform 0.2s var(--q-spring-snappy, ease)';
+    row.style.transform = `translate3d(0, ${land}px, 0)`;
+    row.classList.remove('q-reorder-lift');
+    row.classList.add('q-reorder-land');
+    setTimeout(() => (row.classList.remove('q-reorder-land'), finish()), 200);
+  };
+  const down = e => {
+    const handle = e.target.closest?.('.q-grip');
+    if (!handle || handle.closest('.q-reorder') !== container || g || (e.button != null && e.button !== 0)) return;
+    const row = handle.closest(items.replace(/^:scope\s*>\s*/, ''));
+    if (!row || !rowsOf().includes(row)) return;
+    e.preventDefault();
+    g = { id: e.pointerId, row, handle, x: e.clientX, yStart: e.clientY, y: e.clientY, touch: e.pointerType === 'touch', s: scrollBoxOf(container), lifted: false, scrolling: false };
+    try {
+      handle.setPointerCapture?.(e.pointerId);
+    } catch {}
+    addEventListener('pointermove', move, { passive: false });
+    addEventListener('pointerup', end);
+    addEventListener('pointercancel', end);
+    addEventListener('blur', end);
+    g.arm = setTimeout(lift, g.touch ? GRIP_HOLD_MS : 0);
+  };
+  // ↑ ↓ on a grip: its row one place.
+  const key = e => {
+    const handle = e.target.closest?.('.q-grip');
+    if (!handle || handle.closest('.q-reorder') !== container || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    const list = rowsOf();
+    const row = handle.closest(items.replace(/^:scope\s*>\s*/, ''));
+    const from = list.indexOf(row);
+    const to = from + (e.key === 'ArrowUp' ? -1 : 1);
+    if (from < 0 || to < 0 || to >= list.length) return;
+    e.preventDefault();
+    place(list, row, to);
+    handle.focus();
+    done(from, to);
+  };
+  // (A grip's click does nothing else: never the row's own tap.)
+  const swallow = e => e.target.closest?.('.q-grip')?.closest('.q-reorder') === container && (e.preventDefault(), e.stopPropagation());
+  container.addEventListener('pointerdown', down);
+  container.addEventListener('keydown', key);
+  container.addEventListener('click', swallow, true);
+  const off = () => {
+    end();
+    container.removeEventListener('pointerdown', down);
+    container.removeEventListener('keydown', key);
+    container.removeEventListener('click', swallow, true);
+    container.__qReorder = null;
+  };
+  container.__qReorder = off;
+  return off;
 }
 
 // ---- Nothing here ----
@@ -637,6 +880,78 @@ export function empty({ icon = 'list', tint = '', title = '', body = '', action 
   const mark = !icon ? null : isIcon(icon) ? tinted(h('span', { class: 'q-tile q-empty-tile', 'aria-hidden': 'true', html: icons[icon] }), tint || 'var(--q-accent)') : h('span', { class: 'q-empty-icon', 'aria-hidden': 'true', text: icon });
   const button = action && !(action instanceof Node) ? h(action.href ? 'a' : 'button', { class: 'q-btn primary', ...(action.href ? { href: action.href } : { type: 'button', onclick: action.onTap }), ...dataProps(action.data), text: action.label || '' }) : action;
   return h('div', { class: cls ? `q-empty ${cls}` : 'q-empty' }, [mark, title ? h('strong', { text: title }) : null, body ? h('p', { text: body }) : null, button]);
+}
+
+const CHEV_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+
+// ---- A list's more: 再看 7 則 / 收起 (Jay 2026-11-03: "I hate this kind of orange expand text") ----
+// One look in every app: a quiet bar the list's width under it, grey words
+// and a chevron that turns as it opens; never accent-coloured text.
+//   moreToggle({ more, less, open, onToggle, cls })
+// more: its words while closed (再看 7 則); less: while open (收起), or
+// null for a pager (再看 25 位: each tap shows more and never folds; the
+// app sets the next words with .set(false, words), or hides it);
+// onToggle(open). Keep the same node through a toggle (the kit holds it
+// under the finger as the list folds above it, hold-place.mjs).
+export function moreToggle({ more = kitW('顯示更多', 'Show more'), less = kitW('收起', 'Show less'), open = false, onToggle = () => {}, cls = '' } = {}) {
+  const words = h('span');
+  const b = h('button', { type: 'button', class: cls ? `q-more ${cls}` : 'q-more' }, [words]);
+  b.insertAdjacentHTML('beforeend', CHEV_DOWN);
+  const paint = () => {
+    words.textContent = open && less != null ? less : more;
+    b.setAttribute('aria-expanded', String(Boolean(open && less != null)));
+  };
+  b.addEventListener('click', () => {
+    if (less != null) open = !open;
+    paint();
+    onToggle(less != null ? open : true);
+  });
+  paint();
+  return Object.assign(b, {
+    set(o, m = more, l = less) {
+      (open = o), (more = m), (less = l);
+      paint();
+    }
+  });
+}
+
+// ---- A part still being read: its place held in the shape that's coming ----
+// waiting(shape, { keep }): a part of the page a later read fills (who
+// starts, the season's leaders, who's out), drawn from the page's first
+// drawing in the shape it will have, so nothing under it moves when it lands
+// (Jay 2026-11-03: 預計先發 came in last and pushed the whole page down; the
+// keeper, hold-place.mjs, can't hold a page read from its top). `shape` is
+// the app's own card built on stand-ins: rows of the count that comes, each
+// name a few characters (never seen; not blank spaces, which hang past a
+// line's end), a face left empty; so it is the real card's size at every width. Its words and pictures turn to the kit's
+// quiet shimmer; what matches `keep` (the card's title) stays as it is. The
+// app puts the real part in its place when the read lands, or nothing if it
+// brings none. An app drawing with strings calls it on the node once in the page.
+export function waiting(shape, { keep = '' } = {}) {
+  if (!shape?.querySelectorAll) return shape || null;
+  const media = /^(img|svg|picture|canvas|video)$/i;
+  const mark = n => {
+    for (const k of [...n.childNodes]) {
+      // Words: a bar of their own width, where they sit.
+      if (k.nodeType === 3 && /[^ \t\n\r]/.test(k.data)) {
+        const bar = shape.ownerDocument.createElement('span');
+        bar.className = 'q-wait-bit';
+        bar.textContent = k.data;
+        k.replaceWith(bar);
+      } else if (k.nodeType === 1 && !k.classList.contains('q-wait-bit') && !(keep && k.matches(keep))) {
+        // A picture, or a box with nothing in it (a face, a bar, a pill): its own shape.
+        if (media.test(k.tagName) || !k.childNodes.length) k.classList.add('q-wait-bit');
+        else mark(k);
+      }
+    }
+  };
+  mark(shape);
+  // (Words a builder puts in later, a name fitted once it's on the page: a bar too, before it's drawn.)
+  if (typeof MutationObserver === 'function') new MutationObserver(() => mark(shape)).observe(shape, { childList: true, subtree: true, characterData: true });
+  shape.classList.add('q-wait');
+  shape.setAttribute('aria-busy', 'true');
+  shape.inert = true;
+  return shape;
 }
 
 // ---- A large title (iOS's navigation title) ----
@@ -834,6 +1149,22 @@ const tagObjHtml = t => {
   const o = typeof t === 'string' ? { text: t } : t;
   return `<span class="${clsOf('q-tag', o.tone && E(o.tone))}"${styleOf(['--t', o.color])}>${E(o.text)}</span>`;
 };
+// A way on to another view at a card's foot (全部球隊數據 ›, 看完整賽程):
+// the same quiet bar, a › for where it goes; never accent text (Jay 2026-11-03).
+//   goBar(label, onTap | { href }, cls) / goHtml({ label, href, attr, cls }): a link (href) or a button.
+export function goBar(label, onTap = () => {}, cls = '') {
+  const href = typeof onTap === 'object' && onTap ? onTap.href : '';
+  return h(href ? 'a' : 'button', { class: `q-more q-more-go${cls ? ` ${cls}` : ''}`, ...(href ? { href } : { type: 'button', onclick: onTap }) }, [h('span', { text: label }), h('span', { class: 'q-more-chev', 'aria-hidden': 'true', text: '›' })]);
+}
+export function goHtml({ label = '', href = '', attr = '', cls = '' } = {}) {
+  const tag = href ? `a href="${E(href)}"` : 'button type="button"';
+  return `<${tag} class="${clsOf('q-more q-more-go', cls)}"${attr ? ` ${attr}` : ''}><span>${E(label)}</span><span class="q-more-chev" aria-hidden="true">›</span></${href ? 'a' : 'button'}>`;
+}
+// A disclosure drawn as the bar: summaryHtml(words) inside a <details>.
+export function summaryHtml(words = '') {
+  return `<summary class="q-more"><span>${E(words)}</span>${CHEV_DOWN}</summary>`;
+}
+
 // tagHtml('直播', 'red') or tagHtml('3 天', '', '#hex').
 export function tagHtml(text, tone = '', color = '') {
   return tagObjHtml({ text, tone: color ? `${tone} tint` : tone, color });
@@ -842,6 +1173,11 @@ export function emptyHtml({ icon = 'list', tint = '', title = '', body = '', act
   const mark = !icon ? '' : isIcon(icon) ? `<span class="q-tile q-empty-tile" aria-hidden="true"${styleOf(['--t', tint || 'var(--q-accent)'])}>${icons[icon]}</span>` : `<span class="q-empty-icon" aria-hidden="true">${E(icon)}</span>`;
   const button = !action ? '' : typeof action === 'string' ? action : action.href ? `<a class="q-btn primary" href="${E(action.href)}"${dataOf(action.data)}>${E(action.label)}</a>` : `<button class="q-btn primary" type="button"${dataOf({ tap: action.tap, ...action.data })}>${E(action.label)}</button>`;
   return `<div class="${clsOf('q-empty', cls)}">${mark}${title ? `<strong>${E(title)}</strong>` : ''}${body ? `<p>${E(body)}</p>` : ''}${button}</div>`;
+}
+// moreToggle's twin: moreHtml({ more, less, open, attr }) (attr: the app's data-… for its own tap).
+export function moreHtml({ more = kitW('顯示更多', 'Show more'), less = kitW('收起', 'Show less'), open = false, attr = '', cls = '' } = {}) {
+  const on = Boolean(open && less != null);
+  return `<button type="button" class="${clsOf('q-more', cls)}" aria-expanded="${on}"${attr ? ` ${attr}` : ''}><span>${E(on ? less : more)}</span>${CHEV_DOWN}</button>`;
 }
 // navTitleHtml(title), then wireNavTitles(root) once it's in the page.
 export function navTitleHtml(title = '') {
@@ -1050,7 +1386,8 @@ export function tag(text, tone = '', color = '') {
 // on q-wide, three on q-w3 (.q-flow-2: two at most): each, measured at a
 // column's width, to the shortest column so far, so the tops read left to
 // right in the phone's order and no column is left short (Jay 2026-11-01, an
-// iPad: one column long, the other one shelf, half the screen empty). One
+// iPad: one column long, the other one shelf, half the screen empty). In a
+// wide sheet (.q-sheet-wide) by the sheet's width instead. One
 // under 100px (a link row) stays under the one before it. Upright: one
 // column, as it was. Call it after drawing, and again on onScreen().
 export function flowColumns(root = document) {
@@ -1060,12 +1397,33 @@ export function flowColumns(root = document) {
   for (const f of list) {
     // (Not shown, it has no size: dealt when it's drawn again shown.)
     if (!f.getClientRects().length) continue;
-    const n = html.contains('q-w3') && !f.classList.contains('q-flow-2') ? 3 : html.contains('q-wide') ? 2 : 1;
+    // (In a wide sheet, by the sheet's own width, as its .q-sheet-cols: two
+    // from 600, three from 1000; elsewhere by the page's, q-wide and q-w3.)
+    const box = f.closest?.('dialog.q-sheet-wide');
+    const bw = box ? box.clientWidth - (parseFloat(getComputedStyle(box).paddingLeft) || 0) - (parseFloat(getComputedStyle(box).paddingRight) || 0) : 0;
+    const w3 = box ? bw >= 1000 : html.contains('q-w3');
+    const n = w3 && !f.classList.contains('q-flow-2') ? 3 : (box ? bw >= 600 : html.contains('q-wide')) ? 2 : 1;
     const items = f.__qItems?.every(i => i.parentNode?.parentNode === f || i.parentNode === f) ? f.__qItems : [...f.children].flatMap(c => (c.classList.contains('q-flow-col') ? [...c.children] : [c]));
     f.__qItems = items;
+    // (Dealt again while read (a live game every few seconds): the page and its
+    // sheet stay where they were scrolled. The columns' height is held while
+    // they're taken apart, so the box never shrinks and drops the reader to the
+    // top (Jay 2026-11-01: live updates reset the scroll).)
+    const scrollers = [];
+    for (let p = f.parentElement; p; p = p.parentElement) if (p.scrollTop) scrollers.push([p, p.scrollTop]);
+    const se = document.scrollingElement;
+    if (se?.scrollTop && !scrollers.some(([p]) => p === se)) scrollers.push([se, se.scrollTop]);
+    const held = f.style.minHeight;
+    if (scrollers.length) f.style.minHeight = `${f.offsetHeight}px`;
     f.classList.remove('q-flow-laid', 'q-flow-measure');
+    const settle = () => {
+      if (!scrollers.length) return;
+      f.style.minHeight = held;
+      for (const [p, top] of scrollers) if (p.scrollTop !== top) p.scrollTop = top;
+    };
     if (n < 2 || items.length < 2) {
       f.replaceChildren(...items);
+      settle();
       continue;
     }
     f.style.setProperty('--q-flow-n', n);
@@ -1083,6 +1441,7 @@ export function flowColumns(root = document) {
     });
     f.replaceChildren(...cols.filter(c => c.kids.length).map(c => h('div', { class: 'q-flow-col' }, c.kids)));
     f.classList.add('q-flow-laid');
+    settle();
   }
 }
 

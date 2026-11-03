@@ -17,9 +17,9 @@ const steps = id => (TOURS[id] || []).map(s => ({ tap: s.tap, hash: s.hash, type
 
 export const DEMOS = {
   weather: { app: 'weather', repo: 'Orbit-Weather', clock: '2026-10-02T19:30:00+08:00', geo: [25.034, 121.565], tour: steps('weather'), explore: [
-    { tap: '#tab-now' }, { tap: '.q-panel[data-open="uv"]' }, { tap: '.q-close' }, { tap: '.q-panel[data-open="air"]' }, { tap: '.q-close' },
-    { tap: '.wx-day[data-day="2026-10-05"]' }, { tap: '.q-close' }, { tap: '.wx-hr >> nth=3' }, { tap: '.q-close' },
-    { tap: '#tab-week' }, { tap: '#tab-places' }, { tap: '#tab-now' }
+    { tap: '#tab-now' }, { tap: '.ot-g[data-metric="uv"]' }, { tap: 'dialog[open] .q-close' }, { tap: '.ot-g[data-metric="air"]' }, { tap: 'dialog[open] .q-close' },
+    { tap: '.ot-hr >> nth=3' }, { tap: 'dialog[open] .q-close' }, { tap: '.ot-hr >> nth=20' }, { tap: 'dialog[open] .q-close' },
+    { tap: '#tab-places' }, { tap: '#tab-now' }
   ] },
   money: { app: 'money', repo: 'Orbit-Money', clock: '2026-10-27T20:30:00+08:00', geo: [25.034, 121.565], payload: 'scripts/demo/money-books.mjs', tour: steps('money'), explore: [
     { tap: '#tab-more' }, { tap: '#tab-cal' }, { tap: '.mn-row' }
@@ -29,7 +29,7 @@ export const DEMOS = {
     built: { 'nba-elta.json': 'https://orbit.jaypengx.com/sports/nba-elta.json' },
     // No betting anywhere in the showcase (Jay): the win chance cards come from betting prices, so they stay hidden.
     css: '.q-card:has(.wp){display:none!important}' },
-  securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-symbol="^TWII"]' }], settle: 9000 },
+  securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-action="go-product"][data-id="tw"]' }], settle: 9000 },
   class: { app: 'orbit', repo: 'Orbit-Class', dist: 'dist', ua: IPHONE, wall: true, clock: '2026-10-28T09:20:00+08:00', geo: [25.034, 121.565], stores: [['classFocusData', JSON.stringify(timetable)]], tour: steps('class'), explore: [] },
   // Today's real buses, trains and bikes (--live), on Google's map in the showcase like the real app (liveMap).
   transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 }

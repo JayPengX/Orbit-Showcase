@@ -34,6 +34,9 @@ import { DEV, cleanDev } from './brand.mjs';
 import { API, SITE as HOME, isApi } from './domain.mjs';
 import { passkeyHere, passkeyName, deviceName, makePasskey, usePasskey, forgetPasskey, cancelled } from './passkey.mjs';
 import { icons, tile, pullToRefresh, setSheetDetent, toast, h as node } from './ui.mjs';
+import { scrollBusy } from './hold-place.mjs';
+// (A picture drawn again never flashes: steady-pics.mjs, on import.)
+import './steady-pics.mjs';
 
 export const ECO_URL = `${API}/eco`;
 export const PROXY_URL = `${API}/sports-proxy`;
@@ -72,21 +75,24 @@ readDev();
 // fn again every dev(key) seconds, the setting read at each beat (a change
 // applies at the next one). Answers a stop.
 // A sheet under a finger or on its way out: a live redraw then stutters
-// the drag (each app's beats wait for the next one).
+// the drag; a finger on the page or a fling still running: iOS stops a
+// scroll whose content is swapped under it. Each beat waits till it's over.
 export const sheetHeld = () => typeof document !== 'undefined' && Boolean(document.querySelector('dialog.q-sheet.q-dragging, dialog.q-sheet.q-leaving'));
 export function everyDev(key, fn) {
   let timer = 0;
   let stopped = false;
-  const beat = () => {
+  const beat = soon => {
     timer = setTimeout(() => {
       if (stopped) return;
       readDev();
+      // (A finger on the screen or a scroll still running: tried again in a moment, not drawn under it.)
+      if (sheetHeld() || scrollBusy()) return beat(400);
       try {
-        if (!sheetHeld()) fn();
+        fn();
       } finally {
         beat();
       }
-    }, Math.max(1, dev(key)) * 1000);
+    }, soon ?? Math.max(1, dev(key)) * 1000);
   };
   beat();
   return () => ((stopped = true), clearTimeout(timer));
@@ -748,8 +754,39 @@ async function fetchDirect(url, timeout) {
   if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
   return res.text();
 }
+// Jolpica (F1's results) answers a phone itself too, but turns the proxy
+// away whenever Cloudflare's shared addresses have used its allowance (it
+// counts per address: 429 on every path, 2026-11-03; F1's 數據 waited
+// seconds on each page and a driver's teams never came). A read the proxy
+// couldn't get (turned away, down, no answer) is read from the device at
+// once, and the device reads that host itself for ten minutes after: no
+// trip to a proxy that will say no. (The answer is the source's own, never
+// trimmed: its readers take both.)
+const SELF_TOO = new Set(['api.jolpi.ca']);
+const SELF_FOR_MS = 10 * 60_000;
+const selfUntil = new Map();
+const hostOf = url => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return '';
+  }
+};
+function proxyOrSelf(url, timeout, ask) {
+  const host = hostOf(url);
+  if (!SELF_TOO.has(host)) return ask();
+  if ((selfUntil.get(host) || 0) > Date.now()) return fetchDirect(url, timeout);
+  return ask().catch(error => {
+    // (Not there, or not allowed: the source's own answer, the same from here.)
+    if (error?.status && error.status < 500 && error.status !== 429) throw error;
+    selfUntil.set(host, Date.now() + SELF_FOR_MS);
+    return fetchDirect(url, timeout).catch(() => Promise.reject(error));
+  });
+}
 export function proxyJson(url, { ttl = 60_000, trim = '', persist: keep = true, timeout = 20_000, mirror = true, alone = false } = {}) {
-  return keptJson(url, dataKey(url, trim), { ttl, keep }, () => (isDirect(url) ? fetchDirect(url, timeout) : !mirror ? fetchOne(url, trim, timeout, '&mirror=0') : alone ? fetchOne(url, trim, timeout) : enqueue(url, trim, timeout)));
+  return keptJson(url, dataKey(url, trim), { ttl, keep }, () =>
+    isDirect(url) ? fetchDirect(url, timeout) : proxyOrSelf(url, timeout, () => (!mirror ? fetchOne(url, trim, timeout, '&mirror=0') : alone ? fetchOne(url, trim, timeout) : enqueue(url, trim, timeout)))
+  );
 }
 // The family's data (the proxy's /data/, kept in R2 on Cloudflare; built at
 // night and through the day): what doesn't change in a day (a league's
@@ -1187,6 +1224,95 @@ function pressOnlyWhenPressed() {
 }
 pressOnlyWhenPressed();
 
+// Every switch in every app (.q-switch: the kit's builders' and the apps' own
+// HTML), one way (Jay 2026-11-03: "doesn't have the smoothness"): a tap is felt
+// (haptic), and a finger can drag the knob across: it follows the finger (the
+// track's colour fills as it goes) and, let go past the middle, the switch is
+// tapped for the app (a click, so the app's own handler flips it); let go on
+// the side it started, nothing changes. The click the browser sends after a
+// drag is swallowed, so a drag is never also a tap. The look is orbit.css's.
+export function switchOn(sw) {
+  return sw.getAttribute('aria-checked') === 'true' || sw.classList.contains('on') || Boolean(sw.previousElementSibling?.matches?.('input:checked'));
+}
+// Where the knob sits (px from its start) and how far it can go, for a finger
+// `dx` along from where it landed (pure, for the tests).
+export function switchDrag(on, dx, run) {
+  const x = Math.max(0, Math.min(run, (on ? run : 0) + dx));
+  return { x, p: run > 0 ? x / run : on ? 1 : 0 };
+}
+function switchGlide() {
+  if (typeof document === 'undefined' || document.__orbitSwitch) return;
+  document.__orbitSwitch = true;
+  const feel = () => {
+    haptic();
+    try { globalThis.navigator?.vibrate?.(8); } catch {}
+  };
+  let drag = null;
+  let swallow = null;
+  let swallowTimer = 0;
+  document.addEventListener('click', e => {
+    const t = e.target instanceof Element ? e.target : null;
+    if (!t) return;
+    if (swallow && e.isTrusted && (swallow.contains(t) || t.contains(swallow) || t === swallow.previousElementSibling)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      swallow = null;
+      return;
+    }
+    // A label's hidden checkbox before its .q-switch: the input's own click
+    // is the one felt (the label's comes first and makes it).
+    if (t.matches('input[type=checkbox]') && t.nextElementSibling?.classList.contains('q-switch')) return feel();
+    const sw = t.closest('.q-switch');
+    if (!sw || sw.disabled || sw.previousElementSibling?.matches?.('input[type=checkbox]')) return;
+    feel();
+  }, true);
+  const end = commit => {
+    const d = drag;
+    drag = null;
+    if (!d) return;
+    if (!d.moved) return;
+    const { sw } = d;
+    sw.classList.remove('q-sw-drag');
+    sw.style.removeProperty('--q-sw-x');
+    sw.style.removeProperty('--q-sw-p');
+    clearTimeout(swallowTimer);
+    swallow = sw;
+    swallowTimer = setTimeout(() => (swallow = null), 600);
+    if (commit && d.p > 0.5 !== d.on) sw.click();
+  };
+  document.addEventListener('pointerdown', e => {
+    end(false);
+    if (!e.isPrimary || e.button > 0 || !(e.target instanceof Element)) return;
+    const sw = e.target.closest('.q-switch');
+    if (!sw || sw.disabled) return;
+    const r = sw.getBoundingClientRect();
+    const cs = getComputedStyle(sw);
+    const grow = parseFloat(cs.getPropertyValue('--q-sw-grow')) || 7;
+    // The knob is the track's height less 2px each side; pressed, it is `grow` wider.
+    const run = r.width - 4 - (r.height - 4) - grow;
+    if (!(run > 0)) return;
+    drag = { sw, id: e.pointerId, x0: e.clientX, y0: e.clientY, on: switchOn(sw), run, moved: false, p: 0 };
+  }, true);
+  document.addEventListener('pointermove', e => {
+    const d = drag;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x0;
+    if (!d.moved) {
+      if (Math.abs(dx) < 4) return;
+      if (Math.abs(e.clientY - d.y0) > Math.abs(dx)) return void (drag = null);
+      d.moved = true;
+      d.sw.classList.add('q-sw-drag');
+    }
+    const { x, p } = switchDrag(d.on, dx, d.run);
+    d.p = p;
+    d.sw.style.setProperty('--q-sw-x', `${x}px`);
+    d.sw.style.setProperty('--q-sw-p', p.toFixed(3));
+  }, true);
+  document.addEventListener('pointerup', e => drag && e.pointerId === drag.id && end(true), true);
+  document.addEventListener('pointercancel', e => drag && e.pointerId === drag.id && end(true), true);
+}
+switchGlide();
+
 // The solid strip under the phone's status bar (see .q-statusbar in orbit.css).
 function statusStrip() {
   if (typeof document === 'undefined' || !document.body || document.querySelector('.q-statusbar')) return;
@@ -1581,6 +1707,10 @@ function makeSession(app, { lang, heartbeat }) {
     });
   // 急難紓困 (pay.mjs): the Worker checks and writes it.
   s.relief = () => withToken(qt => call('POST', '', { op: 'relief', qt })).then(res => (absorb(res), res));
+  // The app's own data as it stood before (kept 30 days): with no `updated`
+  // the list ({ versions: [{ updated, at }] }, newest first), else that
+  // version ({ payload }). Read only (Money's three meals put back, 2026-11-01).
+  s.past = (updated = '') => withToken(qt => call('POST', qs({ app }), { op: 'past', qt, updated }));
   s.dropInbox = id => withToken(qt => call('POST', qs({ app }), { op: 'drop-inbox', qt, inbox: id }));
   // Other passes into this one (they're deleted after).
   s.merge = passes => withToken(qt => call('POST', '', { op: 'merge', qt, sources: passes.map(passcode => ({ passcode })) })).then(absorb);
@@ -2822,7 +2952,7 @@ function offerNotices(s) {
 function toggle(on, label, onchange) {
   const b = node('button', { class: 'q-switch', type: 'button', role: 'switch', 'aria-checked': String(on), 'aria-label': label });
   b.addEventListener('click', async () => {
-    haptic();
+    // (Felt by switchGlide, as every switch is.)
     const next = b.getAttribute('aria-checked') !== 'true';
     const ok = await onchange(next);
     if (ok !== false) b.setAttribute('aria-checked', String(next));
@@ -3436,12 +3566,22 @@ export function watchUpdates({ current, key, every = 15_000 } = {}) {
     globalThis.__bootUpdating = true;
     // Only the kit changed: the same page again, its loader now on the new
     // kit (the app's own files are still current).
-    if (latest.startsWith('kit:')) return location.reload();
+    if (latest.startsWith('kit:')) {
+      try {
+        sessionStorage.setItem('orbit.updating', JSON.stringify({ how: 'watch-kit', at: Date.now(), path: location.pathname }));
+      } catch {}
+      return location.reload();
+    }
     // (The files kept on the phone stay: every one is kept under its own
     // hash, so the new page asks only for the ones that changed. They were
     // all dropped here, and every update downloaded the whole app again.)
-    const reg = await navigator.serviceWorker?.getRegistration?.(location.pathname);
-    await reg?.update?.().catch(() => {});
+    // (Its service worker checked for a newer one first, a second at most: a
+    // connection left hanging held the swap, and the app with it.)
+    const reg = await Promise.race([navigator.serviceWorker?.getRegistration?.(location.pathname), new Promise(done => setTimeout(done, 1000))]).catch(() => null);
+    await Promise.race([reg?.update?.(), new Promise(done => setTimeout(done, 1000))]).catch(() => {});
+    try {
+      sessionStorage.setItem('orbit.updating', JSON.stringify({ how: 'watch', at: Date.now(), path: location.pathname }));
+    } catch {}
     location.replace(`${location.pathname}?v=${encodeURIComponent(latest)}${location.hash}`);
   }
   // An opening asks once: boot.js has just asked (window.__bootChecked), and
@@ -3485,6 +3625,23 @@ if (typeof document !== 'undefined' && typeof location !== 'undefined') {
   if (current) watchUpdates({ current, key: `orbit.page:${location.pathname}` });
   // Back from an update's reload: the scroll put back once the app lifts its loading screen, in every app.
   const box = document.getElementById('loading');
+  // How long the new page took to show, noted in the 除錯紀錄 (an opening
+  // stuck after an update is told apart from a slow connection by this).
+  let updating = null;
+  try {
+    updating = JSON.parse(sessionStorage.getItem('orbit.updating') || 'null');
+    sessionStorage.removeItem('orbit.updating');
+  } catch {}
+  if (box && updating?.path === location.pathname && Date.now() - updating.at < 120_000 && typeof MutationObserver !== 'undefined') {
+    const t0 = updating.at;
+    const shown = () => {
+      if (!box.hidden || box.classList.contains('q-boot-hold')) return false;
+      rec('update', { how: updating.how, ms: Date.now() - t0, page: Math.round(performance.now()), sw: Boolean(navigator.serviceWorker?.controller) });
+      return true;
+    };
+    const look = new MutationObserver(() => shown() && look.disconnect());
+    look.observe(box, { attributes: true, attributeFilter: ['hidden', 'class'] });
+  }
   let placed = false;
   try {
     placed = Boolean(sessionStorage.getItem('orbit.place'));
@@ -3858,6 +4015,49 @@ export function fitNames(root = document) {
     if (Math.abs(k - was) > 0.01) el.style.fontSize = k === 1 ? '' : `${(base * k).toFixed(2)}px`;
   }
 }
+// A grid of like tiles (.q-rows-full) never ends on a part row (Jay
+// 2026-11-03: "no more uneven grid anywhere"): as many tiles as fit a row
+// stay one row; past that, fewer columns where they divide the tiles evenly
+// (no fewer than 60% of what fits), else the tiles past the last full row
+// are left out (.q-cut): a grid lists its most telling first. A grid whose
+// every tile must stay (.q-rows-keep: choices, a category or a station to
+// pick) is never cut: it takes the columns that leave its last row fullest,
+// and that row's tiles widen to fill it where they divide it evenly.
+// Redone with the names (a turned phone, a tile more).
+export function fullRows(root = document) {
+  for (const grid of root.querySelectorAll?.('.q-rows-full') || []) {
+    if (grid.closest('[hidden]')) continue;
+    const kids = [...grid.children];
+    const key = `${grid.clientWidth}|${kids.length}`;
+    if (!grid.clientWidth || grid.dataset.qRows === key) continue;
+    grid.dataset.qRows = key;
+    for (const k of kids) k.classList.remove('q-cut');
+    for (const k of kids) if (k.classList.contains('q-span')) (k.classList.remove('q-span'), (k.style.gridColumn = ''));
+    grid.style.gridTemplateColumns = '';
+    const n = kids.length;
+    const fit = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+    if (!n || fit < 2 || n % fit === 0) continue;
+    if (n < fit) {
+      // (Things to pick widen at most to twice their size: a lone 立委 fills a phone's row, never a computer's.)
+      if (grid.classList.contains('q-rows-keep') && fit > n * 2) continue;
+      grid.style.gridTemplateColumns = `repeat(${n}, minmax(0, 1fr))`;
+      continue;
+    }
+    let cols = 0;
+    const least = Math.max(2, Math.ceil(fit * 0.6));
+    for (let c = fit - 1; c >= least; c--) if (n % c === 0) (cols ||= c);
+    if (!cols && grid.classList.contains('q-rows-keep')) {
+      cols = fit;
+      for (let c = fit - 1; c >= least; c--) if (n % c > n % cols) cols = c;
+      // (Still a part row: its tiles widen to fill it, at most to twice their size: a lone 7th of two a row the whole row.)
+      const r = n % cols;
+      if (cols % r === 0 && cols / r <= 2) for (const k of kids.slice(n - r)) (k.classList.add('q-span'), (k.style.gridColumn = `span ${cols / r}`));
+      if (cols === fit) continue;
+    }
+    if (cols) grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+    else for (const k of kids.slice(n - (n % fit))) k.classList.add('q-cut');
+  }
+}
 // A wrapped row of pills (.q-balance) never leaves one alone on its last
 // line: the row is narrowed just enough that the last line takes two or
 // more, as text-wrap: balance does for words (Law's quick questions came
@@ -3897,7 +4097,7 @@ function watchNames() {
   if (typeof document === 'undefined' || typeof MutationObserver === 'undefined' || globalThis.__orbitFit) return;
   globalThis.__orbitFit = true;
   let frame = 0;
-  const soon = () => (frame ||= requestAnimationFrame(() => ((frame = 0), fitNames(), balanceRows())));
+  const soon = () => (frame ||= requestAnimationFrame(() => ((frame = 0), fitNames(), balanceRows(), fullRows())));
   const start = () => {
     // (A tab or sheet shown again counts too: a name drawn while hidden had no box to fit.)
     new MutationObserver(soon).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'open', 'aria-selected', 'aria-pressed'] });
@@ -4968,10 +5168,39 @@ const HALFTIME_LEAGUE_MIN = { ncaaf: 20, 'college-football': 20, 'football/colle
 const HALFTIME_KEY = 'orbit.halftime';
 export const halftimeMinutes = (sport, league = '') => HALFTIME_LEAGUE_MIN[league] ?? HALFTIME_MIN[sport] ?? null;
 export function halftimeStartOf(summary) {
+  const ball = soccerStopOf(summary);
+  if (ball !== undefined) return ball;
   const drives = summary?.drives || {};
   const plays = [...(summary?.plays || []), ...(summary?.keyEvents || []), ...(drives.previous || []).flatMap(d => d?.plays || []), ...(drives.current?.plays || [])];
   const at = plays.map(p => Date.parse(p?.wallclock || '')).filter(Number.isFinite);
   return at.length ? Math.max(...at) : null;
+}
+// Soccer: the whistle that ended the period now over. ESPN's own
+// 'halftime' (or end of regular time) key event when it has one; some
+// feeds have none (the Scottish Premiership's lists only goals, cards and
+// subs: Falkirk v Celtic, 2026-11-01, 中場休息 with no countdown, the
+// break timed from the 38' goal and long over). Then: the period's kick-off
+// from its plays (a play's wall clock less its game clock), plus the minute
+// the clock stopped on (45'+3' is the 48th minute: 47 played). undefined
+// for a summary that isn't soccer's; null when nothing dates the period.
+const BALL_BASE = [0, 0, 2700, 5400, 6300];
+export function soccerStopOf(summary) {
+  const status = summary?.header?.competitions?.[0]?.status || {};
+  const shown = /^(\d+)'(?:\+(\d+)')?$/.exec(String(status.displayClock || '').trim());
+  if (!shown) return undefined;
+  const period = Number(status.period) || 1;
+  const plays = [...(summary?.keyEvents || []), ...(summary?.commentary || []).map(c => c?.play).filter(Boolean)].filter(p => (p?.period?.number ?? period) === period && Number.isFinite(Date.parse(p?.wallclock || '')));
+  const stops = plays.filter(p => /half-?time|^end-(regular|extra)/i.test(p?.type?.type || '')).map(p => Date.parse(p.wallclock));
+  if (stops.length) return Math.max(...stops);
+  const base = BALL_BASE[period] ?? 0;
+  const kicks = plays
+    .filter(p => Number.isFinite(p?.clock?.value) && p.clock.value >= base)
+    .map(p => Date.parse(p.wallclock) - (p.clock.value - base) * 1000)
+    .sort((a, b) => a - b);
+  if (!kicks.length) return null;
+  const kick = kicks[Math.floor(kicks.length / 2)];
+  const played = (Number(shown[1]) + Number(shown[2] || 0) - 1) * 60 - base;
+  return Math.max(kick + played * 1000, ...plays.map(p => Date.parse(p.wallclock)));
 }
 // "12:34" left at `now`; '' once the break's length is up.
 export function halftimeClock(end, now = Date.now()) {

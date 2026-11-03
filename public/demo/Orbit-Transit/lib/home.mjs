@@ -13,12 +13,13 @@
 
 import * as kitUI from '#kit/ui.mjs';
 import { suggest } from './suggest.mjs';
+import { cardsShown, placeChance } from './learn.mjs';
 import { tripNow, keptLead, pinnedTrainsNext, rideNow } from './tab-go.mjs';
 import { stopsEta, etaFor } from './bus.mjs';
 import { nearBusRows, nearBikes, inTime } from './near-ui.mjs';
 import { nearStops, keptNear, keepNear, nearMoved, fitStrips } from './bus-ui.mjs';
 import { stationLabel, icon, legChips, fitLegs } from './ui.mjs';
-import { COLOR, tile, bikeTile, bikeStats, countHtml, tick, focus } from './look.mjs';
+import { COLOR, tile, tripTile, bikeTile, bikeStats, countHtml, tick, focus } from './look.mjs';
 import { tripKey } from './store.mjs';
 import { e, hm, distText, meters, shown } from './util.mjs';
 
@@ -53,8 +54,9 @@ export function createHome(box, ctx, act) {
     const rank = p => (KINDS.includes(p.icon) ? KINDS.indexOf(p.icon) : KINDS.length);
     const list = ctx.data.places.map((p, i) => ({ p, i })).sort((a, b) => rank(a.p) - rank(b.p) || a.i - b.i).map(x => x.p);
     const tiles = list.map(p => `<button class="ot-fav" type="button" data-fav="${e(p.id)}">${placeTile(p.icon)}<b>${e(shown(p.name))}</b>${here ? `<small>${e(near(meters(here.lat, here.lon, p.lat, p.lon)))}</small>` : ''}</button>`);
-    // 家 and 公司 not set yet: their tiles wait, to be filled in with a tap.
-    const ghosts = ['home', 'work'].filter(k => !ctx.data.places.some(p => p.icon === k)).map(k => `<button class="ot-fav ghost" type="button" data-fav-add="${k}">${placeTile(k)}<b>${e(PLACE_WORD[k])}</b><small>${W('加入', 'Add')}</small></button>`);
+    // 家 not set yet: its tile waits, to be filled in with a tap. (Never an empty 公司: not everyone
+    // has one (Jay 2026-11-03, a student); 公司 or 學校 is added with ＋ by whoever goes there.)
+    const ghosts = ['home'].filter(k => !ctx.data.places.some(p => p.icon === k)).map(k => `<button class="ot-fav ghost" type="button" data-fav-add="${k}">${placeTile(k)}<b>${e(PLACE_WORD[k])}</b><small>${W('加入', 'Add')}</small></button>`);
     const add = `<button class="ot-fav add" type="button" data-fav-add="" aria-label="${W('釘選地點', 'Pin a place')}"><span class="ot-fav-plus">${icon('plus')}</span><b>${W('新增', 'New')}</b></button>`;
     return `<section class="ot-shelf">${head(W('常用', 'Favorites'))}<div class="q-rail ot-favs">${[...tiles, ...ghosts, add].join('')}</div></section>`;
   };
@@ -71,7 +73,7 @@ export function createHome(box, ctx, act) {
         const plan = w.at ? keptLead(w, { prefs: ctx.data.prefs, here, picks: t.picks, now }) : null;
         // (By an arrival time with no way found yet, the time is when it must be there by, not when to leave.)
         const arriveBy = w.by === 'arrive' && !plan && w.at ? w.at : null;
-        return { id: w.id, label: w.label, from: w.from, to: w.to, leaveAt: plan ? plan.dep : w.at || w.late, plan, arriveBy, w, recurring: w.recurring, today: w.today };
+        return { id: w.id, label: w.label, from: w.from, to: w.to, dated: !!t.date, leaveAt: plan ? plan.dep : w.at || w.late, plan, arriveBy, w, recurring: w.recurring, today: w.today };
       });
     const buses = ctx.data.groups
       .flatMap(g => g.items)
@@ -88,7 +90,7 @@ export function createHome(box, ctx, act) {
       })
       .filter(Boolean);
     const bikes = (S.bikes || []).map(b => ({ ...b, d: b.walk?.dist ?? b.d }));
-    return suggest({ now, here, places: ctx.data.places, trips, buses, trains, bikes, recents: ctx.data.trips });
+    return suggest({ now, here, places: ctx.data.places, trips, buses, trains, bikes, recents: ctx.data.trips, fb: placeChance(now) });
   };
 
   // One suggestion as { glyph, eyebrow, title, sub, tags, at, big, color, body }.
@@ -102,7 +104,7 @@ export function createHome(box, ctx, act) {
         at: x.leaveAt,
         facts: [x.arriveBy ? W(`${hm(x.arriveBy)} 前到`, `Arrive by ${hm(x.arriveBy)}`) : W(`${hm(x.leaveAt)} 出發`, `Leave ${hm(x.leaveAt)}`), p ? W(`${hm(p.arr)} 到`, `Arrive ${hm(p.arr)}`) : ''],
         body: p ? `<span class="ot-legs ot-hc-legs">${legChips(p.legs)}</span>` : '',
-        tile: tile('route', COLOR.route)
+        tile: tripTile(x.w?.rev ? '' : x.label, ctx.data.places.find(q => x.to && meters(q.lat, q.lon, x.to.lat, x.to.lon) < 80), x.dated)
       };
     }
     if (x.kind === 'bus')
@@ -151,24 +153,28 @@ export function createHome(box, ctx, act) {
         tile: tile('route', COLOR.route)
       };
     }
+    // 回家, or a working day's 去公司 / 去學校 from the places pinned.
+    const go = x.kind === 'go';
     return {
-      glyph: 'home',
-      eyebrow: W('回家', 'Head home'),
+      glyph: go ? x.place.icon : 'home',
+      eyebrow: go ? (x.place.icon === 'school' ? W('去學校', 'To school') : W('去公司', 'To work')) : W('回家', 'Head home'),
       title: x.place.name,
       big: `<strong class="q-focus-value ot-count">${e(distText(x.d))}</strong>`,
       numText: distText(x.d),
       facts: [W('從目前位置', 'From here')],
-      tile: placeTile('home')
+      tile: placeTile(go ? x.place.icon : 'home')
     };
   };
 
   const sugHtml = list => {
     if (!list.length) return '';
     S.sug = list;
+    // (Each guess of a place on screen, once a day, for what it learns: learn.mjs.)
+    cardsShown(list.filter(x => x.kind === 'home' || x.kind === 'go' || x.kind === 'usual').map(x => x.place));
     const cards = list.map((x, i) => {
       const s = say(x);
       const big = s.big || (s.at != null ? countHtml(s.at, { floor: Boolean(s.floor), cls: 'q-focus-value' }) : '');
-      if (i === 0) return focus({ eyebrow: s.eyebrow, big, title: s.title, sub: s.sub || '', facts: s.facts, live: s.live, warn: s.warn, body: s.body || '', attrs: `data-sg="${e(x.key)}"` });
+      if (i === 0) return focus({ eyebrow: s.eyebrow, big, title: s.title, sub: s.sub || '', facts: s.facts, live: s.live, warn: s.warn, body: s.body || '', lead: x.kind === 'bike', attrs: `data-sg="${e(x.key)}"` });
       // The rest: a row, its number on the right.
       const end = s.num != null ? `<span class="ot-eta"><strong class="ot-eta-n">${s.num}</strong><small>${W('台', 'bikes')}</small></span>` : s.numText ? `<span class="ot-eta"><strong class="ot-eta-n sm">${e(s.numText)}</strong></span>` : s.at != null ? `<span class="ot-eta">${countHtml(s.at, { floor: Boolean(s.floor), cls: 'ot-eta-n' })}<small>${e(hm(s.at))}</small></span>` : '';
       return `<button class="q-ritem ot-sg" type="button" data-sg="${e(x.key)}">${s.tile}<span class="q-ritem-text"><span class="q-ritem-title">${e(s.eyebrow)}</span><small>${e(s.title)}</small></span>${end}</button>`;
@@ -283,7 +289,8 @@ export function createHome(box, ctx, act) {
       // (A bike's own fields kept: the card opens the station itself.)
       if (x.kind === 'bike') return act.bike(S.bikes?.find(b => b.uid === x.uid));
       if (x.kind === 'usual') return act.recent(x.place);
-      return act[x.kind === 'home' ? 'place' : x.kind]?.(x.kind === 'home' ? x.place : x);
+      const toPlace = x.kind === 'home' || x.kind === 'go';
+      return act[toPlace ? 'place' : x.kind]?.(toPlace ? x.place : x);
     }
     const del = t.closest('[data-del-recent]');
     if (del) return act.delRecent(del.dataset.delRecent);

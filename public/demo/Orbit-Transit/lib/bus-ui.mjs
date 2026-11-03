@@ -5,14 +5,16 @@
 // every bus due.
 
 import { emptyNote, saidRows } from './look.mjs';
-import { routeStops, routeEta, routeEtaAt, etaKey, etaText, etaOf, said as saidNow, routeSchedule, stopTimes, stationsNear, etaRank, routeCity, INTERCITY } from './bus.mjs';
+import { routeStops, routeEta, routeEtaMended, routeEtaAt, etaKey, etaText, etaOf, said as saidNow, routeSchedule, stopTimes, stationsNear, etaRank, routeCity, INTERCITY } from './bus.mjs';
 import { fitNumbers } from '#kit/orbit.mjs';
 import { errorText, tdx, rows, dataAt, liveMs } from './api.mjs';
 import { CITY_CODES, cityShort } from './city.mjs';
-import { cleanItem, MAX_GROUPS, MAX_ITEMS, move } from './store.mjs';
+import { cleanItem, MAX_GROUPS, MAX_ITEMS } from './store.mjs';
 import { sheet, sheetHead, icon, ago } from './ui.mjs';
+import { gripHtml, reorder } from '#kit/ui.mjs';
 import { e, uid, meters, tw, twAt, zh, addDays, hm, dayLabel, readJson, writeJson, shown } from './util.mjs';
-import { nextRun, nextUnseen, liveTrusted } from './live.mjs';
+import { nextRun, nextUnseen, liveTrusted, departuresAt } from './live.mjs';
+import { routeLines } from './shapes.mjs';
 import { routeStatus, effectLabel } from './service.mjs';
 
 import { W, en } from '#kit/lang.mjs';
@@ -116,7 +118,7 @@ export function strip({ no, note = '', main = '', eta = null, attrs = '', wait =
   const when = wait
     ? `<span class="ot-strip-eta"><b>${skel('46px')}</b><small>${skel('28px')}</small></span>`
     : eta
-      ? `<span class="ot-strip-eta ${eta.tone}${/\d/.test(eta.main) ? '' : ' words'}${/分|進站|min|Arriving|Due/.test(eta.main) ? ' live' : ''}"><b data-q-live="${e(`eta:${no}:${attrs}`)}">${e(eta.main)}</b>${eta.sub ? `<small>${e(eta.sub)}</small>` : ''}</span>`
+      ? `<span class="ot-strip-eta ${eta.tone}${/\d/.test(eta.main) ? '' : ' words'}${/分|進站|min|Arriving|Due/.test(eta.main) && !/stale/.test(eta.tone) ? ' live' : ''}"><b data-q-live="${e(`eta:${no}:${attrs}`)}">${e(eta.main)}</b>${eta.sub ? `<small>${e(eta.sub)}</small>` : ''}</span>`
       : '';
   const sub = wait ? `<small>${skel('84px')}</small>` : note ? `<small>${note}</small>` : '';
   return `<button class="ot-strip-main" type="button" ${attrs}><span class="ot-strip-no${wait && !no ? ' wait' : ''}">${wait && !no ? '' : noHtml(shown(no))}</span><span class="ot-strip-mid"><span class="ot-strip-what"><b>${wait ? skel('128px') : main}</b></span>${sub ? `<span class="ot-strip-note">${sub}</span>` : ''}</span>${when}</button>`;
@@ -197,16 +199,37 @@ export async function nextNear(route, here) {
 // time, trusted): k's live time sooner than k-1's (that one's is a later
 // bus, or it's gone by), and not at k already (that bus rides on k's dot).
 // Drawn on the line between them, so a bus on its way is seen at a glance.
-const coming = v => v?.status === 0 && v.sec != null;
-// Another bus than the one coming to stop k-1 first: k's live time sooner
-// than k-1's. (The same bus reaches k a minute or two after k-1: one bus
-// pulling in at 地方法院 is 2 分 to 東門市場 and 3 分 to 火車站, not three buses.)
-const nextBus = (lives, k) => k === 0 || !coming(lives[k - 1]) || lives[k - 1].sec > lives[k].sec + 20;
+// (A stopped feed's bus isn't drawn: where it is now nobody knows.)
+const coming = v => v?.status === 0 && v.sec != null && !v.stale;
+// Another bus than the one coming to the stops before k first: k's live time
+// sooner than the nearest one before it with a live time. (The same bus
+// reaches k a minute or two after k-1: one bus pulling in at 地方法院 is 2 分
+// to 東門市場 and 3 分 to 火車站, not three buses.) A stop between without a
+// live time (TDX left it out, or it wasn't taken) is no bus: 快捷8號 東光 20
+// 分, 東海 and 東海國小 none, 高鐵新竹站 28 分 is the one bus, still before
+// 東光 (2026-11-03).
+const nextBus = (lives, k) => {
+  let j = k - 1;
+  while (j >= 0 && !coming(lives[j])) j--;
+  return j < 0 || lives[j].sec > lives[k].sec + 20;
+};
 export const busBetween = (lives, k) => k > 0 && coming(lives[k]) && etaText(lives[k]).tone !== 'now' && nextBus(lives, k);
 // A bus at stop k (進站中, 即將進站), drawn on its dot: only the one bus, at
 // the first stop it reaches; the stops after it say 即將進站 without one.
 export const busAt = (lives, k) => coming(lives[k]) && etaText(lives[k]).tone === 'now' && nextBus(lives, k);
 
+// A way done for today: its first stop's next run another day, no stop with
+// a run still to come today, and no bus on its way (the last run left its
+// first stop but is still coming to the rest: 快捷8號支 at 18:32 said
+// 今天已收班 with its 18:33 at 下公館 to come; the owner, 2026-11-03).
+export function doneToday(sched, w, lives = [], now = Date.now()) {
+  if (!sched?.length || !w?.stops?.length) return false;
+  const first = nextRun(sched, w, 0, now);
+  if (!first || first.day === 0) return false;
+  if (lives.some(v => v?.status === 0 && v.sec != null)) return false;
+  // (Today's last, 15 minutes late at most and not seen live yet, still comes.)
+  return !w.stops.some((_, k) => nextRun(sched, w, k, now - 15 * 60_000)?.day === 0);
+}
 export async function openRoute(c, route, { stopUID = '', stopName = '', dir = null, add = false } = {}) {
   ctx ||= c;
   let ways = null;
@@ -240,9 +263,12 @@ export async function openRoute(c, route, { stopUID = '', stopName = '', dir = n
     return n === 1 ? W(`明天（週${WEEK[(t.dow + 1) % 7]}）`, `tomorrow (${WEEK_EN[(t.dow + 1) % 7]})`) : wk((t.dow + n) % 7);
   };
   // The route not running again today: which day the stops' times are of.
-  const offNote = w => {
+  // Only when no stop has a run still to come today and no bus is on its way:
+  // the last run's left its first stop but is still coming to the rest
+  // (快捷8號支 at 18:32 said 今天已收班 with its 18:33 at 下公館 to come; the owner, 2026-11-03).
+  const offNote = (w, lives = []) => {
+    if (!doneToday(sched, w, lives)) return '';
     const first = planned(w, 0);
-    if (!first || first.day === 0) return '';
     const ranToday = nextRun(sched, w, 0, twAt(today().date, '00:00'), 0);
     return W(`${ranToday ? '今天已收班' : '今天不行駛'}，以下是${dayName(first.day)}的時刻`, `${ranToday ? 'Done for today' : 'Not running today'}; times for ${dayName(first.day)}`);
   };
@@ -290,8 +316,6 @@ export async function openRoute(c, route, { stopUID = '', stopName = '', dir = n
     // What's said about it today (service.mjs): its status at the top, the notice a tap away.
     const said = routeStatus(route.uid, route.name);
     const stopped = said && (said.effect === 'off' || said.effect === 'likely');
-    const off = stopped ? '' : w && sched?.length ? offNote(w) : '';
-    offDay = off ? planned(w, 0).day : 0;
     const keep = d.scrollTop;
     // Like a stop's sign: the route's number big, where it's going beside it;
     // the way and the view stay at the top while the stops scroll under.
@@ -311,38 +335,61 @@ export async function openRoute(c, route, { stopUID = '', stopName = '', dir = n
       const v = live.get(etaKey(s.uid, route.uid, w.dir));
       return v?.status === 0 && v.sec != null && !liveTrusted(sched, w, k, Date.now() + v.sec * 1000) ? null : v;
     });
+    // Each stop with no bus on its way: the timetable's next (not the bus
+    // already seen further on: nextUnseen), today's last kept 15 minutes
+    // past its time until a bus is seen beyond the stop (it runs late, and
+    // shows up live only once it's out: the owner, 2026-11-03).
+    const nexts = (w?.stops || []).map((s, k) => {
+      const v = lives[k];
+      if (stopped || (v?.status === 0 && v.sec != null) || !sched?.length) return null;
+      const now = Date.now();
+      const p = nextUnseen(sched, w, k, lives, now);
+      if (!p?.day) return p;
+      const late = departuresAt(sched, w, k, now - 15 * 60_000, 1)[0];
+      const gone = lives.some((x, j) => j > k && x?.status === 0 && x.sec != null);
+      return late != null && late < now && !gone ? { at: late, day: 0, late: true } : p;
+    });
+    const off = stopped ? '' : w && sched?.length ? offNote(w, lives) : '';
+    offDay = off ? planned(w, 0).day : 0;
     const between = k => busBetween(lives, k);
+    // A stopped feed (bus.mjs etaOf stale): said once above the stops, not under each.
+    const oldest = Math.max(0, ...lives.filter(v => v?.stale).map(v => v.old));
+    const staleNote = oldest ? W(`公車動態 ${Math.round(oldest / 60)} 分鐘沒更新，時間可能不準`, `No bus update for ${Math.round(oldest / 60)} min: times may be off`) : '';
     const stops = !ways
       ? `<p class="ot-note">${W('載入站牌中…', 'Loading stops…')}</p>`
       : !w
         ? emptyNote(W('這條路線沒有站牌資料', 'No stops for this route'))
         : view === 'table'
           ? tableHtml(w)
-          : `${off ? `<p class="ot-note ot-off-note">${e(off)}</p>` : ''}<ol class="ot-route-stops">${w.stops
+          : `${off ? `<p class="ot-note ot-off-note ot-done-note">${e(off)}</p>` : ''}<ol class="ot-route-stops">${w.stops
             .map(s => {
               const k = w.stops.indexOf(s);
               const v = lives[k];
               let t = etaText(v);
-              // No bus on its way to it (尚未發車, 末班已過 the other way…): the timetable's next.
-              // (Not the bus already seen further on: nextUnseen.)
-              const p = !stopped && (!v || v.status !== 0 || v.sec == null) && sched?.length ? nextUnseen(sched, w, k, lives, Date.now()) : null;
+              if (/stale/.test(t.tone)) t = { ...t, sub: '' };
+              const p = nexts[k];
               // (Said once at the top: each stop only a dash.)
               if (stopped && !(v?.status === 0 && v.sec != null)) t = { main: '—', sub: '', tone: 'off' };
-              // (Another day's said once above the stops, when it's every stop's.)
-              // (Said once above the stops that it's the timetable; another day's only when it's this stop's own.)
-              if (p) t = { main: hm(p.at), sub: p.day && p.day !== offDay ? dayName(p.day) : '', tone: 'wait' };
+              // Today and the next day on one line: the stops the day's last bus has
+              // passed are the next day's (the line quiet there, the day said once
+              // where they begin); where today's begin, the last bus by the timetable
+              // (a ring on the line until it's seen live) and 末班車.
+              const tmrw = Boolean(p?.day);
+              const head = tmrw && (k === 0 || !nexts[k - 1]?.day) && p.day !== offDay;
+              const first = !tmrw && k > 0 && nexts[k - 1]?.day > 0;
+              if (p) t = { main: hm(p.at), sub: head ? dayName(p.day) : first || p.late ? W('末班車', 'Last bus') : '', tone: 'wait' };
               const mine = s.uid === stopUID;
               const ride = pinnedAt(s.uid);
               // Choosing where to get off: the stops after the one you get on at.
               const at = boarding ? w.stops.findIndex(x => x.uid === boarding.uid) : -1;
               const pick = boarding ? (k > at ? ' can-off' : k === at ? ' on-here' : ' before') : '';
               // A bus at the stop (進站中, 即將進站) rides on its dot.
-              return `<li class="${t.tone}${busAt(lives, k) ? ' at' : ''}${mine ? ' mine' : ''}${pick}" data-stop="${e(s.uid)}"${boarding && k > at ? ` data-off="${e(s.uid)}"` : ''}><span class="ot-rs-eta ${t.tone}">${e(t.main)}</span>${between(k) ? `<i class="ot-rs-bus" aria-label="${W('公車在這兩站之間', 'Bus between these stops')}">${icon('bus')}</i>` : ''}<span class="ot-rs-dot">${busAt(lives, k) ? icon('bus') : ''}</span><span class="ot-rs-name"><b>${e(shown(s.name))}</b>${k === at ? `<small>${W('上車', 'Board')}</small>` : ride?.off ? `<small>${icon('star')} ${W('到', 'to')} ${e(shown(ride.off.stop))}</small>` : t.sub ? `<small>${e(t.sub)}</small>` : ''}</span>${boarding ? '' : `<button class="ot-rs-star${ride ? ' on' : ''}" type="button" data-add="${e(s.uid)}" aria-label="${ride ? W('取消釘選', 'Unpin') : W('從這站上車，釘選', 'Board here and pin')}">${icon('star')}</button>`}</li>`;
+              return `<li class="${t.tone}${tmrw ? ' tmrw' : ''}${busAt(lives, k) ? ' at' : ''}${mine ? ' mine' : ''}${pick}" data-stop="${e(s.uid)}"${boarding && k > at ? ` data-off="${e(s.uid)}"` : ''}><span class="ot-rs-eta ${t.tone}">${e(t.main)}</span>${between(k) ? `<i class="ot-rs-bus" aria-label="${W('公車在這兩站之間', 'Bus between these stops')}">${icon('bus')}</i>` : first ? `<i class="ot-rs-bus plan" aria-label="${W('末班車，依時刻表約在這裡', 'Last bus, about here by the timetable')}">${icon('bus')}</i>` : ''}<span class="ot-rs-dot">${busAt(lives, k) ? icon('bus') : ''}</span><span class="ot-rs-name"><b>${e(shown(s.name))}</b>${k === at ? `<small>${W('上車', 'Board')}</small>` : ride?.off ? `<small>${icon('star')} ${W('到', 'to')} ${e(shown(ride.off.stop))}</small>` : t.sub ? `<small>${e(t.sub)}</small>` : ''}</span>${boarding ? '' : `<button class="ot-rs-star${ride ? ' on' : ''}" type="button" data-add="${e(s.uid)}" aria-label="${ride ? W('取消釘選', 'Unpin') : W('從這站上車，釘選', 'Board here and pin')}">${icon('star')}</button>`}</li>`;
             })
             .join('')}</ol>`;
     const choose = boarding && view === 'live' ? `<div class="ot-ride-pick"><div><b>${W(`${e(shown(boarding.name))} 上車`, `Board at ${e(shown(boarding.name))}`)}</b><small>${W('選下車站', 'Pick your stop')}</small></div><button class="q-btn" type="button" data-only="1">${W('只釘這站', 'Just this stop')}</button><button class="q-icon-btn" type="button" data-cancel-ride="1" aria-label="${W('取消', 'Cancel')}">${icon('x')}</button></div>` : '';
     const dirLeft = d.querySelector('.ot-dir-chips')?.scrollLeft || 0;
-    d.querySelector('#rt').innerHTML = `<div class="ot-rt-top q-day-still">${head}${tabs}${views}${choose}</div>${err && view === 'live' ? `<p class="ot-note bad">${e(err)}</p>` : ''}${stops}${view === 'live' && !boarding && at ? `<p class="ot-note center">${e(ago(at))}</p>` : ''}`;
+    d.querySelector('#rt').innerHTML = `<div class="ot-rt-top q-day-still">${head}${tabs}${views}${choose}${staleNote && view === 'live' && ways && w ? `<p class="ot-note ot-off-note ot-stale-note">${e(staleNote)}</p>` : ''}</div>${err && view === 'live' ? `<p class="ot-note bad">${e(err)}</p>` : ''}${stops}${view === 'live' && !boarding && at ? `<p class="ot-note center">${e(ago(at))}</p>` : ''}`;
     // (The row of ways where it was; the one chosen in sight.)
     const row = d.querySelector('.ot-dir-chips');
     if (row) {
@@ -402,7 +449,8 @@ export async function openRoute(c, route, { stopUID = '', stopName = '', dir = n
   };
   const refresh = async () => {
     try {
-      live = await routeEta(route);
+      // (A bus whose estimates lag counted again from its GPS: busgps.mjs.)
+      live = await routeEtaMended(route, ways, w => routeLines(route, w));
       at = Math.min(Date.now(), routeEtaAt(route) || Date.now());
       err = '';
     } catch (x) {
@@ -532,27 +580,42 @@ export function chooseGroup(raw, done) {
 
 export function manageSheet() {
   const d = sheet('', 'ot-tall-sheet');
+  // Groups and their stops put in order by their grips (the kit's reorder,
+  // as every list in the family): a group's grip on its name's line, a
+  // stop's at its row's end.
   const draw = () => {
     d.innerHTML = `${sheetHead(W('公車站牌', 'Bus stops'))}
-      ${ctx.data.groups
+      <div class="ot-groups">${ctx.data.groups
         .map(
-          (g, i, all) => `<section class="ot-manage">
+          (g, i, all) => `<section class="ot-manage" data-q-key="${e(g.id)}">
           <div class="ot-order-row head"><input class="ot-name-in" data-name="${i}" value="${e(g.name)}" maxlength="16" aria-label="${W('群組名稱', 'Group name')}">
-            <button class="q-icon-btn" type="button" data-gmove="${i}" data-by="-1" aria-label="${W('上移', 'Move up')}" ${i ? '' : 'disabled'}>${icon('up')}</button>
-            <button class="q-icon-btn" type="button" data-gmove="${i}" data-by="1" aria-label="${W('下移', 'Move down')}" ${i < all.length - 1 ? '' : 'disabled'}>${icon('down')}</button>
-            <button class="q-icon-btn" type="button" data-gdel="${i}" aria-label="${W('刪除群組', 'Delete group')}" ${all.length > 1 ? '' : 'disabled'}>${icon('trash')}</button></div>
-          ${g.items
+            <button class="ot-order-x" type="button" data-gdel="${i}" aria-label="${W('刪除群組', 'Delete group')}" ${all.length > 1 ? '' : 'disabled'}>${icon('trash')}</button>${all.length > 1 ? gripHtml(W(`拖曳排序：${g.name}`, `Reorder ${g.name}`)) : ''}</div>
+          <div class="ot-order-items" data-items="${i}">${g.items
             .map(
-              (it, k, list) => `<div class="ot-order-row"><span><b>${e(shown(it.route))}</b> ${e(shown(it.stop))}${it.off ? ` → ${e(shown(it.off.stop))}` : ''}<small>${W('往', 'to')} ${e(shown(it.headsign))}${it.back ? W(' · 回程自動對調', ' · back flips') : ''}</small></span>
-              <button class="q-icon-btn" type="button" data-imove="${i}:${k}" data-by="-1" aria-label="${W('上移', 'Move up')}" ${k ? '' : 'disabled'}>${icon('up')}</button>
-              <button class="q-icon-btn" type="button" data-imove="${i}:${k}" data-by="1" aria-label="${W('下移', 'Move down')}" ${k < list.length - 1 ? '' : 'disabled'}>${icon('down')}</button>
-              <button class="q-icon-btn" type="button" data-idel="${i}:${k}" aria-label="${W('移除', 'Remove')}">${icon('trash')}</button></div>`
+              (it, k, list) => `<div class="ot-order-row" data-q-key="${k}"><span><b>${e(shown(it.route))}</b> ${e(shown(it.stop))}${it.off ? ` → ${e(shown(it.off.stop))}` : ''}<small>${W('往', 'to')} ${e(shown(it.headsign))}${it.back ? W(' · 回程自動對調', ' · back flips') : ''}</small></span>
+              <button class="ot-order-x" type="button" data-idel="${i}:${k}" aria-label="${W('移除', 'Remove')}">${icon('trash')}</button>${list.length > 1 ? gripHtml(W(`拖曳排序：${shown(it.route)}`, `Reorder ${shown(it.route)}`)) : ''}</div>`
             )
-            .join('')}
+            .join('')}</div>
         </section>`
         )
-        .join('')}
+        .join('')}</div>
       ${ctx.data.groups.length < MAX_GROUPS ? `<button class="q-btn block ot-sheet-go" type="button" data-gadd="1">${icon('plus')} ${W('新增群組', 'New group')}</button>` : ''}`;
+    const saved = () => (ctx.save(), draw(), ctx.refreshTabs?.());
+    reorder(d.querySelector('.ot-groups'), {
+      onChange: ids => {
+        ctx.data.groups = ids.map(id => ctx.data.groups.find(g => g.id === id)).filter(Boolean);
+        saved();
+      }
+    });
+    for (const box of d.querySelectorAll('[data-items]')) {
+      const g = ctx.data.groups[Number(box.dataset.items)];
+      reorder(box, {
+        onChange: keys => {
+          g.items = keys.map(k => g.items[Number(k)]).filter(Boolean);
+          saved();
+        }
+      });
+    }
   };
   draw();
   d.addEventListener('change', ev => {
@@ -563,17 +626,10 @@ export function manageSheet() {
     ctx.refreshTabs?.();
   });
   d.addEventListener('click', ev => {
-    const by = Number(ev.target.closest('[data-by]')?.dataset.by || 0);
-    const gm = ev.target.closest('[data-gmove]');
     const gd = ev.target.closest('[data-gdel]');
-    const im = ev.target.closest('[data-imove]');
     const id = ev.target.closest('[data-idel]');
-    if (gm) ctx.data.groups = move(ctx.data.groups, Number(gm.dataset.gmove), by);
-    else if (gd) ctx.data.groups = ctx.data.groups.filter((_, i) => i !== Number(gd.dataset.gdel));
-    else if (im) {
-      const [g, k] = im.dataset.imove.split(':').map(Number);
-      ctx.data.groups[g].items = move(ctx.data.groups[g].items, k, by);
-    } else if (id) {
+    if (gd) ctx.data.groups = ctx.data.groups.filter((_, i) => i !== Number(gd.dataset.gdel));
+    else if (id) {
       const [g, k] = id.dataset.idel.split(':').map(Number);
       ctx.data.groups[g].items = ctx.data.groups[g].items.filter((_, i) => i !== k);
     } else if (ev.target.closest('[data-gadd]')) ctx.data.groups.push({ id: 'g' + uid(), name: W(`群組 ${ctx.data.groups.length + 1}`, `Group ${ctx.data.groups.length + 1}`), items: [] });

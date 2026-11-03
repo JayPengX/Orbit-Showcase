@@ -241,11 +241,43 @@ export function f1Driver(name) {
 }
 
 // F1 constructors: their colour and a short name, for a badge like the drivers'.
+// Teams of past seasons (a career's 生涯車隊): its own colour and name, and
+// the logo of the team it became where formula1.com keeps one (it keeps
+// 2024 on): Sauber's own (Kick Sauber's, its name on it), the Red Bull
+// junior team's bull, Alpine's A for Renault and Lotus, Aston Martin's for
+// Racing Point and Force India (Jay 2026-11-03: Sauber a grey "SAU").
+// A team that ended with no heir (Manor, Caterham) keeps its colour.
+const F1_PAST = [
+  { name: 'BMW Sauber', zh: 'BMW 索伯', color: '#0066b1', logo: '2025/kicksauber' },
+  { name: 'Alfa Romeo', zh: '愛快羅密歐', color: '#9b0000', logo: '2025/kicksauber' },
+  { name: 'Sauber', aka: ['Kick Sauber', 'Stake F1'], zh: '索伯', color: '#52e252', logo: '2025/kicksauber' },
+  { name: 'AlphaTauri', aka: ['Alpha Tauri'], zh: '阿爾法托利', color: '#2b4562', logo: '2024/rb' },
+  { name: 'Toro Rosso', aka: ['Scuderia Toro Rosso'], zh: '紅牛二隊', color: '#4e7cff', logo: '2024/rb' },
+  { name: 'Minardi', zh: '米納迪', color: '#000000', logo: '2024/rb' },
+  { name: 'Lotus F1', aka: ['Lotus'], zh: '蓮花', color: '#000000', logo: '2024/alpine' },
+  { name: 'Renault', zh: '雷諾', color: '#fff500', logo: '2024/alpine' },
+  { name: 'Force India', zh: '印度力量', color: '#f596c8', logo: 'aston' },
+  { name: 'Racing Point', zh: '賽點', color: '#f596c8', logo: 'aston' },
+  { name: 'Brawn GP', aka: ['Brawn'], zh: '布朗', color: '#b8fd6e', logo: 'mercedes' },
+  { name: 'Jaguar', zh: '捷豹', color: '#08623e', logo: 'redbull' },
+  { name: 'Manor', aka: ['Marussia', 'Virgin'], zh: '馬諾爾', color: '#ed1c24' },
+  { name: 'Caterham', zh: '卡特漢', color: '#005030' },
+  { name: 'HRT', aka: ['Hispania'], zh: 'HRT', color: '#b2945e' },
+  { name: 'Toyota', zh: '豐田', color: '#cc0000' }
+];
+const f1Logo = (year, slug) => `https://media.formula1.com/image/upload/c_fit,h_96/q_auto/v1740000000/common/f1/${year}/${slug}/${year}${slug}logowhite.webp`;
 export function f1Constructor(name) {
   const plain = normalizeTeamName(name);
   const team = plain ? Object.values(F1_TEAMS).find(t => plain.includes(normalizeTeamName(t.name)) || normalizeTeamName(t.name).includes(plain) || (t.aka || []).some(x => plain.includes(normalizeTeamName(x)))) : null;
+  if (!team && plain) {
+    const past = F1_PAST.find(t => [t.name, ...(t.aka || [])].some(x => plain.includes(normalizeTeamName(x))));
+    if (past) {
+      const [year, slug] = past.logo?.includes('/') ? past.logo.split('/') : ['2026', F1_TEAMS[past.logo]?.f1];
+      return { name: name || past.name, zh: past.zh, color: past.color, logo: slug ? f1Logo(year, slug) : null, page: '', drivers: [], short: past.name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() };
+    }
+  }
   // Its logo (formula1.com's, white: shown on the team's colour).
-  const logo = team?.f1 ? `https://media.formula1.com/image/upload/c_fit,h_96/q_auto/v1740000000/common/f1/2026/${team.f1}/2026${team.f1}logowhite.webp` : null;
+  const logo = team?.f1 ? f1Logo('2026', team.f1) : null;
   return { name: team?.name ?? name, zh: team?.zh ?? name, color: team?.color ?? '#8a8f98', logo, page: team?.page || '', drivers: team?.drivers ?? [], short: (team?.name ?? name).replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() };
 }
 
@@ -340,13 +372,26 @@ function noteDrawn(url, img) {
 // px, a third of the bytes, so a first screen's logos come in with it. (The
 // address everywhere else stays the original: what's remembered, its dark
 // version.)
-const ESPN_500 = /^https:\/\/a\.espncdn\.com\/i\/((?:teamlogos|leaguelogos)\/[\w/-]+\/500(?:-dark)?\/[\w-]+\.png)$/;
+// (ESPN's scoreboards name a team's logo …/500/scoreboard/lal.png, its game
+// pages …/500/lal.png: the same picture, so it's asked for at one address and
+// downloaded once, kept by the service worker for every page. Asked for twice
+// at full size, a slow connection lost the game page's badges.)
+const ESPN_500 = /^https:\/\/a\.espncdn\.com\/i\/((?:teamlogos|leaguelogos)\/[\w/-]+\/500(?:-dark)?\/(?:scoreboard\/)?[\w-]+\.png)$/;
 export const small = url => {
   const m = typeof url === 'string' && url.match(ESPN_500);
-  return m ? `https://a.espncdn.com/combiner/i?img=/i/${m[1]}&w=192&h=192` : url;
+  return m ? `https://a.espncdn.com/combiner/i?img=/i/${m[1].replace('/scoreboard/', '/')}&w=192&h=192` : url;
 };
 
+const canon = url => (typeof url === 'string' ? url.replace(/^(https:\/\/a\.espncdn\.com\/i\/.+\/500(?:-dark)?)\/scoreboard\//, '$1/') : url);
+// A logo this phone has drawn before that won't come now (a slow or broken
+// connection, not a missing picture): its stand-in meanwhile, and the logo
+// put back the moment it comes, tried again when the phone is back online
+// and at these waits, never given up for the visit (Jay 2026-11-03: a game's
+// badges missing on bad internet).
+const LATER_MS = [8_000, 20_000, 60_000, 180_000];
 export function logoPicture(light, dark, cls, fallback, { guess = false } = {}) {
+  light = canon(light);
+  dark = canon(dark);
   if (!light || knownBad(light)) return fallback();
   const img = document.createElement('img');
   const known = drawn.has(light) || logoSeen.has(light);
@@ -363,13 +408,29 @@ export function logoPicture(light, dark, cls, fallback, { guess = false } = {}) 
     picture.append(source);
   }
   picture.append(img);
+  // (Standing in while a logo drawn before is tried again.)
+  let standIn = null;
+  let later = 0;
   img.addEventListener('load', () => {
     if (!img.naturalWidth) return;
+    // (Drawn once: eager from now on. Safari picks a <picture>'s source again
+    // whenever it's moved on the page, and a lazy one then never loaded: a
+    // logo gone after a tab switch, Jay 2026-11-03.)
+    img.loading = 'eager';
     if (img.style.opacity) Object.assign(img.style, { transition: 'opacity 0.18s ease', opacity: '' });
     noteDrawn(light, img);
+    if (standIn?.isConnected) standIn.replaceWith(picture);
+    standIn = null;
   });
   let tries = 0;
   img.addEventListener('error', () => {
+    if (standIn) {
+      if (!standIn.isConnected || later >= LATER_MS.length) return;
+      const again = () => standIn?.isConnected && (img.removeAttribute('src'), (img.src = small(light)));
+      if (navigator.onLine === false) addEventListener('online', again, { once: true });
+      else setTimeout(again, LATER_MS[later++]);
+      return;
+    }
     img.style.opacity = '0';
     // The dark-screen version missing: the ordinary one instead, at once (never the initial).
     const source = picture.querySelector('source');
@@ -381,6 +442,13 @@ export function logoPicture(light, dark, cls, fallback, { guess = false } = {}) 
       return;
     }
     if (tries >= (guess ? 0 : RETRY_MS.length)) {
+      // Drawn here before: the connection, not the logo (kept, and tried again in place).
+      if (!guess && logoSeen.has(light) && picture.parentNode) {
+        standIn = fallback();
+        picture.replaceWith(standIn);
+        img.dispatchEvent(new Event('error'));
+        return;
+      }
       logoBad.set(light, Date.now());
       logoSeen.delete(light);
       if (picture.parentNode) picture.replaceWith(fallback());
@@ -396,6 +464,16 @@ export function logoPicture(light, dark, cls, fallback, { guess = false } = {}) 
     if (navigator.onLine === false) addEventListener('online', again, { once: true });
     else setTimeout(again, wait);
   });
+  // Never left invisible: a load iPhone didn't report (a lazy picture in a
+  // sheet that never asked for it, one moved while it loaded) shows anyway,
+  // or is asked for now (Jay 2026-11-01: 科莫's badge a blank gap in 近期交手).
+  if (!known)
+    for (const ms of [2500, 6000])
+      setTimeout(() => {
+        if (!img.style.opacity) return;
+        if (img.complete && img.naturalWidth) Object.assign(img.style, { transition: 'opacity 0.18s ease', opacity: '' });
+        else if (img.loading === 'lazy' && picture.isConnected) img.loading = 'eager';
+      }, ms);
   img.src = small(light);
   return picture;
 }

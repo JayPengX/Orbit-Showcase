@@ -2,6 +2,7 @@
 // encodings the planners use.
 
 import { twHoliday } from '#kit/holidays.mjs';
+import * as kitDays from '#kit/holidays.mjs';
 import { dayOffOn } from '#kit/dayoff.mjs';
 import { W, en } from '#kit/lang.mjs';
 import { addDays } from '#kit/format.mjs';
@@ -88,6 +89,18 @@ export const WALK_M_MIN = 83;
 export const etaAge = (r, now = Date.now()) => {
   const t = Date.parse(r?.DataTime || '');
   return Number.isFinite(t) ? Math.min(300, Math.max(0, (now - t) / 1000)) : 0;
+};
+// The same, not capped (null without a DataTime). TDX's estimates are
+// usually 1 to 3.5 minutes old when they reach the phone; one older than 4
+// (ETA_STALE) is a feed that stopped: 快捷8號's froze at 17:37:54 on
+// 2026-11-03, and at 17:43 富貴街口 still said 進站中 with the bus 5 minutes
+// on (the owner took the wrong bus). Older than 15 (ETA_GHOST) it is no bus
+// on the road at all (a tracker gone quiet hours ago).
+export const ETA_STALE = 240;
+export const ETA_GHOST = 900;
+export const etaOld = (r, now = Date.now()) => {
+  const t = Date.parse(r?.DataTime || '');
+  return Number.isFinite(t) ? Math.max(0, (now - t) / 1000) : null;
 };
 export const walkSec = m => Math.round(((m * 1.3) / WALK_M_MIN) * 60);
 // A walk of `m` metres as the crow flies, as shown and timed (the streets' ×1.3 in both).
@@ -208,6 +221,9 @@ export const tripNeed = t => (SCHOOL.test(`${t?.name || ''} ${t?.to?.name || ''}
 // (A stop from later in the day leaves the morning's trip as it is.)
 const offAllDay = o => Boolean(o && (!o.from || o.from <= '08:00'));
 export const holidayOn = (date, trip = null) => Boolean(twHoliday(date)) || Boolean(trip?.to && Number.isFinite(trip.to.lat) && offAllDay(dayOffOn(date, { lat: trip.to.lat, lon: trip.to.lon }, tripNeed(trip))));
+// A working day on Taiwan's calendar: not a weekend or a holiday, and a 補班
+// Saturday is one (an older kit without twWorkday: a weekday that isn't a holiday).
+export const workday = date => kitDays.twWorkday?.(date) ?? (![0, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay()) && !twHoliday(date));
 export const weekdaysOnly = days => days.length > 0 && !days.includes(0) && !days.includes(6);
 
 // Google's and TDX's names for one route differ (快捷8經興隆大橋, 快捷8號;

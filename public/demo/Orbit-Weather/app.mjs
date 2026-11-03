@@ -6,6 +6,8 @@
 import { orbitSession, topActions, tabBar, installGate, watchUpdates, schedulePush, tell, ask, closeSheet, mayLocate, keepOffline } from '#kit/orbit.mjs';
 import { settleSegs, escHtml as e } from '#kit/ui.mjs';
 import * as kitUI from '#kit/ui.mjs';
+// (The kit's storage, read through the namespace: a phone on an older kit opens without it.)
+import * as kitCore from '#kit/orbit.mjs';
 import { passSync } from '#kit/pass-sync.mjs';
 import { twHoliday } from '#kit/holidays.mjs';
 import { dayOffOn, onDayOff, setPlace } from '#kit/dayoff.mjs';
@@ -21,18 +23,21 @@ const pinPlace = pin => (pin?.county ? { county: pin.county, town: pin.town || n
 // (A stop from later in the day leaves the morning's going there as it is.)
 const offAllDay = o => Boolean(o && (!o.from || o.from <= '08:00'));
 useHolidays((date, pin) => Boolean(twHoliday(date)) || Boolean(pin && offAllDay(dayOffOn(date, pinPlace(pin), pinNeed(pin)))));
-import { nowHtml, weekHtml, placesHtml, placeName, daySheet, infoCard, adviceSheet, colsFor, rangeOf, metricSheet } from './lib/cards.mjs';
-import { readout, scrubHtml, colAt, colSpot, PLOT_BOTTOM } from './lib/graph.mjs';
+import { placeName, daySheet, sheetHours, keepPast, infoCard, adviceSheet, colsFor, rangeOf, metricSheet } from './lib/cards.mjs';
+import { readout, scrubHtml, colAt, colSpot, chartWidth, PLOT_BOTTOM } from './lib/graph.mjs';
 import { dateOf, staleText, hereNote } from './lib/format.mjs';
 import { W, en, lang } from '#kit/lang.mjs';
 import { ICON_DEFS, glyph, placeGlyph, conditionArt } from './lib/icons.mjs';
 import { routeForecast } from './lib/plan.mjs';
+import { nowHtml as skyPage, placesHtml as placesPage } from './lib/pages.mjs';
 
 const $ = id => document.getElementById(id);
 const VERSION = document.querySelector('meta[name="build-version"]')?.content || 'dev';
 document.documentElement.lang = en ? 'en' : 'zh-Hant';
 const q = orbitSession('weather', { lang });
 
+// The graphs' ranges, this device's own (not the pass's).
+const RANGES = 'orbit-weather.ranges';
 const state = {
   local: loadLocal(),
   data: emptyData(),
@@ -46,13 +51,7 @@ const state = {
   // What each page's graphs show, for the read-outs: key → { uv, rain, air, tz }.
   cols: {},
   // The graphs' ranges (the cards' tabs), this device's choice.
-  ranges: (() => {
-    try {
-      return JSON.parse(localStorage.getItem('orbit-weather.ranges') || '{}') || {};
-    } catch {
-      return {};
-    }
-  })()
+  ranges: kitCore.readJson?.(RANGES, {}) || {}
 };
 
 // ---- Pages: 我的行程, here, then each pin; one shown at a time ---------------------------
@@ -112,16 +111,16 @@ function notePlan(now) {
   page.place = cur ? { county: cur.county, town: cur.town } : pageOf('here')?.place || null;
 }
 
-// ---- Tabs: 今天, 預報, 地點 (the kit's bar; one place shared by all) -------------------------
+// ---- Tabs: 天氣 and 地點 (the kit's bar; one place shared by both) -------------------------
+// (天氣 is the old 今天 and 預報 in one page: Orbit's own look, RULEBOOK §3.)
 
-const TABS = ['now', 'week', 'places'];
+const TABS = ['now', 'places'];
 const tabs = tabBar({
   tabs: [
-    { id: 'now', label: W('今天', 'Today'), icon: '<circle cx="9" cy="8.5" r="3.2"/><path d="M9 2.5v1.2M3 8.5h1.2M4.8 4.3l.9.9M13.2 4.3l-.9.9"/><path d="M8 20.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 9.9 1.3 3.4 3.4 0 0 1-.3 6.7z"/>' },
-    { id: 'week', label: W('預報', 'Forecast'), icon: 'calendar' },
+    { id: 'now', label: W('天氣', 'Weather'), icon: '<circle cx="9" cy="8.5" r="3.2"/><path d="M9 2.5v1.2M3 8.5h1.2M4.8 4.3l.9.9M13.2 4.3l-.9.9"/><path d="M8 20.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 9.9 1.3 3.4 3.4 0 0 1-.3 6.7z"/>' },
     { id: 'places', label: W('地點', 'Places'), icon: '<path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/>' }
   ],
-  // (The address: #tab=week, #pin=<id>, kept by the app.)
+  // (The address: #tab=places, #pin=<id>, kept by the app.)
   hash: () => null,
   onSelect: id => showTab(id),
   label: W('分頁', 'Tabs')
@@ -154,7 +153,7 @@ const pageSig = page =>
     : `${forecastOf(page)?.at || page.error || 0}${forecastOf(page)?.more ? '+' : ''}|${page.lat ?? ''},${page.lon ?? ''}|${page.place?.town || ''}|${page.note || ''}|${page.askable ? 1 : 0}|${page.error || ''}`;
 const viewSig = page => {
   const base = `${state.tab}|${page.key}|${Math.floor(Date.now() / 3_600_000)}|${state.data.t}`;
-  return state.tab === 'places' ? `${base}|${state.data.brief}|${state.editing}|${state.pages.map(p => `${p.key}:${p.plan ? '' : pageSig(p)}`).join(';')}` : `${base}|${pageSig(page)}${state.tab === 'week' ? '' : `|${state.pages.map(p => forecastOf(p)?.at || 0).join()}`}`;
+  return state.tab === 'places' ? `${base}|${state.data.brief}|${state.editing}|${state.pages.map(p => `${p.key}:${p.plan ? '' : pageSig(p)}`).join(';')}` : `${base}|${pageSig(page)}|${state.pages.map(p => p.key).join()}`;
 };
 // (A typhoon day off announced where a pin is: where you'll be moves on.)
 onDayOff(() => {
@@ -172,11 +171,21 @@ function render() {
   const sig = viewSig(page);
   if (panel.dataset.sig === sig) return;
   panel.dataset.sig = sig;
-  if (state.tab === 'places') return void ((panel.innerHTML = placesHtml(placeRows(page), { brief: state.data.brief, editing: state.editing && state.data.pins.length > 0 })), kitUI.wireNavTitles(panel));
-  const opts = { now, cards: state.data.cards, hidden: state.data.hidden, places: placeRows(page) };
-  panel.innerHTML = (state.tab === 'week' ? weekHtml : nowHtml)(forecastOf(page), page, opts);
-  kitUI.wireNavTitles(panel);
+  if (state.tab === 'places') return void ((panel.innerHTML = placesPage(placeRows(page).map((r, i) => ({ ...r, page: state.pages[i], f: forecastOf(state.pages[i]) })), { brief: state.data.brief, editing: state.editing && state.data.pins.length > 0, now })), kitUI.wireNavTitles(panel));
+  panel.innerHTML = skyPage(forecastOf(page), page, { now, cards: state.data.cards, hidden: state.data.hidden, home: state.data.pins.find(p => p.home)?.name || '' });
+  // (The owner's cards in columns on a wide screen, in the phone's order.)
+  kitUI.flowColumns?.(panel);
 }
+kitCore.onScreen?.(() => state.tab === 'now' && kitUI.flowColumns?.($('panel-now')));
+
+// A swipe across 天氣 goes to the place beside, from its top (the title says which).
+kitUI.daySwipe?.($('panel-now'), dir => {
+  const next = state.pages[state.pages.indexOf(current()) + dir];
+  if (!next) return false;
+  state.key = next.key;
+  showTab('now', { top: true });
+  return true;
+});
 
 // 地點's rows: each place's picture and colour, what it is, its temperature now.
 const PLACE_COLOR = page => (page.plan ? 'indigo' : page.pin?.home ? 'orange' : page.pin ? 'pink' : 'blue');
@@ -262,7 +271,7 @@ let firstIn;
 const firstForecast = new Promise(done => (firstIn = done));
 function take(page, cell, f) {
   queueMicrotask(() => firstIn());
-  if (cell) state.local.forecasts[cell] = { at: Date.now(), f };
+  if (cell) state.local.forecasts[cell] = { at: Date.now(), f: keepPast(state.local.forecasts[cell]?.f, f, Date.now()) };
   else {
     // Where the network said: the page takes the forecast's own place.
     // (Each answer's own place: the network's guess moves as you do.)
@@ -556,54 +565,65 @@ async function pinSheet(pin = null) {
   });
 }
 
-// 版面: the owner's cards, where each now lives, in their order, each shown or
-// not (kept on the Pass). 建議 is 今天's; 指標 and the days are 預報's, in this
-// order; 更多資訊 is in today's sheet.
-const CARD_ROWS = { metrics: ['chart', W('指標', 'Conditions'), W('預報', 'Forecast')], advice: ['bulb', W('建議', 'Advice'), W('今天', 'Today')], days: ['calendar', W('10 天預報', '10-day forecast'), W('預報', 'Forecast')], info: ['list', W('更多資訊', 'Details'), W('今天的詳情', 'Today’s sheet')] };
+// 版面: the owner's cards, each shown or not (kept on the Pass). 指標, 建議
+// and the days are 天氣's, under the hours, put in order by their grips (the
+// kit's reorder, as every list in the family); 更多資訊 is in today's
+// sheet, so it is only shown or not (where it sits in the order changes nothing).
+const CARD_ROWS = {
+  metrics: ['chart', W('指標', 'Conditions'), W('降雨、紫外線、空氣', 'Rain, UV, air')],
+  advice: ['bulb', W('建議', 'Advice'), W('雨傘、穿著、通勤', 'Umbrella, clothes, commute')],
+  days: ['calendar', W('10 天預報', '10-day forecast'), W('每天的高低溫', 'Each day’s high and low')],
+  info: ['list', W('更多資訊', 'Details'), W('氣壓、日出日落、月相', 'Pressure, sun, moon')]
+};
+const PAGE_CARDS = ['metrics', 'advice', 'days'];
 function layoutSheet() {
-  const rows = () =>
-    state.data.cards
-      .map((k, i, all) => {
-        const on = !state.data.hidden.includes(k);
-        const [icon, name, where] = CARD_ROWS[k];
-        return `<div class="q-cell wx-order-row${on ? '' : ' is-off'}">
-          <span class="q-cell-icon" aria-hidden="true">${glyph(icon, { size: 18 })}</span>
-          <span class="q-cell-text wx-order-name"><span>${e(name)}</span><small>${e(where)}</small></span>
-          <button class="wx-mini" type="button" data-move="${k}" data-by="-1" aria-label="${W('上移', 'Move up ')}${e(name)}" ${i ? '' : 'disabled'}>↑</button>
-          <button class="wx-mini" type="button" data-move="${k}" data-by="1" aria-label="${W('下移', 'Move down ')}${e(name)}" ${i < all.length - 1 ? '' : 'disabled'}>↓</button>
-          <button class="q-switch" type="button" role="switch" data-show="${k}" aria-checked="${on}" aria-label="${W('顯示', 'Show ')}${e(name)}"></button>
-        </div>`;
-      })
-      .join('');
+  const row = k => {
+    const on = !state.data.hidden.includes(k);
+    const [icon, name, sub] = CARD_ROWS[k];
+    return `<div class="q-cell wx-order-row${on ? '' : ' is-off'}" data-q-key="${k}">
+      ${kitUI.tileHtml(glyph(icon, { size: 18 }), 'var(--q-accent)', 'sm')}
+      <span class="q-cell-text wx-order-name"><span>${e(name)}</span><small>${e(sub)}</small></span>
+      <button class="q-switch" type="button" role="switch" data-show="${k}" aria-checked="${on}" aria-label="${W('顯示', 'Show ')}${e(name)}"></button>
+      ${PAGE_CARDS.includes(k) ? kitUI.gripHtml(W(`拖曳排序：${name}`, `Reorder ${name}`)) : '<span class="wx-grip-room" aria-hidden="true"></span>'}
+    </div>`;
+  };
+  const body = () => `
+    <h3 class="q-list-head">${W('天氣頁', 'On 天氣')}</h3>
+    <div class="q-list wx-order" id="card-order">${state.data.cards.filter(k => PAGE_CARDS.includes(k)).map(row).join('')}</div>
+    <p class="q-list-foot">${W('按住 ≡ 拖曳，改變順序', 'Hold ≡ and drag to reorder')}</p>
+    <h3 class="q-list-head">${W('今天的詳情', 'Today’s sheet')}</h3>
+    <div class="q-list wx-order">${row('info')}</div>
+    <button class="q-btn plain wx-reset" type="button" data-reset="1">${W('恢復預設', 'Reset')}</button>`;
   const d = sheet(`
     <div class="q-sheet-head"><h2>${W('版面', 'Layout')}</h2><button class="q-close" type="button" data-act="close" aria-label="${W('關閉', 'Close')}">×</button></div>
-    <div class="q-list wx-order" id="card-order">${rows()}</div>
-    <button class="q-btn plain wx-reset" type="button" data-reset="1">${W('恢復預設', 'Reset')}</button>`);
-  const redraw = () => (d.querySelector('#card-order').innerHTML = rows());
+    <div class="wx-layout">${body()}</div>`);
+  const box = d.querySelector('.wx-layout');
+  // The page's cards in their new order (更多資訊 kept after them).
+  const wire = () =>
+    kitUI.reorder(box.querySelector('#card-order'), {
+      onChange: keys => {
+        state.data.cards = [...keys, ...state.data.cards.filter(k => !keys.includes(k))];
+        saveData();
+      }
+    });
+  wire();
   d.addEventListener('click', ev => {
-    const move = ev.target.closest('[data-move]');
     const show = ev.target.closest('[data-show]');
     const reset = ev.target.closest('[data-reset]');
-    if (!move && !show && !reset) return;
-    const cards = [...state.data.cards];
-    if (move) {
-      const i = cards.indexOf(move.dataset.move);
-      const j = i + Number(move.dataset.by);
-      if (i < 0 || j < 0 || j >= cards.length) return;
-      [cards[i], cards[j]] = [cards[j], cards[i]];
-      state.data.cards = cards;
-    }
     if (show) {
       const k = show.dataset.show;
-      state.data.hidden = state.data.hidden.includes(k) ? state.data.hidden.filter(x => x !== k) : [...state.data.hidden, k];
-    }
-    if (reset) {
+      const on = state.data.hidden.includes(k);
+      state.data.hidden = on ? state.data.hidden.filter(x => x !== k) : [...state.data.hidden, k];
+      // In place: the switch slides, the row dims.
+      show.setAttribute('aria-checked', String(on));
+      show.closest('.wx-order-row')?.classList.toggle('is-off', !on);
+      kitUI.tick();
+    } else if (reset) {
       state.data.cards = [...DEFAULT_LAYOUT];
       state.data.hidden = [];
-    }
-    redraw();
-    // Keep the button just pressed under the finger.
-    if (move) d.querySelector(`[data-move="${move.dataset.move}"][data-by="${move.dataset.by}"]`)?.focus();
+      box.innerHTML = body();
+      wire();
+    } else return;
     saveData();
   });
 }
@@ -615,6 +635,10 @@ document.addEventListener('change', ev => {
 });
 
 // A metric's sheet: its big graph, tabs and read-out.
+// A sheet's graphs drawn for its width (graph.mjs chartWidth), the page's own
+// graphs back at a phone's frame after.
+const fitCharts = d => chartWidth(Math.max(340, Math.min(720, Math.round(((d.clientWidth || 375) - 60) / 1.15))));
+
 function openMetric(key, kind) {
   const page = pageOf(key);
   const f = page && forecastOf(page);
@@ -623,7 +647,9 @@ function openMetric(key, kind) {
   d.dataset.key = key;
   d.redraw = () => {
     const now = Date.now();
+    fitCharts(d);
     d.innerHTML = metricSheet(kind, f, { now, key, ranges: state.ranges, page });
+    chartWidth(340);
     settleSegs(d);
     state.cols[key] = { ...(state.cols[key] || {}), [kind]: colsFor(kind, f, now, rangeOf(kind, state.ranges)), tz: f.tz };
   };
@@ -655,7 +681,9 @@ function openDay(key, date) {
     shown = when;
     // Today's sheet also holds 更多資訊 (not on the move, nor when hidden).
     const info = when === dateOf(now, f.tz) && !page.plan && !state.data.hidden.includes('info') ? infoCard(f, { now, lat: page.lat, lon: page.lon, page }) : '';
+    fitCharts(d);
     d.innerHTML = daySheet(f, when, { now, lat: page.lat, lon: page.lon }) + info;
+    chartWidth(340);
     d.querySelector('.q-sheet-head')?.after(kitUI.dayBar(strip, { flat: true, days: days(), current: when, today: dateOf(now, f.tz), follow: true, onPick: show }));
     d.scrollTop = 0;
     armScrub(d, f, when);
@@ -675,7 +703,7 @@ function armScrub(d, f, date) {
   const read = d.querySelector('.wx-scrub');
   if (!plot || !read) return;
   const summary = read.innerHTML;
-  const hours = (f.hours || []).filter(h => dateOf(h.t, f.tz) === date);
+  const hours = sheetHours(f, date, Date.now());
   const temp = plot.querySelector('svg.ch-daytemp');
   const xh = plot.querySelector('.ch-xh');
   const dh = plot.querySelector('.ch-dh');
@@ -742,9 +770,7 @@ document.addEventListener('click', ev => {
   if (tab) {
     const [kind, k] = tab.dataset.range.split(':');
     state.ranges[kind] = k;
-    try {
-      localStorage.setItem('orbit-weather.ranges', JSON.stringify(state.ranges));
-    } catch {}
+    kitCore.writeJson?.(RANGES, state.ranges);
     return document.querySelectorAll('dialog[open]').forEach(d => d.redraw?.());
   }
   // 定位: where the phone is, asked now (it was left on the last place).
@@ -769,12 +795,11 @@ document.addEventListener('click', ev => {
   if (day) return openDay(day.dataset.page, day.dataset.day);
 });
 
-// The sky and a place's row are role="button": Enter or space opens them too.
+// The sky's card and a place's row are role="button": Enter or space opens them too.
 document.addEventListener('keydown', ev => {
-  if ((ev.key !== 'Enter' && ev.key !== ' ') || !ev.target.matches?.('.wx-hero[data-day], [data-go-key], .q-panel[data-metric]')) return;
+  if ((ev.key !== 'Enter' && ev.key !== ' ') || !ev.target.matches?.('.ot-hero[data-day], [data-go-key]')) return;
   ev.preventDefault();
-  if (ev.target.dataset.metric) openMetric(ev.target.dataset.page, ev.target.dataset.metric);
-  else if (ev.target.dataset.goKey) choose(ev.target.dataset.goKey);
+  if (ev.target.dataset.goKey) choose(ev.target.dataset.goKey);
   else openDay(ev.target.dataset.page, ev.target.dataset.day);
 });
 
@@ -882,13 +907,13 @@ document.addEventListener('visibilitychange', () => {
   loadShown();
 });
 
-// The address: a notice's tap (#pin=<id>) opens that pin; #tab=week or
-// #tab=places a tab.
+// The address: a notice's tap (#pin=<id>) opens that pin; #tab=places a tab.
 const hashPin = () => {
   const m = /pin=(p[a-z0-9]+)/.exec(location.hash);
   return m && pageOf(m[1]) ? m[1] : null;
 };
-const hashTab = () => /tab=(week|places)/.exec(location.hash)?.[1] || null;
+// (#tab=week, from before 天氣 was one page: 天氣.)
+const hashTab = () => ({ week: 'now', places: 'places' })[/tab=(week|places)/.exec(location.hash)?.[1]] || null;
 window.addEventListener('hashchange', () => {
   const key = hashPin();
   if (key) return choose(key);
@@ -941,8 +966,11 @@ async function boot() {
   show();
   pass.watch();
   pass.sync();
-  // (Already on its way when it was asked beside the sign-in.)
+  // (Already on its way when it was asked beside the sign-in. A first
+  // opening asked only where the phone is: the pass's pins it shows are asked
+  // now, not a minute later on the tick.)
   if (used) loadShown();
+  else for (const p of state.pages) if (p.pin && !p.plan && (state.tab === 'places' || current().plan || p === current())) loadPage(p);
   sendNotices();
 }
 if (!gated) boot();

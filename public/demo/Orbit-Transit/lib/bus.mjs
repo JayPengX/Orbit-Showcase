@@ -4,7 +4,9 @@
 import { packRoute } from './packs.mjs';
 import { tdx, rows, busEta, liveMs } from './api.mjs';
 import { etaStops } from './near.mjs';
-import { zh, hm, etaAge, meters, TDX_DAYS } from './util.mjs';
+import { gpsFix } from './busgps.mjs';
+import { routeLines } from './shapes.mjs';
+import { zh, hm, etaAge, etaOld, ETA_STALE, ETA_GHOST, meters, TDX_DAYS } from './util.mjs';
 import { CITY_CODES } from './city.mjs';
 import { routeStatus } from './service.mjs';
 
@@ -123,6 +125,54 @@ const routeRows = route => {
 };
 // When that route's live times are from (ms), or 0.
 export const routeEtaAt = route => routeLive.get(route.uid)?.at || 0;
+// Where a route's buses are now (TDX RealTimeByFrequency: GPS, under a
+// minute old), for the ones whose estimates lag (busgps.mjs).
+export async function routeGps(route) {
+  const j = await tdx(`basic/v2/Bus/RealTimeByFrequency/${scope(route.city)}/${encodeURIComponent(route.name)}?$filter=RouteUID eq ${q(route.uid)}&$select=PlateNumb,Direction,BusPosition,GPSTime`, { fresh: 'live' });
+  return rows(j);
+}
+// TDX's estimates as busEta gives them (a stop card, a trip's bus, a ride
+// aboard), each bus whose estimates lag over 2 minutes counted again from
+// its GPS along its route's line (busgps.mjs), for up to 8 routes at once;
+// what isn't ready in 2.5 s is left as it was (the card never waits on it).
+const MEND_OLD = 120;
+const MEND_ROUTES = 8;
+const MEND_WAIT = 2500;
+export async function busEtaMended(city, opts = {}, { ask = busEta, now = Date.now, stopsOf = routeStops, gpsOf = routeGps, linesOf = routeLines } = {}) {
+  const got = await ask(city, opts);
+  try {
+    const t = now();
+    const lag = new Map();
+    for (const r of got.rows || []) {
+      const old = etaOld(r, t);
+      if (r.EstimateTime != null && r.PlateNumb && r.PlateNumb !== '-1' && !Number(r.StopStatus) && old > MEND_OLD && old <= ETA_GHOST) lag.set(r.RouteUID, zh(r.RouteName));
+    }
+    if (!lag.size) return got;
+    const parts = [...lag].slice(0, MEND_ROUTES).map(async ([uid, name]) => {
+      const route = { uid, name, city: routeCity(uid) };
+      const [ways, gps] = await Promise.all([stopsOf(route), gpsOf(route)]);
+      if (!gps.length) return null;
+      return { gps, ways: await Promise.all(ways.map(async w => ({ w, lines: await linesOf(route, w).catch(() => null) }))) };
+    });
+    const timeout = new Promise(r => setTimeout(() => r(null), MEND_WAIT));
+    const done = await Promise.all(parts.map(x => Promise.race([x.catch(() => null), timeout])));
+    let list = got.rows;
+    for (const x of done) for (const { w, lines } of x?.ways || []) list = gpsFix(list, x.gps, w, lines, t);
+    return list === got.rows ? got : { ...got, rows: list };
+  } catch {
+    return got;
+  }
+}
+// A route's times with each lagging bus counted again from its GPS, along
+// each way's line (`lineOf(way)` → its shape's pieces, or null).
+export async function routeEtaMended(route, ways, lineOf) {
+  const [got, gps] = await Promise.all([routeRows(route), routeGps(route).catch(() => [])]);
+  const k = routeLive.get(route.uid);
+  if (k) k.at = got.at;
+  let list = got.rows;
+  if (gps.length) for (const w of ways || []) list = gpsFix(list, gps, w, await Promise.resolve(lineOf?.(w)).catch(() => null));
+  return etaMap(list);
+}
 export async function routeEta(route, dir = null) {
   const got = await routeRows(route);
   const k = routeLive.get(route.uid);
@@ -156,11 +206,15 @@ export function stationEtaAsk(station) {
 // What's said about the route today (service.mjs routeStatus) rides along as
 // `flag` (改道, 減班…); not running (今日停駛, or 可能停駛: no bus on the road in
 // a city whose buses are all off it) with no bus coming: that, never the timetable's next.
+// `old`: how old TDX's estimate is (s); `stale`: past ETA_STALE, its feed
+// stopped (said so, never 進站中 or a bus drawn); past ETA_GHOST: no live time.
 export function etaOf(r, now = Date.now()) {
   const age = etaAge(r, now);
-  const sec = r.EstimateTime == null ? null : Math.max(0, Math.round(Number(r.EstimateTime) - age));
-  const more = (r.Estimates || []).map(x => Math.round(Number(x.EstimateTime) - age)).filter(x => Number.isFinite(x) && x !== sec).sort((a, b) => a - b);
-  const raw = { t: now, sec: Number.isFinite(sec) ? sec : null, status: Number(r.StopStatus) || 0, next: r.NextBusTime ? Date.parse(r.NextBusTime) : null, last: r.IsLastBus === true, plate: r.PlateNumb && r.PlateNumb !== '-1' ? r.PlateNumb : '', more, countdown: r.StopCountDown ?? null, rt: { uid: r.RouteUID, name: zh(r.RouteName), stop: r.StopUID } };
+  const old = etaOld(r, now);
+  const ghost = old != null && old > ETA_GHOST;
+  const sec = r.EstimateTime == null || ghost ? null : Math.max(0, Math.round(Number(r.EstimateTime) - age));
+  const more = ghost ? [] : (r.Estimates || []).map(x => Math.round(Number(x.EstimateTime) - age)).filter(x => Number.isFinite(x) && x !== sec).sort((a, b) => a - b);
+  const raw = { t: now, sec: Number.isFinite(sec) ? sec : null, status: Number(r.StopStatus) || 0, next: r.NextBusTime ? Date.parse(r.NextBusTime) : null, last: r.IsLastBus === true, plate: r.PlateNumb && r.PlateNumb !== '-1' ? r.PlateNumb : '', more, countdown: r.StopCountDown ?? null, old, stale: old != null && old > ETA_STALE && !ghost && Number.isFinite(sec), rt: { uid: r.RouteUID, name: zh(r.RouteName), stop: r.StopUID } };
   return said(raw, now);
 }
 // A time with what's known about its route now (asked again at each drawing:
@@ -208,6 +262,12 @@ export function etaText(v, now = Date.now()) {
   return v.flag && !t.sub ? { ...t, sub: v.flag.label, flag: true } : v.flag ? { ...t, sub: `${v.flag.label}・${t.sub}`, flag: true } : t;
 }
 function etaTextOf(v, now) {
+  // A stopped feed: its time as it was, how old, and never 進站中 (the bus may be gone by).
+  if (v.status === 0 && v.sec != null && v.stale) {
+    const ago = W(`${Math.round(v.old / 60)} 分鐘前資料`, `${Math.round(v.old / 60)} min old`);
+    if (v.sec <= 180) return { main: W('可能已過', 'May be gone'), sub: ago, tone: 'wait stale' };
+    return { main: W(`${Math.floor(v.sec / 60)} 分`, `${Math.floor(v.sec / 60)} min`), sub: ago, tone: 'wait stale' };
+  }
   if (v.status === 0 && v.sec != null) {
     if (v.sec <= 60) return { main: W('進站中', 'Arriving'), sub: v.last ? W('末班車', 'Last bus') : '', tone: 'now' };
     if (v.sec <= 180) return { main: W('即將進站', 'Due'), sub: v.last ? W('末班車', 'Last bus') : W(`${Math.ceil(v.sec / 60)} 分`, `${Math.ceil(v.sec / 60)} min`), tone: 'now' };
