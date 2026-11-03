@@ -56,13 +56,16 @@ export function hero({ eyebrow = '', glyph = '', big = '', title = '', sub = '',
 // countdown at the focal size, the line under it, the facts as grey text (`facts`:
 // plain strings; `live`: a word in the live colour; `warn`: the one exception, a
 // tag), `body` (html), then the buttons. `attrs`: the whole block a button.
-export function focus({ eyebrow = '', big = '', title = '', sub = '', facts = [], live = false, warn = '', body = '', actions = [], attrs = '' }) {
+// (`lead`: the title and its facts sit under the eyebrow, above the big part: a
+// YouBike station's name and distance head its three numbers.)
+export function focus({ eyebrow = '', big = '', title = '', sub = '', facts = [], live = false, warn = '', body = '', actions = [], attrs = '', lead = false }) {
   const line = [live ? `<span class="ot-now">${W('即時', 'Live')}</span>` : '', ...facts.filter(Boolean).map(e)].filter(Boolean).join(' · ');
-  const inner = `${eyebrow ? `<span class="q-focus-label">${e(eyebrow)}</span>` : ''}${big}${title ? `<strong class="ot-focus-title">${e(shown(title))}</strong>` : ''}${sub ? `<span class="q-focus-sub">${e(sub)}</span>` : ''}${line || warn ? `<span class="q-focus-sub ot-focus-facts">${line}${warn ? `${line ? ' ' : ''}${tag(warn, 'red')}` : ''}</span>` : ''}${body}${actions.length ? `<div class="ot-focus-acts">${actions.map(a => `<button class="q-btn${a.primary ? ' primary' : ' tinted'}" type="button" ${a.attrs}>${a.label}</button>`).join('')}</div>` : ''}`;
+  const head = `${title ? `<strong class="ot-focus-title">${e(shown(title))}</strong>` : ''}${sub ? `<span class="q-focus-sub">${e(sub)}</span>` : ''}${line || warn ? `<span class="q-focus-sub ot-focus-facts">${line}${warn ? `${line ? ' ' : ''}${tag(warn, 'red')}` : ''}</span>` : ''}`;
+  const inner = `${eyebrow ? `<span class="q-focus-label">${e(eyebrow)}</span>` : ''}${lead ? `<span class="ot-focus-lead">${head}</span>${big}` : `${big}${head}`}${body}${actions.length ? `<div class="ot-focus-acts">${actions.map(a => `<button class="q-btn${a.primary ? ' primary' : ' tinted'}" type="button" ${a.attrs}>${a.label}</button>`).join('')}</div>` : ''}`;
   return attrs ? `<button class="q-focus q-press ot-focus" type="button" ${attrs}>${inner}</button>` : `<section class="q-focus ot-focus">${inner}</section>`;
 }
 
-// A YouBike station's bikes on a green focus card: 一般, 電輔車 and 空位 as three
+// A YouBike station's bikes on its graphite card: 一般, 電輔車 and 空位 as three
 // columns apart (a small label over its number), hairlines between; a 0 dimmed.
 export const bikeStats = s => {
   const col = (label, n, cls = '') => `<div class="ot-bstat${cls}${n ? '' : ' zero'}"><small>${label}</small><b class="num">${n}</b></div>`;
@@ -89,3 +92,22 @@ export const noticesHtml = items =>
 const firstLine = t => String(t || '').split('\n').find(x => x.trim()) || '';
 // (`open`: each shown whole, in the notice's own sheet.)
 export const saidRows = (list, { open = false } = {}) => `<div class="ot-said">${oneEach(list).map(n => `<details${open ? ' open' : ''} class="ot-said-row${n.effect === 'off' || n.effect === 'part' ? ' off' : ''}"><summary><b>${e(effectLabel(n.effect))}</b><span>${e(firstLine(n.title))}</span></summary><p>${e(n.text)}</p></details>`).join('')}</div>`;
+
+// A trip's own icon (Jay 2026-11-03: never its bus's badge, or it reads as a pinned bus): the
+// saved place it ends at (家, 學校, 公司), else what its name says (回家 and 放學 home, 上學
+// school, 上班 work), else a day's trip a calendar, else a route. A place's tile, not a line's badge.
+const KEPT = ['home', 'school', 'work'];
+export const tripIconKey = (name = '', place = null, dated = false) =>
+  KEPT.includes(place?.icon)
+    ? place.icon
+    : /家|放學|下班|home/i.test(name)
+      ? 'home'
+      : /學|校|課|補習|school|class/i.test(name)
+        ? 'school'
+        : /班|公司|工作|work|office/i.test(name)
+          ? 'work'
+          : place?.icon || (dated ? 'calendar' : 'route');
+export const tripTile = (name, place, dated = false, size = '') => {
+  const k = tripIconKey(name, place, dated);
+  return tile(k, PLACE_COLOR[k] || COLOR.route, size);
+};

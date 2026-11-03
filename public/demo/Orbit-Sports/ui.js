@@ -4,7 +4,7 @@
 import { LEAGUES, SPORTS, leagueName, leagueLogo, leagueLogoDark } from './lib/leagues.mjs';
 import { sidesInOrder } from '#kit/catalog.mjs';
 import { logoPicture, countryFlag, flagUrl, flagEmoji, f1Driver } from '#kit/logos.mjs';
-import { keptTiming, cutoutFace } from './lib/f1.mjs';
+import { keptTiming, cutoutFace, flagNow } from './lib/f1.mjs';
 import { espnHeadshot, espnCollegeHeadshot, smallPhoto, isFlag, isCutout, personPhoto } from '#kit/photos.mjs';
 import { liveLabel, liveNote, closeLabel, goalHead, withTimeout, liveParts } from './lib/live.mjs';
 import { stageTag } from './lib/stage.mjs';
@@ -32,7 +32,8 @@ export const el = kitUI.h;
 // (the game sheet's every few seconds, the lists' scores) flashed every logo.
 export function put(node, ...kids) {
   const list = kids.flat().filter(k => k != null && k !== false).map(k => (typeof k === 'string' ? document.createTextNode(k) : k));
-  const keep = new Set(list.filter(k => k.parentNode === node));
+  // (Kept too: one already here inside a column of a laid-out .q-flow, as a live game's 概況 on a wide screen.)
+  const keep = new Set(list.filter(k => k.parentNode === node || (k.parentNode?.parentNode === node && k.parentNode.classList?.contains('q-flow-col'))));
   keepPictures(node, list, keep);
   if (!keep.size) node.replaceChildren(...list);
   else {
@@ -41,7 +42,9 @@ export function put(node, ...kids) {
     for (const k of list) k === at ? (at = at.nextSibling) : node.insertBefore(k, at);
   }
   // (A tab's sections in columns: dealt once they're on the page, cols.)
-  if (list.some(k => k.classList?.contains('q-flow'))) kitUI.flowColumns?.(node);
+  // (Or the columns themselves given new sections: a live game's 概況 refreshed in place.)
+  if (node.classList?.contains('q-flow')) kitUI.flowColumns?.(node);
+  else if (list.some(k => k.classList?.contains('q-flow'))) kitUI.flowColumns?.(node);
 }
 // A picture's place: its <picture> (with the dark-screen <source>) or the <img> alone.
 const pictureOf = img => (img.parentNode?.tagName === 'PICTURE' ? img.parentNode : img);
@@ -59,6 +62,8 @@ function keepPictures(node, list, keep) {
   for (const c of node.children) {
     if (keep.has(c)) continue;
     for (const img of c.tagName === 'IMG' ? [c] : c.querySelectorAll('img')) {
+      // (Never taken from a card that stays: it would leave it without its picture.)
+      if ([...keep].some(k => k.contains?.(img))) continue;
       if (!img.complete || !img.naturalWidth || !img.getAttribute('src')) continue;
       const k = pictureKey(img);
       shown.has(k) ? shown.get(k).push(img) : shown.set(k, [img]);
@@ -71,6 +76,10 @@ function keepPictures(node, list, keep) {
     for (const img of c.tagName === 'IMG' ? [c] : [...c.querySelectorAll('img')]) {
       const was = shown.get(pictureKey(img))?.shift();
       if (!was) continue;
+      // (Safari picks a <picture>'s source again when it's put back on the page:
+      // a lazy one then waited, never loaded, and drew nothing, a logo gone
+      // after 賽程 and back to 概況, Jay 2026-11-03. Eager, it's the cached one at once.)
+      was.loading = 'eager';
       const [from, to] = [pictureOf(img), pictureOf(was)];
       if (from === c) list[i] = to;
       else from.replaceWith(to);
@@ -122,6 +131,8 @@ export const $ = id => document.getElementById(id);
 // and nothing said OFF, YC, RC… were past it. (The name column stays put, so
 // the left edge never fades.)
 function markTable(wrap) {
+  // (One that scrolls sideways at all pins its names on a solid colour; one that fits lets its card show through, look.css.)
+  wrap.classList.toggle('scrolls', wrap.scrollWidth - wrap.clientWidth > 2);
   wrap.classList.toggle('more-right', wrap.scrollWidth - wrap.clientWidth > 2 && wrap.scrollLeft < wrap.scrollWidth - wrap.clientWidth - 2);
 }
 if (typeof document !== 'undefined') {
@@ -312,6 +323,8 @@ export function frameFace(img) {
 }
 if (typeof document !== 'undefined') document.addEventListener('load', ev => ev.target?.tagName === 'IMG' && ev.target.classList.contains('f1-face') && frameFace(ev.target), true);
 export function personPic(p, league, cls = '') {
+  // (A stand-in, a part still being read held in its shape: an empty face, nothing looked up.)
+  if (p?.stand) return el('span', { class: `logo ${cls} empty-face`, 'aria-hidden': 'true' });
   const name = p?.en || p?.name || '';
   const flag = p?.flag || (isFlag(p?.logo) ? p.logo : '');
   // The feed's own pictures, then the kit's way (photos.mjs personPhoto):
@@ -488,11 +501,16 @@ export const scoreText = v => (v == null || String(v).trim() === '' ? '–' : St
 // alone). None on neutral ground (a cup final, a World Cup's games).
 const HOME_ICON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.4.6 6.1h1.7v4.5h2.8V7.7h1.8v2.9h2.8V6.1h1.7z"/></svg>';
 export const atHome = (e, side) => e?.kind === 'match' && !e.neutral && Boolean(side) && (side === e.home || side.homeAway === 'home' || (side.id != null && String(side.id) === String(e.home?.id)));
-export const withHome = (pic, e, side) => (atHome(e, side) ? el('span', { class: 'home-pic' }, [pic, el('span', { class: 'home-mark', role: 'img', 'aria-label': ctx.locale === 'en' ? 'Home' : '主場', html: HOME_ICON })]) : pic);
+// A home club is told by a small house after its name, in the name's own colour
+// (no disc stuck on the logo's corner, Jay 2026-11-03).
+export const homeName = (node, e, side) => {
+  if (atHome(e, side)) node.append(el('span', { class: 'home-mark', role: 'img', 'aria-label': ctx.locale === 'en' ? 'Home' : '主場', html: HOME_ICON }));
+  return node;
+};
 export function sideLine(side, e, win) {
   return el('div', { class: `side${win ? ' win' : ''}` }, [
-    withHome(sideLogo(side, e.league, 'sm'), e, side),
-    el('span', { class: 'side-name', text: side.short || side.name }),
+    sideLogo(side, e.league, 'sm'),
+    homeName(el('span', { class: 'side-name', text: side.short || side.name }), e, side),
     e.status.state !== 'pre' && !e.status.void ? el('strong', { class: 'side-score num', 'data-q-live': e.status.state === 'in' ? `sc:${e.league}:${e.id}:${side.id}` : null, text: e.status.state === 'post' && (side.score === '' || side.score == null) ? '' : scoreText(side.score) }) : null
   ]);
 }
@@ -524,19 +542,23 @@ export const seriesText = e => {
 // A game as a row: its time (or state) down the left, the two sides with
 // their scores, then a line of tags: the league, the stage, ★ 推薦 for one of
 // today's picks, the channels it's on (or where it can be watched again).
-const pickMark = () => el('span', { class: 'q-tag tint pick-mark', text: ctx.locale === 'en' ? '★ Pick' : '★ 推薦' });
+// A game picked for you (推薦): a graphite pill first on
+// its tags line, the row softly lit (Jay 2026-11-03: "not obvious" as a small star).
+const STAR = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .8l1.6 3.4 3.7.4-2.8 2.5.8 3.7L6 8.9l-3.3 1.9.8-3.7L.7 4.6l3.7-.4z"/></svg>';
+const rowMark = picked => (picked ? el('span', { class: 'row-mark', html: `${STAR}<span>${ctx.locale === 'en' ? 'Pick' : '推薦'}</span>` }) : null);
 const rowTags = (e, { league, picked, tag }) => {
-  const kids = [league ? compChip(e) : null, tag ? el('span', { class: 'q-tag orange', text: tag }) : null, picked ? pickMark() : null, tvLine(e)].filter(Boolean);
+  const kids = [rowMark(picked), league ? compChip(e) : null, tag ? el('span', { class: 'q-tag orange', text: tag }) : null, tvLine(e)].filter(Boolean);
   return kids.length ? el('div', { class: 'ev-tags' }, kids) : null;
 };
 export function eventRow(e, { league = true, day = true, picked = false } = {}) {
-  const mine = ctx.isFollowedEvent?.(e);
+  // (The row's light and pill say 推薦 only: a followed league's games are all theirs, Jay 2026-11-03.)
+  picked = picked || Boolean(ctx.isPickEvent?.(e));
   const live = e.status.state === 'in';
   if (e.kind === 'match') {
     const w = winners(e);
     const series = seriesText(e);
     // (A club's own league's game from FotMob, which ESPN doesn't have: no game page to open.)
-    const attrs = e.abroad ? { class: `event-row abroad${live ? ' live' : ''}` } : { class: `event-row${live ? ' live' : ''}${mine ? ' mine' : ''}`, type: 'button', disabled: e.status?.void ? true : null, onclick: () => ctx.openEvent(e) };
+    const attrs = e.abroad ? { class: `event-row abroad${live ? ' live' : ''}` } : { class: `event-row${live ? ' live' : ''}${picked ? ' picked' : ''}`, type: 'button', disabled: e.status?.void ? true : null, onclick: () => ctx.openEvent(e) };
     return el(e.abroad ? 'div' : 'button', attrs, [
       el('div', { class: 'event-meta' }, [statusEl(e, day)]),
       el('div', { class: 'event-sides' }, [...sidesOf(e).map(s => sideLine(s, e, s === e.home ? w.home : w.away)), series ? el('small', { class: 'series-line', text: series }) : null, liveLine(e), rowTags(e, { league, picked, tag: stageTag(e, ctx.locale) })])
@@ -548,7 +570,7 @@ export function eventRow(e, { league = true, day = true, picked = false } = {}) 
   const sess = sessionTag(e);
   const said = sess ? '' : e.session;
   const sub = live && fieldNow(e) ? fieldNow(e).replace(sess && e.session ? `${e.session} · ` : '', '') : e.kind === 'field' ? (e.status.state === 'post' && ended?.field?.[0]?.name ? [said, (ctx.locale === 'en' ? `Won by ${ended.field[0].name}` : `冠軍 ${ended.field[0].name}`)].filter(Boolean).join(' · ') : [said, e.venue].filter(Boolean).join(' · ')) : e.venue;
-  return el('button', { class: `event-row wide${live ? ' live' : ''}${mine ? ' mine' : ''}${sess ? ` sess-${e.sessionKey === 'Race' ? 'race' : 'other'}` : ''}`, type: 'button', disabled: e.status?.void ? true : null, onclick: () => ctx.openEvent(e) }, [
+  return el('button', { class: `event-row wide${live ? ' live' : ''}${picked ? ' picked' : ''}${sess ? ` sess-${e.sessionKey === 'Race' ? 'race' : 'other'}` : ''}`, type: 'button', disabled: e.status?.void ? true : null, onclick: () => ctx.openEvent(e) }, [
     el('div', { class: 'event-meta' }, [statusEl(e, day)]),
     el('div', { class: 'event-title' }, [el('div', { class: 'sess-head' }, [raceFlag(e), sess, fitForms(el('strong'), [e.name])]), e.league === 'f1' && live ? f1Brief(e) : podium(e) || (sub ? el('small', { text: sub }) : null), rowTags(e, { league, picked })])
   ]);
@@ -707,7 +729,10 @@ export function fillF1Brief(box, e) {
   const quali = /^(Qual|SS|SQ)$/.test(e.sessionKey || '');
   // As the feed last said it, not counted on between reads.
   const left = Math.max(0, f.clock.left);
-  const head = race && f.lap?.now ? (en ? `Lap ${f.lap.now}/${f.lap.of}` : `第 ${f.lap.now}/${f.lap.of} 圈`) : [quali && f.part ? `${e.sessionKey === 'Qual' ? 'Q' : 'SQ'}${f.part}` : '', `${en ? '' : '剩 '}${mmss(left)}${en ? ' left' : ''}`].filter(Boolean).join(' · ');
+  // The flag beside it, when it isn't green (a red flag: no gaps, the cars stood in the pit lane).
+  const flag = flagNow(f)?.kind;
+  const flagWord = { red: en ? 'Red flag' : '紅旗', sc: en ? 'Safety car' : '安全車', 'sc-in': en ? 'Safety car' : '安全車', vsc: en ? 'VSC' : '虛擬安全車', 'vsc-end': en ? 'VSC' : '虛擬安全車' }[flag] || '';
+  const head = [race && f.lap?.now ? (en ? `Lap ${f.lap.now}/${f.lap.of}` : `第 ${f.lap.now}/${f.lap.of} 圈`) : [quali && f.part ? `${e.sessionKey === 'Qual' ? 'Q' : 'SQ'}${f.part}` : '', `${en ? '' : '剩 '}${mmss(left)}${en ? ' left' : ''}`].filter(Boolean).join(' · '), flagWord].filter(Boolean).join(' · ');
   const field = (e.sessions || []).find(x => x.abbr === e.sessionKey)?.field || [];
   put(
     box,
@@ -721,7 +746,7 @@ export function fillF1Brief(box, e) {
           el('span', { class: 'pos num', text: String(c.pos) }),
           personPic({ ...espn, en: c.name }, 'f1', 'xs round'),
           fitForms(el('span', { class: 'f1-brief-name' }), [f1Shown(c.name), f1Shown(c.name).split(' ').at(-1)]),
-          el('span', { class: 'num f1-brief-v', text: race ? (i === 0 ? '' : c.gap) : c.best || (i === 0 ? '' : c.gap) || '' })
+          el('span', { class: 'num f1-brief-v', text: race ? (i === 0 || flag === 'red' ? '' : c.gap) : c.best || (i === 0 ? '' : c.gap) || '' })
         ]);
       })
     )
@@ -756,6 +781,8 @@ export const tvName = b => `${ctx.locale === 'en' ? b.en : b.zh}${b.note ? `（$
 // the best for them first (their commentary, then a MAX channel without ads).
 export const audioName = b => (b.audio ? AUDIO_NAMES[b.audio]?.[ctx.locale === 'en' ? 'en' : 'zh'] || '' : '');
 const audioTag = b => (b.audio ? el('span', { class: `au-tag${hasAudio(b, ctx.state?.prefs?.audio || 'en') ? ' mine' : ''}`, text: audioName(b) }) : null);
+// A channel guessed past ELTA's list: said so, short (one row on every card).
+export const guessTag = () => el('span', { class: 'au-tag', text: ctx.locale === 'en' ? 'Est.' : '預估' });
 export function tvLine(e) {
   if (e.status?.void) return null;
   const name = b => b.short[ctx.locale === 'en' ? 'en' : 'zh'];
@@ -775,8 +802,9 @@ export function tvLine(e) {
   // One row on every card, its main broadcast (the best for the person):
   // never a 球員視角 or 數據視角, which only the game's page lists (a second
   // row made that card taller than the rest, Jay 2026-10-23).
+  // Past ELTA's list, its guess (kit eltaGuess): 預估 where the commentary goes.
   const b = channelsOf(e).find(x => !ALT_VIEW.has(x.audio));
-  return b ? el('small', { class: 'tv-line' }, [el('span', { class: 'tv-ch' }, [document.createTextNode(name(b)), audioTag(b)])]) : null;
+  return b ? el('small', { class: 'tv-line' }, [el('span', { class: 'tv-ch' }, [document.createTextNode(name(b)), b.guess ? guessTag() : audioTag(b)])]) : null;
 }
 // A race weekend's session as a badge (排位賽, 衝刺賽, 正賽…), coloured by kind, so the row says it at a glance.
 export function sessionTag(e) {
@@ -796,7 +824,7 @@ export function sheet(title, { accent, league } = {}) {
   const s = kitUI.sheet({ title: head, body: [body], cls: `fx-sheet${league ? ' q-full q-sheet-wide' : ''}`, detent: league ? 'large' : '', label: title, closeLabel: ctx.t('close') });
   if (league) s.head?.querySelector('h2')?.classList.add('sheet-lg');
   if (accent) s.el.style.setProperty('--q-accent', accent);
-  return { dialog: s.el, body, close: s.close };
+  return { dialog: s.el, body, close: s.close, head: s.head };
 }
 // A choice of a few: the kit's segmented control, its thumb sliding to the
 // pick; of more (or `chips`), the kit's chips row that scrolls. (`seg`: one
@@ -804,3 +832,17 @@ export function sheet(title, { accent, league } = {}) {
 export const segmented = (options, current, onPick, cls = '', o = {}) => kitUI.pickSeg(options, current, onPick, { cls: cls === 'scroll' ? '' : cls, ...o });
 export const section = (title, content, { sub = '', action = null, cls = '' } = {}) => kitUI.section(title, content, { sub, action, cls, shd: true });
 export const moreButton = (label, onclick) => el('button', { class: 'section-more', type: 'button', text: label, onclick });
+// A way on to more at a card's foot (全部球隊數據, 看完整賽程): the kit's goBar
+// (.q-more, a › for where it goes; never accent text, Jay 2026-11-03), the same on an older kit.
+export const goBar = (label, onclick, cls = '') => kitUI.goBar?.(label, onclick, cls) ?? el('button', { class: `q-more q-more-go${cls ? ` ${cls}` : ''}`, type: 'button', onclick }, [el('span', { text: label }), el('span', { class: 'q-more-chev', 'aria-hidden': 'true', text: '›' })]);
+// A list's 再看 / 收起: the kit's bar (moreToggle); on an older kit still on the phone, the same as a plain button.
+export function moreToggle(o) {
+  if (kitUI.moreToggle) return kitUI.moreToggle(o);
+  let open = Boolean(o.open);
+  let { more, less } = o;
+  const b = el('button', { type: 'button', class: 'q-more' });
+  const paint = () => ((b.textContent = open && less != null ? less : more), b.setAttribute('aria-expanded', String(Boolean(open && less != null))));
+  b.onclick = () => (less != null && (open = !open), paint(), o.onToggle?.(less != null ? open : true));
+  paint();
+  return Object.assign(b, { set: (x, m = more, l = less) => ((open = x), (more = m), (less = l), paint()) });
+}

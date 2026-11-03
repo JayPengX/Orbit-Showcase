@@ -9,13 +9,14 @@
 // What the person follows lives on the pass (this app's payload): leagues in
 // their order of priority, teams and F1's drivers and teams. Nothing of it goes to the other
 // apps; their activity doesn't steer the picks here either.
-import { onScreen, screenFit, orbitSession, tabBar, topActions, installGate, watchUpdates, recordAffinity, affinity, affinityPatch, settingPatch, setting, watchFit, notify, cachedPayload, cachedWallet, restorePlace, schedulePush, translate, proxyJson, packJson, dev, everyDev, keepOffline, onlineOnly, netState } from '#kit/orbit.mjs';
+import { onScreen, screenFit, orbitSession, tabBar, topActions, installGate, watchUpdates, recordAffinity, affinity, affinityPatch, settingPatch, setting, watchFit, notify, cachedPayload, cachedWallet, readJson, writeJson, writeStore, restorePlace, schedulePush, translate, proxyJson, packJson, dev, everyDev, keepOffline, onlineOnly, netState } from '#kit/orbit.mjs';
 import { stripDays } from './lib/strip.mjs';
 import { fold } from './lib/text.mjs';
 import { boundsOf, unionBounds, within, clampDay } from './lib/bounds.mjs';
 import * as kitUI from '#kit/ui.mjs';
 import { transition } from './lib/notice.mjs';
-import { freshGame, sessionStatus, settleSeries, fixTime, fixTimes, summary, sessionName, weekOf, localSide, fallbackLogo, scoreboard, standings, savedStandings, teamSchedule, seasonCalendar, seasonInfo, monthsBetween, yyyymmdd, settleField, seasonEvents, splitWeekend, feedStatus, dueToStart, usDayOf, onAir, asiaEvents, cpblPack, cpblSeeds, leagueForm, outcome, sideScore, sidesFor, athlete, athleteOverview, driverSeason, playerHome, europeanClubs, clubOfPlayer, roundLabel, leagueLeaders, leaderList, cupBadges, leagueTeamStats, fotmobTeamList } from './lib/espn.mjs';
+import { gameKey, matchOnly, endedFollows } from './lib/follows.mjs';
+import { freshGame, sessionStatus, settleSeries, fixTime, fixTimes, summary, sessionName, weekOf, localSide, fallbackLogo, scoreboard, standings, savedStandings, teamSchedule, seasonCalendar, seasonInfo, monthsBetween, yyyymmdd, settleField, seasonEvents, splitWeekend, feedStatus, dueToStart, usDayOf, onAir, asiaEvents, cpblPack, cpblSeeds, leagueForm, outcome, sideScore, sidesFor, athlete, athleteOverview, driverSeason, playerHome, europeanClubs, clubOfPlayer, roundLabel, leagueLeaders, leaderList, cupBadges, leagueTeamStats, fotmobTeamList, SESSION_NAMES } from './lib/espn.mjs';
 import { hasLeaders, fotmobClubRows } from './lib/leaders.mjs';
 import { sideWords } from '#kit/sports-highlights.mjs';
 import { statName, injuryZh } from './lib/statnames.mjs';
@@ -27,20 +28,22 @@ import { familyOfSport } from '#kit/catalog.mjs';
 import { detectLocale, makeT } from './lib/i18n.mjs';
 import { eventKeys, teamKey, leagueKey } from './lib/foryou.mjs';
 import { standingsRace, SEASON_GAMES, COUNTS } from './lib/title.mjs';
-import { dayPlan, tableIndex, SHORTEST, scoreMatch, bigGame, tableStarted, watchedLeagues, leagueChoices } from './lib/picks.mjs';
-import { liveTiming, settleScoring, askFinishes } from './lib/f1.mjs';
+import { dayPlan, tableIndex, SHORTEST, scoreMatch, bigGame, tableStarted, watchedLeagues, leagueChoices, HABIT } from './lib/picks.mjs';
+import { liveTiming, settleScoring, askFinishes, weekendCircuit } from './lib/f1.mjs';
 import { playoffModel, openRound, FORMATS, seedPicture, PICTURE_COLOR, unlGroupColumn } from './lib/playoffs.mjs';
-import { nbaCupRound, nbaCupGroups, isGroupPlay, cupQuarters, cupGroupColumn } from './lib/nbacup.mjs';
+import { nbaCupRound, nbaCupGroups, isGroupPlay, cupQuarters, cupGroupColumn, cupNote } from './lib/nbacup.mjs';
 import { stageOf } from './lib/stage.mjs';
 import { undecided } from './lib/bracket.mjs';
 import { nearestDay, dayReads, dayUnknown, tableSays } from './lib/days.mjs';
 import { retrier } from './lib/retry.mjs';
 import { onTvChange, tvOf, knownEvents, eltaSchedule, audioPref, onTv, tvReady, tvUntil, tvKnown, tvUnread, channelsOf, nbaAfterList, replayHint, eltaTime } from './lib/tv.mjs';
-import { cols, balanced, ctx, sidesOf, el, shownStart, timeText, bestOf, put, spinner, skeleton, empty, $, localDate, today, addDays, clock, dayLabel, whenOf, eventRow, sheet, section, moreButton, logo, leagueMark, segmented, sideLogo, fillF1Brief, f1Live, watchLink, withWatch, watchButton, scoreText, statusText, breakTick, sessionTag, raceFlag, audioName, personPic, refreshBadges } from './ui.js';
+import { cols, balanced, ctx, sidesOf, el, shownStart, timeText, bestOf, put, spinner, skeleton, empty, $, localDate, today, addDays, clock, dayLabel, whenOf, eventRow, sheet, section, moreButton, goBar, logo, leagueMark, segmented, sideLogo, fillF1Brief, f1Live, watchLink, withWatch, watchButton, scoreText, statusText, breakTick, raceFlag, audioName, guessTag, personPic, refreshBadges } from './ui.js';
 import { followButton, gameRecap, openMatch, openFieldEvent, openTie, openTeam, openPlayer, openConstructor, constructorBadge, standingsTables, zhLater, leagueLeadersView, teamStatsView, tableNow } from './sheets.js';
 import { f1Driver, f1Constructor, teamLogo } from '#kit/logos.mjs';
 import { teamsByZh } from '#kit/names.mjs';
 import { icon, pageHead, heroGame, scoreCard, sportTile, leagueTile } from './cards.js';
+// Orbit's own look (Jay 2026-11-03, RULEBOOK §3; index.html's data-look and look.css): the lead game's clubs on their own colours, 我的球隊.
+import * as look from './look.js';
 
 // Shared-Data's pack of recent games (set as the app starts, below), and the
 // background look-ups of what it hasn't got, after it's in.
@@ -263,10 +266,8 @@ function isFollowed(league, id) {
 const followedTeams = () => state.prefs.follows.flatMap(f => (f.f1team === true ? [] : !f.athlete ? [f] : f.team ? [{ league: f.league, id: f.team.id, name: f.team.name }] : []));
 // Single matches followed on their own (a game between two teams the person
 // doesn't follow): kept as they were when followed, the live copy laid over
-// them (freshGame), and let go two days after the start.
+// them (freshGame), and let go once over (dropEnded), at most two days after the start.
 const GAME_KEEP = 2 * 86_400_000;
-// A race weekend's sessions all share its key (the weekend's id).
-const gameKey = e => `${e.league}:${e.weekend || e.id}`;
 const keptGames = list => (list || []).filter(g => g && LEAGUES[g.league] && g.id && Date.parse(g.start) > Date.now() - GAME_KEEP);
 const slimSide = x => (x ? { id: String(x.id ?? ''), name: x.name, short: x.short, en: x.en, abbr: x.abbr, logo: x.logo, color: x.color, alt: x.alt } : x);
 function isFollowedGame(e) {
@@ -284,7 +285,10 @@ function toggleFollowGame(e) {
         ? { league: e.league, id: e.weekend || e.id, kind: 'field', name: e.name, start: last, venue: e.venue, country: e.country, status: { state: 'pre' } }
         : { league: e.league, id: e.id, kind: e.kind, name: e.name, start: e.start, status: { state: 'pre' }, away: slimSide(e.away), home: slimSide(e.home), ...(e.other ? { other: e.other } : {}) }
     ];
-    recordAffinity('match', [`league:${leagueKey(e.league)}`, ...[e.away, e.home].filter(Boolean).map(x => teamKey(e.league, x.en || x.name))], 2);
+    // Its sides count; its league only a little (one game followed isn't
+    // the league).
+    recordAffinity('match', [e.away, e.home].filter(Boolean).map(x => teamKey(e.league, x.en || x.name)), 2);
+    recordAffinity('match', [`league:${leagueKey(e.league)}`], 0.5);
   }
   changed();
   // Its notices now (a race weekend's sessions read from the season first).
@@ -344,7 +348,33 @@ function loadFollowedGames() {
 // A game that's on again (live, or about to be): its day read again next time.
 setInterval(() => {
   for (const g of followedGames()) if (g.status.state === 'in' || (g.status.state === 'pre' && Date.parse(g.start) < Date.now())) gameDaysRead.clear();
+  dropEnded();
 }, 60_000);
+// A followed match over is let go once its final's been told (follows.mjs
+// endedFollows), saved without reading the day again: its league's other
+// games, read for it, stay in the day but are no one's (matchOnly).
+const endSeen = new Map();
+function dropEnded() {
+  const p = state.prefs;
+  if (!state.prefsLoaded || !p.games.length) return;
+  const day = new Map(dayAll(state.days.get(today())).filter(e => e.kind === 'match').map(e => [gameKey(e), e]));
+  const fresh = g => {
+    if (g.kind !== 'field') return freshGame(day.get(gameKey(g)) || gameSeen.get(gameKey(g)) || g);
+    // A race weekend: over with its race.
+    const w = f1Races().find(x => x.league === g.league && x.id === g.id);
+    return w ? splitWeekend(w, Date.now(), locale).find(x => x.sessionKey === 'Race') || null : null;
+  };
+  const gone = endedFollows(keptGames(p.games), { fresh, told: bannered, seen: endSeen });
+  if (!gone.size) return;
+  p.games = p.games.filter(g => !gone.has(gameKey(g)));
+  savePrefs();
+  // (The days stay as read: a superset of what's needed now, not a reason to read them again.)
+  for (const slot of state.days.values()) if (slot.at) slot.leagues = leaguesKey();
+  if (state.tab === 'following') renderFollowing();
+  else if (state.tab === 'home') renderHome();
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(syncPush, 1500);
+}
 // Leagues followed as a league (no team or player of them followed): each
 // slot's chosen game is the person's as a followed team's is (picks.mjs
 // leagueChoices; Jay 2026-10-23), and a race weekend's qualifying, sprint
@@ -363,7 +393,7 @@ function chosenGames() {
   // The days read, and the playoff games of any map read: a series' games
   // are marked on days not visited yet (all of a playoff day's games are in it).
   const all = [...slots.flatMap(x => x.events || []), ...[...brackets.values()].flatMap(b => b.model?.rounds?.flatMap(r => r.ties.flatMap(t => t?.games || [])) || [])];
-  const ctx = { leagues: state.prefs.leagues, follows: state.prefs.follows, tables: state.home.tables, aff: affinity(null, Date.now(), ['match']), featured: featuredIn(all) };
+  const ctx = { leagues: state.prefs.leagues, follows: state.prefs.follows, tables: state.home.tables, featured: featuredIn(all), ...theirs(Date.now()) };
   chosenMemo.key = key;
   chosenMemo.set = leagueChoices(all, { watched: w, onTv, tvKnown, awake: e => new Date(officialMs(e)).getHours() >= AWAKE_FROM, ctx });
   return chosenMemo.set;
@@ -410,25 +440,6 @@ function toggleLeague(league) {
   if (p.leagues.includes(league)) recordAffinity('match', [`league:${leagueKey(league)}`], 2);
   changed();
 }
-// A league up or down the person's order.
-function moveLeague(league, by) {
-  const list = [...state.prefs.leagues];
-  const i = list.indexOf(league);
-  const j = i + by;
-  if (i < 0 || j < 0 || j >= list.length) return;
-  [list[i], list[j]] = [list[j], list[i]];
-  state.prefs.leagues = list;
-  changed();
-}
-// A follow up the list (追蹤 shows them in this order).
-function moveFollow(i, by) {
-  const list = [...state.prefs.follows];
-  const j = i + by;
-  if (j < 0 || j >= list.length) return;
-  [list[i], list[j]] = [list[j], list[i]];
-  state.prefs.follows = list;
-  changed();
-}
 function changed() {
   savePrefs();
   state.home.sportDays.clear();
@@ -436,64 +447,90 @@ function changed() {
   if (state.tab === 'home' || state.tab === 'live') loadDay(state.tab === 'live' ? today() : state.home.date);
   if (state.tab === 'following') renderFollowing();
 }
+const OPENED_KEY = 'fx.openedToday';
+function firstOpenToday(e) {
+  const day = new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
+  const id = `${e.league}:${e.id}`;
+  let had = null;
+  try {
+    had = JSON.parse(localStorage.getItem(OPENED_KEY) || 'null');
+  } catch {}
+  const ids = had?.day === day ? had.ids || [] : [];
+  if (ids.includes(id)) return false;
+  try {
+    localStorage.setItem(OPENED_KEY, JSON.stringify({ day, ids: [...ids, id].slice(-200) }));
+  } catch {}
+  return true;
+}
 function track(keys = [], weight = 1) {
   if (keys.length) recordAffinity('match', keys, weight);
 }
 // The leagues the person follows, in their order.
 const followedLeagues = () => [...state.prefs.leagues];
 
-// 我的設定 (追蹤's 設定): everything the person picks, in one sheet, in the
-// app's look (the owner, 2026-10-23: no rows of small buttons): a hero
-// saying what's followed; their leagues as logo tiles in their order (a tap:
-// move it or let it go); the rest of the leagues by sport, a tap to add;
-// the teams and players followed as rows (a tap: open, move up, let go);
-// the commentary they like.
+// 我的設定 (追蹤's 設定): everything the person picks, in one sheet: a hero
+// saying what's followed; their leagues as rows in their order, put in order
+// by each row's grip (the kit's reorder, Jay 2026-11-03: no more tap then
+// 往後) and let go with its ✕ (復原 in the toast); the rest of the leagues by
+// sport, a tap to add; the teams and players followed as rows the same way
+// (a tap opens the page); the commentary they like.
 function openFollowEditor() {
   const s = sheet(L({ zh: '我的設定', en: 'My settings' }));
-  // The league or follow tapped: its actions in a row under it (a menu
-  // would open behind the sheet).
-  let picked = null;
-  let pickedF = -1;
-  const acts = list => el('div', { class: 'set-acts' }, list.filter(Boolean).map(([label, onClick, cls = 'tinted']) => el('button', { class: `q-btn small ${cls}`, type: 'button', text: label, onclick: () => (onClick(), paint()) })));
+  // A one-tap let-go, with 復原 (kit toast) putting it back where it was.
+  const letGo = (name, undo) => kitUI.toast(L({ zh: `已取消追蹤${name}`, en: `Unfollowed ${name}` }), { action: { label: L({ zh: '復原', en: 'Undo' }), onTap: () => (undo(), changed(), paint()) } });
+  const remove = (label, onTap) => el('button', { class: 'set-x', type: 'button', 'aria-label': label, html: kitUI.icons.x, onclick: onTap });
+  const ordered = (rows, onKeys) => {
+    const box = el('div', { class: 'q-list set-order' }, rows);
+    kitUI.reorder(box, { onChange: keys => (onKeys(keys), changed(), paint()) });
+    return box;
+  };
   const paint = () => {
     const p = state.prefs;
     const n = p.leagues.length;
-    if (!p.leagues.includes(picked)) picked = null;
-    if (pickedF >= p.follows.length) pickedF = -1;
-    const tile = (k, i, add) => {
+    const tile = k => {
       const box = leagueTile(k, () => {});
       box.classList.add('set-league');
-      if (!add && k === picked) box.classList.add('on');
-      box.prepend(el('span', { class: `set-badge${add ? ' add' : ''}`, 'aria-hidden': 'true', text: add ? '+' : String(i + 1) }));
-      box.setAttribute('aria-label', add ? L({ zh: `加入${leagueName(k, locale)}`, en: `Add ${leagueName(k, locale)}` }) : leagueName(k, locale));
-      box.onclick = add ? () => (toggleLeague(k), paint()) : () => ((picked = picked === k ? null : k), paint());
+      box.prepend(el('span', { class: 'set-badge add', 'aria-hidden': 'true', text: '+' }));
+      box.setAttribute('aria-label', L({ zh: `加入${leagueName(k, locale)}`, en: `Add ${leagueName(k, locale)}` }));
+      box.onclick = () => (toggleLeague(k), paint());
       return box;
     };
-    const at = p.leagues.indexOf(picked);
-    const leagueActs = picked
-      ? acts([
-          at > 0 ? [L({ zh: '往前', en: 'Earlier' }), () => moveLeague(picked, -1)] : null,
-          at < n - 1 ? [L({ zh: '往後', en: 'Later' }), () => moveLeague(picked, 1)] : null,
-          [t('unfollow'), () => toggleLeague(picked), 'danger tinted']
-        ])
-      : null;
+    const leagueRow = k => {
+      const name = leagueName(k, locale);
+      return el('div', { class: 'q-cell set-row', 'data-q-key': k }, [
+        leagueMark(k, 'big'),
+        el('span', { class: 'q-cell-text' }, [el('span', { text: name })]),
+        remove(L({ zh: `取消追蹤${name}`, en: `Unfollow ${name}` }), () => {
+          const at = state.prefs.leagues.indexOf(k);
+          toggleLeague(k);
+          paint();
+          letGo(name, () => !state.prefs.leagues.includes(k) && state.prefs.leagues.splice(at, 0, k));
+        }),
+        kitUI.grip(L({ zh: `拖曳排序：${name}`, en: `Reorder ${name}` }))
+      ]);
+    };
     const toAdd = shownSports()
       .map(sp => [sp, shownLeaguesOf(sp).filter(k => !p.leagues.includes(k))])
       .filter(([, ks]) => ks.length);
     const openOne = f => (f.athlete ? openPlayer(f.league, f.id, f) : f.f1team === true ? openConstructor({ id: '', name: f.name, en: f.name }) : openTeam(f.league, f.id, f));
-    const follow = (f, i) => [
-      el('button', { class: `q-ritem set-follow${i === pickedF ? ' on' : ''}`, type: 'button', onclick: () => ((pickedF = pickedF === i ? -1 : i), paint()) }, [
-        el('span', { class: 'suggest-tile' }, [f.athlete ? personPic(f, f.league, 'sm round') : f.f1team === true ? constructorBadge(f.name, 'sm') : logo(f.logo, f.name, 'sm')]),
-        el('span', { class: 'q-ritem-text' }, [el('span', { class: 'q-ritem-title', text: shownName(f) }), el('small', { text: leagueName(f.league, locale) })])
-      ]),
-      i === pickedF
-        ? acts([
-            [f.athlete ? L({ zh: '球員頁面', en: 'Player page' }) : L({ zh: '球隊頁面', en: 'Team page' }), () => openOne(f)],
-            i > 0 ? [L({ zh: '往前', en: 'Up' }), () => ((pickedF = i - 1), moveFollow(i, -1))] : null,
-            [t('unfollow'), () => ((pickedF = -1), toggleFollow(f.league, f)), 'danger tinted']
-          ])
-        : null
-    ];
+    const followKey = f => `${f.league}:${f.id}`;
+    const followRow = f => {
+      const name = shownName(f);
+      return el('div', { class: 'q-cell set-row', 'data-q-key': followKey(f) }, [
+        el('button', { class: 'q-row-open', type: 'button', onclick: () => openOne(f) }, [
+          el('span', { class: 'suggest-tile' }, [f.athlete ? personPic(f, f.league, 'sm round') : f.f1team === true ? constructorBadge(f.name, 'sm') : logo(f.logo, f.name, 'sm')]),
+          el('span', { class: 'q-cell-text' }, [el('span', { text: name }), el('small', { text: leagueName(f.league, locale) })])
+        ]),
+        remove(L({ zh: `取消追蹤${name}`, en: `Unfollow ${name}` }), () => {
+          const at = state.prefs.follows.findIndex(x => followKey(x) === followKey(f));
+          toggleFollow(f.league, f);
+          paint();
+          letGo(name, () => !isFollowed(f.league, f.id) && state.prefs.follows.splice(at, 0, f));
+        }),
+        kitUI.grip(L({ zh: `拖曳排序：${name}`, en: `Reorder ${name}` }))
+      ]);
+    };
+    const hint = L({ zh: '按住 ≡ 拖曳排序', en: 'Hold ≡ and drag to reorder' });
     const teams = p.follows.length;
     put(
       s.body,
@@ -502,13 +539,13 @@ function openFollowEditor() {
         el('div', { class: 'q-focus-value', text: L({ zh: `${n} 個聯賽`, en: `${n} league${n === 1 ? '' : 's'}` }) }),
         teams ? el('div', { class: 'q-focus-sub', text: L({ zh: `${teams} 支球隊與選手`, en: `${teams} teams and players` }) }) : null
       ]),
+      section(t('yourLeagues'), n ? ordered(p.leagues.map(leagueRow), keys => (state.prefs.leagues = keys)) : el('p', { class: 'muted small set-empty', text: t('noLeaguesYet') }), { sub: n > 1 ? hint : '' }),
+      toAdd.length ? section(L({ zh: '加入聯賽', en: 'Add a league' }), el('div', { class: 'q-card pad set-add' }, toAdd.flatMap(([sp, ks]) => [el('p', { class: 'mini-h', text: L(SPORTS[sp]) }), el('div', { class: 'set-grid' }, ks.map(tile))]))) : null,
       section(
-        t('yourLeagues'),
-        n ? el('div', { class: 'q-card pad' }, [el('div', { class: 'set-grid' }, p.leagues.map((k, i) => tile(k, i, false))), leagueActs]) : el('p', { class: 'muted small set-empty', text: t('noLeaguesYet') }),
-        { sub: n > 1 ? L({ zh: '按一下調整順序', en: 'Tap one to reorder' }) : '' }
+        L({ zh: '球隊與選手', en: 'Teams and players' }),
+        teams ? ordered(p.follows.map(followRow), keys => (state.prefs.follows = keys.map(k => state.prefs.follows.find(f => followKey(f) === k)).filter(Boolean))) : el('p', { class: 'muted small set-empty', text: t('teamsHint') }),
+        { sub: teams > 1 ? hint : '' }
       ),
-      toAdd.length ? section(L({ zh: '加入聯賽', en: 'Add a league' }), el('div', { class: 'q-card pad set-add' }, toAdd.flatMap(([sp, ks]) => [el('p', { class: 'mini-h', text: L(SPORTS[sp]) }), el('div', { class: 'set-grid' }, ks.map(k => tile(k, 0, true)))]))) : null,
-      section(L({ zh: '球隊與選手', en: 'Teams and players' }), teams ? el('div', { class: 'q-rowcard' }, p.follows.flatMap(follow)) : el('p', { class: 'muted small set-empty', text: t('teamsHint') })),
       section(
         t('tvAudio'),
         segmented(
@@ -538,8 +575,11 @@ function openFollowEditor() {
 // say 延期 and aren't buttons.
 function openEvent(e) {
   if (e?.status?.void) return;
-  track(eventKeys(e), 1);
-  if (state.todayPicks?.some(p => p.league === e.league && p.id === e.id)) feedback?.picked('match', pickItem(e));
+  // Counted once a day: one game opened again and again is one game.
+  if (firstOpenToday(e)) track(eventKeys(e), 1);
+  // What the picks learn from (kit feedback.mjs): opened from 今日推薦, or anywhere else.
+  const fromPicks = state.todayPicks?.some(p => p.league === e.league && p.id === e.id);
+  feedback?.picked('match', pickItem(e), Date.now(), { from: fromPicks ? 'list' : 'elsewhere' });
   if (e.kind === 'match') return openMatch(e);
   return openFieldEvent(e);
 }
@@ -710,16 +750,18 @@ async function loadDay(date, { live = false } = {}) {
   const slot = state.days.get(date) || { events: [], at: 0, loading: false };
   if (slot.loading) return;
   if (live && !slot.fullAt) live = false;
+  // Marked as being read at once, before anything's awaited: a second ask in
+  // the same moment doesn't read it twice, and 全部 and 轉播 ask the other
+  // leagues alongside it (they waited for it before: a day there was two reads long).
+  slot.loading = true;
+  state.days.set(date, slot);
   // A day outside every league's (nothing kept, or next season's before its
   // schedule's in): nothing asked of the proxy.
   await boundsRead;
   if (!within(date, homeBounds())) {
-    Object.assign(slot, { events: [], at: Date.now(), stale: false, leagues: leaguesKey(), partial: 0 });
-    state.days.set(date, slot);
+    Object.assign(slot, { events: [], at: Date.now(), stale: false, leagues: leaguesKey(), partial: 0, loading: false });
     return repaintDay(date);
   }
-  slot.loading = true;
-  state.days.set(date, slot);
   const isToday = date === today();
   loadTables();
   const key = leaguesKey();
@@ -994,13 +1036,21 @@ function rankOnNow(list, ctx, also = new Set()) {
   return list.map(e => ({ event: e, ...scoreMatch(e, ctx) })).sort((x, y) => isFollowedEvent(y.event) - isFollowedEvent(x.event) || picked.has(k(y)) - picked.has(k(x)) || y.score - x.score);
 }
 // The picks' context for a day held (what rankOnNow and the plan weigh).
-// What the picks showed and what was opened from them (kit feedback.mjs, on
-// the device): a pick passed over day after day sinks, one opened rises.
-// (Loaded on the side: an older kit without it ranks as before.)
+// What the picks showed, what was opened from them and anywhere in the app,
+// and what was followed (the kit's feedback.mjs, the family's one engine,
+// kept on the Pass): a team or league passed over day after day sinks, one
+// opened rises, and a team opened far more than the rest is a 常看.
+// (Loaded on the side: an older kit without it ranks without them.)
 let feedback = null;
-import('#kit/feedback.mjs').then(m => (feedback = m)).catch(() => {});
+import('#kit/feedback.mjs')
+  .then(m => {
+    feedback = m;
+    feedback.keep?.(q, 'match');
+  })
+  .catch(() => {});
 const pickItem = e => ({ id: `${e.league}:${e.id}`, keys: eventKeys(e) });
-const pickContext = (slot, now = Date.now()) => ({ leagues: state.prefs.leagues, follows: state.prefs.follows, games: state.prefs.games.map(gameKey), tables: state.home.tables, aff: affinity(null, now, ['match']), now, featured: featuredIn(dayAll(slot)), chosen: chosenGames(), lift: feedback?.lifter('match', now) });
+const theirs = now => ({ personal: feedback?.scorer?.('match', now) || null, why: feedback?.whyOf?.('match', now, HABIT) || null });
+const pickContext = (slot, now = Date.now()) => ({ leagues: state.prefs.leagues, follows: state.prefs.follows, games: state.prefs.games.map(gameKey), tables: state.home.tables, now, featured: featuredIn(dayAll(slot)), chosen: chosenGames(), ...theirs(now) });
 function notePicked(events) {
   const keys = pickedToday();
   const had = keys.size;
@@ -1053,11 +1103,14 @@ function noticeChanges(events) {
   }
 }
 
-// A sideways row of chips scrolled so the chosen one sits in the middle
-// (the row only, never the page).
-// Only when the choice is new: a redraw with the same chip chosen (the
-// games coming in, a live refresh) leaves the row where the person scrolled
-// it (the kit's keepStrips puts it back), never pulls it back to the chip.
+// A sideways row of chips the first time it's shown: scrolled so the chosen
+// one sits in the middle (the row only, never the page). After that a new
+// pick never moves the row (Jay 2026-11-03: 數據's pills "jumped when you
+// click further"): it stays where the person had it (the kit's keepStrips
+// puts a redrawn row back), only nudged, gently, when the chosen chip is
+// partly out of view (one chosen by a swipe).
+// A redraw with the same chip chosen (the games coming in, a live refresh)
+// leaves the row where the person scrolled it, never pulls it back to the chip.
 const centered = new Map();
 function centerChosen(box) {
   const rows = [...box.querySelectorAll('.q-chips')];
@@ -1075,10 +1128,21 @@ function centerChosen(box) {
     // counted as done (it was, and every redraw after left the date strip on
     // its first day, a month back).
     if (!row.clientWidth) continue;
+    const seen = centered.has(key);
     centered.set(key, chosen);
-    if (row.scrollWidth > row.clientWidth) moves.push([row, chip.offsetLeft - row.offsetLeft - row.clientWidth / 2 + chip.clientWidth / 2]);
+    if (row.scrollWidth <= row.clientWidth) continue;
+    // (Seen: after keepStrips has put the row back, before it's painted.)
+    if (seen) requestAnimationFrame(() => chipInView(row, chip));
+    else moves.push([row, chip.offsetLeft - row.offsetLeft - row.clientWidth / 2 + chip.clientWidth / 2]);
   }
   for (const [row, left] of moves) row.scrollLeft = left;
+}
+function chipInView(row, chip) {
+  if (!row.isConnected || !chip.isConnected) return;
+  const r = row.getBoundingClientRect();
+  const c = chip.getBoundingClientRect();
+  const by = c.left < r.left + 12 ? c.left - r.left - 12 : c.right > r.right - 12 ? c.right - r.right + 12 : 0;
+  if (by) row.scrollBy({ left: by, behavior: 'smooth' });
 }
 
 // ---- 推薦: every match of the chosen day, ranked for this person ---------------------------
@@ -1289,7 +1353,8 @@ function renderAll() {
   put(allBarEl, dateStrip(date, pickAllDay, { range: allRange, bounds: homeBounds() }));
   const strip = allBarEl;
   let list;
-  if (!ready) list = spinner();
+  // (The day's shape while its three reads come in, never the page dropped to a spinner.)
+  if (!ready) list = box.querySelector('.live-shape') || liveShape();
   else {
     const games = allGames(date);
     const unread = (slot.partial || 0) + (slot.othersFailed || 0) + ((isToday ? slot.restFailed : restDays.get(date)?.failed) || 0);
@@ -1324,11 +1389,72 @@ function renderAll() {
 // too, not its pick (Brighton v Palace on 愛爾達2台 in 原音 while Leeds v
 // Man United had ELTA's commentary on 愛爾達1台, 2026-10-18).
 const MAIN_CHANNELS = new Set([101, 105, 110, 115]);
-const onMain = e => channelsOf(e).some(c => MAIN_CHANNELS.has(c.ch) && !['en', 'data', 'cam'].includes(c.audio));
+// (A channel guessed past ELTA's list is no pick of ELTA's.)
+const onMain = e => channelsOf(e).some(c => !c.guess && MAIN_CHANNELS.has(c.ch) && !['en', 'data', 'cam'].includes(c.audio));
 // The broadcaster's pick: a game on a main channel while another of its
 // league, starting within the hour, is on TV only on MAX. (One game on
 // alone isn't a pick: there was nothing to choose from.)
 const featuredIn = list => e => onMain(e) && list.some(o => o !== e && o.id !== e.id && o.league === e.league && Math.abs(Date.parse(o.start) - Date.parse(e.start)) < 3_600_000 && onTv(o) && !onMain(o));
+// The day's shape kept up while the open day is still being made out, for
+// up to `ms` from when it was first drawn (then what there is): false while
+// it holds (the shape drawn, a redraw set for the end of the wait).
+function holdDay(box, ms) {
+  const h = state.home;
+  const now = Date.now();
+  if (h.gate?.day !== h.date) h.gate = { day: h.date, since: now };
+  const left = h.gate.since + ms - now;
+  if (left <= 0) return true;
+  clearTimeout(h.gate.timer);
+  h.gate.timer = setTimeout(() => state.tab === 'home' && state.home.date === h.gate.day && renderHome(), left);
+  put(box, homeBar(), homeFilters(), box.querySelector(':scope > .live-shape') || liveShape());
+  centerChosen(box);
+  return false;
+}
+// The days either side of the open one read while it's looked at (theirs
+// and the other leagues'), so a swipe lands on a day already in (Jay
+// 2026-11-03: a day with nothing on kept loading; NBA's later days slow).
+let aroundTimer = 0;
+function readAround(date) {
+  clearTimeout(aroundTimer);
+  aroundTimer = setTimeout(() => {
+    if (state.tab !== 'home' || state.home.date !== date || netState() !== 'online' || document.hidden) return;
+    for (const d of [addDays(date, 1), addDays(date, -1)]) {
+      const slot = state.days.get(d);
+      if (!slot?.at && !slot?.loading) loadDay(d);
+      const read = state.days.get(d);
+      if (read && !read.othersAt && !read.othersLoading) loadOthers(d);
+    }
+  }, 800);
+}
+// 推薦 in every list: a game is a pick when 首頁 picked it for its day (a
+// day 首頁 hasn't drawn: the same plan worked out from the day's games of
+// theirs on TV). Not "followed": every game of a followed league is theirs.
+const homePicks = new Map();
+const pickMemo = new Map();
+const pickAsked = new Set();
+function isPickEvent(e) {
+  const d = localDate(e.start);
+  const key = `${e.league}:${e.id}`;
+  if (homePicks.has(d)) return homePicks.get(d).has(key);
+  const slot = state.days.get(d);
+  // (A day not read yet, 賽事 opened first: read as 首頁 would, then the list drawn again with its picks.)
+  if (!slot?.at && !pickAsked.has(d) && d >= today() && d <= addDays(today(), 14)) {
+    pickAsked.add(d);
+    Promise.resolve(loadDay(d))
+      .then(() => state.tab === 'matches' && state.days.get(d)?.events?.length && renderScores())
+      .catch(() => {});
+  }
+  if (!slot?.events?.length) return false;
+  const memo = `${d}|${slot.at}|${slot.events.length}`;
+  if (!pickMemo.has(memo)) {
+    const own = new Set([...followedLeagues(), ...state.prefs.follows.map(f => f.league)]);
+    const mine = filtered(slot.events.filter(x => !practice(x) && (own.has(x.league) || isFollowedGame(x)) && (isFollowedGame(x) || onTv(x))));
+    const past = d < today();
+    pickMemo.set(memo, new Set(dayPlan(mine, pickContext(slot), { n: 6, also: 0, asStood: past }).plan.map(x => `${x.event.league}:${x.event.id}`)));
+  }
+  return pickMemo.get(memo).has(key);
+}
+ctx.isPickEvent = isPickEvent;
 function renderHome() {
   const box = $('panel-home');
   const h = state.home;
@@ -1339,9 +1465,16 @@ function renderHome() {
   // needs it: never for the TV lists alone, or loadDay's repaint calls
   // straight back here and the page locks up.
   const unread = !slot?.at || (slot.leagues !== leaguesKey() && !slot.stale);
-  if (unread || !tvReady()) {
-    if (unread && !slot?.loading) loadDay(h.date);
-    put(box, homeBar(), homeFilters(), spinner());
+  // (A day none of whose leagues answered, opened again: read again now, not at the next retry.)
+  const lost = slot?.at && !slot.loading && slot.partial > 0 && !slot.events.length;
+  if (unread || lost || !tvReady()) {
+    if ((unread || lost) && !slot?.loading) loadDay(h.date);
+    // (The other leagues alongside theirs: a day with nothing of theirs
+    // needs them, and reading them only after theirs made it two reads long.)
+    const read = state.days.get(h.date);
+    if (read && !read.othersAt && !read.othersLoading && h.filter === 'all') loadOthers(h.date);
+    // The day's shape while it's read (never the page dropped to a spinner and grown back).
+    put(box, homeBar(), homeFilters(), box.querySelector(':scope > .live-shape') || liveShape());
     centerChosen(box);
     return;
   }
@@ -1363,10 +1496,18 @@ function renderHome() {
   // A match followed on its own shows whether or not it's on TV here: the person asked for it.
   // (ELTA's list unread: every game of theirs, not none; tvUnread.)
   const shown = e => !practice(e) && (isFollowedGame(e) || onTv(e) || ((e.status.state === 'post' || past || tvUnread()) && !tvKnown(e)));
-  const mine = slot.events.filter(shown);
+  // A league read only for a followed match in it (pickLeagues) gives that
+  // match, not its other games: one New England v Miami followed isn't MLS
+  // followed (the owner, 2026-11-01: every MLS game came up in 推薦).
+  const own = new Set([...followedLeagues(), ...state.prefs.follows.map(f => f.league)]);
+  const mine = slot.events.filter(e => shown(e) && (own.has(e.league) || isFollowedGame(e)));
   // What the reads left unknown (the day's leagues, the others', ELTA's
   // list): while any is, the day is never said to have nothing on.
   const gap = dayUnknown([slot], tvUnread());
+  // Nothing of theirs and part of the day unread (a league, ELTA's list): the
+  // day's shape while it's read again, up to 6 s, never a note about it
+  // (Jay 2026-11-03: a day with nothing on kept loading, then an ugly message).
+  if (gap && !past && h.filter === 'all' && !h.picking && !mine.length && !holdDay(box, 6_000)) return;
   // Today with every one of its games over: shown as any day gone by (its
   // picks as they stood, the results in them, 今天 · 已結束的推薦 and how
   // many, 更多推薦), not as a day still going with an ended corner.
@@ -1412,6 +1553,10 @@ function renderHome() {
     if (!slot.othersAt) {
       finding = true;
       loadOthers(h.date);
+      // Nothing of theirs that day, the others still coming: the day's shape
+      // for up to 3 s, then what there is (never 沒有轉播 said and the others'
+      // games popping in under it a moment later, Jay 2026-11-03).
+      if (!past && !h.picking && !holdDay(box, 3_000)) return;
     } else {
       // Worth watching on its own: the stakes and the sides, not the person's sport order
       // (their own small hours' big games kept first among the rest).
@@ -1442,9 +1587,12 @@ function renderHome() {
   const keyOf = x => `${x.league}:${x.id}`;
   const planKeys = new Set(isToday ? (fallback ? wasPlan : ownWas[0]).map(x => keyOf(x.event)) : []);
   const isPick = x => planKeys.has(keyOf(x.event));
+  homePicks.set(h.date, new Set([...planKeys, ...planList.map(x => keyOf(x.event))]));
   let liveItems = isToday ? rankOnNow(onNow(filtered(mine)), pctx, planKeys) : [];
   const liveMine = liveItems.length > 0;
-  if (isToday && !liveItems.length && h.filter === 'all') liveItems = rankOnNow(onNow(dayAll(slot).filter(e => !practice(e) && onTv(e))), { ...pctx, sports: [], leagues: [] }, planKeys).filter(x => x.score >= 0.3);
+  // (Never a game of a league read only for a followed match in it: one New
+  // England v Miami followed put Atlanta v Toronto at the top, Jay 2026-11-03.)
+  if (isToday && !liveItems.length && h.filter === 'all') liveItems = rankOnNow(onNow(dayAll(slot).filter(e => !practice(e) && onTv(e) && !matchOnly(e, own, keptGames(state.prefs.games)))), { ...pctx, sports: [], leagues: [] }, planKeys).filter(x => x.score >= 0.3);
   const allLive = isToday ? onNow(dayAll(slot)).filter(onTv).length : 0;
   if (slot?.at) prefetchVideos(dayAll(slot));
   // Today's picks on now first, each marked ★ 推薦, then the rest of theirs,
@@ -1463,7 +1611,9 @@ function renderHome() {
   const liveRest = liveShown.filter(x => x !== heroItem);
   planList = planList.filter(x => x !== heroItem);
   more = more.filter(x => keyOf(x.event) !== heroKey);
-  const hero = heroItem ? heroGame(heroItem.event, { picked: isPick(heroItem), mine: isFollowedEvent(heroItem.event), onOpen: openEvent }) : null;
+  const hero = heroItem ? look.paintHero(heroGame(heroItem.event, { picked: isPick(heroItem), mine: isFollowedEvent(heroItem.event), onOpen: openEvent }), heroItem.event) : null;
+  // The hero led with from the plan is today's first pick (its start notice, what the picks learn from).
+  const heroPick = heroItem && !liveShown.includes(heroItem) ? [heroItem] : [];
   // The rest on now: a row each with 觀看; every game on is 轉播's.
   const liveBlock = liveRest.length
     ? section(t('liveNow'), el('div', { class: 'q-card list' }, liveRest.map(x => withWatch(eventRow(x.event), x.event))), {
@@ -1488,7 +1638,7 @@ function renderHome() {
   // day's picks as they stood too: one on now (正在進行, or about to start)
   // has left the list, or never was on it when the app opened.
   if (isToday && h.filter === 'all' && h.settled) {
-    const picks = fallback ? [] : planList.map(x => x.event);
+    const picks = fallback ? [] : [...heroPick, ...planList].map(x => x.event);
     const sig = [...picks, ...ownWas[0].map(x => x.event)].map(e => `${e.league}:${e.id}:${e.start}`).join('|');
     if (sig !== state.todayPicksSig) {
       state.todayPicks = picks;
@@ -1561,6 +1711,37 @@ function renderHome() {
         }))
       )
     : null;
+  // A day with nothing on TV at all (theirs and the others', any hour): never
+  // said while a game of the small hours is listed under 更多賽事.
+  const nothing = !past && !h.picking && fallback && !planList.length && !restShown.length && !endedGames.length && !hero && !liveBlock;
+  // The kit's empty state for a day: what's so in one line (its reason under
+  // it only past ELTA's list), and every game; a day still unread after its
+  // wait (`says` null): that, and a tap to read it again.
+  const dayEmpty = says =>
+    says
+      ? kitUI.empty({ icon: 'tv', title: says.title, body: says.body || '', action: { label: L({ zh: '看完整賽程', en: 'Every game' }), onTap: () => openAll(h.date) }, cls: 'home-empty' })
+      : kitUI.empty({ icon: 'tv', title: L({ zh: '這天的賽程還讀不到', en: "Couldn't read this day yet" }), action: { label: L({ zh: '再試一次', en: 'Try again' }), onTap: () => ((h.gate = null), loadDay(h.date), loadOthers(h.date), renderHome()) }, cls: 'home-empty' });
+  // (Theirs unread: never said to have nothing on.)
+  const noMine = slot.partial > 0 ? L({ zh: '我的聯賽還讀不到', en: "My leagues couldn't be read yet" }) : hasFollows || !state.prefsLoaded ? t(isToday ? 'noMineToday' : 'noMineDay') : t('noFollowsYet');
+  // 我的球隊: each team's place in its table and its next game, its own
+  // colour as a thin mark (else the places to watch, as before).
+  const teamsShelf =
+    !gone && !h.picking && hasFollows
+      ? (() => {
+          const seen = new Set();
+          const rows = followedTeams()
+            .filter(f => !f.athlete && !seen.has(`${f.league}:${f.id}`) && seen.add(`${f.league}:${f.id}`))
+            .slice(0, 6)
+            .map(f => {
+              const r = state.home.tables[f.league]?.[f.id];
+              const sub = [leagueName(f.league, locale).replace(/\s.*$/, ''), r?.group && !/\d{4}/.test(r.group) && r.group !== leagueName(f.league, locale) ? r.group : ''].filter(Boolean).join(' · ');
+              // (Its colour from a day's scoreboard: a team's own schedule carries none.)
+              const side = [...state.days.values()].flatMap(dayAll).filter(e => LEAGUES[e.league]?.sport === LEAGUES[f.league]?.sport).flatMap(e => [e.home, e.away]).find(x => String(x?.id) === String(f.id) && x.color) || null;
+              return { f: { ...f, logo: f.logo || fallbackLogo(f.league, { id: f.id, name: f.name }), shown: shownName(f) }, pos: r?.pos || null, sub, next: nextOf(f) || null, side };
+            });
+          return rows.length ? section(L({ zh: '我的球隊', en: 'My teams' }), look.teams(rows, f => openTeam(f.league, f.id, f))) : null;
+        })()
+      : null;
   put(
     box,
     homeBar(),
@@ -1575,25 +1756,30 @@ function renderHome() {
       // 2026-10-18). Theirs and the others on TV, under the sport chosen.
       past ? pastDay() : null,
       // (Nothing followed yet: the sport picker above already says so; no note under it.)
-      !past && (fallback || finding) && !endedGames.length && !(h.picking && !hasFollows && state.prefsLoaded && !finding) ? note(gap === 'leagues' ? t('someUnread') : gap === 'tv' ? t('tvUnread') : hasFollows || !state.prefsLoaded ? t(isToday ? 'noMineToday' : 'noMineDay') : t('noFollowsYet'), finding ? t('findingOthers') : planList.length ? t('othersSub') : gap ? t('notKnownYet') : noTvText(h.date), !finding && !planList.length) : null,
+      // Nothing of theirs: the others' picks under a line that says so;
+      // nothing on at all, the kit's empty state (one line and the way to
+      // every game; Jay 2026-11-03: the two-line card read ugly).
+      past || h.picking ? null : finding ? note(noMine, t('findingOthers'), false) : fallback && planList.length && !endedGames.length ? note(noMine, t('othersSub'), false) : nothing ? dayEmpty(gap ? null : noTvTitle(h.date)) : null,
       !past && finding ? spinner() : null,
       past
         ? null
         : planShown.length
-          ? section(t('picks'), el('div', { class: 'q-card list' }, planShown.map(x => planRow(x, rowDay))), { action: !restShown.length && moreAll.length ? moreButton(t('allN', { n: moreAll.length }), () => openMore(moreAll, rowDay)) : null })
+          ? section(t('picks'), el('div', { class: 'q-card list pick-list' }, planShown.map(x => planRow(x, rowDay))), { action: !restShown.length && moreAll.length ? moreButton(t('allN', { n: moreAll.length }), () => openMore(moreAll, rowDay)) : null })
           : finding || fallback || liveBlock || hero || h.picking || mineNext.length || restShown.length
             ? null
-            : section(t('picks'), note('', gap === 'leagues' ? t('someUnread') : h.filter === 'all' ? (gap ? t('tvUnread') : noTvText(h.date)) : t('noPicksMine')))
+            : dayEmpty(gap ? null : h.filter === 'all' ? noTvTitle(h.date) : { title: t('noPicksMine') })
     ], [
       mineNext.length ? section(t('myGames'), kitRail(mineNext)) : null,
       !past && restShown.length ? section(t('moreGames'), kitRail(restShown.map(x => x.event)), { action: moreAll.length > restShown.length ? moreButton(t('allN', { n: moreAll.length }), () => openMore(moreAll, rowDay)) : null }) : null,
       leaguesShelf,
-      placesShelf,
+      teamsShelf || placesShelf,
       endedGames.length ? section(t('pastEvents'), light ? recapList(endedGames, rowDay) : kitRail(endedGames), { action: el('span', { class: 'q-tag', text: t('gamesN', { n: endedGames.length }) }) }) : null
     ])
   );
   // An F1 session on: its live timing read now, not at the next tick.
   if (!f1Live.feed && box.querySelector('[data-f1-brief]')) pollF1Live();
+  // The open day in: the days either side read meanwhile.
+  if (h.settled) readAround(h.date);
 }
 // A light day's games over: a card each, with who led each side
 // (sheets.js gameRecap); each game's leaders read once.
@@ -1620,17 +1806,28 @@ function openMore(items, opts) {
   const s = sheet(t('moreGames'));
   put(s.body, el('div', { class: 'q-card list' }, items.map(x => eventRow(x.event, opts))));
 }
-// Nothing on TV here that day: why (past ELTA's list, only the NBA's and
-// MLS's games are known), and the way to every game (賽事).
+// A day with nothing on TV here, said in one line: past the end of ELTA's
+// list, that end (what's after it is only guessed from its usual line-up).
+function noTvTitle(date) {
+  const until = tvUntil();
+  if (!state.prefs.leagues.length && state.prefsLoaded) return { title: t('noFollowsYet') };
+  if (until && date > until) {
+    const d = new Date(`${until}T12:00:00`);
+    return { title: L({ zh: `節目表只排到 ${d.getMonth() + 1}/${d.getDate()}`, en: `ELTA's guide ends ${d.getMonth() + 1}/${d.getDate()}` }), body: L({ zh: '之後的轉播是依往例預估', en: 'Later broadcasts are estimates' }) };
+  }
+  return { title: L({ zh: '這天沒有轉播', en: 'Nothing on TV this day' }) };
+}
+// Nothing on TV here that day: why (past ELTA's list, only guesses from its
+// usual line-up, NBA.com's and MLS's games), and the way to every game (賽事).
 function noTvText(date) {
   const until = tvUntil();
   if (until && date > until) {
     const d = new Date(`${until}T12:00:00`);
-    return L({ zh: `愛爾達的節目表排到 ${d.getMonth() + 1}/${d.getDate()}，之後只知道 NBA 和 MLS 的轉播。`, en: `ELTA's schedule runs to ${d.getMonth() + 1}/${d.getDate()}; after that only NBA and MLS broadcasts are known.` });
+    return L({ zh: `愛爾達的節目表排到 ${d.getMonth() + 1}/${d.getDate()}，之後的轉播是依往例預估。`, en: `ELTA's schedule runs to ${d.getMonth() + 1}/${d.getDate()}; later broadcasts are estimates.` });
   }
   return t('noOthers');
 }
-const fullSchedule = () => el('button', { class: 'section-more', type: 'button', text: `${L({ zh: '看完整賽程', en: 'Every game' })} ›`, onclick: () => openAll(state.home.date) });
+const fullSchedule = () => goBar(L({ zh: '看完整賽程', en: 'Every game' }), () => openAll(state.home.date));
 // 首頁's day: the date strip at the top, always on screen (it sticks under
 // the status bar while the page scrolls), today in the middle; a swipe
 // across the page goes a day either way (daySwipe). Under it, what to show
@@ -1660,7 +1857,7 @@ function homeFilters() {
   if (h.picking || !state.prefs.leagues.length) return null;
   const filters = [['all', t('f_all')], ...(watched().length ? [['teams', t('f_mine')]] : state.prefs.follows.length ? [['teams', t('f_teams')]] : []), ...homeSports().filter(isActiveSport).map(sp => [sp, L(SPORTS[sp])])];
   if (filters.length < 3) return null;
-  return el('div', { class: 'q-chips day-filters' }, filters.map(([k, label]) => el('button', { class: 'q-chip', type: 'button', 'aria-pressed': String(h.filter === k), text: label, onclick: () => h.filter !== k && ((stripRange.recenter = true), pickFilter(k)) })));
+  return el('div', { class: 'q-chips day-filters q-texttabs' }, filters.map(([k, label]) => el('button', { class: 'q-chip', type: 'button', 'aria-pressed': String(h.filter === k), text: label, onclick: () => h.filter !== k && ((stripRange.recenter = true), pickFilter(k)) })));
 }
 // A day changed from below the top: the page starts at its top (the strip stays in view).
 function toPageTop() {
@@ -1815,7 +2012,10 @@ function renderLive() {
   const slot = state.days.get(today());
   if (!slot?.at || !tvReady()) {
     if (!slot?.loading && !slot?.at) loadDay(today());
-    put(box, liveBar(), liveShape());
+    // (The other leagues read alongside, not after.)
+    const now = state.days.get(today());
+    if (now && !now.othersAt && !now.othersLoading) loadOthers(today());
+    put(box, liveBar(), box.querySelector('.live-shape') || liveShape());
     return;
   }
   loadFollowedTeams();
@@ -1877,7 +2077,7 @@ function renderLive() {
     byDay.get(d).push(e);
   }
   const mineBlock = byDay.size
-    ? section(t('myGames'), el('div', { class: 'by-day' }, [...byDay].map(([d, list]) => [el('p', { class: 'day-head', text: dayLabel(d, { long: true }) }), el('div', { class: 'q-card list' }, list.map(e => eventRow(e, { day: false })))]).flat()), {
+    ? section(t('myGames'), el('div', { class: 'by-day mine-list' }, [...byDay].map(([d, list]) => [el('p', { class: 'day-head', text: dayLabel(d, { long: true }) }), el('div', { class: 'q-card list' }, list.map(e => eventRow(e, { day: false })))]).flat()), {
         action: el('span', { class: 'q-tag tint', text: L({ zh: `${TV_DAYS} 天`, en: `${TV_DAYS} days` }) })
       })
     : null;
@@ -1912,7 +2112,9 @@ function renderLiveDay(d) {
   // Drawn once the day's leagues, the others' and ELTA's list are in (never filled in under the finger).
   if (!slot?.at || !slot.othersAt || !tvReady()) {
     if (!slot?.at && !slot?.loading) loadDay(d);
-    else if (slot?.at && !slot.othersAt && !slot.othersLoading) loadOthers(d);
+    // (The other leagues read alongside the day's, not after.)
+    const now = state.days.get(d);
+    if (now && !now.othersAt && !now.othersLoading) loadOthers(d);
     if (!box.querySelector('.live-shape')) put(box, liveBar(), liveShape());
     else put(box, liveBar(), box.querySelector('.live-shape'));
     return;
@@ -1925,7 +2127,7 @@ function renderLiveDay(d) {
     .filter(e => inDay(Date.parse(e.start), d) && !practice(e) && !seen.has(dayKey(e)) && seen.add(dayKey(e)))
     .filter(e => onTv(e) || isFollowedGame(e) || ((e.status.state === 'post' || past) && !tvKnown(e)))
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
-  const c = { leagues: state.prefs.leagues, follows: state.prefs.follows, games: state.prefs.games.map(gameKey), tables: state.home.tables, aff: affinity(null, now, ['match']), now, featured: featuredIn(list), chosen: chosenGames() };
+  const c = { leagues: state.prefs.leagues, follows: state.prefs.follows, games: state.prefs.games.map(gameKey), tables: state.home.tables, now, featured: featuredIn(list), chosen: chosenGames(), ...theirs(now) };
   const ranked = list.filter(e => !e.status.void).map(e => ({ e, mine: isFollowedEvent(e), score: scoreMatch(e, c).score })).sort((x, y) => y.mine - x.mine || y.score - x.score);
   const top = ranked[0]?.e || null;
   const hero = top ? heroGame(top, { mine: isFollowedEvent(top), eyebrow: top.status.state === 'pre' ? dayLabel(d, { long: true }) : '', onOpen: openEvent }) : null;
@@ -2142,14 +2344,19 @@ async function nbaCupData() {
     const groupGames = all.filter(e => isGroupPlay(e) && !seen.has(e.id) && seen.add(e.id));
     return groupGames.length ? { groupGames, events: ko(knock), season: `${year}-${String(year + 1).slice(2)}` } : null;
   };
-  const now = await season(y);
-  if (now) return { mode: 'live', ...now, partial: missing.size > 0 };
+  // Last regular season's records (the cup's fifth tiebreak): ESPN numbers a season by the year it ends.
+  const prevOf = year =>
+    standings('nba', { season: year })
+      .then(gs => Object.fromEntries(gs.flatMap(g => g.rows).map(r => [r.id, { w: Number(r.stats.W), l: Number(r.stats.L) }]).filter(([, x]) => Number.isFinite(x.w) && Number.isFinite(x.l))))
+      .catch(() => null);
+  const [now, prev] = await Promise.all([season(y), prevOf(y)]);
+  if (now) return { mode: 'live', ...now, prev, partial: missing.size > 0 };
   // Pages missing, none of the cup's in what came: unread, not "no cup this season".
   if (missing.size) throw new Error('nbacup: unread');
   const last = await season(y - 1, 30 * 86_400_000);
   // Every season here had its cup: none found is a read gone wrong.
   if (!last?.events.length) throw new Error('nbacup: last season unread');
-  return { mode: 'last', ...last, partial: missing.size > 0 };
+  return { mode: 'last', ...last, prev: await prevOf(y - 1), partial: missing.size > 0 };
 }
 // The cup as last read whole, kept on the phone: shown while a read fails
 // (or before the first is in), never "暫時無法取得資料" once it has been read.
@@ -2164,7 +2371,7 @@ function keptCup() {
 }
 function keepCup(d) {
   try {
-    localStorage.setItem(CUP_KEY, JSON.stringify({ at: Date.now(), d: { mode: d.mode, groupGames: d.groupGames, events: d.events, season: d.season } }));
+    localStorage.setItem(CUP_KEY, JSON.stringify({ at: Date.now(), d: { mode: d.mode, groupGames: d.groupGames, events: d.events, season: d.season, prev: d.prev || null } }));
   } catch {}
 }
 // A bracket's model from its data: the NBA Cup's with its groups too.
@@ -2172,7 +2379,7 @@ const bracketOf = (league, d) => {
   const model = playoffModel({ league, ...d });
   if (league === 'nationsleague') return withUnlGroups(model, d);
   if (league !== CUP) return model;
-  model.groups = nbaCupGroups(d.groupGames);
+  model.groups = nbaCupGroups(d.groupGames, { prev: d.prev });
   // The quarterfinals not drawn yet: as the groups stand (this season's).
   const qf = model.rounds.find(r => r.key === 'QF');
   if (model.mode !== 'last' && qf?.ties.every(t => !t) && model.groups.length) qf.ties = cupQuarters(model.groups);
@@ -2469,9 +2676,13 @@ function playoffView(model, key) {
     const conf = g.conf === 'East' ? (en ? 'East' : '東區') : en ? 'West' : '西區';
     return el('div', { class: `br-tie br-group${g.kind === 'card' ? ' br-card' : ''}` }, [
       el('small', { class: 'br-gname', text: g.kind === 'card' ? (en ? `${conf} wild card · 2nds` : `${conf}外卡・各組第二`) : en ? `${conf} group` : `${conf}小組` }),
-      ...g.rows.map(x => el('div', { class: 'br-grow', ...(g.kind === 'card' ? x.zone === 'card' : x.zone === 'lead' || x.zone === 'card') ? { style: `--zone: ${PICTURE_COLOR[x.zone]}` } : {} }, [sideLogo(x, 'nba', 'xs'), el('span', { class: 'br-name', text: x.short || x.name }), el('span', { class: 'num br-rec', text: `${x.w}-${x.l}` })]))
+      ...g.rows.map(x => el('div', { class: 'br-grow', ...(g.kind === 'card' ? x.zone === 'card' : x.zone === 'lead' || x.zone === 'card') ? { style: `--zone: ${PICTURE_COLOR[x.zone]}` } : {} }, [sideLogo(x, 'nba', 'xs'), el('span', { class: 'br-name', text: x.short || x.name }), el('span', { class: 'num br-rec', text: `${x.w}-${x.l}` })])),
+      // Teams level on record: why the one above is above (the cup's tiebreaks; Jay, 2026-11-01).
+      ...tieLines(g.notes, g.rows, g.kind === 'card' ? (en ? 'Wild card' : '外卡') : en ? '1st' : '第一')
     ]);
   };
+  // (One short line, no names: the card's first place, or a seed, and the step that gave it: 第一依分差 +20/+5.)
+  const tieLines = (notes, rows, what) => (notes || []).map(n => el('small', { class: 'br-why', text: `${n.seed ? (en ? 'Seed' : '種子') : what}${en ? ' by ' : '依'}${cupNote(n, () => '', en).why}` }));
   const tie = (t, r) => {
     // Its games as the newest read has them (the live tick's scoreboard), not as the bracket was read.
     if (t?.games?.length) {
@@ -2485,7 +2696,7 @@ function playoffView(model, key) {
     const said = note(t, r);
     // A game on at a break (中場休息, 暫停): its countdown ticking in the note as everywhere else.
     const on = t?.live && t.games.find(g => g.status?.state === 'in');
-    const body = [sideRow(t?.sides[0] || null, t || blank, 0), sideRow(t?.sides[1] || null, t || blank, 1), said ? el('small', { class: `br-note${t?.live ? ' live' : ''}${t?.outcome ? ' q-fit' : ''}`, text: said, ...(on ? breakTick(on, said) : {}) }) : null];
+    const body = [sideRow(t?.sides[0] || null, t || blank, 0), sideRow(t?.sides[1] || null, t || blank, 1), said ? el('small', { class: `br-note${t?.live ? ' live' : ''}${t?.outcome ? ' q-fit' : ''}`, text: said, ...(on ? breakTick(on, said) : {}) }) : null, ...(t?.notes?.length ? tieLines(t.notes.slice(0, 1)) : [])];
     if (!t || t.projected || t.pending) return el('div', { class: `br-tie ${t?.pending ? 'pending' : t?.sure ? 'sure' : t ? 'projected' : 'tbd'}${t?.roundTitle ? ' eighth' : ''}` }, body);
     // (Its sheet from the card as last drawn: patchPlayoffs moves __open over with the newer games.)
     const card = el('button', { class: `br-tie${t.live ? ' live' : ''}`, type: 'button', onclick: () => card.__open() }, body);
@@ -2975,38 +3186,200 @@ function weekends(list) {
   }
   return [...out.values()];
 }
-// A race weekend as a card: its flag, name, circuit and days, then each session (time, badge, state); over, the
-// race's winner.
-function weekendCard(sessions) {
+// A race weekend as a card (Jay 2026-11-03: the first take, its days side by
+// side, was "flat and all text"; columns of uneven height left gaps under
+// short days). Now three parts, every card the same shape:
+// - the head: the flag, the name, the circuit, the dates at the right;
+// - a panel: what to look at now, the circuit's outline beside it: the next
+//   session and a countdown that runs (to the minute), or the session on in
+//   the live colour, or (over) the podium, the winner's face first;
+// - the weekend as a line of stops, one even column a session: a dot on the
+//   line (practice small, qualifying and sprints bigger, the race chequered),
+//   the line filled as far as the weekend has run; under each its name, then
+//   its day and time, or once it's over who topped it (最快 / 桿位 / 冠軍) on
+//   their team's colour.
+// One card, one tap: the session on, else the next to come, else (over) the
+// race; its sheet has the others a tap away.
+const WK_TRACKS = 'sports.wkTrack.v1';
+const wkTracks = readJson(WK_TRACKS, {}) || {};
+// A circuit's outline as a polyline's points in a W×H box, turned a quarter
+// where that draws it bigger (from the same MultiViewer drawing the
+// weekend's sheet uses).
+function trackPoints(c, W = 120, H = 72, pad = 5) {
+  const best = [c.rotation, c.rotation + 90]
+    .map(r => {
+      const a = ((Number(r) + 90) * Math.PI) / 180;
+      const pts = c.x.map((x, i) => [x * Math.cos(a) - c.y[i] * Math.sin(a), c.y[i] * Math.cos(a) + x * Math.sin(a)]);
+      const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+      const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+      const k = Math.min((W - pad * 2) / (x1 - x0 || 1), (H - pad * 2) / (y1 - y0 || 1));
+      return { k, pts, x0, x1, y0, y1 };
+    })
+    .sort((a, b) => b.k - a.k)[0];
+  const { k, pts, x0, x1, y0, y1 } = best;
+  const ox = (W - (x1 - x0) * k) / 2, oy = (H - (y1 - y0) * k) / 2;
+  const step = Math.max(1, Math.floor(pts.length / 160));
+  return pts.filter((_, i) => i % step === 0).map(([x, y]) => `${(ox + (x - x0) * k).toFixed(1)},${(oy + (y - y0) * k).toFixed(1)}`).join(' ');
+}
+const trackSvg = pts => `<svg viewBox="0 0 120 72" aria-hidden="true"><polyline class="wk-track-edge" points="${pts}"/><polyline class="wk-track-line" points="${pts}"/><circle class="wk-track-start" cx="${pts.split(' ')[0].split(',')[0]}" cy="${pts.split(' ')[0].split(',')[1]}" r="3"/></svg>`;
+// The outline's box: drawn at once from the phone's copy, else read once the
+// card is near the screen and faded in (the box holds its size: nothing moves).
+let wkSeen = null;
+const wkWanted = new WeakMap();
+function trackBox(day, start) {
+  const box = el('span', { class: 'wk-track' });
+  if (wkTracks[day]) {
+    box.innerHTML = trackSvg(wkTracks[day]);
+    return box;
+  }
+  const load = () =>
+    weekendCircuit(start)
+      .then(c => {
+        if (!c?.x?.length) return;
+        wkTracks[day] = trackPoints(c);
+        writeJson(WK_TRACKS, wkTracks);
+        for (const b of document.querySelectorAll(`.wk-track[data-day="${day}"]:empty`)) {
+          b.innerHTML = trackSvg(wkTracks[day]);
+          b.classList.add('in');
+        }
+      })
+      .catch(() => {});
+  box.dataset.day = day;
+  if (typeof IntersectionObserver !== 'function') {
+    load();
+    return box;
+  }
+  wkSeen ||= new IntersectionObserver(
+    seen => {
+      for (const x of seen) {
+        if (!x.isIntersecting) continue;
+        wkSeen.unobserve(x.target);
+        const go = wkWanted.get(x.target);
+        wkWanted.delete(x.target);
+        go?.();
+      }
+    },
+    { rootMargin: '300px 0px' }
+  );
+  wkWanted.set(box, load);
+  wkSeen.observe(box);
+  return box;
+}
+// How long until a session starts: days and hours, hours and minutes, or minutes (numbers big, units small).
+function untilParts(ms) {
+  const en = locale === 'en';
+  const m = Math.max(0, Math.ceil(ms / 60_000));
+  const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+  const u = (zh, e) => (en ? e : zh);
+  if (d >= 7) return [[d, u('天', d === 1 ? 'day' : 'days')]];
+  if (d >= 1) return [[d, u('天', 'd')], [h, u('時', 'h')]];
+  if (h >= 1) return [[h, u('時', 'h')], [mm, u('分', 'm')]];
+  return [[mm || 1, u('分', 'm')]];
+}
+const countdown = at => {
+  const node = el('span', { class: 'wk-count num', 'data-at': String(at) });
+  paintCount(node);
+  wkTick();
+  return node;
+};
+function paintCount(node) {
+  const parts = untilParts(Number(node.dataset.at) - Date.now());
+  const text = parts.map(([n, u]) => `${n}${u}`).join(' ');
+  if (node.dataset.text === text) return;
+  node.dataset.text = text;
+  node.replaceChildren(...parts.flatMap(([n, u]) => [el('b', { text: String(n) }), el('small', { text: u })]));
+}
+// One beat for every countdown on the page, in place (stopped when none is left).
+let wkTimer = 0;
+function wkTick() {
+  if (wkTimer) return;
+  wkTimer = setInterval(() => {
+    const all = document.querySelectorAll('.wk-count[data-at]');
+    if (!all.length) {
+      clearInterval(wkTimer);
+      wkTimer = 0;
+      return;
+    }
+    for (const n of all) paintCount(n);
+  }, 20_000);
+}
+// Who topped a session, and what that's called.
+const topOf = x => (x.sessions?.find(s => s.abbr === x.sessionKey) || (x.sessions?.length === 1 ? x.sessions[0] : null))?.field?.[0] || null;
+const codeOf = p => (/^[A-Z]{3}$/.test(p?.abbr || '') ? p.abbr : String(p?.en || p?.name || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).pop().slice(0, 3).toUpperCase());
+const teamColor = p => f1Driver(p?.en || p?.name || '').color;
+const SESSION_KIND = k => (k === 'Race' ? 'race' : ['Qual', 'SS', 'SQ', 'SR'].includes(k) ? 'big' : 'practice');
+export function weekendCard(sessions) {
   const e = sessions[0];
   const list = [...sessions].sort((a, b) => a.start.localeCompare(b.start));
-  const first = localDate(Date.parse(list[0].start));
-  const last = localDate(Date.parse(list.at(-1).start));
-  const days = first === last ? dayLabel(first) : `${dayLabel(first)} – ${dayLabel(last)}`;
   const race = list.find(x => x.sessionKey === 'Race') || list.at(-1);
   const done = list.every(x => x.status.state === 'post');
-  const winner = done ? (race.sessions?.find(x => x.abbr === race.sessionKey) || race.sessions?.at(-1))?.field?.[0] : null;
-  const live = list.some(x => x.status.state === 'in');
-  // One card, one tap: the session on, else the next to come, else (over) the
-  // race; its sheet has the others a tap away. (Each line used to be its own
-  // tap, so where the finger fell picked 一練, the sprint or qualifying.)
-  const open = list.find(x => x.status.state === 'in') || list.find(x => x.status.state === 'pre') || race;
-  return el('button', { class: `q-card wk-card${live ? ' live' : ''}${done ? ' done' : ''}`, type: 'button', disabled: open?.status?.void ? true : null, onclick: () => openEvent(open) }, [
-    el('div', { class: 'wk-card-head' }, [raceFlag(e, 'big'), el('div', { class: 'wk-card-text' }, [el('strong', { class: 'wk-card-name', text: e.name }), e.venue ? el('small', { class: 'muted wk-card-line', text: e.venue }) : null, el('small', { class: 'muted wk-card-line num', text: days })])]),
-    winner
-      ? el('div', { class: 'wk-winner' }, [personPic(winner, e.league, 'sm round'), el('span', {}, [el('small', { class: 'muted', text: L({ zh: '冠軍', en: 'Winner' }) }), el('strong', { text: winner.short || winner.name })])])
-      : el(
-          'div',
-          { class: 'wk-sessions' },
-          list.map(x => {
-            const kind = { Race: 'race', Qual: 'qual', SR: 'sprint', SS: 'sq', SQ: 'sq' }[x.sessionKey] || 'other';
-            return el('div', { class: `wk-row ${kind}${x.status.state === 'in' ? ' live' : ''}${x.status.state === 'post' ? ' done' : ''}` }, [
-              el('span', { class: 'wk-time num' }, [el('small', { text: dayLabel(localDate(Date.parse(x.start))) }), document.createTextNode(timeText(x))]),
-              el('span', { class: 'wk-name' }, [sessionTag(x)]),
-              el('span', { class: `wk-state ${x.status.state}`, text: x.status.state === 'post' ? t('final') : x.status.state === 'in' ? t('live') : '' })
-            ]);
-          })
-        )
+  const on = list.find(x => x.status.state === 'in');
+  const coming = on ? null : list.find(x => x.status.state === 'pre');
+  const open = on || coming || race;
+  const en = locale === 'en';
+  const dayOf = x => localDate(Date.parse(x.start));
+  const md = d => { const x = new Date(`${d}T12:00:00`); return `${x.getMonth() + 1}/${x.getDate()}`; };
+  const wd = d => new Date(`${d}T12:00:00`).toLocaleDateString(en ? 'en-US' : 'zh-TW', { weekday: 'short' });
+  const near = d => (d === today() ? t('today') : d === addDays(today(), 1) ? t('tomorrow') : '');
+  const sname = x => { const n = SESSION_NAMES[x.sessionKey]; return n ? n.short[en ? 'en' : 'zh'] : x.session || ''; };
+  const first = dayOf(list[0]), last = dayOf(list.at(-1));
+  const head = el('div', { class: 'wk-card-head' }, [
+    el('div', { class: 'wk-card-top' }, [raceFlag(e), el('strong', { class: 'wk-card-name', text: e.name }), el('span', { class: 'wk-when num', text: first === last ? md(first) : `${md(first)} – ${md(last)}` })]),
+    e.venue ? el('small', { class: 'wk-card-line', text: e.venue }) : null
+  ]);
+  // The panel: on now, next (with its countdown), or the podium.
+  let panel;
+  if (on) {
+    const mins = Math.max(0, Math.round((Date.now() - Date.parse(on.start)) / 60_000));
+    panel = [
+      el('span', { class: 'wk-kick live' }, [el('i', { class: 'wk-live-dot' }), L({ zh: '進行中', en: 'Live now' })]),
+      el('strong', { class: 'wk-big', text: sname(on) }),
+      el('small', { class: 'wk-sub num', text: L({ zh: `${timeText(on)} 開始 · 已 ${mins} 分`, en: `Started ${timeText(on)} · ${mins} min in` }) })
+    ];
+  } else if (coming) {
+    const d = dayOf(coming);
+    const firstOne = coming === list[0];
+    panel = [
+      el('span', { class: 'wk-kick' }, [firstOne ? L({ zh: '首場', en: 'First up' }) : L({ zh: '下一場', en: 'Next' }), ' · ', el('b', { text: sname(coming) })]),
+      countdown(Date.parse(coming.start)),
+      el('small', { class: 'wk-sub num', text: `${near(d) || wd(d)} ${md(d)} ${timeText(coming)}` })
+    ];
+  } else {
+    const field = race.sessions?.find(s => s.abbr === race.sessionKey)?.field || [];
+    const [p1, p2, p3] = field;
+    panel = p1
+      ? [
+          el('span', { class: 'wk-kick', text: L({ zh: '冠軍', en: 'Winner' }) }),
+          el('span', { class: 'wk-winner' }, [personPic(p1, e.league, 'sm round'), el('strong', { class: 'wk-big', text: String(p1.short || p1.name || '').replace(/^\p{Lu}\.\s*/u, '') })]),
+          el('span', { class: 'wk-sub wk-podium' }, [p2, p3].filter(Boolean).map((p, i) => el('span', { class: 'wk-pod' }, [el('em', { class: 'num', text: String(i + 2) }), el('i', { class: 'wk-team', style: `--team:${teamColor(p)}` }), codeOf(p)])))
+        ]
+      : [el('span', { class: 'wk-kick', text: L({ zh: '已結束', en: 'Over' }) }), el('strong', { class: 'wk-big', text: sname(race) }), el('small', { class: 'wk-sub', text: L({ zh: '成績整理中', en: 'Results to come' }) })];
+  }
+  // The stops.
+  // (The next stop marked only on a weekend this week: every card a month ahead marked read as noise.)
+  const soon = coming && Date.parse(coming.start) - Date.now() < 7 * 86_400_000;
+  const state = x => (x.status.state === 'in' ? 'live' : x.status.state === 'post' ? 'done' : x === coming && soon ? 'next' : 'later');
+  const ran = x => ['live', 'done'].includes(state(x));
+  const stops = list.map((x, i) => {
+    const st = state(x);
+    const d = dayOf(x);
+    const top = st === 'done' ? topOf(x) : null;
+    const role = x.sessionKey === 'Race' || x.sessionKey === 'SR' ? L({ zh: '冠軍', en: 'Won' }) : ['Qual', 'SS', 'SQ'].includes(x.sessionKey) ? L({ zh: '桿位', en: 'Pole' }) : L({ zh: '最快', en: 'Top' });
+    return el('span', { class: `wk-stop ${SESSION_KIND(x.sessionKey)} ${st}${i && ran(x) ? ' fill-l' : ''}${list[i + 1] && ran(list[i + 1]) ? ' fill-r' : ''}${i === 0 ? ' first' : ''}${i === list.length - 1 ? ' last' : ''}` }, [
+      el('i', { class: 'wk-dot' }),
+      el('small', { class: 'wk-stop-k', text: sname(x) }),
+      top
+        ? el('small', { class: 'wk-stop-d', text: role })
+        : el('small', { class: `wk-stop-d${d === today() ? ' today' : ''}`, text: near(d) || wd(d) }),
+      top
+        ? el('span', { class: 'wk-stop-t wk-code', style: `--team:${teamColor(top)}`, text: codeOf(top) })
+        : el('span', { class: 'wk-stop-t num', text: st === 'live' ? L({ zh: '進行中', en: 'Live' }) : st === 'done' ? '✓' : timeText(x) })
+    ]);
+  });
+  return el('button', { class: `q-card wk-card${on ? ' live' : ''}${done ? ' done' : ''}`, type: 'button', disabled: open?.status?.void ? true : null, onclick: () => openEvent(open) }, [
+    head,
+    el('div', { class: `wk-panel${on ? ' live' : ''}` }, [el('span', { class: 'wk-panel-text' }, panel), trackBox(dayOf(race), race.start)]),
+    el('div', { class: 'wk-rail', style: `--n:${stops.length}` }, stops)
   ]);
 }
 
@@ -3280,7 +3653,7 @@ const soonOf = e => {
 // Where a game is on: its channel and commentary, else whether it's known to be on nowhere.
 function whereTv(e) {
   const b = channelsOf(e)[0];
-  if (b) return el('span', { class: 'tf-tv' }, [document.createTextNode(b.short[locale === 'en' ? 'en' : 'zh']), b.audio ? el('span', { class: 'au-tag', text: audioName(b) }) : null]);
+  if (b) return el('span', { class: 'tf-tv' }, [document.createTextNode(b.short[locale === 'en' ? 'en' : 'zh']), b.guess ? guessTag() : b.audio ? el('span', { class: 'au-tag', text: audioName(b) }) : null]);
   return el('span', { class: 'tf-tv none', text: tvKnown(e) ? L({ zh: '沒有轉播', en: 'Not on TV' }) : L({ zh: '轉播待公布', en: 'TV to come' }) });
 }
 
@@ -3607,7 +3980,9 @@ ctx.titleFight = async league => {
   if (!Array.isArray(groups) || !groups.some(tableStarted)) return null;
   if (league === 'f1' && !f1Rounds?.length) f1Rounds = ((await seasonEvents(league).catch(() => [])) || []).filter(e => e.sessions?.length);
   const sport = LEAGUES[league].sport;
-  return tableNow(groups, league, recentOf(league)).map(g => ({ g, race: standingsRace(g, sport, { total: SEASON_GAMES[league] || null, left: racesLeft(league), team: sport === 'racing' && !g.rows.some(r => r.athlete) }) }));
+  // (`left`: the races and sprints still to run, for the title fight as it stands while one runs.)
+  const left = racesLeft(league);
+  return tableNow(groups, league, recentOf(league)).map(g => ({ g, left, race: standingsRace(g, sport, { total: SEASON_GAMES[league] || null, left, team: sport === 'racing' && !g.rows.some(r => r.athlete) }) }));
 };
 // Last seasons' final tables ('<league>:<year>'), read once.
 const lastTables = new Map();
@@ -3672,7 +4047,8 @@ function teamsOf(league, d) {
     teamLists.set(st.url, null);
     fotmobTeamList(st.url, st.key)
       .then(list => teamLists.set(st.url, list))
-      .catch(() => {})
+      // (Failed: its top three stay, said read (not a place held for rows that won't come).)
+      .catch(() => teamLists.set(st.url, []))
       .then(() => state.tab === 'matches' && state.scores.league === league && renderScores());
   }
   // (A team's name and logo as the table has them: 勇士, not Golden State Warriors.)
@@ -3715,8 +4091,8 @@ function playersOf(league) {
     leaderLists.set(st.url, null);
     leaderList(st.url, st.key)
       .then(list => leaderLists.set(st.url, list))
-      // (Failed: its top three stay, not read again at once by the redraw.)
-      .catch(() => {})
+      // (Failed: its top three stay, not read again at once by the redraw, and no rows held for it.)
+      .catch(() => leaderLists.set(st.url, []))
       .then(() => state.tab === 'matches' && state.scores.league === league && renderScores());
   }
   return leagueLeadersView(d, league, { teamOf: (id, x) => rows.get(String(id)) || clubs.get(String(x?.fotmobTeam ?? '')) || (x?.teamName ? byName(x.teamName) : null), pick: st.key, full: st.url ? leaderLists.get(st.url) : null, onPick: k => (leaderPick.set(league, k), renderScores()) });

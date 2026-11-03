@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-app="orbit">
+<html lang="zh-TW" data-app="orbit" data-look="native">
   <head><script src="../_demo/class.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">
     <meta charset="UTF-8">
     <!-- The deploy this page is (the commit, by vite.config.js), against version.json: the kit's watchUpdates loads a newer one at once. -->
-    <meta name="build-version" content="21e1f00">
+    <meta name="build-version" content="9498ff3">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
@@ -15,9 +15,9 @@
 <meta name="description" content="Orbit Class：即時算出現在是哪一堂、還剩幾分鐘、下一堂在哪的課表儀表板。">
 <meta name="application-name" content="Orbit Class">
 <meta name="apple-mobile-web-app-title" content="Class">
-<link rel="icon" href="favicon.svg?v=21e1f00" type="image/svg+xml">
-<link rel="icon" href="icons/favicon-32.png?v=21e1f00" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=21e1f00">
+<link rel="icon" href="favicon.svg?v=9498ff3" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png?v=9498ff3" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=9498ff3">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Orbit">
 <meta property="og:title" content="Orbit Class">
@@ -42,6 +42,7 @@
 <meta name="twitter:image:alt" content="Orbit Class — 即時課表：現在、下一節與倒數">
 <!-- /brand -->
     <link rel="manifest" href="manifest.json">
+    <!-- Orbit's own look (docs/DESIGN.md §11), after the app's own stylesheet. -->
     <!-- kit:head: where the app's stylesheets end, before any module. The kit
      comes from one place for every app (Orbit-Core's GitHub Pages, same
      site as the apps), each file at the hash this device last saw (orbit.kit
@@ -51,11 +52,11 @@
      to Orbit-Core and a phone downloads only the files it changed. A kit
      file newer than the app's deploy (not in its list) is mapped from those
      hashes too, never left at a bare address the browser keeps 10 minutes. -->
-<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['brand.mjs','carrier-csv.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','domain.mjs','f1live.mjs','feedback.mjs','flight.mjs','format.mjs','gov.mjs','help.mjs','holidays.mjs','lang.mjs','logos.mjs','mirror.mjs','names.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','qrcode.mjs','share.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Orbit-Core/kit/',null)</script>
+<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['brand.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','domain.mjs','f1live.mjs','feedback.mjs','flight.mjs','format.mjs','gov.mjs','help.mjs','hold-place.mjs','holidays.mjs','lang.mjs','logos.mjs','mirror.mjs','names.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','qrcode.mjs','share.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Orbit-Core/kit/',null)</script>
 <!-- /kit:head -->
-<script>['dayoff.mjs','domain.mjs','format.mjs','gov.mjs','holidays.mjs','passkey.mjs','pay.mjs','ui.mjs'].forEach(function(f){document.write('<link rel="modulepreload" href="'+ORBIT_KIT.url(f)+'">')})</script>
-    <script type="module" crossorigin src="./assets/index-BVcCzgxq.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-i2Jb-2kN.css">
+<script>['dayoff.mjs','domain.mjs','format.mjs','gov.mjs','hold-place.mjs','holidays.mjs','passkey.mjs','pay.mjs','steady-pics.mjs','ui.mjs'].forEach(function(f){document.write('<link rel="modulepreload" href="'+ORBIT_KIT.url(f)+'">')})</script>
+    <script type="module" crossorigin src="./assets/index-DWIxnq1X.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Br3u6ouJ.css">
   </head>
 <body class="orbit-booting">
 <div id="loading" data-title="Orbit Class"></div>
@@ -77,26 +78,7 @@
   <!-- 今天: the class now and next with the day as a strip, then the classes after, the countdowns (src/view-today.js). -->
   <section id="panel-today" class="cx-panel" role="tabpanel">
     <section class="q-hero-card cx-hero dashboard" id="cx-hero" data-mode="off" role="button" tabindex="0">
-      <span class="cx-art" id="cx-art" aria-hidden="true"></span>
-      <div class="cx-hero-top">
-        <span class="q-hc-eyebrow"><span class="cx-glyph" id="cx-glyph"></span><span id="cx-kicker"></span></span>
-        <span class="cx-span" id="cx-span"></span>
-      </div>
-      <div class="cx-hero-main">
-        <div class="cx-hero-words">
-          <strong class="cx-title" id="now-name" data-i18n="dashboard.loading">載入中…</strong>
-          <span class="cx-meta" id="cx-meta"><span class="cx-pill" id="now-teacher"></span><span class="cx-pill" id="now-place"></span><span id="now-class-label"></span></span>
-        </div>
-        <span class="cx-ring" aria-hidden="true"><svg viewBox="0 0 80 80"><circle class="cx-ring-track" cx="40" cy="40" r="36"/><circle class="cx-ring-fill" id="cx-ring-fill" cx="40" cy="40" r="36" pathLength="100"/></svg><span class="cx-hero-icon" id="cx-icon"></span></span>
-      </div>
-      <div class="cx-timer" id="timer-group"><b class="q-hc-big" id="timer-val"></b><span id="timer-label"></span></div>
-      <div class="cx-foot" id="cx-foot">
-        <span class="cx-foot-icon" id="next-icon"></span>
-        <span class="cx-foot-words"><small id="next-label"></small><b id="next-name"></b></span>
-        <span class="cx-foot-end"><b id="next-time"></b><small id="next-sub"></small></span>
-        <p class="cx-foot-note" id="next-note"></p>
-      </div>
-      <div class="cx-strip" id="cx-strip" hidden></div>
+      <div class="nv-now" id="nv-now"><strong class="nv-title" id="now-name" data-i18n="dashboard.loading">載入中…</strong></div>
     </section>
     <!-- On a wide screen: the day's classes and the countdowns side by side under the card. -->
     <div class="q-cols cx-today-cols">
@@ -217,9 +199,6 @@
   <div class="cx-sheet-body" id="transfer-sheet-body">
     <div id="orbit-box" class="tr-key"></div>
     <div id="sync-status" class="cx-status"></div>
-    <div class="q-rowcard tr-more" id="test-mode-fold">
-      <button type="button" class="q-ritem chevron" onclick="toggleTestPanel()"><span class="q-tile sm cx-gray"><span class="cx-glyph" data-glyph="clock"></span></span><span class="q-ritem-text"><span class="q-ritem-title" data-i18n="testsim.timeSimAriaLabel">時間模擬</span></span></button>
-    </div>
     <div class="tr-photo" id="ocr-import-box">
       <label id="ocr-import-image-label" class="tr-pick" for="ocr-import-image">
         <span class="q-tile lg tr-pick-tile"><span class="cx-glyph" data-glyph="camera"></span></span>

@@ -1,0 +1,381 @@
+/* Orbit's own look for 交通 (lib/board.mjs; Jay 2026-11-03, Orbit-Core DESIGN
+   §11), linked after transit.css on a page with <html data-look="native">.
+   One board: a bar to plan a trip, your places, your trips and pins as rows
+   of one shape, what's near. The only colour on a row is its line's badge. */
+
+/* 要去哪裡: one bar under the title; a tap opens the place search. */
+html[data-look='native'] .ob-plan {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  margin: 4px 0 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 400 17px/22px var(--q-font);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+html[data-look='native'] .ob-plan .ot-i {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+/* Your places under it, a row to scroll: a tap is its ways from here. */
+html[data-look='native'] .ob-places {
+  display: flex;
+  gap: 8px;
+  margin: 10px calc(-1 * var(--q-s-4, 16px)) 0;
+  padding: 0 var(--q-s-4, 16px) 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+html[data-look='native'] .ob-places::-webkit-scrollbar {
+  display: none;
+}
+html[data-look='native'] .ob-place {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 6px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 500 15px/20px var(--q-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+html[data-look='native'] .ob-place .q-tile {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+}
+html[data-look='native'] .ob-place .q-tile .ot-i {
+  width: 16px;
+  height: 16px;
+}
+
+/* A line's badge in its own colour: a trip's first ride, a train's kind. */
+html[data-look='native'] .ot-strip-no[style*='--line'] {
+  background: var(--line);
+  color: var(--ink, #fff);
+}
+html[data-look='native'] .ot-strip-no.ob-glyph .ot-i {
+  width: 22px;
+  height: 22px;
+}
+
+/* The time on the right: the countdown (its 分 small), a word under it. */
+html[data-look='native'] .ob-when b {
+  display: block;
+}
+html[data-look='native'] .ob-n {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font: inherit;
+}
+html[data-look='native'] .ob-when .ob-n small {
+  color: inherit;
+  font: 500 13px/1 var(--q-font);
+}
+
+/* Nothing pinned yet: a line on what goes here and the way to add one. */
+html[data-look='native'] .ob-empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 16px;
+}
+html[data-look='native'] .ob-empty p {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 400 15px/20px var(--q-font);
+}
+
+/* The board's sections closer together: rows to scan, not cards apart. */
+html[data-look='native'] .ob-page .ot-sec {
+  margin-top: 22px;
+}
+
+/* A trip as its own card (tab-go tripCard): its row on top, then the way it takes as one line
+   with leave and arrive at its ends and its rides as chips, then the other ways. */
+html[data-look='native'] .ob-trips {
+  display: grid;
+  gap: 12px;
+}
+html[data-look='native'] .ob-trip-way {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  padding: 2px 16px 14px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+html[data-look='native'] .ob-trip-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+html[data-look='native'] .ob-trip-line > b small {
+  margin-left: 2px;
+  font: 400 12px/1 var(--q-font);
+}
+html[data-look='native'] .ob-trip-line > b {
+  font: 600 15px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--q-label-2);
+}
+html[data-look='native'] .ob-ways {
+  position: relative;
+  padding: 4px 0 6px 16px;
+  border-top: var(--q-hairline) solid var(--q-sep);
+}
+html[data-look='native'] .ob-ways-h {
+  display: block;
+  padding: 8px 0 2px;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+/* The other ways: a line each, when to leave, its rides as chips, when you're there. */
+html[data-look='native'] .ob-way {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 16px 4px 0;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  text-align: left;
+  font: inherit;
+}
+html[data-look='native'] .ob-way + .ob-way {
+  border-top: var(--q-hairline) solid var(--q-sep);
+}
+html[data-look='native'] .ob-way-when {
+  min-width: 42px;
+  font: 600 15px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+html[data-look='native'] .ob-way-when.live {
+  color: var(--q-good);
+}
+html[data-look='native'] .ob-way-mid {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+html[data-look='native'] .ob-way-mid .ot-warn {
+  font: 400 12px/1.2 var(--q-font);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html[data-look='native'] .ob-way-arr {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+}
+html[data-look='native'] .ob-way-arr b {
+  font: 600 15px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+html[data-look='native'] .ob-way-arr small {
+  color: var(--q-label-2);
+  font: 400 12px/1 var(--q-font);
+}
+
+/* 我的's trip (tab-me), in 交通's card's sizes (Jay 2026-11-03: the old one's text "really small,
+   weird"): its tile, name (17 semibold) and days (15) on top; then each way a full-width row,
+   where it goes (17) on the left and its time (17 semibold, its word 15 grey) on the right; the
+   days whose time differs a row each under it, at 15. */
+.q-rowcard > .q-ritem.ot-trip {
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px 6px;
+  text-align: left;
+}
+.ot-trip-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.ot-trip-name {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.ot-trip-name b {
+  overflow: hidden;
+  color: var(--q-label);
+  font: 600 17px/22px var(--q-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ot-trip-name small {
+  flex: none;
+  color: var(--q-label-2);
+  font: 400 15px/20px var(--q-font);
+}
+.ot-trip-go {
+  flex: none;
+  color: var(--q-label-3);
+}
+.ot-trip-go .ot-i {
+  width: 16px;
+  height: 16px;
+}
+.ot-trip-legs {
+  display: grid;
+}
+.ot-tl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 11px 0;
+}
+.ot-tl + .ot-tl {
+  border-top: var(--q-hairline) solid var(--q-sep);
+}
+/* (A long name shrinks to fit, then wraps, never cut: kit .q-fit-wrap.) */
+.ot-tl-way {
+  min-width: 0;
+  color: var(--q-label);
+  font: 400 17px/22px var(--q-font);
+}
+.ot-tl-way.q-wrapped {
+  white-space: normal;
+}
+.ot-tl-way i {
+  display: inline-block;
+  margin: 0 0.35em;
+  color: var(--q-label-3);
+  vertical-align: -0.12em;
+}
+.ot-tl-way .ot-i {
+  display: block;
+  width: 0.88em;
+  height: 0.88em;
+}
+.ot-tl-t {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.ot-tl-t > b {
+  color: var(--q-label);
+  font: 600 17px/22px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.ot-tl-t > small {
+  color: var(--q-label-2);
+  font: 400 15px/20px var(--q-font);
+}
+.ot-tl-alt {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--q-label-2);
+  font: 400 15px/20px var(--q-font);
+  text-overflow: ellipsis;
+}
+.ot-tl-t.alt > b {
+  color: var(--q-label-2);
+  font-weight: 500;
+}
+
+/* The map's sheet is a surface too: its buttons lie flat, as in the kit's sheets
+   (Orbit-Core orbit.css; Jay 2026-11-03: the glassy 3D buttons). */
+html[data-look='native'] .ot-msheet :is(.q-icon-btn, .q-close):not(.q-glass) {
+  background: var(--q-fill-3);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* 路線 (tab-map plansHtml), Orbit's own look (Jay 2026-11-03: "this need redesign"). The
+   tags are words: 推薦 in the app's colour, the rest grey, no pills (DESIGN §11). A way's
+   note that's no trouble (騎車過頭前溪, a bridge on the way) is grey with the facts; only
+   late, missed or stopped is red. This search's ways of moving sit on one quiet track,
+   the ones on lit, the ones off faint. */
+html[data-look='native'] .ot-plan .ot-tag {
+  padding: 0;
+  background: none;
+  color: var(--q-label-2);
+  font: inherit;
+}
+html[data-look='native'] .ot-plan .ot-tag.best,
+html[data-look='native'] .ot-plan .ot-tag.live {
+  color: var(--q-accent);
+  font-weight: 600;
+}
+html[data-look='native'] .ot-plan-sub.warn {
+  color: var(--q-red);
+}
+html[data-look='native'] .ot-plan-dur {
+  font: 300 24px/28px var(--nv-display, var(--q-font));
+}
+html[data-look='native'] .ot-mtogs {
+  flex: 0 1 auto;
+  margin-left: auto;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+}
+html[data-look='native'] .ot-mtog {
+  width: 34px;
+  height: 32px;
+  background: none;
+  box-shadow: none;
+}
+html[data-look='native'] .ot-mtog[aria-pressed='true'] {
+  background: var(--nv-card, var(--q-surface));
+  color: var(--q-label);
+}
+html[data-look='native'] .ot-mtog[aria-pressed='false'] {
+  color: var(--q-label-3);
+}
+@media (max-width: 359px) {
+  html[data-look='native'] .ot-mtog {
+    width: 27px;
+  }
+}
+html[data-look='native'] .ot-when-pick {
+  background: var(--q-fill-3);
+}
+
+/* The map's own round buttons (layers, where I am): solid graphite with a soft shadow over
+   the map, no glass rim (Jay 2026-11-03: "glassy 3D"). */
+html[data-look='native'] .ot-fab {
+  width: 44px;
+  height: 44px;
+  background: var(--nv-card, var(--q-surface));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 0 0 0.5px var(--nv-edge, rgba(255, 255, 255, 0.08)), 0 4px 14px rgba(0, 0, 0, 0.28);
+}

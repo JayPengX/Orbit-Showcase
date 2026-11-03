@@ -22,8 +22,9 @@ export const TOURS = {
     { tap: '.ot-res', wait: 3000, say: ['選台北 101', 'Pick Taipei 101'] },
     { tap: '[data-card="go"]', after: 2500, wait: 12000, say: ['規劃怎麼去', 'Plan the trip'] },
     { tap: '.ot-plan[data-plan="0"]', wait: 5000, say: ['排好的選擇，下一班也列好', 'Ranked choices, with the next departures'] },
-    { tap: '.q-tab[data-tab="go"]', wait: 6000, say: ['看附近的車', 'See what’s nearby'] },
-    { tap: '.ot-strip-main', wait: 4000, say: ['點一路公車', 'Tap a bus'] },
+    { tap: '#tab-times', wait: 3000, say: ['查時刻', 'Timetables'] },
+    { tap: '[data-view="bus"]', wait: 7000, say: ['附近每一站的公車', 'Buses at every stop nearby'] },
+    { tap: '.ot-bus-no', wait: 5000, say: ['點一路公車', 'Tap a bus'] },
     { tap: '.q-close', say: ['每站幾分鐘到，都在這裡', 'Minutes to every stop'] }
   ],
   class: [
@@ -34,7 +35,7 @@ export const TOURS = {
   ],
   securities: [
     { tap: '[data-action="mover-group"][data-v="tw"]', say: ['看台股今天的漲跌', 'Today’s Taiwan movers'] },
-    { tap: '.home-movers .q-stock', say: ['點漲最多的這檔', 'Tap the top gainer'] },
+    { tap: '.sc-movers .sc-row', say: ['點漲最多的這檔', 'Tap the top gainer'] },
     { tap: '[data-action="chart-style"][data-v="candle"]', say: ['換成 K 線', 'Switch to candles'] },
     { tap: '.q-btn.trade.buy', say: ['買進（練習資金）', 'Buy, with practice money'] },
     { tap: '[data-action="qty"][data-qty="100"]', say: ['買 100 股零股', '100 shares, an odd lot'] },
@@ -46,7 +47,11 @@ export const TOURS = {
     { tap: '.q-tab[data-tab="history"]', say: ['剛才的委託在這裡', 'Your order is here'] }
   ],
   sports: [
-    { say: ['今天在台灣看得到的比賽：足球、棒球、籃球放在一起。', 'Today’s games you can watch in Taiwan: football, baseball and basketball together.'] },
+    { say: ['第一次打開，先選你看的運動。', 'First time in: pick the sports you watch.'] },
+    { tap: '.sport-grid > :nth-child(1)', say: ['足球', 'Football'] },
+    { tap: '.sport-grid > :nth-child(2)', say: ['棒球', 'Baseball'] },
+    { tap: '.sport-grid > :nth-child(3)', say: ['籃球', 'Basketball'] },
+    { tap: '.sp-done', wait: 6000, say: ['今天在台灣看得到的比賽，放在一起', 'Today’s games you can watch in Taiwan, together'] },
     { tap: '.event-row', wait: 5000, say: ['點推薦的第一場', 'Tap the top pick'] },
     { tap: '.match-tabs .q-seg button:last-child', wait: 3000, say: ['兩隊在聯賽排第幾', 'Where both sides stand in the league'] },
     { tap: '.q-close', say: ['看完關掉', 'Close it'] },
@@ -79,12 +84,11 @@ export const TOURS = {
     { tap: '#tab-accts', say: ['每個帳戶的餘額', 'Every account’s balance'] }
   ],
   weather: [
-    { tap: '.wx-hero', say: ['點開今天每小時的天氣', 'Open today hour by hour'] },
-    { tap: '.q-close', say: ['關掉', 'Close it'] },
-    { tap: '.q-panel[data-open="rain"]', say: ['會不會下雨？', 'Will it rain?'] },
+    { tap: '.ot-hero', say: ['點開今天每小時的天氣', 'Open today hour by hour'] },
+    { tap: 'dialog[open] .q-close', say: ['關掉', 'Close it'] },
+    { tap: '.ot-g[data-metric="rain"]', say: ['會不會下雨？', 'Will it rain?'] },
     { tap: '[data-range="rain:10d"]', say: ['看十天', 'Ten days'] },
-    { tap: '.q-close', say: ['關掉', 'Close it'] },
-    { tap: '#tab-week', say: ['十天預報', 'Ten-day forecast'] },
+    { tap: 'dialog[open] .q-close', say: ['關掉', 'Close it'] },
     { tap: '#tab-places', say: ['存好幾個地方', 'Keep several places'] }
   ]
 };

@@ -1,0 +1,258 @@
+/* Orbit's own look for Words (docs/DESIGN.md §11; index.html says
+   data-look="native" and links this after styles.css). Every card is the
+   kit's graphite: 今天's goal, 單字卡's deck, a round's result, the paper's
+   score. Colour says what it names (a mode's tile, the goal met in green)
+   and the one main action (開始, in the app's colour); never a card's fill.
+   The rules say html[data-look] where the kit's own (loaded after) would win. */
+
+/* ---- The lead card (views/chrome.js hero): words in the label colours, its pill and bar on fills ---- */
+html[data-look='native'] .hero {
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+html[data-look='native'] .hero-pill {
+  background: var(--q-fill-3);
+  color: var(--q-label);
+}
+html[data-look='native'] .hero .q-hc-big {
+  font: 300 52px/56px var(--nv-display);
+  letter-spacing: -0.03em;
+}
+html[data-look='native'] .hero .q-hc-big .dim {
+  color: var(--q-label-2);
+  font: 400 22px/1 var(--nv-display);
+  opacity: 1;
+}
+html[data-look='native'] .hero-bar {
+  height: 6px;
+  background: var(--q-fill-3);
+}
+html[data-look='native'] .hero-bar > i {
+  background: var(--q-label);
+}
+html[data-look='native'] .hero-bar.is-done > i {
+  background: var(--q-green);
+}
+html[data-look='native'] :is(.hero-tag, .hero-note) {
+  margin: 0;
+  color: var(--q-label-2);
+}
+
+/* 今天: the streak beside today's answers, its flame lit once there is one. */
+html[data-look='native'] .hero-streak {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-items: end;
+  column-gap: 4px;
+  flex: none;
+  color: var(--q-label-2);
+}
+html[data-look='native'] .hero-streak .gl {
+  width: 20px;
+  height: 20px;
+}
+html[data-look='native'] .hero-streak.is-on .gl {
+  color: var(--q-orange);
+}
+html[data-look='native'] .hero-streak b {
+  color: var(--q-label);
+  font: 300 34px/38px var(--nv-display);
+}
+html[data-look='native'] .hero-streak small {
+  grid-column: 1 / -1;
+  font: 500 12px/16px var(--q-font);
+}
+
+/* ---- 練習模式: a short list, the way in use ticked ---- */
+html[data-look='native'] .mode-row .q-ritem-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+html[data-look='native'] .mode-row .q-ritem-text small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-look='native'] .mode-row:disabled {
+  opacity: 0.5;
+}
+html[data-look='native'] .mode-tick {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--q-accent);
+}
+html[data-look='native'] .mode-tick svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---- The other cards on graphite ---- */
+html[data-look='native'][data-look='native'] :is(.contest-card, .streak-card, .wotd, .deck, .recent-card) {
+  background: var(--nv-card);
+  box-shadow: inset 0 0 0 0.5px var(--nv-edge), inset 0 1px 0 rgba(255, 255, 255, 0.035), var(--nv-lift);
+}
+
+/* 練習模式's 開始: under its list, the way picked in its words. */
+html[data-look='native'] .mode-list {
+  display: grid;
+  gap: 12px;
+}
+html[data-look='native'] .mode-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+html[data-look='native'] .mode-go .gl,
+html[data-look='native'] .mode-go svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- 今天的字: the round's words, two to a row, each on a soft plate ---- */
+html[data-look='native'] .up-words {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr));
+  gap: 6px;
+}
+html[data-look='native'] .up-word {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-fill-4);
+}
+html[data-look='native'] .up-word b {
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  color: var(--q-label);
+  font: 600 17px/22px var(--q-font);
+  white-space: nowrap;
+}
+html[data-look='native'] .hero .q-hc-big .dim {
+  margin-left: 2px;
+}
+/* (Today's answers of 20, quietly at the foot: the words above are the focus.) */
+html[data-look='native'] .hero-foot {
+  display: grid;
+  gap: 6px;
+}
+html[data-look='native'] .hero-foot small {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-look='native'] .hero-foot .hero-bar {
+  height: 4px;
+}
+
+/* ---- 我的字庫: words 精熟 large, each level a column filled as far as it's known ---- */
+html[data-look='native'] .wbank {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px 16px;
+  border: 0;
+  border-radius: var(--q-r-card);
+  background: var(--nv-card);
+  box-shadow: inset 0 0 0 0.5px var(--nv-edge), inset 0 1px 0 rgba(255, 255, 255, 0.035), var(--nv-lift);
+  color: var(--q-label);
+  font: inherit;
+  text-align: left;
+}
+html[data-look='native'] .wbank-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+}
+html[data-look='native'] .wbank-title {
+  color: var(--q-label-2);
+  font: 500 15px/20px var(--q-font);
+}
+html[data-look='native'] .wbank-chev {
+  display: grid;
+  color: var(--q-label-3);
+}
+html[data-look='native'] .wbank-chev svg {
+  width: 16px;
+  height: 16px;
+}
+html[data-look='native'] .wbank-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+html[data-look='native'] .wbank .q-hc-big {
+  flex: none;
+  font: 300 40px/44px var(--nv-display);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+html[data-look='native'] .wbank .q-hc-big .dim {
+  margin-left: 4px;
+  color: var(--q-label-2);
+  font: 500 15px/1 var(--q-font);
+  letter-spacing: 0;
+}
+html[data-look='native'] .wbank-main small {
+  overflow: hidden;
+  min-width: 0;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-look='native'] .wbank-lvs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+html[data-look='native'] .wbank-lv {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+html[data-look='native'] .wbank-bar {
+  position: relative;
+  overflow: hidden;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--q-fill-3);
+}
+html[data-look='native'] .wbank-bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+  background: var(--q-label);
+}
+html[data-look='native'] .wbank-bar i.is-learning {
+  background: var(--q-label-3);
+}
+html[data-look='native'] .wbank-lv small {
+  color: var(--q-label-3);
+  font: 500 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+html[data-look='native'] .wbank-lv.is-on small {
+  color: var(--q-label);
+}
+/* (The two cards sit flush in the tab's flow: a gap between today's words and the bank.) */
+html[data-look='native'] .hero + .wbank {
+  margin-top: 12px;
+}

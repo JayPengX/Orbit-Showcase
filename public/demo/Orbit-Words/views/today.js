@@ -1,15 +1,19 @@
-// 今天, the home: the day's goal and the round (the hero; its pill opens the
-// round's choices), the ways to practise (練習模式: a tap starts a round that
-// way, and the hero's round goes on that way), then what else there is to do
-// (new words as cards, the 拼字比賽 paper, the weak words, the missed words as
-// flash cards), and the word of the day.
-import * as kitUI from '#kit/ui.mjs';
+// 今天, the home (Orbit's own look, docs/DESIGN.md §11). It says what the app
+// is at a glance (Jay 2026-11-03: "you go in the home you immediately know
+// what this do"): the lead card is today's words themselves, the English
+// words the next round asks, how many and of what kind (to review, new), the
+// streak beside them, 開始 in the app's colour (the round starts only on it,
+// on exactly those words), today's answers of 20 at its foot; then 我的字庫,
+// how many words are 精熟 and how far through each level; the word of the day;
+// where to pick up and the ways to practise as short lists; the 拼字比賽
+// paper, the streak, the weak words, the decks and the recent words.
 import * as kit from '#kit/orbit.mjs';
+import * as kitUI from '#kit/ui.mjs';
 import { el, put } from '../ui.js';
-import { hero, heroPill, heroBtn, big, bar, iconText, section, tag, tile, columns } from './chrome.js';
+import { hero, heroPill, heroBtn, big, bar, section, tag, tile, columns, ico } from './chrome.js';
 import { state, t, hooks, metaLine, wordEl, locale, settingsChanged } from '../shell.js';
 import { speakButton } from '../audio.js';
-import { LEVELS, MODES, stats, toStudy, stateOf, shortMeaning, wordOfDay, hardest } from '../lib/words.mjs';
+import { LEVELS, MODES, stats, toStudy, stateOf, shortMeaning, wordOfDay, hardest, pickRound, personalFactor, dayNum } from '../lib/words.mjs';
 import { DAILY_GOAL, todayCount, goalStatus, streakOf, bestStreak, lastDays } from '../lib/practice.mjs';
 import { catCounts, flashDeck, recentMisses } from '../lib/review.mjs';
 import { startRound, startStudy, startFlash } from './session.js';
@@ -19,28 +23,73 @@ import { openPrefs, levelsText } from './prefs.js';
 import { hardRow, openHardest } from './progress.js';
 
 export function renderToday(box) {
-  const [goal, modes, go, contest, streak, weak, decks, recent, wotd] = [goalHero(), modePicker(), continueShelf(), contestCard(), streakPanel(), weakShelf(), deckShelf(), recentShelf(), wordOfDayCard()];
-  // Wide: the goal and the ways to practise first; then where to pick up and the paper; then the rest.
-  put(box, ...columns([[goal, modes, go, contest], [streak, weak, decks, recent, wotd]], [[goal, modes], [go, contest, streak], [weak, decks, recent, wotd]]));
+  const [goal, bank, wotd, go, modes, contest, streak, weak, decks, recent] = [goalHero(), bankCard(), wordOfDayCard(), continueList(), modeList(), contestCard(), streakPanel(), weakShelf(), deckShelf(), recentShelf()];
+  // Wide: today's words and the word bank first, where to pick up and the ways beside; then the rest.
+  put(box, ...columns([[goal, bank, wotd, go, modes], [contest, streak, weak, decks, recent]], [[goal, bank, wotd], [go, modes], [contest, streak, weak, decks, recent]]));
 }
 
-// The goal: today's answers of 20, the streak they keep, and the round.
+// The next round, picked once and kept while nothing it was picked from has
+// changed (levels, size, answers, the day): the words the card shows are the
+// words 開始 asks.
+let upNext = { key: '', words: [] };
+function nextRound() {
+  let last = 0;
+  for (const k in state.progress) last = Math.max(last, state.progress[k].t || 0);
+  const key = [state.levels.join(), state.size, state.study.join(), Object.keys(state.progress).length, last, dayNum()].join('|');
+  if (upNext.key !== key) upNext = { key, words: state.levels.length ? pickRound(state.words, state.progress, { levels: state.levels, size: state.size, skip: new Set(state.study), factor: personalFactor(state.cal) }) : [] };
+  return upNext.words;
+}
+
+// 今天的字: the round's words in English, how many, how many to review and
+// how many new, the streak beside; 開始, the one main action, on exactly
+// those words; today's answers of 20 at the foot (what keeps the streak).
 function goalHero() {
   const today = todayCount(state.days);
   const streak = streakOf(state.days);
   const { left, keeps } = goalStatus(state.days);
   const chosen = LEVELS.filter(l => state.levels.includes(l));
-  const st = stats(state.words, state.progress);
-  const due = chosen.reduce((s, l) => s + st[l].due, 0);
-  return hero('target', t('goalTitle'), heroPill('sliders', chosen.length ? levelsText(chosen) : t('pickLevel'), openPrefs, t('prefsTitle')), [
-    el('div', { class: 'hero-main' }, [big(String(Math.min(today, DAILY_GOAL)), ` / ${DAILY_GOAL}`), ring(today, DAILY_GOAL)]),
-    iconText('hero-note', 'flame', `${t('daysN', { n: streak })} · ${!left ? t('goalDone') : keeps ? t('goalKeep', { n: left }) : t('goalLeft', { n: left })}`),
-    el('div', { class: 'q-hc-row' }, [heroBtn([due ? t('startDue', { n: Math.min(due, state.size) }) : t('startRound', { n: state.size }), state.mode !== 'smart' ? t(`mode_${state.mode}`) : ''].filter(Boolean).join(' · '), () => startRound(), { disabled: !chosen.length, icon: 'play' })])
+  const words = nextRound();
+  const now = dayNum();
+  const fresh = words.filter(w => !state.progress[w.key]?.b).length;
+  const due = words.filter(w => state.progress[w.key]?.b && state.progress[w.key].d <= now).length;
+  const rest = words.length - fresh - due;
+  const mix = [due && t('mixDue', { n: due }), rest && t('mixFirm', { n: rest }), fresh && t('mixNew', { n: fresh })].filter(Boolean).join(' · ');
+  // (Two to a row, every row full: six at most, an odd last one left out.)
+  const shown = words.slice(0, words.length === 1 ? 1 : Math.min(6, words.length - (words.length % 2)));
+  const done = Math.min(today, DAILY_GOAL);
+  const flame = el('i', { class: 'gl', html: ico('flame') });
+  return hero('book', t('todayWords'), heroPill('sliders', chosen.length ? levelsText(chosen) : t('pickLevel'), openPrefs, t('prefsTitle')), [
+    el('div', { class: 'hero-main' }, [big(String(words.length), ` ${t('wordsUnit')}`), el('span', { class: `hero-streak${streak ? ' is-on' : ''}`, 'aria-label': t('streakDays', { n: streak }) }, [flame, el('b', { class: 'num', text: String(streak) }), el('small', { text: t('streakTitle') })])]),
+    el('p', { class: 'hero-note', text: chosen.length ? mix || t('nothingLeft') : t('pickLevel') }),
+    shown.length ? el('div', { class: 'up-words', style: `--n:${shown.length === 1 ? 1 : 2}` }, shown.map(w => el('span', { class: 'up-word' }, [el('b', { lang: 'en', class: 'q-fit', text: w.word })]))) : null,
+    el('div', { class: 'q-hc-row' }, [heroBtn([t('go'), state.mode !== 'smart' ? t(`mode_${state.mode}`) : ''].filter(Boolean).join(' · '), () => startRound({ words }), { disabled: !chosen.length || !words.length, icon: 'play' })]),
+    el('div', { class: 'hero-foot' }, [el('small', { text: !left ? t('goalDone') : keeps ? t('goalKeep', { n: left }) : t('answersToday', { n: done, goal: DAILY_GOAL }) }), bar(done, DAILY_GOAL, `hero-bar${done >= DAILY_GOAL ? ' is-done' : ''}`)])
   ]);
 }
 
-// 練習模式: every way to practise, two to a row; a tap starts a round that
-// way at once and keeps it for the hero's round (the one in use is marked).
+// 我的字庫: how many words are 精熟 (the memory model's word, never the
+// person's), how many being learnt, and each level as a column filled as far
+// as it's known; a tap opens 進度.
+function bankCard() {
+  const st = stats(state.words, state.progress);
+  const col = l => {
+    const s = st[l];
+    const on = state.levels.includes(l);
+    return el('span', { class: `wbank-lv${on ? ' is-on' : ''}` }, [
+      el('small', { class: 'num', text: t('levelShort', { n: l }) }),
+      el('span', { class: 'wbank-bar', 'aria-hidden': 'true' }, [el('i', { class: 'is-learning', style: `width:${s.total ? ((s.mastered + s.learning) / s.total) * 100 : 0}%` }), el('i', { style: `width:${s.total ? (s.mastered / s.total) * 100 : 0}%` })])
+    ]);
+  };
+  return el('div', { class: 'wbank q-press', role: 'button', tabindex: '0', 'aria-label': t('tab_progress'), onclick: () => hooks.tab('progress'), onkeydown: e => e.key === 'Enter' && hooks.tab('progress') }, [
+    el('div', { class: 'wbank-top' }, [el('span', { class: 'wbank-title', text: t('bankTitle') }), el('i', { class: 'gl wbank-chev', html: ico('right') })]),
+    el('div', { class: 'wbank-main' }, [big(st.all.mastered.toLocaleString(), ` ${t('bankMastered')}`), el('small', { text: t('bankSub', { l: st.all.learning.toLocaleString(), total: st.all.total.toLocaleString() }) })]),
+    el('div', { class: 'wbank-lvs' }, LEVELS.map(col))
+  ]);
+}
+
+// 練習模式 as a short list: each way, what it asks, the one picked ticked; a
+// tap only picks it (kept for 今天's 開始 too), and the round starts on the
+// list's own 開始 under it, never on the tap (Jay 2026-11-03).
 const MODE_LOOK = {
   smart: ['spark', 'var(--q-accent)'],
   meaning: ['book', 'var(--q-indigo)'],
@@ -51,21 +100,24 @@ const MODE_LOOK = {
   letters: ['grid', 'var(--q-purple)'],
   cloze: ['key', 'var(--q-pink)']
 };
-function modePicker() {
+function modeList() {
   const ready = state.levels.length > 0;
-  const cards = MODES.map(m => {
-    const on = state.mode === m;
-    return el('button', { class: 'mode-card q-press', type: 'button', 'aria-pressed': String(on), disabled: !ready || null, onclick: () => pickMode(m) }, [
+  const rows = MODES.map(m =>
+    el('button', { class: 'q-ritem mode-row', type: 'button', disabled: !ready || null, 'aria-pressed': String(state.mode === m), onclick: () => pickMode(m) }, [
       tile(MODE_LOOK[m][0], MODE_LOOK[m][1], 'sm'),
-      el('span', { class: 'mode-name', text: t(`mode_${m}`) }),
-      el('small', { class: 'mode-hint', text: t(`modeHint_${m}`) })
-    ]);
-  });
-  return section(t('modes'), el('div', { class: 'mode-grid' }, cards));
+      el('span', { class: 'q-ritem-text' }, [el('span', { class: 'q-ritem-title', text: t(`mode_${m}`) }), el('small', { text: t(`modeHint_${m}`) })]),
+      state.mode === m ? el('i', { class: 'mode-tick', html: ico('check') }) : null
+    ])
+  );
+  const go = el('button', { class: 'q-btn large block primary mode-go', type: 'button', disabled: !ready || null, onclick: () => startRound({ mode: state.mode }) }, [glyphIco('play'), t('modeGo', { m: t(`mode_${state.mode}`) })]);
+  return section(t('modes'), el('div', { class: 'mode-list' }, [el('div', { class: 'q-rowcard' }, rows), go]));
 }
+const glyphIco = name => el('i', { class: 'gl', 'aria-hidden': 'true', html: ico(name) });
 function pickMode(m) {
-  if (state.mode !== m) (state.mode = m), settingsChanged();
-  startRound({ mode: m });
+  if (state.mode === m) return;
+  state.mode = m;
+  settingsChanged();
+  hooks.render();
 }
 
 // The same word for everyone today; a tap opens its sheet.
@@ -86,18 +138,6 @@ function wordOfDayCard() {
 
 // ---- The shelves under the hero (each a kit section head and a rail or a panel) -------------------
 
-// Fitness's ring: today's answers of the goal; a check when it's met.
-const ring = (value, max) => kitUI.progressRing(Math.min(1, value / max), { size: 76, stroke: 8, tint: '#fff', done: value >= max, label: `${Math.round((Math.min(value, max) / max) * 100)}%` });
-
-// A card of the rail: a colour tile, a big number, its name, one line under.
-function goCard({ icon, color, title, value, sub, progress, onClick, disabled = false }) {
-  return el('button', { class: 'go-card q-press', type: 'button', disabled: disabled || null, onclick: onClick }, [
-    el('strong', { class: 'go-val num', text: String(value) }),
-    el('span', { class: 'go-title q-fit-wrap', text: title }),
-    sub ? el('small', { class: 'go-sub', text: sub }) : null,
-    progress ? bar(progress[0], progress[1], 'mini-bar') : null
-  ]);
-}
 // Wide, in a column, there's no edge to slide cards to: a grid, every row
 // full (4 as two pairs; the recent words cut to whole rows).
 function rail(cards, cls = '') {
@@ -114,8 +154,8 @@ function rail(cards, cls = '') {
   return el('div', { class: `card-grid ${cls}`.trim(), style: `--cols:${n}` }, list);
 }
 
-// 繼續: where to pick up (the new words' batch, what's due, the weak round, the missed words).
-function continueShelf() {
+// 繼續 as rows: new words to study, what's due, the weak round, the missed words; each its count.
+function continueList() {
   const chosen = LEVELS.filter(l => state.levels.includes(l));
   const st = stats(state.words, state.progress);
   const due = chosen.reduce((s, l) => s + st[l].due, 0);
@@ -124,13 +164,15 @@ function continueShelf() {
   const next = toStudy(state.words, state.progress, { levels: state.levels, n: 1, skip: new Set(state.study) }).length > 0;
   const weak = recentMisses(state.words, state.progress, { n: state.size });
   const missed = catCounts(state.words, state.progress, { marks: state.marks }).wrong;
-  const cards = [
-    goCard({ icon: 'pencil', color: 'var(--q-accent)', title: full ? t('studyQuiz', { n }) : t('studyTitle'), value: full ? n : `${n}/${state.size}`, sub: full ? t('studyReady') : !next ? t('studyNone') : '', progress: full ? null : [n, state.size], disabled: !full && (!next || !state.levels.length), onClick: full ? () => startRound({ from: 'study' }) : startStudy }),
-    due ? goCard({ icon: 'history', color: 'var(--q-orange)', title: t('dueCard'), value: due, sub: t('dueCardSub'), disabled: !chosen.length, onClick: () => startRound() }) : null,
-    weak.length ? goCard({ icon: 'target', color: 'var(--q-red)', title: t('weakTitle'), value: weak.length, sub: t('lastDays3'), onClick: () => startRound({ list: weak }) }) : null,
-    missed ? goCard({ icon: 'cards', color: 'var(--q-indigo)', title: t('missedTitle'), value: missed, onClick: () => startFlash(flashDeck(state.words, state.progress, 'wrong', { n: 20, marks: state.marks }), t('cat_wrong')) }) : null
+  const row = (title, sub, value, onclick, disabled = false) =>
+    el('button', { class: 'q-ritem chevron', type: 'button', disabled: disabled || null, onclick }, [el('span', { class: 'q-ritem-text' }, [el('span', { class: 'q-ritem-title', text: title }), sub ? el('small', { text: sub }) : null]), el('span', { class: 'q-ritem-value num', text: String(value) })]);
+  const rows = [
+    row(full ? t('studyQuiz', { n }) : t('studyTitle'), full ? t('studyReady') : !next ? t('studyNone') : '', full ? n : `${n} / ${state.size}`, full ? () => startRound({ from: 'study' }) : startStudy, !full && (!next || !state.levels.length)),
+    due ? row(t('dueCard'), t('dueCardSub'), due, () => startRound(), !chosen.length) : null,
+    weak.length ? row(t('weakTitle'), t('lastDays3'), weak.length, () => startRound({ list: weak })) : null,
+    missed ? row(t('missedTitle'), '', missed, () => startFlash(flashDeck(state.words, state.progress, 'wrong', { n: 20, marks: state.marks }), t('cat_wrong'))) : null
   ];
-  return section(t('continueTitle'), rail(cards, 'go-rail'));
+  return section(t('continueTitle'), el('div', { class: 'q-rowcard' }, rows.filter(Boolean)));
 }
 
 // 連續天數: the streak and five weeks as a calendar (a day kept is filled).

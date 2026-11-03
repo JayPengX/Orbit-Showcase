@@ -161,6 +161,8 @@ const RUN_PLAYS = 48;
 // Basketball: a drift of this much is a stretch (a run), RUNS at most.
 const STRETCH = 0.2;
 const RUNS = 4;
+// A run's row at its go-ahead play only when less than this share of its points came after it.
+const LEAD_LAG = 1 / 3;
 // The first point after `from`, up to `to`, whose play has `mine` ahead
 // (`ahead`) or level with the other side; null if none says so.
 function leadAt(points, from, to, mine, ahead) {
@@ -198,15 +200,23 @@ function swingMoments(points, sport, side) {
       const side1 = k => Number((delta >= 0 ? pb : pb && { home: pb.away, away: pb.home })?.[k]) || 0;
       const [m0, m1] = [side0('home') - side0('away'), side1('home') - side1('away')];
       const did = m0 < 0 && m1 === 0 ? ['追平', ' · ties it'] : m0 < 0 && m1 > 0 ? ['超前', ' · takes the lead'] : m1 < 0 ? ['追近', ''] : [to - from > RUN_PLAYS ? '拉開' : '攻勢', ''];
-      const text = side.en ? `${who.name} ${mine}-${theirs}${did[1]}` : `${who.name} ${mine}-${theirs} ${did[0]}`;
       // A run that took the lead (or tied it): the play where the score did,
       // by the play-by-play (`lead`), for 過程's row. The price lags the plays,
       // so its peak (`i`, the chart's dot) can be a few plays on (the owner, 2026-10-23).
       // Only in the quarter it ended: a stretch over two quarters that went
       // ahead early (Warriors 47-29 over the 1st and 2nd, ahead at 19-17) is
       // told at its end, never at a score from long before (Jay, 2026-10-29).
+      // And only when the run was mostly done by then, counted to there: a
+      // row says the score at its play, so its run is the points up to it
+      // (Lakers 28-8 told at 6-9, ahead early in a run that went on to
+      // 14-31: Jay 2026-11-03, "you can't have a 28-8 run in a 6-9 score").
+      // A run that went on is told whole, where it ended.
       const took = did[0] === '超前' || did[0] === '追平' ? leadAt(points, from, to, delta >= 0 ? 'home' : 'away', did[0] === '超前') : null;
-      const flip = took != null && points[took].n === points[to].n ? took : null;
+      const pt = took != null ? lastScore(points, took) : null;
+      const pts = k => (Number(pb[k]) || 0) - (Number(pt[k]) || 0);
+      const flip = took != null && points[took].n === points[to].n && pts('home') + pts('away') < LEAD_LAG * (mine + theirs) ? took : null;
+      const [us, them] = flip == null ? [mine, theirs] : delta >= 0 ? [mine - pts('home'), theirs - pts('away')] : [mine - pts('away'), theirs - pts('home')];
+      const text = side.en ? `${who.name} ${us}-${them}${did[1]}` : `${who.name} ${us}-${them} ${did[0]}`;
       return { i: to, from, delta, side: home(delta), icon: ICON.basketball, text, team: who.id, periods: [points[from].n, points[to].n], ...(flip != null ? { lead: flip } : {}) };
     });
   // The biggest few (RUNS), in the game's order.
@@ -578,40 +588,64 @@ function biggest(list) {
 
 // ---- An F1 race: what turned it ----
 // bands: [{ i0, i1, kind: 'sc' | 'vsc' | 'red', from, to }] (points' indexes,
-// and laps); events: [{ i, kind: 'pit' | 'lead' | 'out', k }] (k: the
-// driver's place in names, each its short name). Each band told with its
-// cause (b.why, b.who: names, nameOf turns into the shown name) and who
-// gained most (its laps, `laps`); a lead taken, a
-// retirement, a stop that moved a chance 8 points: the five biggest, by lap.
+// and laps); events: [{ i, kind: 'pit' | 'lead' | 'out' | 'climb', k }] (k:
+// the driver's place in names, each its short name; a climb's i0, from, to:
+// where it began, its places). Each band told with its cause (b.why, b.who:
+// names, nameOf turns into the shown name) and who gained most from just
+// before it to two laps after it ended (the restart's swing: only while it
+// was out, a red flag read "Hamilton +1%", Jay 2026-11-03: as if it didn't
+// matter); a safety car turned red flag one moment. Every band, the start
+// (with who led away from it), each drawn driver's climb through the field
+// (Mexico 2026: Verstappen P5 to P1, never said before), a lead taken, a
+// retirement, a stop that moved a chance 8 points: eight at most, by lap.
 const BAND = { sc: ['安全車', 'Safety car'], vsc: ['虛擬安全車', 'Virtual safety car'], red: ['紅旗', 'Red flag'] };
 export const bandName = (kind, en) => BAND[kind]?.[en ? 1 : 0] || kind;
+const RACE_KEEP = 8;
 // `start`: the point the first lap ends at (the start's own swing, told as
 // one: a short virtual safety car on lap 2 took the start's 23% before).
 export function raceMoments(points, names, bands, events, en, nameOf = null, start = 0) {
   const last = points.length - 1;
   const c = (i, k) => points[Math.max(0, Math.min(last, i))].c[k];
   const found = [];
+  // (Only a climb the market believed in, its chance up 3 points: places
+  // taken back as the others stopped aren't one, Mexico 2026's Leclerc "P6 to P2, −19%".)
+  const climbs = events.filter(ev => ev.kind === 'climb' && typeof ev.k === 'number' && ev.i && c(ev.i, ev.k) - c((ev.i0 ?? ev.i) - 1, ev.k) >= 0.03);
+  // (A lead taken on the first lap is the start's; one reached at a climb's end, the climb's.)
+  const leads = events.filter(ev => ev.kind === 'lead' && typeof ev.k === 'number' && ev.i && !climbs.some(x => x.k === ev.k && Math.abs(x.i - ev.i) <= 1));
+  const startLead = start > 0 ? leads.find(ev => ev.i <= start) : null;
   if (start > 0) {
     const gains = names.map((_, k) => c(start, k) - c(0, k));
     // (Told by who gained most: Antonelli +19% from pole, not Verstappen −18%.)
     const k = gains.reduce((m, g, j) => (g > gains[m] ? j : m), 0);
-    if (Math.abs(gains[k]) >= 0.05) found.push({ i: start, k, delta: gains[k], icon: '🚦', text: en ? 'The start' : '起跑' });
+    const lead = startLead ? names[startLead.k] : '';
+    if (Math.abs(gains[k]) >= 0.05 || lead) found.push({ i: start, k: startLead?.k ?? k, delta: gains[k], gain: startLead && startLead.k !== k ? { k, delta: gains[k] } : null, icon: '🚦', text: lead ? (en ? `The start · ${lead} leads` : `起跑 · ${lead} 領先`) : en ? 'The start' : '起跑', always: true });
   }
+  // A safety car the red flag came out under: one band, told as both.
+  const merged = [];
   for (const b of bands) {
-    // Only what moved while it was out (from the point before it to its end;
-    // one out over laps, to the lap after, the restart's), not the laps around it.
-    const after = b.from != null && b.to > b.from ? 1 : 0;
-    const gains = names.map((_, k) => c(b.i1 + after, k) - c(b.i0, k));
+    const prev = merged.at(-1);
+    if (prev && b.kind === 'red' && prev.kind !== 'red' && !prev.then && b.i0 <= prev.i1 + 1) merged[merged.length - 1] = { ...b, i0: prev.i0, from: prev.from, then: prev.kind, why: b.why || prev.why, who: b.who?.length ? b.who : prev.who };
+    else merged.push(b);
+  }
+  for (const b of merged) {
+    const gains = names.map((_, k) => c(b.i1 + 2, k) - c(b.i0, k));
     // (Told by who gained, as the start is: "Leclerc −9%" on a VSC read as a fault.)
     const k = gains.reduce((m, g, j) => (g > gains[m] ? j : m), 0);
     const who = (b.who || []).map(n => (nameOf ? nameOf(n) : n)).join(en ? ' and ' : '、');
     // What sent it out, in a few words (the drivers who stopped under it show on the chart).
     const cause = !who ? '' : en ? ` · ${who} ${b.why === 'crash' ? 'collided' : b.why === 'stopped' ? 'stopped' : 'out'}` : ` · ${who} ${b.why === 'crash' ? '碰撞' : b.why === 'stopped' ? '停車' : '退賽'}`;
-    const text = `${bandName(b.kind, en)}${cause}`;
+    const name = b.then ? (en ? `${bandName(b.then, en)}, then red flag` : `${bandName(b.then, en)}轉紅旗`) : bandName(b.kind, en);
     // At its first lap (the shading starts at the lap before's end).
-    found.push({ i: Math.min(b.i1, b.i0 + 1), k, delta: gains[k], icon: b.kind === 'red' ? '🟥' : '🚨', text, band: true, driver: b.who?.[0] || null, laps: b.from != null ? [b.from, b.to] : null });
+    found.push({ i: Math.min(b.i1, b.i0 + 1), k, delta: gains[k], icon: b.kind === 'red' ? '🟥' : '🚨', text: `${name}${cause}`, band: true, always: true, driver: b.who?.[0] || null, laps: b.from != null ? [b.from, b.to] : null });
   }
-  for (const ev of events) {
+  for (const ev of climbs) {
+    const delta = c(ev.i, ev.k) - c((ev.i0 ?? ev.i) - 1, ev.k);
+    const name = names[ev.k];
+    // (Where it came from under it: "Hamilton 從第 6 升到第 3" ran past a phone's line at 320.)
+    const text = ev.to === 1 ? (en ? `${name} to the lead · from P${ev.from}` : `${name} 升到領先 · 從第 ${ev.from}`) : en ? `${name} to P${ev.to} · from P${ev.from}` : `${name} 升到第 ${ev.to} · 從第 ${ev.from}`;
+    found.push({ i: ev.i, k: ev.k, delta, icon: '📈', text, laps: ev.lap0 != null && ev.lap1 > ev.lap0 ? [ev.lap0, ev.lap1] : null, climb: true });
+  }
+  for (const ev of [...leads.filter(x => x !== startLead), ...events.filter(x => x.kind === 'pit' || x.kind === 'out')]) {
     // Leading away isn't a moment (the chart says who leads), nor a lead by one not drawn (no line of theirs).
     if (!ev.i || typeof ev.k !== 'number') continue;
     if (ev.kind === 'pit' && bands.some(b => ev.i >= b.i0 && ev.i <= b.i1)) continue;
@@ -630,8 +664,8 @@ export function raceMoments(points, names, bands, events, en, nameOf = null, sta
     found.push({ i: ev.i, k: ev.k, delta, gain, icon: ev.kind === 'lead' ? '🏁' : ev.kind === 'out' ? '❌' : '🔧', text });
   }
   return [...found]
-    .sort((a, b) => Number(Boolean(b.band)) - Number(Boolean(a.band)) || Math.abs(b.delta) - Math.abs(a.delta))
-    .slice(0, KEEP)
+    .sort((a, b) => Number(Boolean(b.always)) - Number(Boolean(a.always)) || Number(Boolean(b.climb)) - Number(Boolean(a.climb)) || Math.abs(b.delta) - Math.abs(a.delta))
+    .slice(0, RACE_KEEP)
     .sort((a, b) => a.i - b.i);
 }
 

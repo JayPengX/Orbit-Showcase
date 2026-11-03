@@ -124,7 +124,7 @@ body {
   padding: 8px 0;
   border: 0;
   background: none;
-  color: var(--q-accent);
+  color: var(--q-text-2);
   font: 500 15px/20px var(--q-font);
 }
 .ot-link .ot-i {
@@ -201,6 +201,21 @@ button.ot-focus {
 }
 .ot-focus-facts {
   display: block;
+}
+/* (A YouBike station: its name, then the distance on the same line's end.) */
+.ot-focus-lead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--q-s-3);
+  min-width: 0;
+}
+.ot-focus-lead .ot-focus-title {
+  min-width: 0;
+}
+.ot-focus-lead .ot-focus-facts {
+  flex: none;
+  white-space: nowrap;
 }
 .ot-focus-facts .q-tag {
   margin-left: 4px;
@@ -335,19 +350,6 @@ button.ot-hero {
   max-width: 45%;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.ot-add {
-  min-height: 48px;
-}
-/* An add row: the plus in the tile's place (no box), the words in the accent. */
-.ot-add .q-tile.soft {
-  height: 24px;
-  background: none;
-  color: var(--q-accent);
-}
-.ot-add .q-ritem-title {
-  color: var(--q-accent);
-  font-weight: 500;
 }
 /* A row's time on the right: big and rounded, the clock under it. */
 .ot-eta {
@@ -498,6 +500,11 @@ button.ot-hero {
 @keyframes ot-breathe {
   50% {
     opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-strip-eta.now b {
+    animation: none;
   }
 }
 .ot-strip-act {
@@ -957,7 +964,7 @@ body.tab-map {
   padding: 0 2px;
   border: 0;
   background: none;
-  color: var(--q-accent);
+  color: var(--q-label);
   font: 500 17px/22px var(--q-font);
 }
 .ot-ms-act[hidden] {
@@ -1264,7 +1271,7 @@ body.tab-map {
   color: var(--q-label);
 }
 .ot-fav.ghost small {
-  color: var(--q-accent);
+  color: var(--q-label-2);
   font-weight: 600;
 }
 .ot-fav-plus {
@@ -1283,7 +1290,7 @@ body.tab-map {
   stroke-width: 2.2;
 }
 .ot-fav.add b {
-  color: var(--q-accent);
+  color: var(--q-label);
 }
 
 /* 建議: the best one a big card, the rest rows with their numbers. */
@@ -1346,8 +1353,11 @@ body.tab-map {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+/* Forget a recent: the ✕ alone, grey, in a 44px target (Jay 2026-11-03: a circle in a circle
+   in the card was "too layered"); a fill only under the finger. Above the kit's flat-button
+   fill (kit CSS loads after this file). */
+html[data-look='native'] .q-rowcard .ot-rec .q-icon-btn.ot-rec-x,
 .ot-rec .ot-rec-x {
-  position: relative;
   flex: none;
   width: 44px;
   height: 44px;
@@ -1356,21 +1366,15 @@ body.tab-map {
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  color: var(--q-label-2);
+  color: var(--q-label-3);
 }
-/* A 30px chip in a 44px target: seen at a glance, still the quiet one. */
-.ot-rec .ot-rec-x::before {
-  content: '';
-  position: absolute;
-  inset: 7px;
-  border-radius: 50%;
+html[data-look='native'] .q-rowcard .ot-rec .q-icon-btn.ot-rec-x:is(:active, [data-q-press]) {
   background: var(--q-fill-3);
 }
 .ot-rec .ot-rec-x .ot-i {
-  position: relative;
-  width: 14px;
-  height: 14px;
-  stroke-width: 2.4;
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
 }
 .ot-rec.q-ritem + .q-ritem::before,
 .ot-rec + .ot-rec::before {
@@ -1722,6 +1726,7 @@ body.tab-map {
   margin: -11px 0 0 -11px;
 }
 .ot-me {
+  position: relative;
   display: block;
   width: 16px;
   height: 16px;
@@ -1729,6 +1734,24 @@ body.tab-map {
   border-radius: 50%;
   background: #3b82f6;
   box-shadow: 0 0 0 7px rgb(59 130 246 / 0.25), 0 2px 6px rgb(0 0 0 / 0.5);
+}
+/* The way the phone faces: a soft beam from the dot, fading out (compass.mjs; turned by tab-map's turnBeam). */
+.ot-beam {
+  position: absolute;
+  top: -41px;
+  left: -41px;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(59 130 246 / 0.85), rgb(59 130 246 / 0.5) 45%, rgb(59 130 246 / 0));
+  -webkit-mask: conic-gradient(from -36deg, transparent, #000 10deg 62deg, transparent 72deg);
+  mask: conic-gradient(from -36deg, transparent, #000 10deg 62deg, transparent 72deg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.25s ease-out;
+}
+.ot-beam.on {
+  opacity: 1;
 }
 /* The marker tapped: a size up, rimmed in white whatever its shape. */
 .ot-mk.is-sel {
@@ -1877,6 +1900,12 @@ body.tab-map {
   white-space: nowrap;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   pointer-events: none;
+}
+/* A trip's mark that would cover a more important one at this zoom, and your stop's name where it
+   would run over one: left out until you zoom in (tab-map declutter). */
+.ot-mk.tuck,
+.ot-mk.stopdot.nolabel b {
+  display: none;
 }
 /* A metro map's stations: a dot in the line's colour (a ring at an interchange), names zoomed in. */
 .ot-mk.mstop {
@@ -2068,7 +2097,7 @@ body.tab-map {
   gap: 4px;
   min-width: 0;
   padding: 0 12px;
-  border-left: 1px solid rgb(255 255 255 / 0.25);
+  border-left: 1px solid var(--q-sep);
 }
 .ot-bstat:first-child {
   padding-left: 0;
@@ -2078,7 +2107,7 @@ body.tab-map {
   display: flex;
   align-items: center;
   gap: 3px;
-  color: rgb(255 255 255 / 0.85);
+  color: var(--q-label-2);
   font: 600 13px/16px var(--q-font);
   white-space: nowrap;
 }
@@ -2088,7 +2117,7 @@ body.tab-map {
   height: 14px;
 }
 .ot-bstat b {
-  color: #fff;
+  color: var(--q-label);
   font: 700 36px/40px var(--q-font-rounded);
   letter-spacing: -0.02em;
 }
@@ -2363,6 +2392,17 @@ body.tab-map {
 }
 .ot-dot.stop {
   border: 2px solid var(--q-accent);
+}
+/* On board: the trip planned from the bus or train you're on (aboard.mjs), 不在車上 beside it. */
+.ot-aboard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 12px 0 0;
+}
+.ot-aboard .q-chip {
+  flex: none;
 }
 /* 現在出發, and the ways of moving for this search. */
 .ot-opts {
@@ -2989,6 +3029,14 @@ body.tab-map {
 .ot-nav-rent.over {
   color: var(--q-red);
 }
+.ot-nav-rent span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ot-nav-rent .ot-nav-gm {
+  flex: none;
+}
 
 /* Waiting: the last stops before yours on a rail, the bus or train on it. */
 .ot-track {
@@ -3393,6 +3441,19 @@ body.tab-map {
 .ot-nav-chip.on .ot-i {
   color: #fff;
 }
+/* A trip with stops: each stop, then the stretch after it as planned (not a tap yet). */
+.ot-nav-chip.stop {
+  padding: 0 4px 0 6px;
+  background: none;
+  color: var(--q-label);
+  font-weight: 600;
+}
+.ot-nav-chip.stop .ot-i {
+  color: var(--q-red);
+}
+.ot-nav-chip.later {
+  opacity: 0.6;
+}
 
 /* Shrunk, or on another tab: one glass bar above the tab bar. */
 .ot-nav-mini {
@@ -3576,14 +3637,12 @@ body.ot-navigating:not(.tab-map) .ot-scroll::after {
 .q-rowcard.ot-near-bikes {
   margin-top: 12px;
 }
-/* A trip: its head, then a row for each ride (the time big, the legs), a foot. */
-.ot-trip {
+/* (The map's sheet showing a trip, as it was; never 我的's trip rows, which are rows of their card,
+   not cards of their own.) */
+:where(.ot-msheet).ot-trip {
   overflow: hidden;
   border-radius: var(--q-r-card, 20px);
   background: var(--q-surface);
-}
-.ot-trip + .ot-trip {
-  margin-top: 12px;
 }
 .ot-trip-head {
   display: flex;
@@ -3965,51 +4024,35 @@ button.ot-trip-foot {
   font: 500 12px/14px var(--q-font);
   white-space: nowrap;
 }
-.ot-jbar {
-  position: relative;
-  display: block;
+/* A journey as one line (ui.mjs journeyLine): each ride its colour, as long as
+   its minutes; a walk dotted; a change a ring between two rides. */
+.ot-jl {
+  display: flex;
+  align-items: center;
+  gap: 3px;
   height: 10px;
+  min-width: 0;
 }
-/* (The ends: where you board and where you get off.) */
-.ot-jbar::before,
-.ot-jbar::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  top: 0;
+.ot-jl i {
+  flex: var(--f, 1) 1 0;
+  min-width: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c, var(--q-label-3));
+}
+.ot-jl i.walk {
+  min-width: 6px;
+  height: 2px;
+  border-radius: 0;
+  background: radial-gradient(circle, var(--q-label-3) 1px, transparent 1.4px) 0 50% / 5px 2px repeat-x;
+}
+.ot-jl b.chg {
+  flex: none;
   width: 10px;
   height: 10px;
   box-sizing: border-box;
-  border: 2.5px solid var(--q-label);
+  border: 2px solid var(--q-label-2);
   border-radius: 50%;
-  background: var(--q-surface);
-}
-.ot-jbar::before {
-  left: -5px;
-}
-.ot-jbar::after {
-  right: -5px;
-}
-.ot-jbar i {
-  position: absolute;
-  top: 3px;
-  height: 4px;
-}
-.ot-jbar i.ride {
-  border-radius: 2px;
-  background: var(--c);
-}
-.ot-jbar i.walk {
-  background: radial-gradient(circle, var(--q-label-3) 1px, transparent 1.5px) 0 50% / 5px 4px repeat-x;
-}
-.ot-jbar em {
-  position: absolute;
-  top: 50%;
-  width: 4px;
-  height: 4px;
-  margin: -2px 0 0 -2px;
-  border-radius: 50%;
-  background: var(--q-surface);
 }
 .ot-jny-foot {
   display: flex;
@@ -4073,10 +4116,30 @@ button.ot-trip-foot {
   padding-top: 10px;
   border-top: 0.5px solid var(--q-sep);
 }
+/* 釘選這班: a quiet line under the train's facts (never accent text), the star its glyph,
+   filled once pinned (Jay 2026-11-03: it sat off its words and stayed hollow). */
 .ot-pin-train {
-  margin-left: 6px;
-  color: var(--q-accent);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
+  min-height: 32px;
+  margin-top: 4px;
+  padding: 0 12px 0 9px;
+  border-radius: 16px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 500 13px/1 var(--q-font);
+  cursor: pointer;
+}
+.ot-pin-train .ot-i {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.ot-pin-train.on .ot-i {
+  fill: var(--q-yellow, #ffcc00);
+  stroke: var(--q-yellow, #ffcc00);
 }
 /* 公車: nearby stops, their routes as small green buttons. */
 .ot-stop-row {
@@ -4118,7 +4181,9 @@ button.ot-trip-foot {
   position: relative;
   margin-top: 12px;
   overflow: hidden;
-  height: max(380px, calc(100svh - var(--q-nav, 0px) - var(--q-top, 0px) - 250px));
+  /* (The page's height less the title, the tabs, the city row and the lines under it: the
+     map never runs under the tab bar, the lines never sit on it; Jay 2026-11-03.) */
+  height: clamp(340px, calc(100svh - var(--q-nav, 0px) - var(--q-top, 0px) - 400px), 760px);
   border-radius: var(--q-r-card, 20px);
   background: var(--mm-bg);
 }
@@ -4220,9 +4285,14 @@ button.ot-trip-foot {
 .mm-tools > * {
   pointer-events: auto;
 }
-.ot-metro-legend > * {
-  background: var(--q-surface);
-  box-shadow: 0 0 0 0.5px var(--q-glass-edge), var(--q-glass-drop);
+/* The map's edges fade into the card, so a name running past one reads as going on. */
+.ot-metro-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--mm-bg), transparent 18px, transparent calc(100% - 18px), var(--mm-bg));
 }
 .mm-mode,
 .mm-fab {
@@ -4269,50 +4339,48 @@ button.ot-trip-foot {
   stroke: currentColor;
   stroke-width: 2;
 }
+/* The lines under the map, every one whole (they sat on the tab bar, cut at the edge; Jay
+   2026-11-03): even columns, a dot in its colour and its name; a tap brings it forward. */
 .ot-metro-legend {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 10px;
-  z-index: 500;
-  display: flex;
-  gap: 6px;
-  padding: 0 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.ot-metro-legend::-webkit-scrollbar {
-  display: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 2px 8px;
+  margin-top: 10px;
+  padding: 6px 8px;
+  border-radius: var(--q-r-card, 20px);
+  background: var(--q-surface);
 }
 .ot-metro-legend:empty {
   display: none;
 }
 .ot-metro-legend > * {
-  display: inline-flex;
-  flex: none;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px 0 10px;
+  gap: 8px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 12px;
+  background: none;
   color: var(--q-label);
-  font: 600 13px/1 var(--q-font);
+  font: 500 15px/20px var(--q-font);
+  text-align: left;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
 }
 .ot-metro-legend i {
+  flex: none;
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--c, var(--q-blue));
 }
 .ot-metro-legend > [aria-pressed='true'] {
-  background: var(--c);
-  color: var(--ink, #fff);
-}
-.ot-metro-legend > [aria-pressed='true'] i {
-  background: var(--ink, #fff);
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+  font-weight: 600;
 }
 .ot-metro-msg {
   position: absolute;
@@ -4714,21 +4782,33 @@ button.ot-trip-foot {
   gap: 8px;
   margin-top: 12px;
 }
-/* Ordering: a group's name to edit, its stops with up, down, remove. */
-.ot-manage {
+/* Ordering: a group's name to edit, its stops; each removed by its bin and
+   put in order by the kit's grip (ui.mjs reorder), groups by the grip on
+   their name's line. */
+.ot-groups {
+  display: grid;
+  gap: 12px;
   margin: 12px 0;
-  padding: 6px 6px 6px 14px;
+}
+.ot-manage {
+  padding: 6px 8px 6px 14px;
   border-radius: 18px;
   background: var(--q-sheet-cell, var(--q-surface));
 }
 .ot-order-row {
   display: flex;
   align-items: center;
-  gap: 2px;
-  min-height: 48px;
+  gap: 8px;
+  min-height: 52px;
   border-bottom: 0.5px solid var(--q-sep);
 }
-.ot-order-row:last-child {
+.ot-order-items > .ot-order-row:last-child {
+  border-bottom: 0;
+}
+.ot-order-items:empty {
+  display: none;
+}
+.ot-order-row.head:has(+ .ot-order-items:empty) {
   border-bottom: 0;
 }
 .ot-order-row > span {
@@ -4752,6 +4832,34 @@ button.ot-trip-foot {
   background: var(--q-fill-3);
   font-weight: 600;
   line-height: 40px;
+}
+.ot-order-x {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--q-label-2);
+  cursor: pointer;
+}
+.ot-order-x svg {
+  width: 19px;
+  height: 19px;
+}
+.ot-order-x:is(:active, [data-q-press]) {
+  background: var(--q-fill-3);
+  color: var(--q-red);
+}
+.ot-order-x:disabled {
+  opacity: 0.3;
+}
+.ot-manage.q-reorder-lift,
+.ot-manage.q-reorder-land {
+  border-radius: 18px;
 }
 .ot-list > .ot-order-row {
   padding: 0 14px;
@@ -4820,159 +4928,228 @@ button.ot-trip-foot {
 .ot-lm-h span {
   font-weight: 400;
 }
-/* A station: the line through it, its dot, its name. */
-.ot-lm-row,
-.ot-lm-edge {
+/* The line winds across the card: a row of stations left to right, round
+   the end, the next right to left (linemap.mjs puts each in its cell). */
+.ot-sn {
+  --sn-h: 70px;
+  --sn-tall: 100px;
+  --sn-y: 20px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  padding: 2px 0 6px;
+}
+.ot-sn-st {
   position: relative;
+  min-width: 0;
+}
+/* The line in from the station before and out to the next: half a cell each. */
+.ot-sn-ln {
+  position: absolute;
+  top: calc(var(--sn-y) - 2px);
+  left: 0;
+  width: 50%;
+  height: 4px;
+  background: var(--lm);
+}
+.ot-sn-ln.out,
+.ot-sn-st.rtl .ot-sn-ln.in {
+  left: 50%;
+}
+.ot-sn-st.rtl .ot-sn-ln.out {
+  left: 0;
+}
+/* (Over the area's edge: the line going on, dotted.) */
+.ot-sn-ln.dash {
+  background: repeating-linear-gradient(90deg, var(--lm) 0 5px, transparent 5px 10px);
+}
+/* Round the end of a row, down to the row below. */
+.ot-sn-turn {
+  position: absolute;
+  z-index: 0;
+  top: calc(var(--sn-y) - 2px);
+  left: 50%;
+  width: 50%;
+  height: calc(var(--sn-h) + 4px);
+  border: 4px solid var(--lm);
+  border-left: 0;
+  border-radius: 0 calc(var(--sn-h) / 2) calc(var(--sn-h) / 2) 0;
+}
+.ot-sn-turn.left {
+  left: 0;
+  border-right: 0;
+  border-left: 4px solid var(--lm);
+  border-radius: calc(var(--sn-h) / 2) 0 0 calc(var(--sn-h) / 2);
+}
+/* The station: the whole cell is its button, the dot on the line, the name under it. */
+.ot-sn-tap {
+  position: absolute;
+  z-index: 1;
+  inset: 0 2px;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0 12px 0 40px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: calc(var(--sn-y) + 18px) 2px 0;
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: none;
   color: var(--q-label);
-  font: var(--q-t-body);
-  text-align: left;
+  font: var(--q-t-subhead);
+  font-size: 15px;
+  text-align: center;
   cursor: pointer;
   transition: background-color 0.25s;
   -webkit-tap-highlight-color: transparent;
 }
-.ot-lm-row:is(:active, [data-q-press]):not(:disabled),
-.ot-lm-edge:is(:active, [data-q-press]) {
+html[lang='en'] .ot-sn-tap {
+  font-size: 13px;
+}
+.ot-sn-tap:is(:active, [data-q-press]):not(:disabled) {
   background: var(--q-fill-4);
   transition-duration: 0s;
 }
-.ot-lm-row::before,
-.ot-lm-edge::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 18px;
-  width: 4px;
-  background: var(--lm);
-}
-.ot-lm-row.first::before {
-  top: 50%;
-}
-.ot-lm-row.last::before {
-  bottom: 50%;
-}
-.ot-lm-row.first.last::before {
-  display: none;
-}
-.ot-lm-dot {
-  position: absolute;
-  top: 50%;
-  left: 20px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--lm);
-  transform: translate(-50%, -50%);
-  transition: transform 0.2s var(--q-spring-snappy, ease-out), border-color 0.2s;
-}
-.ot-lm-row.big {
-  font-weight: 600;
-}
-.ot-lm-row.big .ot-lm-dot {
-  width: 16px;
-  height: 16px;
-  border: 4px solid var(--lm);
-  background: var(--q-sheet-cell, var(--q-surface));
-}
-.ot-lm-row:is(.on, .picked) {
-  color: var(--q-accent);
-}
-.ot-lm-row:is(.on, .picked) .ot-lm-dot {
-  width: 18px;
-  height: 18px;
-  border: 5px solid var(--q-accent);
-  background: var(--q-sheet-cell, var(--q-surface));
-}
-/* (Picked: the dot gives a beat before the sheet closes.) */
-.ot-lm-row.picked .ot-lm-dot {
-  transform: translate(-50%, -50%) scale(1.25);
-}
-.ot-lm-row:disabled {
-  color: var(--q-label-3);
-  cursor: default;
-}
-.ot-lm-name {
-  flex: 1;
-  min-width: 0;
+.ot-sn-tap .ot-lm-name {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Over the county's edge: the line going on, dotted; the next station and its county. */
-.ot-lm-edge {
-  min-height: 40px;
+.ot-sn-st .ot-lm-dot {
+  position: absolute;
+  top: var(--sn-y);
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  border: 4px solid var(--q-sheet-cell, var(--q-surface));
+  border-radius: 50%;
+  background: var(--lm);
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  transition: transform 0.2s var(--q-spring-snappy, ease-out);
+}
+.ot-sn-st.big .ot-lm-name {
+  font-weight: 600;
+}
+.ot-sn-st.big .ot-lm-dot {
+  width: 28px;
+  height: 28px;
+  border: 6px solid var(--lm);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+/* (A branch's first stop: the station it leaves from, said again.) */
+.ot-sn-st.via .ot-lm-name {
   color: var(--q-label-2);
-  font: var(--q-t-subhead);
+  font-weight: 400;
 }
-.ot-lm-edge::before {
-  background: repeating-linear-gradient(var(--lm) 0 4px, transparent 4px 8px);
+.ot-sn-st.on .ot-sn-tap {
+  color: var(--q-accent);
 }
-.ot-lm-edge.prev::before {
-  bottom: 50%;
+.ot-sn-st.on .ot-lm-dot,
+.ot-sn-tap.picked .ot-lm-dot {
+  width: 32px;
+  height: 32px;
+  border: 8px solid var(--q-accent);
+  background: var(--q-sheet-cell, var(--q-surface));
 }
-.ot-lm-edge.next::before {
-  top: 50%;
+.ot-sn-tap.picked {
+  color: var(--q-accent);
 }
-.ot-lm-city {
-  flex: none;
+/* (Picked: the dot gives a beat before the sheet closes.) */
+.ot-sn-tap.picked .ot-lm-dot {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+.ot-sn-tap:disabled {
+  color: var(--q-label-3);
+  cursor: default;
+}
+.ot-sn-tap:disabled .ot-lm-dot {
+  opacity: 0.4;
+}
+/* A 高鐵 station beside it: its own tap, in the 高鐵's orange, under the name. */
+.ot-sn-hsr {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--sn-y) + 50px);
+  left: 50%;
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, #f97316 18%, transparent);
+  color: #c2410c;
+  font: 600 12px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-color-scheme: dark) {
+  .ot-sn-hsr {
+    color: #fdba74;
+  }
+}
+.ot-sn-hsr:is(:active, [data-q-press]):not(:disabled) {
+  background: color-mix(in srgb, #f97316 32%, transparent);
+}
+.ot-sn-hsr.on,
+.ot-sn-hsr.picked {
+  background: var(--q-accent);
+  color: var(--q-on-accent, #fff);
+}
+.ot-sn-hsr:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* Over the area's edge: the next station there and its area, a tap away. */
+.ot-lm-ends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 0 0 2px;
+}
+.ot-lm-edge {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-4);
   color: var(--q-label-2);
   font: var(--q-t-footnote);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.ot-lm-city .ot-i {
+.ot-lm-edge.prev {
+  margin-left: 0;
+  margin-right: auto;
+}
+.ot-lm-edge:is(:active, [data-q-press]) {
+  background: var(--q-fill-3);
+}
+.ot-lm-edge .ot-lm-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ot-lm-edge .ot-lm-city {
+  color: var(--q-label);
+  font-weight: 600;
+}
+.ot-lm-edge .ot-i {
+  flex: none;
   width: 14px;
   height: 14px;
 }
-/* A branch line: hangs off its station, the main line running on beside it. */
-.ot-lm-sub {
-  position: relative;
-  padding-left: 22px;
-}
-.ot-lm-sub::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 18px;
-  width: 4px;
-  background: var(--lm);
-}
-.ot-lm-sub > .ot-lm-h {
-  position: relative;
-  padding: 8px 0 4px 40px;
-}
-/* (Its first stretch: off the main line, across and down.) */
-.ot-lm-sub > .ot-lm-h::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -2px;
-  width: 22px;
-  height: 16px;
-  border: solid var(--lm);
-  border-width: 4px 4px 0 0;
-  border-top-right-radius: 12px;
-}
-.ot-lm-sub > .ot-lm-h::after {
-  content: '';
-  position: absolute;
-  top: 16px;
-  bottom: 0;
-  left: 18px;
-  width: 4px;
-  background: var(--lm);
+.ot-lm-edge.prev .ot-i {
+  transform: scaleX(-1);
 }
 .ot-lm-hsr {
   --lm: #f97316;
@@ -5065,6 +5242,10 @@ button.ot-trip-foot {
   color: var(--ot-ink-green);
   font-weight: 600;
 }
+/* A stopped bus feed (bus.mjs etaOf stale): a caution, not the route's green. */
+.ot-note.ot-off-note.ot-stale-note {
+  color: var(--q-orange);
+}
 .ot-route-stops {
   margin: 6px 0 0;
   padding: 0;
@@ -5093,23 +5274,24 @@ button.ot-trip-foot {
 .ot-route-stops li:last-child::before {
   bottom: 50%;
 }
+/* A stop's time, all in one size and none on a pill (Jay 2026-11-03: the red
+   進站中 pill stood out of proportion and was hard to read): 進站中 / 即將進站
+   in the live colour, held steady to read; a few minutes away in full ink;
+   later or the timetable's quieter. Red stays for trouble (停駛). */
 .ot-rs-eta {
   justify-self: end;
   min-width: 0;
-  padding: 3px 8px;
-  border-radius: 8px;
+  padding: 3px 4px;
   color: var(--q-label);
   font: 700 15px/20px var(--q-font-rounded);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .ot-rs-eta.now {
-  background: var(--q-red);
-  color: #fff;
+  color: var(--ot-ink-green);
 }
 .ot-rs-eta.soon {
-  background: color-mix(in srgb, var(--q-orange) 16%, transparent);
-  color: var(--q-orange);
+  color: var(--q-label);
 }
 .ot-rs-eta.wait {
   color: var(--q-label-2);
@@ -5131,18 +5313,21 @@ button.ot-trip-foot {
   border-radius: 50%;
   background: var(--q-sheet);
 }
+/* The bus on the line: a dot of the line's own green a size up from a stop's,
+   ringed in the sheet's colour so it sits on the line (on a stop's dot when
+   it's there, between two stops when it's on its way). */
 .ot-route-stops li.at .ot-rs-dot {
-  width: 26px;
-  height: 26px;
-  margin-left: 2px;
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
   border: 0;
-  background: var(--q-red);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--q-red) 22%, transparent);
+  background: var(--q-green);
+  box-shadow: 0 0 0 2.5px var(--q-sheet);
   color: #fff;
 }
 .ot-rs-dot .ot-i {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
   stroke-width: 2.2;
 }
 .ot-rs-bus {
@@ -5152,18 +5337,79 @@ button.ot-trip-foot {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--q-red);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--q-red) 22%, transparent);
+  background: var(--q-green);
+  box-shadow: 0 0 0 2.5px var(--q-sheet);
   color: #fff;
   transform: translate(-50%, -50%);
 }
 .ot-rs-bus .ot-i {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   stroke-width: 2.2;
+}
+/* The bus stands out at a glance (Jay 2026-11-03: "too unnoticeable"): a
+   size up again, its glyph bigger, and a soft ring breathing out from it
+   (still under reduced motion). Not a pill: the line's own green. */
+.ot-route-stops li.at .ot-rs-dot,
+.ot-rs-bus:not(.plan) {
+  width: 30px;
+  height: 30px;
+  margin-left: 0;
+  box-shadow: 0 0 0 3px var(--q-sheet), 0 2px 8px color-mix(in srgb, var(--q-green) 45%, transparent);
+}
+.ot-route-stops li.at .ot-rs-dot .ot-i,
+.ot-rs-bus:not(.plan) .ot-i {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.3;
+}
+.ot-route-stops li.at .ot-rs-dot::after,
+.ot-rs-bus:not(.plan)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--q-green) 55%, transparent);
+  animation: ot-bus-ring 2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ot-bus-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--q-green) 55%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--q-green) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-route-stops li.at .ot-rs-dot::after,
+  .ot-rs-bus:not(.plan)::after {
+    animation: none;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--q-green) 22%, transparent);
+  }
+}
+/* Today and the next day on one line (2026-11-03): where the day's last bus
+   has passed, the line goes quiet and the stops are the next day's; where
+   today's stops begin, that last bus by the timetable, a ring until it's
+   seen live. */
+.ot-route-stops li.tmrw::before {
+  background: var(--q-fill-1);
+}
+.ot-route-stops li.tmrw .ot-rs-dot {
+  border-color: var(--q-label-3);
+}
+.ot-route-stops li.tmrw .ot-rs-eta,
+.ot-route-stops li.tmrw .ot-rs-name b {
+  color: var(--q-label-3);
+}
+/* The whole way done for today: said quietly, as its stops are. */
+.ot-note.ot-off-note.ot-done-note {
+  color: var(--q-label-2);
+}
+.ot-rs-bus.plan {
+  border: 2px solid var(--q-green);
+  background: var(--q-sheet);
+  color: var(--ot-ink-green);
+  box-sizing: border-box;
 }
 .ot-rs-name {
   display: grid;
@@ -5882,4 +6128,62 @@ button.ot-trip-foot {
   .ot-sheet .q-rowcard > .q-ritem {
     padding-block: 4px;
   }
+}
+/* 查時刻: inside your TPASS's area, the list kept to its trains says so, every train a chip away. */
+.ot-note.ot-pass-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ot-pass-note .q-chip {
+  flex: none;
+}
+/* 用這班規劃路線: under a journey's steps, a quiet bar as 釘選這班 is (never accent text). */
+.ot-jny-plan {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 0 12px;
+  border-radius: 22px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 600 15px/1 var(--q-font);
+  cursor: pointer;
+}
+.ot-jny-plan .ot-i {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+/* 指定車次's sheet: the number, then the train's stations as two pickers. */
+.ot-ticket-sheet #tk-list {
+  margin-top: 12px;
+}
+.ot-tk-st {
+  gap: 10px;
+}
+.ot-tk-st select {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 62%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 500 15px/1.2 var(--q-font);
+  text-align: right;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
 }
