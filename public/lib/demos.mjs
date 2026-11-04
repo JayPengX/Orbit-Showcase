@@ -12,10 +12,38 @@ export const DEMOS = {
   sports: { repo: 'Orbit-Sports', real: true, live: true },
   securities: { repo: 'Orbit-Securities', real: true },
   class: { repo: 'Orbit-Class' },
+  beats: { repo: 'Orbit-Beats' },
+  law: { repo: 'Orbit-Law', real: true },
   transit: { repo: 'Orbit-Transit', real: true, live: true }
 };
 
 export const TOURS = {
+  law: [
+    { say: ['台灣的法律、判決和立法院，都在這裡，用白話看懂。', 'Taiwan’s laws, rulings and Legislative Yuan, in plain words.'] },
+    { tap: '.nv-topic', wait: 2500, say: ['依生活的事找：勞動', 'Find by what it’s about: work'] },
+    { tap: '.lw-quick-q:nth-child(3)', wait: 3500, say: ['特休有幾天？', 'How many days of leave?'] },
+    { tap: '.lw-find-card', wait: 3500, say: ['直接找到那一條', 'Straight to the article'] },
+    { tap: '#a-38 .lw-rul', wait: 3500, say: ['法院怎麼用這一條', 'How courts used it'] },
+    { tap: 'dialog[open] .q-close', say: ['看完關掉', 'Close it'] },
+    { tap: '#a-38 .lw-pending', wait: 3500, say: ['立法院正在提的修法', 'Changes proposed in the legislature'] },
+    { tap: 'dialog[open] .q-close', say: ['關掉', 'Close'] },
+    { tap: '#tab-bills', wait: 4000, say: ['立法院今天在做什麼', 'What the legislature is doing today'] }
+  ],
+  beats: [
+    { say: ['每一首歌都是手機當場做出來的，不用下載。', 'Every song is made on the phone, right then; nothing to download.'] },
+    { tap: '.bt-now .bt-play', wait: 4000, say: ['播放今天的第一首', 'Play today’s first song'] },
+    { tap: '.bt-now .bt-ctl .bt-btn:last-child', wait: 3000, say: ['換下一首', 'Skip to the next'] },
+    { tap: '.bt-st[data-station="hype"]', wait: 3000, say: ['選一個電台', 'Pick a station'] },
+    { tap: '#tab-create', say: ['自己來做音樂', 'Make your own'] },
+    { tap: '.cr-jam-open', wait: 2500, say: ['16 個打擊墊即興', 'Jam on 16 pads'] },
+    { tap: '.jam-play', wait: 3000, say: ['按開始，節奏跑起來', 'Start: the beat runs'] },
+    { tap: '.jam-tiles button:nth-of-type(4)', wait: 2500, say: ['加上旋律', 'Add a melody'] },
+    { tap: '.jam-tiles button:nth-of-type(6)', wait: 2500, say: ['換一種貝斯', 'Swap the bass'] },
+    { tap: '#subnav-back', say: ['回去', 'Back'] },
+    { tap: '.cr-ways .q-ritem:nth-child(3)', wait: 3000, say: ['節奏遊戲：每首歌都是一關', 'The rhythm game: every song is a level'] },
+    { tap: '.gm-list > :first-child', wait: 2500, say: ['選一首', 'Pick a song'] },
+    { tap: '.gm-level', wait: 16000, say: ['從簡單開始，跟著節拍點', 'Start easy: tap on the beat'] }
+  ],
   transit: [
     { say: ['跟真的 App 一樣是 Google 地圖；黃點是 YouBike 站。', 'Google’s map, as in the real app; the yellow dots are YouBike stations.'] },
     { tap: '#q', type: '台北101', after: 1800, wait: 8000, say: ['搜尋要去的地方', 'Search for a place'] },

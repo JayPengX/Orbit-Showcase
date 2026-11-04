@@ -31,6 +31,9 @@ export const DEMOS = {
     css: '.q-card:has(.wp){display:none!important}' },
   securities: { app: 'securities', repo: 'Orbit-Securities', clock: 'now', geo: [25.034, 121.565], tour: steps('securities'), explore: [{ tap: '.q-tab[data-tab="markets"]' }, { tap: '.q-tab[data-tab="fx"]' }, { tap: '.q-tab[data-tab="home"]' }, { tap: '[data-action="go-product"][data-id="tw"]' }], settle: 9000 },
   class: { app: 'orbit', repo: 'Orbit-Class', dist: 'dist', ua: IPHONE, wall: true, clock: '2026-10-28T09:20:00+08:00', geo: [25.034, 121.565], stores: [['classFocusData', JSON.stringify(timetable)]], tour: steps('class'), explore: [] },
+  beats: { app: 'beats', repo: 'Orbit-Beats', clock: '2026-11-04T20:30:00+08:00', geo: [25.034, 121.565], tour: steps('beats'), explore: [] },
+  // Today's real laws, rulings and bills (the live site's data, as recorded); 問法律 needs a Pass, so it stays out.
+  law: { app: 'law', repo: 'Orbit-Law', clock: 'now', geo: [25.034, 121.565], tour: steps('law'), explore: [{ tap: '#tab-rulings', wait: 4000 }, { tap: '#tab-laws', wait: 3000 }, { tap: '#tab-home', wait: 2000 }], settle: 8000 },
   // Today's real buses, trains and bikes (--live), on Google's map in the showcase like the real app (liveMap).
   transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 }
 };

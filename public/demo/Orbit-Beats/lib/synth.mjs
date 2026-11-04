@@ -1,0 +1,601 @@
+// Orbit Beats' own instruments (樂器): drums and notes made here, no
+// samples, so anyone can make clips with nothing to record. A clip is a
+// bar, two or four on a 16th-note grid; rendered, it's a piece like any
+// other (its role set: a drum loop 過門, a bass line 貝斯, a melody Riff),
+// split into the kit and arranged into songs the same way. No DOM: the page
+// plays the voices live (from the same hits, `stepHits`), the tests render
+// them.
+//
+//   voice(inst, midi, sr, hold, vel, variant) -> Float32Array (one hit or note, ringing out; vel 0..1 how hard, variant 0|1 which take)
+//   renderClip(clip, sr, bpm) -> { sr, L, R } (exactly its bars long)
+//   drumPattern(style, seed, bars), melody(key, inst, seed, bars) (自動編: a start written for you)
+
+import { makeRng, SHUFFLE } from '../engine.mjs';
+import { NOTE_VOICES, DRUM_VOICES, RELEASE, PEAK, noiseOf, bandpass } from './voices.mjs';
+import { bankOf, bankGen, playSample, SAMPLED, drumBank, playDrum, kitPlaying } from './samples.mjs';
+
+// The drums, left to right as the grid shows them: the kit, the
+// percussion beside it, the world's hand drums and bells, and the other
+// kits' own (brush, rock, hardstyle, 8-bit, a gong): a lane set each,
+// eight to a phone's width.
+export const DRUMS = ['kick', 'snare', 'clap', 'hat', 'open', 'rim', 'tom', 'sub'];
+export const PERC = ['crash', 'ride', 'shaker', 'cowbell', 'conga', 'bongo', 'snap', 'perc'];
+export const WORLD = ['timbale', 'cajon', 'tabla', 'clave', 'tamb', 'guiro', 'agogo', 'dhol'];
+export const KITS = ['brush', 'rkick', 'rsnare', 'hardkick', 'chipk', 'chipn', 'chiph', 'gong'];
+export const DRUM_SETS = { kit: DRUMS, perc: PERC, world: WORLD, kits: KITS };
+export const ALL_DRUMS = [...DRUMS, ...PERC, ...WORLD, ...KITS];
+export const DRUM_NAMES = {
+  kick: ['大鼓', 'Kick'], snare: ['小鼓', 'Snare'], clap: ['拍手', 'Clap'], hat: ['閉鈸', 'Hat'], open: ['開鈸', 'Open'], rim: ['邊擊', 'Rim'], tom: ['中鼓', 'Tom'], sub: ['808', '808'],
+  crash: ['銅鈸', 'Crash'], ride: ['疊音鈸', 'Ride'], shaker: ['沙鈴', 'Shaker'], cowbell: ['牛鈴', 'Cowbell'], conga: ['康加', 'Conga'], bongo: ['邦哥', 'Bongo'], snap: ['彈指', 'Snap'], perc: ['木魚', 'Block'],
+  timbale: ['天巴鼓', 'Timbale'], cajon: ['木箱鼓', 'Cajón'], tabla: ['塔布拉', 'Tabla'], clave: ['響棒', 'Clave'], tamb: ['鈴鼓', 'Tambourine'], guiro: ['刮瓜', 'Güiro'], agogo: ['阿哥哥鈴', 'Agogô'], dhol: ['多爾鼓', 'Dhol'],
+  brush: ['刷鼓', 'Brush'], rkick: ['搖滾大鼓', 'Rock kick'], rsnare: ['搖滾小鼓', 'Rock snare'], hardkick: ['硬派大鼓', 'Hard kick'], chipk: ['8-bit 大鼓', '8-bit kick'], chipn: ['8-bit 小鼓', '8-bit snare'], chiph: ['8-bit 鈸', '8-bit hat'], gong: ['鑼', 'Gong']
+};
+// The instruments that play notes (the chips' order: the most played first,
+// then by kind), and the role each one's clip takes in a song.
+export const INSTRUMENTS = [
+  'keys', 'piano', 'rhodes', 'pluck', 'guitar', 'nylon', 'bass', 'subbass', 'bass808', 'upright', 'lead', 'pad', 'strings', 'bell', 'organ', 'brass', 'vox', 'choir',
+  'sax', 'flute', 'harmonica', 'accordion', 'supersaw', 'chip', 'tri', 'acid', 'reese', 'slap', 'distgtr', 'clav', 'vibes', 'marimba', 'kalimba', 'musicbox', 'glass', 'steel',
+  'harp', 'banjo', 'pizz', 'guzheng', 'erhu', 'sitar'
+];
+export const INSTRUMENT_NAMES = {
+  keys: ['電鋼琴', 'Keys'], pluck: ['撥弦', 'Pluck'], bass: ['貝斯', 'Bass'], lead: ['主音', 'Lead'], pad: ['鋪底', 'Pad'], bell: ['鐘聲', 'Bell'],
+  organ: ['風琴', 'Organ'], strings: ['弦樂', 'Strings'], brass: ['銅管', 'Brass'], guitar: ['吉他', 'Guitar'], subbass: ['低音', 'Sub bass'], vox: ['人聲', 'Vox'],
+  piano: ['鋼琴', 'Piano'], rhodes: ['復古電鋼', 'Rhodes'], clav: ['克拉維', 'Clavinet'], vibes: ['顫音琴', 'Vibes'], marimba: ['馬林巴', 'Marimba'], kalimba: ['拇指琴', 'Kalimba'],
+  musicbox: ['音樂盒', 'Music box'], glass: ['玻璃鐘', 'Glass bell'], steel: ['鋼鼓', 'Steel drum'], harp: ['豎琴', 'Harp'], nylon: ['古典吉他', 'Nylon guitar'], banjo: ['斑鳩琴', 'Banjo'],
+  guzheng: ['古箏', 'Guzheng'], sitar: ['西塔琴', 'Sitar'], pizz: ['撥奏弦樂', 'Pizzicato'], erhu: ['二胡', 'Erhu'], sax: ['薩克斯風', 'Sax'], flute: ['長笛', 'Flute'],
+  harmonica: ['口琴', 'Harmonica'], accordion: ['手風琴', 'Accordion'], choir: ['合唱', 'Choir'], supersaw: ['超級鋸齒', 'Supersaw'], chip: ['8-bit 方波', 'Chip'], tri: ['8-bit 貝斯', 'Chip bass'],
+  bass808: ['808 滑音', '808 glide'], upright: ['低音提琴', 'Upright bass'], acid: ['酸性貝斯', 'Acid bass'], reese: ['Reese 貝斯', 'Reese bass'], distgtr: ['破音吉他', 'Dist. guitar'], slap: ['擊弦貝斯', 'Slap bass']
+};
+const BASSES = new Set(['bass', 'subbass', 'bass808', 'upright', 'tri', 'acid', 'reese', 'slap']);
+export const INSTRUMENT_ROLE = Object.fromEntries(INSTRUMENTS.map(i => [i, BASSES.has(i) ? 'bass' : 'riff']));
+// Each instrument's octave (the grid's lowest note's MIDI number for C).
+export const OCTAVE = {
+  keys: 60, pluck: 60, bass: 36, lead: 72, pad: 60, bell: 72, organ: 60, strings: 60, brass: 60, guitar: 48, subbass: 36, vox: 60,
+  piano: 60, rhodes: 60, clav: 60, vibes: 60, marimba: 60, kalimba: 72, musicbox: 72, glass: 72, steel: 60, harp: 60, nylon: 48, banjo: 60, guzheng: 60, sitar: 60,
+  pizz: 60, erhu: 60, sax: 60, flute: 72, harmonica: 60, accordion: 60, choir: 60, supersaw: 60, chip: 72, tri: 36, bass808: 36, upright: 36, acid: 36, reese: 36, distgtr: 48, slap: 36
+};
+// How long a note is when tapped in (16ths): a pad holds, a bass is short.
+const LONG = { pad: 8, strings: 8, choir: 8, organ: 4, vox: 4, sax: 4, flute: 4, erhu: 4, harmonica: 4, accordion: 4, supersaw: 4 };
+export const NOTE_LEN = Object.fromEntries(INSTRUMENTS.map(i => [i, LONG[i] || 2]));
+// The instruments that hold chords when written for you.
+const CHORDAL = new Set(['pad', 'strings', 'organ', 'choir', 'accordion']);
+
+const hz = m => 440 * 2 ** ((m - 69) / 12);
+const TAU = 2 * Math.PI;
+
+// One hit or note: a drum (midi only for the 808's pitch) or an
+// instrument's note, held `hold` seconds (the notes), then ringing out.
+// `vel` (0 to 1): how hard it is struck, the harder the brighter (the level
+// is the clip's gain, not this); `variant` (0 or 1): which of two takes, with
+// its own noise, phase and a few cents' pitch, so a repeated note is never
+// bit for bit the last one.
+export function voice(inst, midi = 36, sr = 48000, hold = 0.25, vel = 0.7, variant = 0) {
+  // (A recorded instrument, when its notes are here: lib/samples.mjs.)
+  const bank = SAMPLED[inst] && bankOf(inst);
+  if (bank) {
+    const x = playSample(bank, midi, sr, hold, vel, variant, RELEASE[inst] ?? 0.3);
+    if (x) return asLoud(x, inst, sr);
+  }
+  // (A drum of the kit the song plays, recorded: lib/samples.mjs DRUM_KITS.)
+  const kit = drumBank(inst);
+  if (kit) {
+    const x = playDrum(kit, sr, vel, variant);
+    if (x) return asLoudDrum(x, kit, inst, sr);
+  }
+  return made(inst, midi, sr, hold, vel, variant);
+}
+// A recorded kit's hits brought to the made drum's loudness, all by one gain
+// (its normal hit's first 0.12 s against the made one's), so soft stays softer than hard.
+const DRUM_GAIN = new Map();
+function asLoudDrum(x, bank, inst, sr) {
+  const k = `${bank.inst}|${sr}`;
+  if (!DRUM_GAIN.has(k)) {
+    const rms = y => {
+      const n = Math.min(y.length, Math.round(0.12 * sr));
+      let e = 0;
+      for (let i = 0; i < n; i++) e += y[i] * y[i];
+      return Math.sqrt(e / Math.max(1, n));
+    };
+    const normal = playDrum(bank, sr, 0.7, 0);
+    const r = normal ? rms(normal) : 0;
+    DRUM_GAIN.set(k, r > 1e-6 ? rms(made(inst, 36, sr, 0.25, 0.7, 0)) / r : 0);
+  }
+  const g = DRUM_GAIN.get(k);
+  let top = 0;
+  for (let i = 0; i < x.length; i++) top = Math.max(top, Math.abs(x[i] * g));
+  const h = top > 0.95 ? (0.95 / top) * g : g;
+  for (let i = 0; i < x.length; i++) x[i] *= h;
+  return x;
+}
+// A recorded note brought to the made voice's loudness (its first 0.4 s, as the made one's middle C),
+// so the mix and every level set for the made one hold; never over full scale.
+const LOUD = new Map();
+const rmsOf = (x, sr) => {
+  const n = Math.min(x.length, Math.round(0.4 * sr));
+  let e = 0;
+  for (let i = 0; i < n; i++) e += x[i] * x[i];
+  return Math.sqrt(e / Math.max(1, n));
+};
+function asLoud(x, inst, sr) {
+  const k = `${inst}|${sr}`;
+  if (!LOUD.has(k)) LOUD.set(k, rmsOf(made(inst, 60, sr, 0.4, 0.7, 0), sr));
+  const r = rmsOf(x, sr);
+  let g = r > 1e-6 ? LOUD.get(k) / r : 0;
+  let top = 0;
+  for (let i = 0; i < x.length; i++) top = Math.max(top, Math.abs(x[i]));
+  if (top * g > 0.95) g = 0.95 / top;
+  for (let i = 0; i < x.length; i++) x[i] *= g;
+  return x;
+}
+function made(inst, midi, sr, hold, vel, variant) {
+  const len = s => new Float32Array(Math.max(1, Math.round(s * sr)));
+  const env = (t, d) => Math.exp(-t / d);
+  const v = variant ? 1 : 0;
+  const o = { vel: Math.min(1, Math.max(0, vel)), v, ph: v ? 1.9 : 0 };
+  const noise = noiseOf(inst.length * 7919 + midi + v * 104729);
+  const det = v ? 2 ** ((midi % 2 ? 3 : -3) / 1200) : 1;
+  let x;
+  if (DRUM_VOICES[inst]) {
+    x = DRUM_VOICES[inst](sr, noise, o);
+    // (A noisy hit never goes over full scale, whatever its seed.)
+    let top = 0;
+    for (let i = 0; i < x.length; i++) top = Math.max(top, Math.abs(x[i]));
+    if (top > 0.95) for (let i = 0; i < x.length; i++) x[i] *= 0.95 / top;
+  }
+  else if (NOTE_VOICES[inst]) {
+    // (The newer notes: each its own loop, then brought to its own loudness, whatever the pitch.)
+    x = len(hold + RELEASE[inst]);
+    NOTE_VOICES[inst](x, hz(midi) * det, sr, hold, noise, o);
+    let peak = 0;
+    for (let i = 0; i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]));
+    const g = peak > 1e-9 ? PEAK[inst] / peak : 0;
+    for (let i = 0; i < x.length; i++) x[i] *= g;
+  } else
+  switch (inst) {
+    case 'sub': {
+      x = len(1.2);
+      let ph = 0;
+      const f = hz(midi) * det;
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        ph += (TAU * f * (1 + 1.2 * env(t, 0.02))) / sr;
+        x[i] = Math.tanh(2.1 * (Math.sin(ph) + 0.25 * Math.sin(2 * ph))) * 0.7 * env(t, 0.45) * Math.min(1, t / 0.002);
+      }
+      break;
+    }
+    case 'snare': {
+      x = len(0.35);
+      let lp = 0;
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        lp += 0.45 * (noise() - lp);
+        x[i] = 0.75 * lp * env(t, 0.07) + 0.45 * Math.sin(TAU * 185 * t) * env(t, 0.045);
+      }
+      break;
+    }
+    case 'clap': {
+      x = len(0.4);
+      let lp = 0;
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        lp += 0.5 * (noise() - lp);
+        // Three quick claps, then the room.
+        const bursts = [0, 0.011, 0.023].reduce((s, b) => s + (t >= b ? env(t - b, 0.008) : 0), 0);
+        x[i] = 0.7 * lp * (bursts * 0.6 + env(t, 0.09) * 0.5);
+      }
+      break;
+    }
+    case 'rim': {
+      x = len(0.08);
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        x[i] = 0.55 * (Math.sin(TAU * 1700 * t) * 0.6 + Math.sin(TAU * 820 * t) * 0.5) * env(t, 0.012);
+      }
+      break;
+    }
+    case 'tom':
+    case 'conga':
+    case 'bongo': {
+      const [f0, drop, d, secs] = { tom: [110, 60, 0.16, 0.45], conga: [196, 40, 0.14, 0.4], bongo: [330, 60, 0.08, 0.25] }[inst];
+      x = len(secs);
+      let ph = 0;
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        ph += (TAU * (f0 + drop * env(t, 0.03))) / sr;
+        x[i] = 0.7 * Math.sin(ph) * env(t, d) + (i < sr * 0.003 ? noise() * 0.1 : 0);
+      }
+      break;
+    }
+    case 'cowbell': {
+      x = len(0.4);
+      const raw = new Float32Array(x.length);
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        raw[i] = (Math.sign(Math.sin(TAU * 587 * t)) + Math.sign(Math.sin(TAU * 845 * t))) * (0.7 * env(t, 0.02) + 0.3 * env(t, 0.12));
+      }
+      const b = bandpass(raw, sr, 900, 3);
+      for (let i = 0; i < x.length; i++) x[i] = Math.tanh(b[i] * 0.6) * 0.6;
+      break;
+    }
+    case 'snap': {
+      x = len(0.12);
+      const raw = new Float32Array(x.length);
+      for (let i = 0; i < x.length; i++) raw[i] = noise() * env(i / sr, 0.012);
+      const b = bandpass(raw, sr, 2200, 4);
+      for (let i = 0; i < x.length; i++) x[i] = b[i] * 0.7;
+      break;
+    }
+    case 'perc': {
+      x = len(0.12);
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        x[i] = 0.6 * (Math.sin(TAU * 900 * t) * 0.7 + Math.sin(TAU * 1630 * t) * 0.3) * env(t, 0.025);
+      }
+      break;
+    }
+    default: {
+      // The notes: held `hold`, then each instrument's own release.
+      const f = hz(midi) * det;
+      const rel = { bell: 1.4, organ: 0.12, brass: 0.2, guitar: 0.6, vox: 0.3 }[inst] ?? 0.3;
+      x = len(hold + rel);
+      let ph = 0;
+      let lp = 0;
+      // A plucked string (Karplus and Strong's): a burst of noise round a loop a period long.
+      const period = Math.max(2, Math.round(sr / f));
+      const ks = inst === 'guitar' ? Float32Array.from({ length: period }, () => noise() * 0.5) : null;
+      for (let i = 0; i < x.length; i++) {
+        const t = i / sr;
+        const gate = t < hold ? 1 : env(t - hold, rel / 3);
+        const vib = inst === 'vox' ? 1 + 0.004 * Math.sin(TAU * 5.2 * t) * Math.min(1, t / 0.3) : 1;
+        ph += (TAU * f * vib) / sr;
+        let y;
+        if (inst === 'organ') {
+          // Drawbars: the note, its octave, twelfth, and two octaves up.
+          y = 0.16 * (Math.sin(ph) + 0.8 * Math.sin(2 * ph) + 0.5 * Math.sin(3 * ph) + 0.4 * Math.sin(4 * ph) + 0.2 * Math.sin(8 * ph)) * Math.min(1, t / 0.008);
+        } else if (inst === 'brass') {
+          // A saw whose brightness swells at the start and settles.
+          let saw = 0;
+          for (let k = 1; k <= 10; k++) saw += Math.sin(k * ph) / k;
+          lp += (0.06 + 0.3 * Math.min(1, t / 0.04) * env(t, 0.25)) * (saw - lp);
+          y = 0.3 * lp * Math.min(1, t / 0.02);
+        } else if (inst === 'guitar') {
+          const j = i % period;
+          const prev = ks[(j + period - 1) % period];
+          const v = ks[j];
+          ks[j] = 0.996 * 0.5 * (v + prev);
+          y = 1.4 * v;
+        } else if (inst === 'vox') {
+          // A sung "ah": a saw through the vowel's two formants.
+          let saw = 0;
+          for (let k = 1; k <= 12; k++) saw += Math.sin(k * ph) / k;
+          y = saw * Math.min(1, t / 0.05);
+        } else {
+          // A bell: FM, its brightness ringing down.
+          y = 0.3 * Math.sin(ph + 2.2 * env(t, 0.5) * Math.sin(3.5 * ph)) * env(t, 0.9) * Math.min(1, t / 0.002);
+        }
+        x[i] = y * gate;
+      }
+      if (inst === 'vox') {
+        const a = bandpass(x, sr, 750, 5);
+        const b = bandpass(x, sr, 1150, 6);
+        for (let i = 0; i < x.length; i++) x[i] = (a[i] + 0.6 * b[i]) * 0.09;
+      }
+    }
+  }
+  // (No click where it stops.)
+  const tail = Math.min(x.length, Math.round(0.004 * sr));
+  for (let k = 0; k < tail; k++) x[x.length - 1 - k] *= k / tail;
+  return x;
+}
+
+// ---- Clips -----------------------------------------------------------------------------
+//
+// { kind: 'drums', bars, swing, steps: { kick: [0/1/2/3 × 16·bars], … }, pitch: 808's MIDI }   (a hit's level: 1 normal, 2 accent, 3 soft)
+// { kind: 'notes', inst, bars, swing, key: { tonic, minor }, notes: [{ step, midi, len, chord, lv }] }   (len in 16ths; chord: its triad in the key; lv: 2 accent, 3 soft)
+// (A note may also carry g, a gain to scale it by, and dt, seconds early or late: the radio's tunes set them, so no two notes are alike.)
+export const STEPS = 16;
+// A hit's level (力度) as a loudness: 0 none, 1 normal, 2 accent, 3 soft
+// (soft came last, so clips kept before it read the same).
+export const LEVELS = [3, 1, 2];
+export const LEVEL_GAIN = [0, 1, 1.35, 0.55];
+export const levelGain = v => LEVEL_GAIN[v] ?? 1;
+export const BAR_CHOICES = [1, 2, 4];
+export const emptyDrums = (bars = 1) => ({ kind: 'drums', bars, swing: 0, pitch: 33, steps: Object.fromEntries(ALL_DRUMS.map(d => [d, new Array(STEPS * bars).fill(0)])) });
+export const emptyNotes = (inst = 'keys', bars = 1, key = null) => ({ kind: 'notes', inst, bars, swing: 0, key, notes: [] });
+
+// A clip kept from before (or typed in) made whole: every lane, its bars, its swing.
+export function clipOf(c) {
+  if (!c || typeof c !== 'object') return null;
+  const bars = BAR_CHOICES.includes(c.bars) ? c.bars : 1;
+  const swing = Number.isFinite(c.swing) ? Math.min(0.6, Math.max(0, c.swing)) : 0;
+  const shuffle = Number.isFinite(c.shuffle) && c.shuffle > 0 ? { shuffle: Math.min(0.8, c.shuffle) } : {};
+  if (c.kind === 'drums') {
+    const out = { ...emptyDrums(bars), ...shuffle };
+    out.swing = swing;
+    out.pitch = Number.isInteger(c.pitch) && c.pitch >= 24 && c.pitch <= 48 ? c.pitch : 33;
+    for (const d of ALL_DRUMS) {
+      const lane = Array.isArray(c.steps?.[d]) ? c.steps[d] : [];
+      for (let s = 0; s < STEPS * bars; s++) out.steps[d][s] = [0, 1, 2, 3].includes(lane[s]) ? lane[s] : lane[s] ? 1 : 0;
+    }
+    return out;
+  }
+  if (c.kind === 'notes') {
+    const inst = INSTRUMENTS.includes(c.inst) ? c.inst : 'keys';
+    const key = c.key && Number.isInteger(c.key.tonic) && c.key.tonic >= 0 && c.key.tonic < 12 ? { tonic: c.key.tonic, minor: Boolean(c.key.minor) } : null;
+    const notes = (Array.isArray(c.notes) ? c.notes : [])
+      .filter(n => n && Number.isInteger(n.step) && n.step >= 0 && n.step < STEPS * bars && Number.isInteger(n.midi) && n.midi >= 12 && n.midi <= 120)
+      .map(n => ({ step: n.step, midi: n.midi, len: Math.min(STEPS * 4, Math.max(1, Math.round(n.len) || 1)), ...(n.chord ? { chord: true } : {}), ...(n.lv === 2 || n.lv === 3 ? { lv: n.lv } : {}) }));
+    return { kind: 'notes', inst, bars, swing, ...shuffle, key, notes };
+  }
+  return null;
+}
+
+// A note's triad in the key: it, the third and the fifth above it in the scale.
+export function chordOf(midi, key) {
+  const k = key || { tonic: 9, minor: true };
+  const steps = k.minor ? SCALES.minor : SCALES.major;
+  const pc = (((midi - k.tonic) % 12) + 12) % 12;
+  const at = steps.indexOf(pc);
+  if (at < 0) return [midi, midi + 4, midi + 7];
+  const up = n => {
+    const j = at + n;
+    return midi - pc + 12 * Math.floor(j / 7) + steps[j % 7];
+  };
+  return [midi, up(2), up(4)];
+}
+
+// What sounds on step s of a clip: [{ inst, midi, len (16ths), gain }],
+// and how late the step is played (a 16th's share: its swing).
+// (`vel`, how hard it is struck, only for renderClip: a soft hit is darker, an accent brighter.)
+const VELOCITY = [0.7, 0.7, 1, 0.38];
+function hitList(clip, s) {
+  const out = [];
+  if (clip.kind === 'drums') {
+    for (const d of ALL_DRUMS) {
+      const v = clip.steps[d]?.[s];
+      if (!v) continue;
+      // (Off-beat hats a little softer: a hand's accents; then the hit's level.)
+      const gain = (d === 'hat' && s % 2 ? 0.7 : 1) * levelGain(v);
+      out.push({ inst: d, midi: d === 'sub' ? clip.pitch || 33 : 36, len: 1, gain, vel: VELOCITY[v] ?? 0.7 });
+    }
+  } else
+    for (const n of clip.notes)
+      if (n.step === s) for (const m of n.chord ? chordOf(n.midi, clip.key) : [n.midi]) out.push({ inst: clip.inst, midi: m, len: n.len || 1, gain: (n.chord ? 0.62 : 1) * levelGain(n.lv || 1) * (n.g ?? 1), vel: VELOCITY[n.lv || 1] ?? 0.7, ...(n.dt ? { dt: n.dt } : {}) });
+  return out;
+}
+export const stepHits = (clip, s) => hitList(clip, s).map(({ vel, ...h }) => h);
+// (A swung clip, `shuffle`: its off-beat eighths late too, by that share of a 16th, as engine.mjs's SHUFFLE.)
+export const swingOf = (clip, s) => (s % 2 ? clip.swing || 0 : 0) + (s % 4 === 2 ? clip.shuffle || 0 : 0);
+
+// A clip's own chance for its step, note and part: the same each time it's rendered. -> [0, 1)
+const rand01 = (s, midi, k, salt) => {
+  let x = Math.imul(s + 1, 0x9e3779b1) ^ Math.imul(midi + 7, 0x85ebca6b) ^ Math.imul(k + 3, 0xc2b2ae35) ^ Math.imul(salt, 0x27d4eb2f);
+  x ^= x >>> 15;
+  x = Math.imul(x, 0x2c1b3c6d);
+  x ^= x >>> 12;
+  return (x >>> 0) / 4294967296;
+};
+// How hard each 16th of a beat is played: the beat, the 16th after, the off-beat, the 16th before the next.
+const ACCENT = [1.05, 0.86, 0.95, 0.84];
+// How far apart a chord's notes come in (seconds each), lowest first: a strum, a roll, the rest a breath apart.
+const STRUM = { guitar: 0.016, nylon: 0.02, distgtr: 0.008, banjo: 0.014, harp: 0.03, guzheng: 0.024, steel: 0.012, sitar: 0.02, piano: 0.008, keys: 0.007, rhodes: 0.009, vibes: 0.01, marimba: 0.012, kalimba: 0.012, clav: 0.004, organ: 0.002, strings: 0.012, choir: 0.012, brass: 0.006, pad: 0.004, supersaw: 0.002 };
+// The notes rendered lately (a note is the same each time it is asked for the same way: its pitch, length,
+// how hard and which take).
+const VOICES = new Map();
+let voiceSamples = 0;
+const VOICE_BUDGET = 12e6;   // (samples kept: about 48 MB; a song's own notes are a few hundred)
+// A clip as a piece: exactly its bars long (a loop of them), with a phone
+// mic's faint noise floor all through, so splitting keeps it whole.
+// A note that comes again in the clip takes the other of its two takes, so a repeat is never bit for bit the last.
+export function renderClip(clip, sr = 48000, bpm = 120) {
+  const B = (60 / bpm) * sr;
+  const n = Math.round(clip.bars * 4 * B);
+  const L = new Float32Array(n);
+  const cache = VOICES;
+  if (voiceSamples > VOICE_BUDGET) {
+    cache.clear();
+    voiceSamples = 0;
+  }
+  const seen = new Map();
+  const drums = clip.kind === 'drums';
+  const ring = Math.min(n, Math.round(1.5 * sr));
+  for (let s = 0; s < STEPS * clip.bars; s++) {
+    const a = Math.round(((s + swingOf(clip, s)) / 4) * B);
+    const hits = hitList(clip, s);
+    hits.forEach(({ inst, midi, len, gain, vel: v0, dt }, k) => {
+      const hold = drums ? 0.25 : (len / 4) * (60 / bpm);
+      // (Played, not programmed: each note a few ms off the grid and a little harder or softer, the beat leaned on and
+      // the 16ths between let go, a chord's notes strummed or rolled from the lowest. The same clip always plays the same.)
+      // (`feel`: the band's clips (lib/radio.mjs); one programmed in 樂器 plays exactly as it was set.)
+      const feel = clip.feel === true;
+      const r1 = feel ? rand01(s, midi, k, 1) : 0.5, r2 = feel ? rand01(s, midi, k, 2) : 0.5;
+      const lean = feel ? ACCENT[s % 4] * (s % STEPS === 0 ? 1.06 : 1) : 1;
+      const vel = feel ? Math.round(Math.min(1, v0 * lean * (0.9 + 0.2 * r2)) * 20) / 20 : v0;
+      const late = feel ? ((r1 - 0.5) * 2 * (drums ? 0.003 : BASSES.has(inst) ? 0.004 : 0.007) + (hits.length > 1 && !drums ? k * (STRUM[inst] ?? 0.006) : 0)) * sr : 0;
+      const again = `${inst}|${midi}|${hold}|${vel}`;
+      const take = (seen.get(again) || 0) % 2;
+      seen.set(again, take + 1);
+      const key = `${sr}|${bankGen()}|${kitPlaying()}|${again}|${take}`;
+      if (!cache.has(key)) {
+        const v = voice(inst, midi, sr, hold, vel, take);
+        cache.set(key, v);
+        voiceSamples += v.length;
+      }
+      const x = cache.get(key);
+      const g = feel ? gain * lean * (0.92 + 0.16 * r2) : gain;
+      // (A note still ringing at the loop's end goes on from its start, as it would into the next time round: never
+      // cut off, and at the same level across the line, so going round is seamless; it fades over the next 1.5 s.)
+      for (let i = 0, j = Math.max(0, a + Math.round((dt || 0) * sr + late)); i < x.length; i++, j++) {
+        if (j < n) L[j] += x[i] * g;
+        else if (j - n < ring) L[j - n] += x[i] * g * (1 - (j - n) / ring);
+        else break;
+      }
+    });
+  }
+  const floor = noiseOf(n);
+  for (let i = 0; i < n; i++) L[i] += 2.5e-4 * floor();
+  // (No easing at the loop's end: a dip there clicked each time round, every four bars.)
+  return { sr, L, R: L };
+}
+// Has anything in it.
+export const clipEmpty = clip => (clip.kind === 'drums' ? !ALL_DRUMS.some(d => (clip.steps[d] || []).some(Boolean)) : !clip.notes.length);
+// The first bar copied over every other bar.
+export function copyFirstBar(clip) {
+  const c = JSON.parse(JSON.stringify(clip));
+  if (c.kind === 'drums') for (const d of ALL_DRUMS) for (let s = STEPS; s < STEPS * c.bars; s++) c.steps[d][s] = c.steps[d][s % STEPS];
+  else {
+    const first = c.notes.filter(n => n.step < STEPS);
+    c.notes = Array.from({ length: c.bars }, (_, b) => first.map(n => ({ ...n, step: n.step + b * STEPS }))).flat();
+  }
+  return c;
+}
+// Clips of one kind and length played one after another (a chain, A A B A)
+// as one clip: the first's sound (instrument, key, swing, 808), all their bars.
+export function chainClips(list) {
+  const first = list[0];
+  const per = STEPS * first.bars;
+  const c = JSON.parse(JSON.stringify(first));
+  c.bars = first.bars * list.length;
+  if (c.kind === 'drums') for (const d of ALL_DRUMS) c.steps[d] = list.flatMap(x => (x.steps[d] || []).slice(0, per).concat(new Array(Math.max(0, per - (x.steps[d] || []).length)).fill(0)));
+  else c.notes = list.flatMap((x, k) => x.notes.map(n => ({ ...n, step: n.step + k * per })));
+  return c;
+}
+// A clip at another length: longer repeats what's there, shorter keeps the start.
+export function resizeClip(clip, bars) {
+  const c = JSON.parse(JSON.stringify(clip));
+  const was = c.bars;
+  if (bars === was) return c;
+  if (c.kind === 'drums') for (const d of ALL_DRUMS) c.steps[d] = Array.from({ length: STEPS * bars }, (_, s) => c.steps[d][s % (STEPS * was)] || 0);
+  else
+    c.notes = bars > was
+      ? Array.from({ length: bars / was }, (_, k) => c.notes.map(n => ({ ...n, step: n.step + k * STEPS * was }))).flat()
+      : c.notes.filter(n => n.step < STEPS * bars);
+  c.bars = bars;
+  return c;
+}
+
+// ---- Scales and 自動編 ----------------------------------------------------------------
+
+export const SCALES = { minor: [0, 2, 3, 5, 7, 8, 10], major: [0, 2, 4, 5, 7, 9, 11] };
+// The grid's rows: the scale's notes from the instrument's octave, `count` of them, lowest first.
+export function scaleRows(tonic = 9, minor = true, base = 60, count = 8) {
+  const steps = minor ? SCALES.minor : SCALES.major;
+  const root = base + ((tonic - (base % 12) + 12) % 12) - (tonic > 4 ? 12 : 0);
+  const out = [];
+  for (let k = 0; out.length < count; k++) out.push(root + 12 * Math.floor(k / 7) + steps[k % 7]);
+  return out;
+}
+
+// Each groove's drums over a bar, as the engine plays them (engine.mjs's
+// GROOVES): the 16ths each drum hits, with a little chance in it.
+const GROOVES = {
+  four: { kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14] },
+  hiphop: { kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  trap: { sub: [0, 11], kick: [6], clap: [8], hat: [0, 2, 4, 6, 8, 10, 12, 13, 14, 15] },
+  half: { kick: [0, 11], snare: [8], hat: [0, 4, 8, 12] },
+  broken: { kick: [0, 6, 10], snare: [4, 13], hat: [2, 6, 9, 14] },
+  house: { kick: [0, 4, 8, 12], clap: [4, 12], open: [2, 6, 10, 14], hat: [0, 4, 8, 12] },
+  dembow: { kick: [0, 4, 8, 12], snare: [3, 6, 11, 14], hat: [2, 10] },
+  afro: { kick: [0, 6, 10], snare: [4, 12], rim: [3, 7, 13], shaker: [2, 7, 9, 13] },
+  drill: { sub: [0, 6], kick: [11], snare: [8, 15], hat: [0, 3, 6, 9, 12, 15] },
+  boombap: { kick: [0, 7, 10], snare: [4, 12], hat: [2, 6, 10, 14] },
+  jersey: { kick: [0, 4, 8, 11, 14], clap: [4, 12], hat: [2, 6, 10] },
+  amapiano: { kick: [0, 4, 8, 12], sub: [3, 9, 14], rim: [12], shaker: [1, 3, 5, 7, 9, 11, 13, 15] },
+  lofi: { kick: [0, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  funk: { kick: [0, 3, 10], snare: [4, 12], rim: [7, 13], hat: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
+  garage: { kick: [0, 11], snare: [4, 12], hat: [2, 6, 10, 14], shaker: [1, 3, 5, 7, 9, 11, 13, 15] },
+  dnb: { kick: [0, 5, 8, 13], snare: [2, 6, 10, 14], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  reggae: { kick: [8], rim: [8], hat: [2, 6, 10, 14] },
+  phonk: { sub: [0, 10], kick: [7], snare: [4, 12], cowbell: [0, 3, 6, 10, 12], hat: [0, 2, 4, 6, 8, 10, 12, 13, 14, 15] },
+  baile: { kick: [0, 3, 8, 11], snare: [6, 14], hat: [2, 4, 10, 12] },
+  techno: { kick: [0, 4, 8, 12], clap: [4, 12], open: [2, 6, 10, 14], hat: [1, 3, 5, 7, 9, 11, 13, 15] },
+  jazz: { kick: [0], brush: [4, 12], ride: [0, 4, 6, 8, 12, 14], hat: [4, 12] },
+  bossa: { kick: [0, 6, 8, 14], rim: [0, 3, 6, 10, 12], shaker: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
+  samba: { kick: [0, 8], tom: [4, 12], timbale: [2, 3, 7, 10, 13, 14], shaker: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
+  salsa: { kick: [6], clave: [0, 3, 6, 10, 12], cowbell: [0, 4, 8, 12], conga: [6, 7, 14, 15] },
+  rock: { rkick: [0, 8, 10], rsnare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  punk: { rkick: [0, 6, 8], rsnare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], crash: [0] },
+  metal: { rkick: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], rsnare: [8], ride: [0, 4, 8, 12], crash: [0] },
+  citypop: { kick: [0, 6, 8, 11], snare: [4, 12], hat: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], open: [14] },
+  kpop: { kick: [0, 4, 8, 12, 14], clap: [4, 12], hat: [2, 6, 10, 12, 13, 14, 15] },
+  synthwave: { kick: [0, 8, 11], rsnare: [4, 12], hat: [2, 6, 10, 14], tom: [13, 15] },
+  disco: { kick: [0, 4, 8, 12], snare: [4, 12], open: [2, 6, 10, 14], hat: [1, 5, 9, 13] },
+  gospel: { kick: [0, 6, 8], rsnare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], tamb: [4, 12] },
+  neosoul: { kick: [0, 7, 10], snare: [4, 12], rim: [11], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  ballad: { kick: [0, 6], snare: [8], hat: [0, 4, 8, 12] },
+  ambient: { kick: [0], shaker: [4, 10, 12], gong: [0] },
+  cinematic: { kick: [0, 8], tom: [3, 6, 11, 14], rsnare: [12], gong: [0] },
+  chiptune: { chipk: [0, 6, 10], chipn: [4, 12], chiph: [0, 2, 3, 4, 6, 8, 10, 11, 12, 14] },
+  kizomba: { kick: [0, 6, 8], snare: [4, 12], rim: [2, 3, 10, 11, 15], shaker: [0, 2, 4, 6, 8, 10, 12, 14] },
+  highlife: { kick: [0, 6, 10], snare: [4, 12], agogo: [0, 2, 5, 7, 10, 13, 15], shaker: [1, 3, 5, 7, 9, 11, 13, 15] },
+  cumbia: { kick: [0, 8], conga: [6, 14], guiro: [0, 2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15] },
+  bhangra: { dhol: [0, 3, 8, 11], clap: [4, 6, 12, 14], tamb: [0, 2, 4, 6, 8, 10, 12, 14] },
+  dubstep: { kick: [0, 13], snare: [8], hat: [0, 2, 4, 6, 8, 10, 12, 14], sub: [0] },
+  footwork: { kick: [0, 3, 6, 10, 13], clap: [4, 12], hat: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], sub: [9] },
+  jungle: { kick: [0, 2, 10, 11], snare: [4, 7, 12, 15], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  trance: { kick: [0, 4, 8, 12], clap: [4, 12], open: [2, 6, 10, 14], hat: [3, 7, 11, 15] },
+  hardstyle: { hardkick: [0, 4, 8, 12], clap: [4, 12], sub: [2, 6, 10, 14], open: [2, 6, 10, 14] },
+  chinese: { kick: [0, 3, 10], snare: [4, 12], perc: [14], hat: [0, 4, 8, 12] },
+  blues: { kick: [0, 6, 8, 14], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] },
+  country: { kick: [0, 8], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], tamb: [4, 12] }
+};
+// (A groove on another kit's kick: its downbeat accent and extra kick there; its hat roll on its own hat.)
+const KICK_OF = g => (g.rkick ? 'rkick' : g.chipk ? 'chipk' : g.hardkick ? 'hardkick' : g.dhol ? 'dhol' : 'kick');
+const ROLL_OF = { jazz: 'ride', chiptune: 'chiph', ambient: 'shaker', cinematic: 'tom', bhangra: 'tamb', cumbia: 'guiro', salsa: 'clave' };
+export const GROOVE_STYLES = Object.keys(GROOVES);
+export function drumPattern(style = 'trap', seed = 1, bars = 1) {
+  const rng = makeRng(seed);
+  const g = GROOVES[style] || GROOVES.trap;
+  const clip = emptyDrums(bars);
+  for (let b = 0; b < bars; b++)
+    for (const [d, hits] of Object.entries(g))
+      for (const s of hits) if (rng.random() < 0.94) clip.steps[d][b * STEPS + s] = 1;
+  // The downbeat's kick a little harder; a bar's own touch: a ghost hit, or a hat roll at the end of the last bar.
+  const kick = clip.steps[KICK_OF(g)];
+  for (let b = 0; b < bars; b++) if (kick[b * STEPS]) kick[b * STEPS] = 2;
+  const last = (bars - 1) * STEPS;
+  if (rng.random() < 0.5) for (const s of [13, 14, 15]) clip.steps[ROLL_OF[style] || 'hat'][last + s] = 1;
+  if (rng.random() < 0.4) kick[last + rng.choice([3, 7, 14])] = 1;
+  clip.pitch = rng.choice([31, 33, 34, 36]);
+  clip.swing = ['lofi', 'boombap', 'garage', 'hiphop', 'neosoul'].includes(style) ? 0.25 : 0;
+  if (SHUFFLE[style]) clip.shuffle = SHUFFLE[style];
+  return clip;
+}
+
+// A melody in the key: a phrase of the scale's steps that leans to the
+// chord tones (the 1st, 3rd and 5th), on a rhythm with space in it, its
+// second half answering the first; a bass line on the roots, lower and
+// fewer notes; a pad, strings or organ holding chords. -> a notes clip.
+export function melody({ tonic = 9, minor = true } = {}, inst = 'keys', seed = 1, bars = 1) {
+  const rng = makeRng(seed);
+  const rows = scaleRows(tonic, minor, OCTAVE[inst] ?? 60, 8);
+  const clip = emptyNotes(inst, bars, { tonic, minor });
+  const bass = INSTRUMENT_ROLE[inst] === 'bass';
+  const held = CHORDAL.has(inst);
+  const rhythms = bass
+    ? [[0, 3, 6, 8, 11, 14], [0, 6, 8, 10], [0, 3, 8, 11], [0, 7, 8, 14]]
+    : held
+      ? [[0, 8], [0]]
+      : [[0, 3, 6, 8, 10, 12], [0, 2, 6, 8, 11, 14], [0, 4, 6, 10, 12], [0, 3, 4, 8, 11, 12, 14]];
+  const rhythm = rng.choice(rhythms);
+  const chord = [0, 2, 4, 7];
+  let at = rng.choice(chord);
+  const first = [];
+  for (let k = 0; k < rhythm.length; k++) {
+    // A step or a leap to a chord tone; a bass on its roots and fifths; chords on the scale's strong degrees.
+    if (bass) at = rng.choice([0, 0, 0, 4, 7, 3]);
+    else if (held) at = rng.choice([0, 3, 4, 5]);
+    else if (rng.random() < 0.6) at = Math.max(0, Math.min(7, at + rng.choice([-1, 1, -2, 2])));
+    else at = rng.choice(chord);
+    const next = rhythm[k + 1] ?? 16;
+    first.push({ step: rhythm[k], row: at, len: Math.max(1, Math.min(held ? 8 : 4, next - rhythm[k])) });
+  }
+  for (let b = 0; b < bars; b++)
+    for (const [k, x] of first.entries()) {
+      // The answer: the last note home (to the root) on the last bar.
+      const home = b === bars - 1 && k === first.length - 1;
+      const row = home ? 0 : b % 2 && k >= first.length / 2 ? Math.max(0, Math.min(7, x.row + rng.choice([-1, 1]))) : x.row;
+      clip.notes.push({ step: b * STEPS + x.step, midi: rows[row], len: x.len, ...(held ? { chord: true } : {}) });
+    }
+  return clip;
+}
