@@ -1,9 +1,11 @@
 // What every view shares: the language, [zh, en] pairs, icons, dates and
-// numbers, the app icons from the kit's brand, the address (#tab/what), and
-// the small animations (things rising into view, numbers counting up).
+// numbers, the app icons from the kit's brand, the apps' names and
+// screenshots, a card’s problem → idea → result, and
+// a picture shown big.
 import { lang } from '#kit/lang.mjs';
 import { appIcon, familyMark } from '#kit/brand.mjs';
 import { h, icons } from '#kit/ui.mjs';
+import { NODES } from './lib/tree.mjs';
 
 export { h };
 export const en = lang === 'en';
@@ -35,6 +37,25 @@ export const iconUrl = brand => {
 };
 export const appImg = (brand, size = 44, cls = '') => h('img', { class: `sc-appicon ${cls}`.trim(), src: iconUrl(brand), width: size, height: size, alt: '', decoding: 'async' });
 
+// An app's name from the tree (Orbit Weather).
+export const appTitle = a => t(NODES.get(a.id).node.title);
+
+// A screenshot (shots/<app>/N): the set taken with the app in Chinese
+// (N.zh.webp) on the Chinese page, the English one otherwise; a day-one
+// picture (then-…) has one set.
+export const shotUrl = (f, zh = true) => `./shots/${f}${zh && !en && !f.startsWith('then-') ? '.zh' : ''}.webp`;
+
+// Problem → idea → result, a tree card's three plain lines.
+export function pir(node) {
+  return [
+    ['target', ['問題', 'Problem'], node.p],
+    ['spark', ['想法', 'Idea'], node.i],
+    ['check', ['結果', 'Result'], node.r]
+  ]
+    .filter(([, , x]) => x)
+    .map(([icon, label, x]) => h('div', { class: 'sc-pir-row' }, [h('span', { class: 'sc-pir-k' }, [ico(icon), t(label)]), h('p', { text: t(x) })]));
+}
+
 // Dates are Taipei's days ('YYYY-MM-DD').
 const day = d => new Date(`${d}T12:00:00+08:00`);
 export const fmtDay = d => (en ? day(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Taipei' }) : `${+d.slice(5, 7)} 月 ${+d.slice(8, 10)} 日`);
@@ -48,44 +69,6 @@ export const go = (tab, what = '') => {
   const next = `#${tab}${what ? `/${what}` : ''}`;
   if (location.hash !== next) location.hash = next;
 };
-export const link = (tab, what, children, cls = '') => h('a', { href: `#${tab}${what ? `/${what}` : ''}`, class: cls }, children);
-
-// Things rise into view as they're scrolled to (once each).
-let io = null;
-export function reveal(root) {
-  const items = root.querySelectorAll('.sc-rise:not(.in)');
-  if (reduced() || typeof IntersectionObserver === 'undefined') return items.forEach(n => n.classList.add('in'));
-  io ||= new IntersectionObserver(
-    entries => {
-      for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    },
-    { rootMargin: '0px 0px -8% 0px' }
-  );
-  items.forEach(n => io.observe(n));
-}
-
-// A number that counts up to its value the first time it's seen.
-export function countUp(el, to, { ms = 1400, fmt = num } = {}) {
-  el.textContent = fmt(to);
-  if (reduced() || typeof IntersectionObserver === 'undefined') return;
-  el.textContent = fmt(0);
-  const seen = new IntersectionObserver(([e]) => {
-    if (!e.isIntersecting) return;
-    seen.disconnect();
-    const start = performance.now();
-    const step = now => {
-      const k = Math.min(1, (now - start) / ms);
-      el.textContent = fmt(Math.round(to * (1 - (1 - k) ** 3)));
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  });
-  seen.observe(el);
-}
 
 // A picture shown big: a centred layer over the page, closed by a tap,
 // Escape or its ✕.
@@ -104,7 +87,3 @@ export function zoom(src, alt = '') {
   document.body.append(box);
   box.querySelector('button').focus({ preventScroll: true });
 }
-
-// A card that shows its head and opens to the rest on a tap.
-export const fold = (cls, head, body) =>
-  h('details', { class: `sc-card sc-fold ${cls}`.trim() }, [h('summary', {}, [...head, h('span', { class: 'sc-fold-mark', 'aria-hidden': 'true' }, [ico('chevron')])]), h('div', { class: 'sc-fold-body' }, body)]);
