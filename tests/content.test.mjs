@@ -6,11 +6,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { icons } from '#kit/ui.mjs';
-import { ICONS } from '#kit/orbit.mjs';
 import { ROOT, NODES } from '../public/lib/tree.mjs';
 import { APPS } from '../public/lib/apps.mjs';
 import { ROWS, STORIES } from '../public/lib/stories.mjs';
-import { BIRTHS } from '../public/lib/births.mjs';
 import { SHOW } from '../public/lib/tree-show.mjs';
 
 const shot = f => new URL(`../public/shots/${f}.webp`, import.meta.url);
@@ -54,13 +52,6 @@ test('map: every step at a spot on the map, every spot opens a tree node', () =>
   }
 });
 
-test('births: real dates, oldest first, real apps', () => {
-  const dates = BIRTHS.map(x => x.date);
-  assert.ok(dates.every(d => /^2026-\d\d-\d\d$/.test(d)));
-  assert.deepEqual(dates, [...dates].sort(), 'oldest first');
-  for (const b of BIRTHS) assert.ok(APPS.some(a => a.id === b.id), b.id);
-});
-
 test('tree cards: every picture on a real node, both languages, icons drawn', () => {
   const said = x => typeof x === 'string' ? x.trim() : pair(x);
   for (const [id, s] of Object.entries(SHOW)) {
@@ -74,11 +65,20 @@ test('tree cards: every picture on a real node, both languages, icons drawn', ()
   for (const [id, { node }] of NODES) if (!node.kids?.length) assert.ok(SHOW[id], `${id}: a leaf card needs a picture`);
 });
 
-test('the tab bar draws its icons', () => {
-  const app = readFileSync(new URL('../public/app.mjs', import.meta.url), 'utf8');
-  const tabs = [...app.matchAll(/\{ id: '\w+', icon: '(\w+)'/g)].map(m => m[1]);
-  assert.equal(tabs.length, 4);
-  for (const i of tabs) assert.ok(ICONS[i], `tab icon ${i}`);
+// The page's chapters and its six highlights (views/main.mjs, read as text:
+// it draws on import): icons the kit draws, each highlight a real tree card
+// on a real app.
+test('the chapters draw their icons; every highlight opens a real card', () => {
+  const main = readFileSync(new URL('../public/views/main.mjs', import.meta.url), 'utf8');
+  const chapters = [...main.matchAll(/\{ id: '(\w+)', icon: '(\w+)', label:/g)];
+  assert.deepEqual(chapters.map(m => m[1]), ['apps', 'wow', 'made']);
+  for (const [, id, icon] of chapters) assert.ok(icons[icon], `chapter ${id}: icon ${icon}`);
+  const wow = [...main.matchAll(/\{ id: '([\w-]+)', app: (?:'(\w+)'|null), fig:/g)];
+  assert.equal(wow.length, 6);
+  for (const [, id, app] of wow) {
+    assert.ok(NODES.has(id) && SHOW[id], `highlight ${id}: a tree card with its picture`);
+    if (app) assert.ok(APPS.some(a => a.id === app), `highlight ${id}: app ${app}`);
+  }
 });
 
 test('stats.json has what the pages read', () => {

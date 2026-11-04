@@ -9,10 +9,9 @@
 //   #how/<node id>   the tree, that node open (an old #how/sys-<app> opens the app)
 //   #how/map[-<story>]  the map
 import { segmented, sheet, tile } from '#kit/ui.mjs';
-import { h, t, ico, appImg, go, reduced, wide, en } from '../shell.mjs';
+import { h, t, ico, appImg, go, reduced, wide, pir, en } from '../shell.mjs';
 import { ROOT, NODES, pathTo } from '../lib/tree.mjs';
 import { ROWS, STORIES } from '../lib/stories.mjs';
-import { pir } from './apps.mjs';
 import { SHOW } from '../lib/tree-show.mjs';
 
 const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', money: 'money' };
@@ -204,6 +203,16 @@ function render(moved = false, fromLink = false) {
   if (top < 0) jump(top - 12);
 }
 
+// A card on its own (the main page's 亮點, an app's 巧思): its sheet, over
+// whatever page is open; a computer shows it as a card in the middle.
+export const openCard = id => showSheet(id);
+export function closeCard() {
+  if (!openSheet) return;
+  const s = openSheet;
+  openSheet = null;
+  s.close();
+}
+
 function showSheet(id) {
   if (openSheet) {
     const was = openSheet;
@@ -344,7 +353,6 @@ function buildTree() {
   });
   return h('div', { class: 'sc-treewrap' }, [
     h('div', { class: 'sc-treecol' }, [
-      h('p', { class: 'sc-lede-s', text: t(['點一塊打開，用箭頭換下一塊。', 'Tap a part to open it; arrows move on.']) }),
       h('label', { class: 'sc-searchbox' }, [ico('search'), field]),
       h('div', { class: 'sc-found' }),
       host
@@ -533,7 +541,15 @@ export function renderHow(panel, what = '') {
       { value: view, onChange: id => go('how', id === 'map' ? 'map' : picked && picked !== ROOT.id ? picked : 'tree') }
     );
     built = { tree: buildTree(), map: h('div', { class: 'sc-mapslot' }) };
-    panel.replaceChildren(h('div', { class: 'sc-how' }, [h('div', { class: 'sc-segbox' }, [seg]), built.tree, built.map]));
+    panel.replaceChildren(
+      h('div', { class: 'sc-how' }, [
+        h('a', { class: 'sc-back', href: '#made' }, [ico('chevron'), t(['回到首頁', 'Back to the start'])]),
+        h('header', { class: 'sc-sechead sc-howhead' }, [h('h1', { text: t(['整個系統', 'The whole system']) }), h('p', { text: t(['Orbit 背後的每一塊，用白話說；點一塊打開。給好奇的人，不看也不影響了解作品。', 'Every part behind Orbit, in plain words; tap one to open it. For the curious: the rest of the site doesn’t need it.']) })]),
+        h('div', { class: 'sc-segbox' }, [seg]),
+        built.tree,
+        built.map
+      ])
+    );
   }
   seg.set(view);
   for (const k of ['tree', 'map']) built[k].hidden = k !== view;
@@ -555,12 +571,8 @@ export function renderHow(panel, what = '') {
   requestAnimationFrame(() => pick(id || ROOT.id, Boolean(id)));
 }
 
-// Leaving the tab: a phone's open sheet closes, the map stops.
+// Leaving the page: an open card closes, the map stops.
 export function leaveHow() {
   mapState?.stop();
-  if (openSheet) {
-    const s = openSheet;
-    openSheet = null;
-    s.close();
-  }
+  closeCard();
 }

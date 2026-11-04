@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-look="native">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -7,7 +7,7 @@
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
 <meta name="build-version" content="dev" />
 <title>Orbit Showcase</title>
-<meta name="description" content="一位高中生和 Claude 一起做的九個 App：每個 App 的畫面、整個系統怎麼運作、一路怎麼長大。" />
+<meta name="description" content="九個每天在用的 App，一位高中生帶著 AI 做出來：每個都能直接試玩。" />
 <meta name="application-name" content="Orbit Showcase" />
 <meta name="apple-mobile-web-app-title" content="Showcase" />
 <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
@@ -16,7 +16,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Orbit" />
 <meta property="og:title" content="Orbit Showcase" />
-<meta property="og:description" content="一位高中生和 Claude 一起做的九個 App：每個 App 的畫面、整個系統怎麼運作、一路怎麼長大。" />
+<meta property="og:description" content="九個每天在用的 App，一位高中生帶著 AI 做出來：每個都能直接試玩。" />
 <meta property="og:url" content="https://jaypengx.com/showcase/" />
 <meta property="og:image" content="https://jaypengx.com/showcase/icons/icon-512.png" />
 <meta name="twitter:card" content="summary" />
@@ -39,23 +39,12 @@
 <!-- kit:boot: right after <div id="loading">. -->
 <script>document.write('<script src="'+ORBIT_KIT.url('boot.js')+'"><\/script>')</script>
 <!-- /kit:boot -->
-<header class="q-appbar">
-  <div class="q-appbar-inner">
-    <div class="q-brand">
-      <img class="q-brand-logo" src="./favicon.svg" alt="" width="34" height="34" />
-      <div class="q-brand-text">
-        <h1 id="title">Orbit Showcase</h1>
-      </div>
-    </div>
-    <nav id="tabs" class="q-tabbar" role="tablist"></nav>
-    <div id="top-actions" class="q-actions"></div>
-  </div>
-</header>
+<!-- The frame (app.mjs draws it): a bar along the top (a computer: the side bar) and the views. -->
+<div id="bar" class="sc-bar"></div>
 <main class="page">
-  <section id="panel-home" class="tab-panel"></section>
-  <section id="panel-apps" class="tab-panel" hidden></section>
-  <section id="panel-how" class="tab-panel" hidden></section>
-  <section id="panel-numbers" class="tab-panel" hidden></section>
+  <div id="view-main" class="sc-view"></div>
+  <div id="view-app" class="sc-view" hidden></div>
+  <div id="view-how" class="sc-view" hidden></div>
 </main>
 <script type="module" src="./app.mjs" onerror="window.__fxFail&&window.__fxFail()"></script>
 </body>

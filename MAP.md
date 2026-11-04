@@ -7,17 +7,29 @@ Jay's 自主學習 portfolio. Live at https://jaypengx.com/showcase/.
 Open to everyone: no Orbit Pass and no Add to Home Screen step. It works on phones and on
 computers, either way up, in Safari and Chrome. The page lays itself out by its own width
 (`.page` is a CSS container): one column on a phone upright, the wide arrangements from 560 px of
-page (a phone on its side, a tablet, a computer). The side bar stands in for the kit's tab rail on
-screens 900 px wide and over 520 tall; a phone on its side gets the kit's rail.
+page (a phone on its side, a tablet, a computer).
 
-## The four tabs
+## One page, then one tap deeper
 
-| Tab | What it shows | Its data |
+Built for a reader with a few minutes (a teacher, a professor): one page read top to bottom,
+nothing to figure out first (Jay 2026-11-04: "too fluff, densed for a professor who only got a few
+minutes"; keep the demos and screenshots).
+
+| Where | What it shows | Code, data |
 | --- | --- | --- |
-| 總覽 | The family, the headline numbers | `public/data/stats.json` |
-| App | Each app's screens, and the app itself running on frozen data with a tour (`#apps/<app>`) | `public/lib/apps.mjs`, `public/lib/demos.mjs`, `public/demo/` |
-| 架構 | The structure tree (each card a small picture first: steps, numbers, before → after; then problem → idea → result, technical names folded away) and the journey map | `public/lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
-| 數字 | When each app arrived, every day's updates, the hours, code written and rewritten | `public/data/stats.json`, `public/lib/births.mjs` |
+| `#home` the top | One sentence on what Orbit is and who does what, four numbers from git, three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
+| `#apps` | The nine apps, each its question; 試玩 runs the real app at once | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
+| `#wow` | Six things people don't expect: a figure the tree's own card states; a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
+| `#made` | Jay's part and Claude's, one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`), links to the whole system | `views/main.mjs` `made`, `views/numbers.mjs` |
+| `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |
+| `#how`, `#how/<node>`, `#how/map[-<story>]` | The whole system: the structure tree (each card a small picture first, then problem → idea → result, technical names folded away) and the journeys | `views/how.mjs`, `lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
+
+The frame (`app.mjs`): a bar along the top with the brand, share and language, and the page's
+three chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay).
+On an app's page or the system's, the bar's second row is the way back, where you are and 試玩.
+On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the nine
+apps by name, the whole system. A link to a chapter on the page scrolls there; back and forward
+return to where the reader was.
 
 Jay 2026-10-27: the showcase is structure, numbers and demos only. The story of how it was made
 (requests, decisions, setbacks) is kept privately for Jay, not on the site.
@@ -26,7 +38,7 @@ Jay's own homepage lives here too: `public/home/index.html`, one self-contained 
 no betting, open to all) that the `orbit-home` Worker serves at https://jaypengx.com/ (published to Cloudflare by `deploy/cf-site.mjs`). It links Orbit, the
 showcase and GitHub.
 
-The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share. The look is the kit's
+The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (language, icons, app titles, screenshot addresses, a card's problem → idea → result). The look is the kit's
 (`Orbit-Core/kit`), with the showcase's own `public/showcase.css`.
 
 ## Keeping it true

@@ -16,18 +16,22 @@
 The Orbit family of apps, shown the way a page does better than a PDF: the structure, the numbers, and the apps themselves running. Open to everyone, on phones and computers, with no sign-in.
 
 <p align="center">
-  <img src="docs/screenshots/apps-desktop.webp" width="71%" alt="An app running inside the showcase, on a computer">
-  <img src="docs/screenshots/numbers-phone.webp" width="19%" alt="The numbers, on a phone">
+  <img src="docs/screenshots/home-desktop.webp" width="71%" alt="The showcase's first screen, on a computer">
+  <img src="docs/screenshots/home-phone.webp" width="19%" alt="The showcase's first screen, on a phone">
 </p>
 
 ## Features
 
-| Tab | What you see |
+One page, read top to bottom in a few minutes:
+
+| Part | What you see |
 | --- | --- |
-| 總覽 Overview | The family of apps and the headline numbers |
-| App | Each app's screens, the question it answers (problem, idea, result), and the app itself running on sample data with a guided tour |
-| 架構 Inside | How it's built, as small pictures first (steps, numbers, before and after), technical names folded away |
-| 數字 Numbers | When each app arrived, every day's updates, the hours of the day, and code written and rewritten |
+| The top | What Orbit is in one sentence, its numbers counted from git, three real screens |
+| 九個 App Apps | Each app's question, with 試玩 (Try) to run the real app at once |
+| 亮點 Highlights | Six things people don't expect, each opening its whole story (problem, idea, result) |
+| 怎麼做的 How it's made | Jay's part and Claude's, one problem from spotted to fixed, and the numbers from the code |
+
+Each app has its own page (`#apps/<app>`: its screens, the real app to try, its clever parts, day one beside today), and the whole system its own (`#how`: the structure tree and the journeys), one tap deeper.
 
 - **For readers who know no tech:** plain everyday words, Chinese first and English second.
 - **Open to everyone:** no sign-in and no install step; a real desktop layout as well as the phone one, in Safari and Chrome.
@@ -66,8 +70,8 @@ Details: **[MAP.md](MAP.md)**.
 ```
 public/
 ├── index.html, app.mjs, shell.mjs, showcase.css
-├── views/               home, apps, demo, how (架構), numbers
-├── lib/                 apps, demos, the structure tree, stories, births
+├── views/               main (the page), apps (an app's page), demo, how (the whole system), numbers
+├── lib/                 apps, demos, the structure tree, stories
 ├── data/stats.json      the numbers (written by the deploy)
 ├── demo/                each app frozen on sample data, with the kit it used
 └── shots/               the apps' screenshots
