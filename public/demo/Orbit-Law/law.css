@@ -1,0 +1,4719 @@
+/* Orbit Law: the kit's frame (orbit.css: tokens, sections, chips, sheets)
+   plus the app's own pieces on an 8px rhythm: topic tiles, bill cards with
+   their bar, law rows, the reader's type, 問法律's answers. Light and dark
+   both come from the kit's tokens. */
+
+.lw-panel {
+  /* The phone's 16 px in. */
+  --q-margin: 16px;
+  padding: 0 var(--q-margin) calc(var(--q-nav, 0px) + 32px);
+}
+/* Room under the last answer for the floating box (two lines tall) over the tab bar. */
+#panel-ask {
+  padding-bottom: calc(var(--q-nav, 0px) + 168px);
+}
+html.q-kb #panel-ask {
+  padding-bottom: 120px;
+}
+/* Behind the box and the tab bar, the page's own colour: an answer scrolling
+   under them showed through the gap between the two (Jay 2026-10-31). */
+#panel-ask::after {
+  content: '';
+  position: fixed;
+  z-index: 19;
+  left: var(--q-mid, 50%);
+  bottom: 0;
+  width: var(--q-vw, 100vw);
+  height: calc(var(--q-nav, 0px) + 64px);
+  transform: translateX(-50%);
+  background: linear-gradient(to top, var(--q-page) calc(100% - 28px), transparent);
+  pointer-events: none;
+}
+html.q-kb #panel-ask::after {
+  content: none;
+}
+.lw-head {
+  padding: 8px 0 16px;
+}
+.lw-head h1 {
+  margin: 0;
+  padding: 0;
+}
+/* Home: no app name (Jay), only the date. */
+.lw-head.bare {
+  padding: 0 0 12px;
+}
+.lw-over {
+  margin: 0 0 2px;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-panel > .q-search {
+  margin: 0 0 8px;
+}
+.lw-none {
+  color: var(--q-label-2);
+  font: var(--q-t-subhead);
+  padding: 16px 4px;
+  margin: 0;
+}
+.lw-sub {
+  margin: -4px 0 8px;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-sec {
+  margin-top: 24px;
+}
+.lw-sec .q-section-head {
+  margin-bottom: 8px;
+}
+.lw-sec .q-section-head h2 {
+  font: 600 20px/25px var(--q-font);
+}
+.lw-count {
+  color: var(--q-label-2);
+  font: 600 15px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-chips {
+  margin: 0 calc(-1 * var(--q-margin, 16px));
+  padding: 4px var(--q-margin, 16px) 8px;
+  scroll-padding-inline: var(--q-margin, 16px);
+}
+.lw-tchip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--t);
+}
+.lw-tchip[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--q-accent) 14%, transparent);
+  color: var(--q-accent);
+}
+.lw-more {
+  display: block;
+  width: 100%;
+  margin: 8px 0 0;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: var(--q-fill-3);
+  color: var(--q-accent);
+  font: 600 15px/1 var(--q-font);
+  cursor: pointer;
+}
+
+/* ---- Tags and tiles ---- */
+.lw-tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--t) 16%, transparent);
+  color: var(--t);
+}
+.lw-tile svg {
+  width: 22px;
+  height: 22px;
+}
+.lw-tile.sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+}
+.lw-tile.sm svg {
+  width: 18px;
+  height: 18px;
+}
+.lw-tile.lg {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+}
+.lw-tile.lg svg {
+  width: 28px;
+  height: 28px;
+}
+.lw-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.lw-tag {
+  display: inline-flex;
+  align-items: center;
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+  white-space: nowrap;
+}
+/* Only an exception (a status) is a capsule; a fact is grey text. */
+.lw-tag:is(.green, .red, .indigo, .orange, .teal, .purple) {
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1;
+}
+.lw-tag.green {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.lw-tag.red {
+  background: color-mix(in srgb, var(--q-red) 16%, transparent);
+  color: var(--q-red);
+}
+.lw-tag.indigo {
+  background: color-mix(in srgb, var(--q-indigo) 16%, transparent);
+  color: var(--q-indigo);
+}
+.lw-tag.orange {
+  background: color-mix(in srgb, var(--q-orange) 18%, transparent);
+  color: var(--q-orange);
+}
+
+/* ---- Lists of laws: a card of rows, each a tile, two lines and a chevron ---- */
+.lw-list {
+  overflow: hidden;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+}
+.lw-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 12px 8px 12px;
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-row + .lw-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 56px;
+  right: 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-row:active {
+  background: var(--q-fill-4, var(--q-fill-3));
+}
+.lw-row-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.lw-row-name {
+  overflow: hidden;
+  font: 500 16px/21px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-row small {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lw-row-meta small {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-row-meta .lw-tag {
+  flex: none;
+  min-height: 18px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+.lw-chev {
+  flex: none;
+  width: 8px;
+  height: 14px;
+  color: var(--q-label-3);
+}
+
+/* ---- Bill cards: tile, stage and day; the name; the bar; who and how many ---- */
+.lw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
+.lw-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(78%, 280px);
+  gap: 8px;
+  margin: 0 calc(-1 * var(--q-margin, 16px));
+  padding: 0 var(--q-margin, 16px) 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--q-margin, 16px);
+  scrollbar-width: none;
+}
+.lw-rail::-webkit-scrollbar {
+  display: none;
+}
+.lw-rail > * {
+  scroll-snap-align: start;
+}
+.lw-bill {
+  box-sizing: border-box;
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px 14px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-bill.q-skel {
+  min-height: 160px;
+}
+.lw-bill.wide {
+  min-height: 0;
+}
+.lw-bill:active {
+  transform: scale(0.98);
+  transition: transform 0.12s;
+}
+.lw-bill-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lw-bill-stage {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--q-indigo);
+  font: 600 13px/1 var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-bill-stage.held {
+  color: var(--q-orange);
+}
+.lw-bill-stage.passed {
+  color: var(--q-green);
+}
+.lw-bill-stage.dropped {
+  color: var(--q-label-2);
+}
+.lw-bill-day {
+  flex: none;
+  margin-left: auto;
+  color: var(--q-label-2);
+  font: 500 12px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-bill-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font: 600 16px/22px var(--q-font);
+}
+.lw-bill-foot {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.lw-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 0;
+  color: var(--p);
+  font: 600 12px/1 var(--q-font);
+  white-space: nowrap;
+}
+.lw-party b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.lw-bill.notice.closed {
+  opacity: 0.7;
+}
+.lw-bill.notice .lw-bill-stage {
+  color: var(--q-orange);
+}
+.lw-bill.notice.closed .lw-bill-stage {
+  color: var(--q-label-2);
+}
+
+/* The bar: six segments, filled to the step reached. */
+.lw-prog {
+  --c: var(--q-indigo);
+  display: grid;
+  gap: 6px;
+}
+.lw-prog.held {
+  --c: var(--q-orange);
+}
+.lw-prog.passed {
+  --c: var(--q-green);
+}
+.lw-prog.dropped {
+  --c: var(--q-gray);
+}
+.lw-prog-bar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+}
+.lw-prog-bar i {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--q-fill-2);
+}
+.lw-prog-bar i.on {
+  background: var(--c);
+}
+.lw-prog-bar i.now {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 30%, transparent);
+}
+.lw-prog-names {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  color: var(--q-label-3);
+  font: 600 11px/14px var(--q-font);
+  text-align: center;
+}
+.lw-prog-names .on {
+  color: var(--q-label-2);
+}
+/* Under each step, how many of the round's versions stand there. */
+.lw-prog-counts {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  color: var(--c);
+  font: 600 11px/14px var(--q-font);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.lw-prog-counts b {
+  font-size: 13px;
+}
+
+/* The term at a glance: how many bills stand at each step. */
+.lw-funnel {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin: 8px 0;
+  padding: 12px 12px 8px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+}
+.lw-funnel-col {
+  display: grid;
+  grid-template-rows: auto 56px auto;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  cursor: pointer;
+}
+.lw-funnel-col b {
+  font: 600 15px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-funnel-col i {
+  align-self: end;
+  width: 100%;
+  max-width: 36px;
+  height: var(--h);
+  border-radius: 6px 6px 3px 3px;
+  background: color-mix(in srgb, var(--q-indigo) 55%, transparent);
+}
+.lw-funnel-col:nth-child(n + 5) i {
+  background: color-mix(in srgb, var(--q-green) 60%, transparent);
+}
+.lw-funnel-col.on i {
+  background: var(--q-indigo);
+}
+.lw-funnel-col:nth-child(n + 5).on i {
+  background: var(--q-green);
+}
+.lw-funnel-col span {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 600 11px/14px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- 首頁 ---- */
+.lw-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+.lw-starters.rail {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--q-margin, 16px));
+  padding-inline: var(--q-margin, 16px);
+  scrollbar-width: none;
+}
+.lw-starters.rail::-webkit-scrollbar {
+  display: none;
+}
+.lw-starters.rail .lw-starter {
+  flex: none;
+  white-space: nowrap;
+}
+.lw-starters.col {
+  display: grid;
+  justify-items: stretch;
+}
+.lw-starter {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-surface);
+  color: var(--q-label);
+  font: 500 14px/1.25 var(--q-font);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.lw-starters.col .lw-starter {
+  min-height: 44px;
+  border-radius: var(--q-r-cell);
+}
+.lw-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.lw-stat {
+  --c: var(--q-indigo);
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-stat.orange {
+  --c: var(--q-orange);
+}
+.lw-stat.green {
+  --c: var(--q-green);
+}
+.lw-stat b {
+  color: var(--c);
+  font: 600 24px/28px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-stat span {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* Three across; the last row's leftovers share it, so the grid has no hole. */
+.lw-topics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.lw-topics > * {
+  grid-column: span 2;
+}
+.lw-topics > :last-child:nth-child(3n + 1) {
+  grid-column: 1 / -1;
+}
+.lw-topics > :nth-last-child(2):nth-child(3n + 1),
+.lw-topics > :last-child:nth-child(3n + 2) {
+  grid-column: span 3;
+}
+.lw-topic {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-topic > span {
+  max-width: 100%;
+  overflow: hidden;
+  font: 600 14px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* English topic names run longer: two lines, never cut. */
+:lang(en) .lw-topic > span.q-wrapped {
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: normal;
+  text-overflow: clip;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  text-wrap: balance;
+}
+.lw-topic small {
+  margin-top: -6px;
+  color: var(--q-label-2);
+  font: var(--q-t-caption);
+}
+
+/* ---- 追蹤 empty, and other empties ---- */
+.lw-empty,
+.lw-ask-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px 8px;
+  text-align: center;
+}
+.lw-empty strong,
+.lw-ask-empty strong {
+  font: 600 20px/25px var(--q-font);
+}
+.lw-empty p,
+.lw-ask-empty > p {
+  max-width: 340px;
+  margin: 0;
+  color: var(--q-label-2);
+  font: 15px/22px var(--q-font);
+}
+.lw-orb {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--q-accent) 14%, transparent);
+  color: var(--q-accent);
+}
+.lw-orb svg {
+  width: 40px;
+  height: 40px;
+}
+.lw-orb.star svg {
+  fill: currentColor;
+}
+.lw-empty-acts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.lw-empty-sm {
+  padding: 32px 16px;
+}
+.lw-ask-empty .lw-starters {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 8px;
+}
+.lw-ask-empty .lw-ask-note {
+  margin-top: 8px;
+}
+
+/* ---- The reader's bar: back, the law's name, its tools (sticky, solid) ---- */
+.lw-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 0 calc(-1 * var(--q-margin, 16px));
+  padding: 8px var(--q-margin, 16px);
+  background: var(--q-page);
+  box-shadow: 0 var(--q-hairline, 0.5px) 0 var(--q-sep);
+}
+.lw-back,
+.lw-tool {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  cursor: pointer;
+}
+.lw-back svg,
+.lw-tool svg {
+  width: 20px;
+  height: 20px;
+}
+.lw-tool.on {
+  color: var(--q-yellow);
+}
+.lw-tool.on svg {
+  fill: currentColor;
+}
+.lw-tools {
+  display: flex;
+  gap: 8px;
+}
+.lw-title {
+  min-width: 0;
+}
+.lw-bar .lw-title h2 {
+  transition: opacity 0.2s;
+}
+/* (The bar's name waits while the law card's own is on screen.) */
+.lw-bar.quiet .lw-title h2 {
+  opacity: 0;
+}
+.lw-title h2 {
+  margin: 0;
+  overflow: hidden;
+  font: 600 17px/22px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The law's card: kind and topic, the name, its facts; what's moving on it
+   as rows a hairline apart; the doors along its foot. Its topic's colour
+   washes in from the corner (the screen's one coloured surface). */
+.lw-over-card {
+  display: grid;
+  margin: 16px 0 24px;
+  padding: 16px 16px 0;
+  overflow: hidden;
+  border-radius: var(--q-r-card, 22px);
+  background: radial-gradient(130% 90% at 100% 0%, color-mix(in srgb, var(--t) 22%, transparent), transparent 62%), var(--q-surface);
+  box-shadow: 0 8px 24px -16px color-mix(in srgb, var(--t) 60%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .lw-over-card { box-shadow: none; }
+}
+:root[data-theme='dark'] .lw-over-card { box-shadow: none; }
+.lw-over-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--q-label-2);
+  font: 500 14px/18px var(--q-font);
+}
+.lw-over-top .lw-tile {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+}
+.lw-over-top .lw-tile svg {
+  width: 18px;
+  height: 18px;
+}
+.lw-over-top .lw-tag {
+  margin-left: auto;
+}
+.lw-over-title {
+  display: block;
+  margin: 12px 0 0;
+  font: 700 28px/34px var(--q-font);
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+}
+.lw-over-title.long {
+  font-size: 22px;
+  line-height: 28px;
+}
+.lw-over-title.xlong {
+  font-size: 19px;
+  line-height: 25px;
+}
+.lw-over-facts {
+  margin: 4px 0 0;
+  color: var(--q-label-2);
+  font: var(--q-t-subhead, 400 15px/20px var(--q-font));
+  font-variant-numeric: tabular-nums;
+}
+.lw-over-rows {
+  display: grid;
+  margin-top: 12px;
+}
+.lw-over-row {
+  --c: var(--q-indigo);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+  background: none;
+  color: var(--q-label);
+  text-align: left;
+  cursor: pointer;
+}
+.lw-over-row::before {
+  content: '';
+  grid-row: 1;
+  align-self: start;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.lw-over-row.green { --c: var(--q-green); }
+.lw-over-row.orange { --c: var(--q-orange); }
+.lw-over-row.cons { --c: var(--lw-cons); }
+.lw-over-row.idle { --c: var(--q-label-3, #8e8e93); }
+.lw-over-row.idle b { font-weight: 500; }
+.lw-over-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.lw-over-text b {
+  font: 600 15px/20px var(--q-font);
+}
+.lw-over-text span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 14px/19px var(--q-font);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lw-over-row .lw-chev {
+  width: 7px;
+  height: 12px;
+  color: var(--q-label-2);
+}
+.lw-over-row .lw-prog {
+  grid-column: 2 / -1;
+  margin-top: 8px;
+}
+/* A long name in big type steps down a size and breaks evenly. */
+.lw-big-name {
+  text-wrap: balance;
+}
+.lw-big-name.long {
+  font-size: 19px;
+  line-height: 25px;
+}
+.lw-big-name.xlong {
+  font-size: 17px;
+  line-height: 23px;
+}
+.lw-tag.topic {
+  color: var(--q-label-2);
+}
+.lw-strip {
+  --c: var(--q-indigo);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 8px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 15px/20px var(--q-font);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.lw-strip.green {
+  --c: var(--q-green);
+}
+.lw-strip.orange {
+  --c: var(--q-orange);
+}
+.lw-strip b {
+  color: var(--q-label);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-strip span {
+  grid-column: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* What's moving: two lines before it gives up. */
+.lw-strip > span {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lw-strip em {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--q-accent);
+  font: 600 14px/1 var(--q-font);
+  font-style: normal;
+  white-space: nowrap;
+}
+.lw-strip .lw-prog {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+}
+.lw-fw {
+  margin: 16px 0 0;
+  color: var(--q-label-2);
+  font: 16px/1.7 var(--q-font);
+}
+
+/* ---- The law: Chinese set at 1.7, wrapped plainly (pretty breaks CJK early) ---- */
+.lw-law,
+.lw-peek {
+  font: 17px/1.7 var(--q-font);
+  color: var(--q-label);
+  overflow-wrap: anywhere;
+  text-wrap: wrap;
+}
+.lw-law :is(p, li),
+.lw-peek :is(p, li),
+.lw-ask :is(p, li),
+.lw-msg :is(p, li),
+.lw-diff p {
+  text-wrap: wrap;
+}
+.lw-law.en {
+  line-height: 1.55;
+}
+.lw-h {
+  margin: 32px 0 8px;
+  font: 600 19px/1.35 var(--q-font);
+  color: var(--q-label);
+  scroll-margin-top: 72px;
+}
+.lw-h.d0 {
+  font-size: 22px;
+}
+.lw-h.d2,
+.lw-h.d3,
+.lw-h.d4 {
+  font-size: 16px;
+  color: var(--q-label-2);
+}
+/* Each article a block whose fill reaches its edges (the flash shows whole:
+   content-visibility clips at the border box, so nothing paints outside). */
+.lw-art {
+  margin: 0 -12px;
+  padding: 12px 12px 12px;
+  border-radius: var(--q-r-cell);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 160px;
+  scroll-margin-top: 64px;
+}
+.lw-law .lw-art + .lw-art {
+  background: linear-gradient(var(--q-sep), var(--q-sep)) 12px 0 / calc(100% - 24px) var(--q-hairline, 0.5px) no-repeat;
+}
+.lw-art.gone {
+  color: var(--q-label-3);
+}
+.lw-art.marked .lw-no::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--q-orange);
+  vertical-align: middle;
+}
+.lw-no {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin: 0 0 4px;
+  padding: 0 4px 0 0;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  font: 600 14px/1 var(--q-font);
+  cursor: pointer;
+}
+.lw-fresh,
+.lw-pending {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-left: 6px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  font: 600 12px/1 var(--q-font);
+  vertical-align: 2px;
+}
+.lw-fresh {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.lw-pending {
+  background: color-mix(in srgb, var(--q-orange) 18%, transparent);
+  color: var(--q-orange);
+  cursor: pointer;
+}
+.lw-find {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+.lw-find[hidden] {
+  display: none;
+}
+.lw-find-n {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-para {
+  margin: 0 0 6px;
+}
+.lw-para:last-child {
+  margin-bottom: 0;
+}
+.lw-item {
+  display: block;
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+}
+.lw-item.sub {
+  padding-left: 3.2em;
+}
+.lw-item.more {
+  text-indent: 0;
+}
+.lw-ref {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--q-indigo) 70%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.lw-ref.para {
+  text-decoration-style: dotted;
+}
+.lw-cons {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--lw-cons) 75%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.lw-flash {
+  animation: lw-flash 1.8s var(--q-ease, ease-out);
+}
+.lw-para.lw-flash {
+  margin-inline: -6px;
+  padding-inline: 6px;
+  border-radius: 8px;
+}
+@keyframes lw-flash {
+  0%,
+  35% {
+    background: color-mix(in srgb, var(--q-yellow) 28%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* ---- Contents and text sheets ---- */
+.lw-toc {
+  display: grid;
+  padding: 0 0 24px;
+}
+.lw-toc button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 11px 4px;
+  border: 0;
+  border-bottom: var(--q-hairline, 0.5px) solid var(--q-sep);
+  background: none;
+  color: var(--q-label);
+  font: 16px/22px var(--q-font);
+  text-align: left;
+  cursor: pointer;
+}
+.lw-toc button small {
+  flex: none;
+  color: var(--q-label-3);
+  font: 13px/22px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-toc .d0 {
+  font-weight: 600;
+}
+.lw-toc .d2 {
+  padding-left: 16px;
+}
+.lw-toc .d3,
+.lw-toc .d4 {
+  padding-left: 32px;
+  color: var(--q-label-2);
+}
+/* 施行日期 (view.mjs notesHtml): numbered points, article numbers linked. */
+.lw-notes {
+  padding: 0 0 24px;
+  color: var(--q-label);
+  font: 15px/1.7 var(--q-font);
+}
+
+/* ---- Article menu ---- */
+.lw-menu {
+  display: grid;
+  overflow: hidden;
+  margin: 0 0 calc(16px + env(safe-area-inset-bottom));
+  border-radius: var(--q-r-card);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-menu-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  font: 16px/1.3 var(--q-font);
+  text-align: left;
+  cursor: pointer;
+}
+.lw-menu-row + .lw-menu-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 56px;
+  right: 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-menu-row i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--q-gray);
+  color: #fff;
+}
+.lw-menu-row i svg {
+  width: 17px;
+  height: 17px;
+}
+.lw-menu-row.spark i,
+.lw-menu-row.ask i {
+  background: #4f46e5;
+}
+.lw-menu-row.mark i {
+  background: var(--q-orange);
+}
+.lw-menu-row.court i {
+  background: #64748b;
+}
+
+/* ---- Peek: a linked article in a sheet ---- */
+.lw-peek .lw-art {
+  margin: 0;
+  padding: 4px 0 8px;
+}
+.lw-peek-foot {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 calc(12px + env(safe-area-inset-bottom));
+}
+.lw-spark-btn,
+.q-btn.lw-spark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.lw-spark-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- Bill sheet ---- */
+.lw-item-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.lw-item-prog {
+  padding: 16px;
+  border-radius: var(--q-r-card);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-item-prog .lw-prog-bar i {
+  height: 8px;
+  border-radius: 4px;
+}
+.lw-item-prog .lw-prog-names {
+  font-size: 12px;
+}
+.lw-now {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--q-sep);
+}
+.lw-now p {
+  display: grid;
+  grid-template-columns: 4.5em 1fr;
+  gap: 8px;
+  margin: 0;
+  font: 400 14px/20px var(--q-font);
+}
+.lw-now b {
+  color: var(--q-label-2);
+  font-weight: 600;
+}
+.lw-art-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--q-sheet-cell, var(--q-surface));
+  color: var(--q-label);
+  font: 600 13px/1 var(--q-font);
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.lw-art-chip {
+  color: var(--q-label);
+}
+.lw-art-chip b {
+  color: var(--q-label-2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.lw-art-chip.more {
+  color: var(--q-label-2);
+}
+.lw-item-who,
+.lw-item-diff {
+  margin-top: 16px;
+}
+:is(.lw-item-who, .lw-item-diff, .lw-item-why) h4 {
+  margin: 0 0 8px;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-parties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lw-parties .lw-party {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+.lw-diffs {
+  display: grid;
+  gap: 8px;
+}
+.lw-diff {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-diff header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 14px/20px var(--q-font);
+}
+.lw-diff header .lw-ref {
+  text-decoration: none;
+  color: var(--q-indigo);
+}
+.lw-diff p {
+  margin: 0;
+  color: var(--q-label);
+  font: 15px/1.7 var(--q-font);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lw-diff ins {
+  padding: 1px 2px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--q-green) 22%, transparent);
+  text-decoration: none;
+}
+.lw-diff del {
+  padding: 1px 2px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--q-red) 16%, transparent);
+  color: var(--q-label-2);
+  text-decoration-color: color-mix(in srgb, var(--q-red) 70%, transparent);
+}
+.lw-gap {
+  color: var(--q-label-3);
+}
+.lw-why summary {
+  color: var(--q-accent);
+  font: 500 13px/20px var(--q-font);
+  cursor: pointer;
+}
+.lw-why p {
+  margin-top: 4px;
+  color: var(--q-label-2);
+  font-size: 14px;
+}
+.lw-fold {
+  margin-top: 16px;
+  border-radius: var(--q-r-card);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 16px;
+  list-style: none;
+  font: 600 16px/1 var(--q-font);
+  cursor: pointer;
+}
+.lw-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.lw-fold > summary::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--q-label-3);
+  border-bottom: 2px solid var(--q-label-3);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s;
+}
+.lw-fold[open] > summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+.lw-item-sheet .q-btn.block {
+  margin: 16px 0 calc(16px + env(safe-area-inset-bottom));
+}
+.lw-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 12px;
+}
+.lw-timeline li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0 8px 24px;
+  color: var(--q-label-3);
+  font: 15px/20px var(--q-font);
+}
+.lw-timeline li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 13px;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--q-fill-1);
+  background: var(--q-sheet-cell, var(--q-surface));
+  z-index: 1;
+}
+.lw-timeline li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 23px;
+  bottom: -13px;
+  width: 2px;
+  background: var(--q-fill-2);
+}
+.lw-timeline li.done {
+  color: var(--q-label);
+}
+.lw-timeline li.done::before {
+  background: var(--q-indigo);
+  border-color: var(--q-indigo);
+}
+.lw-timeline li.now b {
+  color: var(--q-indigo);
+}
+.lw-timeline span {
+  flex: none;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+  font-variant-numeric: tabular-nums;
+}
+.lw-timeline b a {
+  color: inherit;
+  text-decoration: underline dashed color-mix(in srgb, var(--q-indigo) 70%, transparent);
+  text-underline-offset: 3px;
+}
+.lw-versions {
+  padding: 0 0 8px;
+}
+.lw-version {
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-version summary {
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  list-style: none;
+  cursor: pointer;
+  font: 15px/1.4 var(--q-font);
+}
+.lw-version summary::-webkit-details-marker {
+  display: none;
+}
+.lw-version summary small {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-compare {
+  padding: 0 12px 12px;
+  color: var(--q-label-2);
+  font: var(--q-t-subhead);
+}
+.lw-compare .lw-diff {
+  background: var(--q-fill-4, var(--q-fill-3));
+}
+/* A way out to the source: the kit's quiet bar with its › (never accent text, Jay 2026-11-03). */
+a.q-more.lw-out {
+  margin-top: 12px;
+}
+
+/* ---- 問法律 and 白話解釋 ---- */
+.lw-chat {
+  display: grid;
+  gap: 12px;
+}
+.lw-msg {
+  max-width: 100%;
+  border-radius: 20px;
+  font: 16px/1.65 var(--q-font);
+}
+.lw-msg.me {
+  justify-self: end;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-bottom-right-radius: 6px;
+  background: #4f46e5;
+  color: #fff;
+}
+.lw-msg.me p {
+  margin: 0;
+}
+.lw-msg.ai {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-bottom-left-radius: 6px;
+  background: var(--q-surface);
+  color: var(--q-label);
+}
+.lw-msg.ai > p {
+  margin: 0;
+}
+.lw-lead {
+  margin: 0;
+  font: 500 17px/1.6 var(--q-font);
+}
+.lw-points {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 0 18px;
+}
+.lw-points li::marker {
+  color: var(--q-indigo);
+}
+.lw-cite {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin: 0 2px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--q-indigo) 14%, transparent);
+  color: var(--q-indigo);
+  font: 600 12px/1 var(--q-font);
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+.lw-block {
+  --c: var(--q-indigo);
+  padding: 12px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-block.red {
+  --c: var(--q-red);
+}
+.lw-block.blue {
+  --c: var(--q-blue);
+}
+.lw-block.green {
+  --c: var(--q-green);
+}
+.lw-block.teal {
+  --c: #0d9488;
+}
+.lw-block.purple {
+  --c: var(--q-purple, #af52de);
+}
+.lw-block.orange {
+  --c: var(--q-orange);
+}
+.lw-block h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  color: var(--q-label-2);
+  font: 600 14px/20px var(--q-font);
+}
+.lw-block h4 i {
+  display: grid;
+  width: 18px;
+  height: 18px;
+}
+.lw-block h4 svg {
+  width: 18px;
+  height: 18px;
+}
+.lw-block p {
+  margin: 0;
+}
+.lw-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+.lw-srcs {
+  margin: 0;
+  color: var(--q-label-3);
+  font: var(--q-t-footnote);
+}
+.lw-msg.thin {
+  background: var(--q-fill-3);
+}
+.lw-new {
+  justify-self: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 500 14px/1 var(--q-font);
+  cursor: pointer;
+}
+.lw-typing {
+  display: flex;
+  gap: 5px;
+  padding: 4px 0;
+}
+.lw-typing i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--q-label-3);
+  animation: lw-dot 1.2s infinite ease-in-out;
+}
+.lw-typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.lw-typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes lw-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+/* The box: fixed over the page's foot, above the tab bar. */
+.lw-composer {
+  position: fixed;
+  left: var(--q-mid, 50%);
+  bottom: calc(var(--q-nav, 0px) + 16px);
+  z-index: 20;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  /* Inside the page's own margins. */
+  width: calc(var(--q-vw, 100vw) - 2 * var(--q-margin, 16px) - 8px);
+  padding: 6px 6px 6px 16px;
+  border-radius: 24px;
+  background: var(--q-surface);
+  box-shadow: 0 0 0 0.5px var(--q-sep), 0 8px 24px -8px rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+}
+.lw-composer.in-sheet {
+  position: static;
+  width: 100%;
+  margin: 12px 0 8px;
+  transform: none;
+  background: var(--q-sheet-cell, var(--q-fill-3));
+  box-shadow: none;
+}
+.lw-pin {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0 0;
+  color: var(--q-indigo);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-pin[hidden] {
+  display: none;
+}
+.lw-pin span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-pin-x {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+  font: 16px/1 var(--q-font);
+  cursor: pointer;
+}
+.lw-ask-q {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 36px;
+  max-height: 120px;
+  padding: 7px 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: none;
+  color: var(--q-label);
+  font: 16px/22px var(--q-font);
+}
+.lw-ask-q::placeholder {
+  color: var(--q-label-3);
+}
+.lw-send {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: #fff;
+  cursor: pointer;
+}
+.lw-send svg {
+  width: 20px;
+  height: 20px;
+}
+.lw-ask {
+  font: 16px/1.65 var(--q-font);
+  color: var(--q-label);
+}
+.lw-answer {
+  display: grid;
+  gap: 8px;
+}
+.lw-answer > p {
+  margin: 0;
+}
+.lw-asked {
+  color: var(--q-label-2);
+  font-weight: 600;
+}
+.lw-ask-sheet .lw-starters {
+  margin-top: 12px;
+}
+.lw-ask-sheet .lw-starter {
+  background: var(--q-sheet-cell, var(--q-fill-3));
+}
+.lw-ask-note {
+  margin: 0;
+  padding: 0 0 calc(12px + env(safe-area-inset-bottom));
+  color: var(--q-label-3);
+  font: var(--q-t-footnote);
+}
+.lw-diff-sheet .lw-diffs {
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+.lw-rulings {
+  padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+}
+/* Court, number and date wrap whole, never a date left alone. */
+.lw-rulings small span {
+  white-space: nowrap;
+}
+
+/* Narrow phones (iPhone SE, 320pt): slimmer tools so the law's name fits. */
+@media (max-width: 359px) {
+  .lw-bar {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+  .lw-tools {
+    gap: 6px;
+  }
+  .lw-back,
+  .lw-tool {
+    width: 32px;
+    height: 32px;
+  }
+  .lw-funnel {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+  .lw-stat b {
+    font-size: 21px;
+  }
+}
+
+/* An AI explanation's button, then its answer in place. */
+.lw-ai {
+  margin: 0 0 8px;
+}
+.lw-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  font: 600 14px/1 var(--q-font);
+  cursor: pointer;
+}
+.lw-ai-btn svg {
+  width: 15px;
+  height: 15px;
+}
+.lw-ai .lw-msg.ai {
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+
+/* The bill sheet's name: whole, in the sheet (its title bar holds one line). */
+.lw-item-name {
+  margin: 0 0 12px;
+  font: 700 22px/28px var(--q-font);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Court rulings: the tag, the article's badge, home's cards ---- */
+.lw-tag.court {
+  gap: 3px;
+  color: var(--q-label-2);
+  font-variant-numeric: tabular-nums;
+}
+.lw-tag.court svg,
+.lw-rul svg {
+  width: 12px;
+  height: 12px;
+}
+.lw-rul {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--q-label-2);
+  font: 500 13px/1 var(--q-font);
+  vertical-align: 2px;
+  cursor: pointer;
+}
+.lw-strip.slate {
+  --c: #64748b;
+}
+.lw-strip.teal {
+  --c: #0f766e;
+}
+@media (prefers-color-scheme: dark) {
+  .lw-strip.teal {
+    --c: #2dd4bf;
+  }
+}
+.lw-bill-stage.court {
+  color: var(--q-label);
+}
+.lw-ruling .lw-bill-name {
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-cites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.lw-cites .lw-cite {
+  display: inline-block;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  line-height: 22px;
+  text-overflow: ellipsis;
+}
+.lw-cite b {
+  margin-inline-end: 4px;
+  font-weight: 600;
+}
+/* A chip in an answer stays one line: a long name (違反道路交通管理事件統一裁罰
+   基準及處理細則) is cut short with …, the article (第16條) never; it wrapped
+   into a two-line pill before (Jay 2026-10-27). */
+.lw-points .lw-cite {
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 4px;
+  padding: 3px 9px;
+  line-height: 16px;
+  vertical-align: 0;
+}
+.lw-points .lw-cite b {
+  /* (Capped by the screen, not the line: an unbreakable chip would widen the whole answer.) */
+  max-width: calc(var(--q-vw, 100vw) - 170px);
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lw-points .lw-cite span {
+  flex: none;
+}
+/* An answer's cards: one under another. */
+.lw-cards {
+  display: grid;
+  gap: 6px;
+}
+.lw-cite.more {
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+}
+.lw-list.in-sheet {
+  margin-bottom: calc(16px + env(safe-area-inset-bottom));
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+button.lw-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lw-funnel.bills {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 0;
+}
+.lw-funnel.bills .lw-funnel-col {
+  grid-template-rows: auto 64px auto auto;
+}
+.lw-funnel.bills .lw-funnel-col span {
+  margin: 0;
+}
+.lw-funnel-col small {
+  max-width: 100%;
+  min-height: 28px;
+  margin: 0 0 8px;
+  color: var(--q-label-3);
+  font: 500 11px/14px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.lw-funnel.bills .lw-funnel-col i {
+  background: color-mix(in srgb, var(--q-indigo) 55%, transparent);
+}
+.lw-funnel.bills .lw-funnel-col:last-child i {
+  background: color-mix(in srgb, var(--q-green) 60%, transparent);
+}
+.lw-funnel.bills .lw-funnel-col.on i {
+  background: var(--q-indigo);
+}
+.lw-funnel.bills .lw-funnel-col:last-child.on i {
+  background: var(--q-green);
+}
+.lw-funnel-cap {
+  margin: 0 0 8px;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+
+/* 問法律: the title with 對話紀錄 and 新對話 beside it; the saved chats sheet. */
+.lw-ask-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+.lw-ask-tools {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+/* 對話紀錄: 新對話 on top, a search past a few chats, the chats by day in
+   grouped cards (title, what it came to, when · how many), the count and
+   全部刪除 at the foot. */
+.lw-chat-list {
+  padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+}
+.lw-chat-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--q-r-card);
+  background: var(--q-sheet-cell, var(--q-surface));
+  color: var(--q-indigo);
+  font: 600 16px/1.3 var(--q-font);
+  text-align: left;
+}
+.lw-chat-new i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+}
+.lw-chat-new i svg {
+  width: 17px;
+  height: 17px;
+}
+.lw-chat-find {
+  margin-top: 12px;
+}
+.lw-chat-new[hidden],
+.lw-chat-find[hidden],
+.lw-chat-foot[hidden] {
+  display: none;
+}
+.lw-chat-head {
+  margin: 24px 16px 8px;
+}
+.lw-chat-group {
+  overflow: hidden;
+  border-radius: var(--q-r-card);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-chat-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+}
+.lw-chat-row + .lw-chat-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-chat-row.on {
+  background: color-mix(in srgb, var(--q-indigo) 9%, transparent);
+}
+.lw-chat-open {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 12px 4px 12px 16px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  text-align: left;
+  font: inherit;
+}
+.lw-chat-t {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font: 600 16px/22px var(--q-font);
+}
+.lw-chat-gist {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: var(--q-label-2);
+  font: 15px/20px var(--q-font);
+}
+.lw-chat-open small {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-chat-open small b {
+  color: var(--q-indigo);
+  font-weight: 600;
+}
+.lw-chat-more {
+  align-self: start;
+  width: 44px;
+  height: 44px;
+  margin-top: 4px;
+  border: 0;
+  background: none;
+  color: var(--q-label-2);
+}
+.lw-chat-more svg {
+  width: 20px;
+  height: 20px;
+}
+.lw-chat-none {
+  padding: 24px 16px;
+  text-align: center;
+}
+.lw-chat-groups .q-empty {
+  padding-top: 32px;
+}
+.lw-chat-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 16px 0;
+}
+.lw-chat-foot small {
+  min-width: 0;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-chat-clear {
+  flex: none;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--q-red);
+  font: 600 15px/20px var(--q-font);
+}
+.lw-menu-row.warn {
+  color: var(--q-red);
+}
+.lw-menu-row.warn i {
+  background: var(--q-red);
+}
+/* Rename, in the chat's menu: the name in a field, then 改名. */
+.lw-rename {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+}
+.lw-rename i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #0d9488;
+  color: #fff;
+}
+.lw-rename i svg {
+  width: 17px;
+  height: 17px;
+}
+.lw-rename input:focus {
+  outline: 2px solid var(--q-indigo);
+}
+.lw-rename input {
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 16px/20px var(--q-font);
+}
+.lw-rename button {
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-indigo);
+  color: #fff;
+  font: 600 15px/1 var(--q-font);
+}
+
+/* Lists of regulations: long names wrap to two lines, not cut. */
+.lw-list.wrap .lw-row-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+/* An answer's 政府公告 and bills: cards that open the source. */
+.lw-notice {
+  box-sizing: border-box;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-decoration: none;
+}
+button.lw-notice {
+  border: 0;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+}
+.lw-notice b {
+  font: 600 15px/20px var(--q-font);
+}
+.lw-notice small {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+
+/* 表決: a vote as a row with its tally bar; the vote sheet's party split and names. */
+.lw-votes {
+  display: grid;
+  gap: 8px;
+}
+.lw-vote {
+  box-sizing: border-box;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-align: left;
+  font: inherit;
+}
+.lw-vote-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.lw-vote-t {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font: 500 15px/21px var(--q-font);
+}
+.lw-vote-me {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fff;
+  font: 600 12px/16px var(--q-font);
+}
+.lw-vote-me.y {
+  background: var(--q-green);
+}
+.lw-vote-me.n {
+  background: var(--q-red);
+}
+.lw-vote-me.a,
+.lw-vote-me[class~='-'] {
+  background: var(--q-gray);
+}
+.lw-vote-bar {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+}
+.lw-vote-bar i.y {
+  background: var(--q-green);
+}
+.lw-vote-bar i.n {
+  background: var(--q-red);
+}
+.lw-vote-bar i.a {
+  background: var(--q-gray);
+}
+.lw-vote small {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-vote.static {
+  margin: 8px 0;
+}
+.lw-vote.static .lw-vote-top {
+  display: none;
+}
+.lw-vote-subject {
+  margin: 0;
+  font: 600 17px/1.5 var(--q-font);
+}
+.lw-vote-sheet,
+.lw-item-votes {
+  padding-bottom: 8px;
+}
+.lw-vote-sheet h4,
+.lw-item-votes h4,
+.lw-person-sec h4 {
+  margin: 16px 0 8px;
+  font: 600 15px/20px var(--q-font);
+}
+.lw-splits {
+  display: grid;
+  gap: 6px;
+}
+.lw-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lw-split-n {
+  display: flex;
+  gap: 6px;
+}
+.lw-split-n b {
+  min-width: 36px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-align: center;
+  font: 600 13px/18px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-split-n .y {
+  background: color-mix(in srgb, var(--q-green) 16%, transparent);
+  color: var(--q-green);
+}
+.lw-split-n .n {
+  background: color-mix(in srgb, var(--q-red) 16%, transparent);
+  color: var(--q-red);
+}
+.lw-split-n .a {
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+}
+.lw-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lw-name {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--p) 14%, transparent);
+  color: var(--q-label);
+  font: 500 14px/20px var(--q-font);
+}
+
+/* 立委: cards with a photo ringed in the party colour; the legislator sheet. */
+.lw-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.lw-person {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 10px;
+  padding: 10px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-decoration: none;
+}
+/* 我的 · 追蹤的立委: a card each, their newest bills, 質詢 and votes under them. */
+.lw-tracks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 10px;
+}
+.lw-track {
+  overflow: hidden;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+}
+.lw-track-head {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 10px;
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-track-rows {
+  display: grid;
+  padding: 0 0 4px;
+}
+.lw-track-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin: 0;
+  padding: 6px 14px;
+  border: 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+  background: none;
+  color: var(--q-label);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+.lw-track-row .lw-row-name {
+  overflow: hidden;
+  font: var(--q-t-subhead, 400 15px/20px var(--q-font));
+  line-height: 20px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+}
+.lw-track-k {
+  min-width: 36px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--t) 14%, transparent);
+  color: var(--t);
+  font: 600 12px/1.2 var(--q-font);
+  text-align: center;
+  --t: var(--q-label-2);
+}
+.lw-track-k.indigo { --t: var(--q-indigo); }
+.lw-track-k.orange { --t: var(--q-orange); }
+.lw-track-k.green { --t: var(--q-green); }
+.lw-track-k.red { --t: var(--q-red); }
+.lw-track-d {
+  color: var(--q-label-2);
+  font: var(--q-t-caption, 400 12px/16px var(--q-font));
+  white-space: nowrap;
+}
+.lw-track-d.new {
+  color: var(--q-green);
+  font-weight: 600;
+}
+.lw-track-none {
+  margin: 0;
+  padding: 0 12px 12px 66px;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-person .lw-photo {
+  grid-row: 1 / span 2;
+}
+.lw-person-text {
+  display: grid;
+  min-width: 0;
+}
+.lw-person-text b {
+  overflow: hidden;
+  font: 600 16px/21px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-vote-on {
+  margin: 8px 0 0;
+}
+.lw-person-text small,
+.lw-person-n {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* A card's party and district: on two lines where a phone's half is too narrow (無黨籍 · 國民黨團 · 第1選區). */
+.lw-people .lw-person-text small {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lw-photo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--p);
+  background: color-mix(in srgb, var(--p) 20%, var(--q-surface));
+  color: var(--p);
+  font: 700 18px/1 var(--q-font);
+}
+.lw-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.lw-photo.lg {
+  width: 72px;
+  height: 72px;
+  font-size: 28px;
+  box-shadow: 0 0 0 3px var(--p);
+}
+.lw-person-head {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 16px;
+}
+.lw-person-head h2 {
+  margin: 0 0 6px;
+  font: 700 24px/1.2 var(--q-font);
+}
+.lw-stats.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.lw-stats.four .lw-stat {
+  padding: 10px 6px 10px 8px;
+}
+.lw-stats.four .lw-stat b {
+  overflow: hidden;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.lw-stats.four .lw-stat span {
+  font-size: 11px;
+}
+.lw-clips {
+  display: grid;
+  gap: 6px;
+}
+.lw-clip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+}
+.lw-clip-main {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-clip-play {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--q-orange);
+  color: #fff;
+}
+.lw-clip-play svg {
+  width: 16px;
+  height: 16px;
+}
+.lw-clip-yt {
+  display: grid;
+  place-items: center;
+  height: 44px;
+}
+.lw-clip-yt svg {
+  width: 28px;
+  height: 28px;
+}
+.lw-hint-sm {
+  margin: 8px 0 0;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-timeline.mini {
+  margin: 8px 0 0;
+}
+.lw-budget .lw-bill-name {
+  color: var(--q-label);
+}
+/* 預算: the total and its change, a bar of what it's for, the cut. */
+.lw-bud-total {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.lw-bud-total b {
+  font: 700 28px/32px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.lw-bud-total small {
+  color: var(--q-label-2);
+  font: 600 13px/1 var(--q-font);
+}
+.lw-bud-chg {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: var(--c);
+  font: 600 12px/14px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  --c: var(--q-label-2);
+}
+.lw-bud-total .lw-bud-chg {
+  margin-left: auto;
+}
+.lw-bud-chg.up {
+  --c: var(--q-orange);
+}
+.lw-bud-chg.down {
+  --c: var(--q-green);
+}
+.lw-bud-chg.cut {
+  --c: var(--q-red);
+}
+.lw-bud-bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+.lw-bud-bar i {
+  min-width: 2px;
+  background: var(--c);
+}
+.lw-bud-legend {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+.lw-bud-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lw-bud-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.lw-bud-cut,
+.lw-bud-note,
+.lw-bud-steps {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-bud-cut {
+  color: var(--q-red);
+}
+.lw-bud-cut b {
+  font-variant-numeric: tabular-nums;
+}
+.lw-bud-page .lw-meta {
+  margin: 6px 0 14px;
+}
+.lw-bud-page .lw-stats.four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.lw-bud-page .lw-stats.four .lw-stat {
+  padding: 12px;
+}
+.lw-bud-page .lw-stats.four .lw-stat b {
+  font-size: 22px;
+}
+.lw-stat.teal {
+  --c: var(--q-teal);
+}
+.lw-stat.red {
+  --c: var(--q-red);
+}
+.lw-bud-skel {
+  display: block;
+  height: 220px;
+  border-radius: var(--q-r-card);
+}
+.lw-bud-page .lw-bud-bar {
+  margin: 0 0 10px;
+}
+.lw-bud-rows {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+}
+.lw-bud-row {
+  display: block;
+  min-width: 0;
+  padding: 10px 14px;
+}
+.lw-bud-row + .lw-bud-row {
+  border-top: 0.5px solid var(--q-separator, var(--q-fill-1));
+}
+details.lw-bud-row {
+  padding: 0;
+}
+details.lw-bud-row > summary {
+  display: block;
+  padding: 10px 14px;
+  list-style: none;
+  cursor: pointer;
+}
+details.lw-bud-row > summary::-webkit-details-marker {
+  display: none;
+}
+details.lw-bud-row[open] > summary {
+  background: color-mix(in srgb, var(--q-indigo) 7%, transparent);
+}
+.lw-bud-kids {
+  margin: 0 0 0 14px;
+  border-left: 2px solid color-mix(in srgb, var(--q-indigo) 30%, transparent);
+}
+.lw-bud-kids .lw-bud-row {
+  border-top: 0.5px solid var(--q-separator, var(--q-fill-1));
+}
+.lw-bud-kids > .lw-hint-sm {
+  margin: 0;
+  padding: 8px 14px 10px;
+}
+.lw-bud-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.lw-bud-name {
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-width: 0;
+  overflow: hidden;
+  font: 600 15px/20px var(--q-font);
+  text-wrap: balance;
+}
+.lw-bud-line {
+  align-items: flex-start;
+}
+.lw-bud-row.plan .lw-bud-name {
+  font-weight: 500;
+}
+.lw-bud-line b {
+  flex: none;
+  font: 600 15px/20px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-bud-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 6px;
+}
+.lw-bud-track {
+  flex: 1;
+  min-width: 40px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--q-fill-2);
+}
+.lw-bud-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c, var(--q-indigo));
+}
+.lw-bud-sub .lw-bud-chg {
+  padding: 2px 6px;
+  font-size: 11px;
+}
+.lw-bud-src a {
+  color: var(--q-indigo);
+}
+
+.lw-list-cap {
+  margin: 0;
+  padding: 16px 16px 6px;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+
+/* 在 App 裡讀: a government page, rule, bill or 質詢 video in a sheet. */
+.lw-page {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.lw-page-head {
+  display: grid;
+  gap: 4px;
+}
+.lw-page-head h3 {
+  margin: 0;
+  font: 600 19px/1.35 var(--q-font);
+}
+.lw-page-head small,
+.lw-page-src {
+  color: var(--q-label-2);
+  font: 500 13px/18px var(--q-font);
+}
+.lw-page p,
+.lw-page li {
+  margin: 0;
+  font: 400 16px/1.7 var(--q-font);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.lw-page ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 20px;
+}
+.lw-page h4 {
+  margin: 8px 0 0;
+  font: 600 16px/22px var(--q-font);
+}
+.lw-page .lw-page-pre {
+  padding: 14px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+  font: 400 15px/1.75 var(--q-font);
+  white-space: pre-wrap;
+}
+.lw-page-wait {
+  height: 18px;
+  border-radius: 8px;
+}
+.lw-page-wait.short {
+  width: 60%;
+}
+.lw-page-table {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--q-surface);
+}
+.lw-page-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 14px/1.5 var(--q-font);
+}
+.lw-page-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--q-separator, rgba(128, 128, 128, 0.2));
+  vertical-align: top;
+  white-space: pre-line;
+  min-width: 4em;
+}
+.lw-page figure {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.lw-page figure img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+}
+.lw-page figcaption {
+  color: var(--q-label-2);
+  font: 400 13px/1.5 var(--q-font);
+}
+.lw-page-link {
+  display: block;
+  padding: 12px 14px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+  color: var(--q-blue, #007aff);
+  font: 600 15px/1.4 var(--q-font);
+  text-decoration: none;
+}
+.lw-file {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--q-red, #ff3b30);
+  color: #fff;
+  font: 600 11px/1 var(--q-font);
+}
+.lw-clip-sheet {
+  display: grid;
+  gap: 10px;
+}
+.lw-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--q-r-cell);
+  background: #000;
+}
+.lw-clip-meta {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 500 14px/1.5 var(--q-font);
+}
+.lw-clip-meta b {
+  color: var(--q-label);
+}
+.lw-yt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--q-surface);
+  color: var(--q-label);
+  font: 600 14px/20px var(--q-font);
+  text-decoration: none;
+}
+.lw-yt svg {
+  width: 22px;
+  height: 22px;
+}
+.lw-clip-sheet h4 {
+  margin: 6px 0 0;
+  font: 600 16px/22px var(--q-font);
+}
+.lw-transcript {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lw-transcript li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font: 400 15px/1.55 var(--q-font);
+  cursor: pointer;
+}
+.lw-transcript time {
+  color: var(--q-label-2);
+  font: 500 13px/1.8 var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-transcript li.now {
+  background: color-mix(in srgb, var(--q-orange, #ff9500) 16%, transparent);
+}
+.lw-page figure.broken img {
+  display: none;
+}
+.lw-page figure.broken figcaption {
+  padding: 12px 14px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+  color: var(--q-label);
+  font-size: 15px;
+}
+
+/* 找法: article cards first, then names, then 立法院, then 問法律. */
+.lw-find-cards {
+  display: grid;
+  gap: 10px;
+}
+.lw-find-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-find-card.q-skel {
+  min-height: 112px;
+}
+.lw-find-law {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.lw-find-law b {
+  overflow: hidden;
+  font: 600 15px/20px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-find-law b.q-wrapped {
+  white-space: normal;
+}
+.lw-find-law em {
+  flex: none;
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--t, var(--q-indigo)) 14%, transparent);
+  color: var(--t, var(--q-indigo));
+  font: 600 13px/20px var(--q-font);
+  font-style: normal;
+}
+.lw-find-card p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  font: 400 15px/1.6 var(--q-font);
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+.lw-find-hero {
+  gap: 12px;
+  padding: 16px;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--t, var(--q-indigo)) 45%, transparent);
+}
+.lw-find-hero .lw-find-law {
+  gap: 12px;
+}
+.lw-find-hero-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.lw-find-hero-name b {
+  font: 700 20px/26px var(--q-font);
+}
+.lw-find-hero-name small {
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+}
+.lw-find-hero p {
+  color: var(--q-label-2);
+  -webkit-line-clamp: 3;
+}
+.lw-find-hero p.q-skel {
+  min-height: 72px;
+}
+.lw-find-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--t, var(--q-indigo)) 16%, transparent);
+  color: var(--t, var(--q-indigo));
+  font: 600 16px/20px var(--q-font);
+}
+.lw-find-open svg {
+  width: 7px;
+  height: 12px;
+}
+.lw-find-card mark {
+  padding: 0 1px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--q-orange, #ff9500) 28%, transparent);
+  color: inherit;
+}
+.lw-find-subs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lw-find-subs span {
+  overflow: hidden;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--q-teal, #30b0c7) 14%, transparent);
+  color: var(--q-teal, #30b0c7);
+  font: 600 13px/18px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-find-ask {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 24px;
+  padding: 14px 16px;
+  border-radius: var(--q-r-card);
+  background: linear-gradient(135deg, #3b2f8f, #5b4fd6);
+  color: #fff;
+  text-decoration: none;
+}
+.lw-find-ask svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+.lw-find-ask span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.lw-find-ask b {
+  font: 600 16px/22px var(--q-font);
+}
+.lw-find-ask small {
+  opacity: 0.8;
+  font: 500 13px/18px var(--q-font);
+}
+
+/* The law card's doors: 目錄, 子法, 判決, 授權依據, a count over a word,
+   side by side along the card's foot, a hairline between. */
+.lw-doors {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  margin: 12px -16px 0;
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-door {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 6px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  text-align: center;
+  cursor: pointer;
+}
+.lw-door + .lw-door {
+  box-shadow: inset var(--q-hairline, 0.5px) 0 0 var(--q-sep);
+}
+.lw-door:active {
+  background: var(--q-fill-3);
+}
+.lw-door b {
+  max-width: 100%;
+  overflow: hidden;
+  font: 600 19px/24px var(--q-font-rounded, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-door small {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 12px/16px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-reg-art { padding: 4px 0 8px; }
+.lw-reg-art + .lw-reg-art { border-top: 0.5px solid var(--q-sep); }
+.lw-reg-head {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  text-align: left;
+  cursor: pointer;
+}
+.lw-reg-head b { color: var(--q-accent); font: 600 14px/20px var(--q-font); }
+.lw-reg-head span { color: var(--q-label-2); font: 14px/20px var(--q-font); }
+
+/* 立法: five doors across the top (the open one filled). */
+.lw-bill-doors {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+  margin: 4px 0 12px;
+}
+.lw-bdoor {
+  --c: var(--q-indigo);
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 2px 8px;
+  border: 0;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+  color: var(--q-label);
+  cursor: pointer;
+}
+.lw-bdoor.orange { --c: var(--q-orange); }
+.lw-bdoor.green { --c: var(--q-green); }
+.lw-bdoor.teal { --c: #0f766e; }
+.lw-bdoor.court { --c: #a16207; }
+.lw-bdoor.red { --c: var(--q-red); }
+.lw-door-ic {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--q-fill-3);
+  color: var(--q-label-2);
+}
+.lw-door-ic svg { width: 17px; height: 17px; }
+.lw-bdoor .lw-door-ic { margin: 0; }
+.lw-bdoor small { max-width: 100%; overflow: hidden; font: 600 13px/16px var(--q-font); white-space: nowrap; text-overflow: ellipsis; }
+:lang(en) .lw-bdoor small { font-size: 11px; }
+.lw-bdoor[aria-selected='true'] { background: var(--q-accent); color: #fff; }
+.lw-bdoor[aria-selected='true'] .lw-door-ic { background: rgba(255, 255, 255, 0.22); color: #fff; }
+
+/* Quick questions on 法規 and each topic: each runs a search. */
+.lw-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 16px;
+}
+.lw-quick-q {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px 0 11px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--q-surface);
+  color: var(--q-label);
+  font: 500 15px/20px var(--q-font);
+  cursor: pointer;
+}
+.lw-quick-q svg { width: 15px; height: 15px; color: var(--q-indigo); }
+#bill-stages[hidden],
+#bill-funnel[hidden] { display: none; }
+
+/* Fixes from the phone pass: nothing runs off the edge, names get two lines. */
+.lw-find-cards { grid-template-columns: minmax(0, 1fr); }
+.lw-find-card { grid-template-columns: minmax(0, 1fr); min-width: 0; overflow: hidden; }
+.lw-find-card p { overflow-wrap: anywhere; }
+.lw-find-subs span { display: block; box-sizing: border-box; }
+.lw-door.wide { grid-column: span 2; padding-inline: 12px; }
+.lw-door.wide b {
+  display: -webkit-box;
+  white-space: normal;
+  font-size: 15px;
+  line-height: 20px;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lw-list .lw-row-name {
+  display: -webkit-box;
+  white-space: normal;
+  text-wrap: balance;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lw-bill-name { text-wrap: balance; }
+/* A name on one line, shrunk by the kit (.q-fit-wrap); wrapped, two even lines (English rows: whole). */
+.lw-list .lw-row-name.q-fit-wrap:not(.q-wrapped),
+.lw-bill-name.q-fit-wrap:not(.q-wrapped) {
+  display: block;
+  white-space: nowrap;
+}
+/* (Wrapped: whole, never clamped to an ellipsis; 全民健康保險執行公共安全事故… was cut.) */
+.lw-list .lw-row-name.q-wrapped {
+  display: block;
+}
+:lang(en) .lw-bill-name.q-wrapped {
+  -webkit-line-clamp: 3;
+}
+/* A row's name gets the room up to the chevron. */
+.lw-row .lw-chev {
+  margin-left: -6px;
+}
+.lw-row {
+  padding-right: 8px;
+}
+.lw-vote-law { display: block; color: var(--q-indigo); font: 600 13px/18px var(--q-font); }
+.lw-mine-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 16px;
+  padding: 14px 16px;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+}
+.lw-mine-hint strong { font: 600 15px/20px var(--q-font); }
+.lw-mine-hint p { margin: 2px 0 0; color: var(--q-label-2); font: var(--q-t-footnote); }
+.lw-orb.sm { flex: none; width: 40px; height: 40px; margin: 0; box-shadow: none; }
+.lw-orb.sm svg { width: 20px; height: 20px; }
+
+/* Books-style shelves: laws as covers. */
+.lw-covers {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 112px;
+  gap: 12px;
+  margin: 0 calc(-1 * var(--q-margin, 16px));
+  padding: 0 var(--q-margin, 16px) 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--q-margin, 16px);
+  scrollbar-width: none;
+}
+.lw-covers::-webkit-scrollbar { display: none; }
+.lw-cover {
+  display: grid;
+  gap: 6px;
+  color: var(--q-label);
+  text-decoration: none;
+  scroll-snap-align: start;
+}
+.lw-cover-art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 150px;
+  padding: 12px 10px;
+  overflow: hidden;
+  border-radius: 6px 12px 12px 6px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--t) 78%, #fff), var(--t) 55%, color-mix(in srgb, var(--t) 70%, #000));
+  color: #fff;
+}
+.lw-cover-art svg { width: 26px; height: 26px; opacity: 0.9; }
+.lw-cover-art b {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 600 15px/20px var(--q-font);
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+.lw-cover small { color: var(--q-label-2); font: var(--q-t-footnote); }
+
+.lw-find-subs span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.lw-cover-art b { font-size: 14px; line-height: 19px; -webkit-line-clamp: 5; }
+.lw-back-row { margin: 4px 0 -8px; }
+
+/* 判決: outcome first, then who, then the reasons one point at a time. */
+.lw-jd-hero {
+  --c: #64748b;
+  display: grid;
+  gap: 4px;
+  margin: 12px 0;
+  padding: 16px;
+  border-radius: var(--q-r-card);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-jd-hero.orange { --c: var(--q-orange); }
+.lw-jd-hero.green { --c: var(--q-green); }
+.lw-jd-hero.red { --c: var(--q-red); }
+.lw-jd-hero.indigo { --c: var(--q-indigo); }
+.lw-jd-hero > span { color: var(--q-label-2); font: 600 13px/18px var(--q-font); }
+.lw-jd-hero strong { color: var(--c); font: 600 24px/30px var(--q-font); }
+.lw-jd-hero p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  font: 16px/1.6 var(--q-font);
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+.lw-jd-who { margin: 0 0 8px; color: var(--q-label-2); font: var(--q-t-footnote); }
+.lw-jd-points { display: grid; gap: 8px; }
+.lw-jd-point {
+  padding: 12px 14px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+}
+.lw-jd-point summary,
+div.lw-jd-point {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  font: 15px/1.6 var(--q-font);
+  list-style: none;
+  cursor: pointer;
+}
+.lw-jd-point summary::-webkit-details-marker { display: none; }
+.lw-jd-point b { color: var(--q-accent); font-weight: 600; }
+.lw-jd-point p { margin: 8px 0 0 32px; font: 15px/1.7 var(--q-font); }
+.lw-jd-point[open] summary span { color: var(--q-label-2); }
+
+/* 對照表 at a glance: the tally, then each article as a chip */
+.lw-diff-sum { margin: 0 0 12px; }
+.lw-diff-sum p { margin: 0 0 8px; font-size: 15px; }
+.lw-diff-sum b.indigo { color: var(--q-indigo, #4f46e5); }
+.lw-diff-sum b.green { color: var(--q-green, #16a34a); }
+.lw-diff-sum b.red { color: var(--q-red, #dc2626); }
+.lw-diff-arts { display: flex; flex-wrap: wrap; gap: 6px; }
+.lw-diff-art { min-height: 32px; min-width: 44px; padding: 4px 10px; border-radius: 16px; border: 1px solid var(--q-sep); background: var(--q-fill, transparent); color: var(--q-label); font: inherit; font-size: 14px; font-variant-numeric: tabular-nums; }
+.lw-diff-art.green { border-color: color-mix(in srgb, var(--q-green, #16a34a) 50%, transparent); }
+.lw-diff-art.red { border-color: color-mix(in srgb, var(--q-red, #dc2626) 50%, transparent); text-decoration: line-through; }
+.lw-tag.teal {
+  background: color-mix(in srgb, var(--q-teal) 16%, transparent);
+  color: var(--q-teal);
+}
+.lw-tag.purple {
+  background: color-mix(in srgb, var(--q-purple) 16%, transparent);
+  color: var(--q-purple);
+}
+/* A ruling in a list: its kind, then its 案由 */
+.lw-rul-row .q-cell-text > span:first-child { display: flex; align-items: center; gap: 8px; }
+.lw-rul-row b { font-weight: 600; min-width: 0; }
+
+/* 為什麼要修: each sponsor's reason, 3 lines until tapped */
+.lw-item-why { display: grid; gap: 8px; margin-top: 16px; }
+.lw-item-why h4 { margin-bottom: 0; }
+.lw-why-row { display: grid; justify-items: stretch; width: 100%; gap: 4px; padding: 12px 14px; border: 0; border-radius: 14px; background: var(--q-sheet-cell, var(--q-surface)); color: var(--q-label); font: inherit; text-align: start; }
+.lw-why-row b { font: 600 13px/1.3 var(--q-font); color: var(--q-label-2); }
+.lw-why-row span { width: 100%; font-size: 16px; line-height: 1.6; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.lw-why-row.open span { -webkit-line-clamp: unset; display: block; }
+
+/* 表決: one card a day per agenda item, with each party's side */
+.lw-vgroups { display: grid; gap: 10px; }
+.lw-vgroup { display: grid; gap: 8px; width: 100%; padding: 14px 16px; border: 0; border-radius: 18px; background: var(--q-surface); color: var(--q-label); font: inherit; text-align: start; }
+.lw-vg-t { font: 600 17px/1.35 var(--q-font); min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-wrap: balance; }
+.lw-vg-foot { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lw-vg-foot small { min-width: 0; }
+.lw-vg-foot small span { white-space: nowrap; }
+.lw-vg-sides { display: flex; flex-wrap: wrap; gap: 6px; }
+.lw-vg-side { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 0 8px; border-radius: 13px; font: 600 12px/1 var(--q-font); background: color-mix(in srgb, var(--p) 12%, transparent); }
+.lw-vg-side b { color: var(--p); font-weight: 600; }
+.lw-vg-side.y { color: var(--q-green); }
+.lw-vg-side.n { color: var(--q-red); }
+.lw-vg-side.a, .lw-vg-side.m { color: var(--q-label-2); }
+.lw-vgroup small { color: var(--q-label-2); font: var(--q-t-footnote); }
+.lw-vg-h { margin: 0 0 8px; color: var(--q-label-2); font: 600 13px/18px var(--q-font); }
+.lw-person-line { margin: 0 0 10px; color: var(--q-label-2); font: var(--q-t-subhead, 15px/1.4 var(--q-font)); }
+.lw-person-line b { color: var(--q-label); font: 600 22px/1 var(--q-font); margin-inline-end: 4px; }
+
+/* 議程: a day's meetings, each a row (time, room, what it takes up); the live one marked. */
+.lw-meets {
+  display: grid;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+  overflow: hidden;
+}
+.lw-meet {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 14px;
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-meet + .lw-meet {
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-meet.done,
+.lw-meet.off {
+  opacity: 0.55;
+}
+.lw-meet-time {
+  display: grid;
+  align-content: start;
+  font-variant-numeric: tabular-nums;
+}
+.lw-meet-time b {
+  font: 600 15px/20px var(--q-font);
+}
+.lw-meet-time small {
+  color: var(--q-label-3);
+  font: 500 12px/16px var(--q-font);
+}
+.lw-meet-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+/* One line: the room's name gives way (ellipsis) before its tags do. */
+.lw-meet-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lw-meet-top b {
+  min-width: 3em;
+  overflow: hidden;
+  font: 600 16px/20px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-meet-top > :not(b) {
+  flex: none;
+  white-space: nowrap;
+}
+.lw-meet-what {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: var(--q-t-subhead, 400 14px/19px var(--q-font));
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-wrap: balance;
+}
+.lw-meet-text small {
+  color: var(--q-label-3);
+  font: 500 12px/16px var(--q-font);
+}
+.lw-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--q-red);
+  color: #fff;
+  font: 600 12px/1 var(--q-font);
+}
+.lw-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: lw-blink 1.4s ease-in-out infinite;
+}
+@keyframes lw-blink {
+  50% { opacity: 0.3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-live::before { animation: none; }
+}
+div.lw-video {
+  overflow: hidden;
+}
+.lw-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.lw-meet-head {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 4px;
+}
+.lw-meet-head h2 {
+  margin: 0;
+  font: 600 20px/26px var(--q-font);
+}
+.lw-meet-head p {
+  margin: 0;
+  color: var(--q-label-2);
+  font: var(--q-t-subhead, 400 14px/19px var(--q-font));
+}
+.lw-meet-why {
+  color: var(--q-label-2);
+  font: var(--q-t-subhead, 400 14px/20px var(--q-font));
+}
+.lw-meet-links {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.lw-meet-links > .q-btn.block,
+.lw-video-wait > .q-btn.block {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+}
+.lw-video-wait {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+}
+.lw-video-wait p {
+  margin: 0;
+  color: var(--q-label-2);
+  font: var(--q-t-subhead, 400 14px/20px var(--q-font));
+}
+
+/* A bill card's purpose line, and who filed it. */
+.lw-bill-about {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: -2px;
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lw-bill-parties {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+.lw-party.more {
+  --p: #64748b;
+}
+.lw-bill-meta {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: auto;
+  padding-left: 6px;
+  color: var(--q-label-3);
+  font: 500 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+
+/* 法案怎麼變成法律: the plain-words guide, opened from the bar and the funnel. */
+.lw-how {
+  justify-self: start;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--q-indigo);
+  font: 600 13px/18px var(--q-font);
+  cursor: pointer;
+}
+.lw-funnel-cap .lw-how {
+  margin: 0 0 0 8px;
+}
+.lw-howto {
+  display: grid;
+  gap: 0;
+  margin: 8px 0 12px;
+  padding: 0;
+  list-style: none;
+  counter-reset: how;
+}
+.lw-howto li {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 0 12px 40px;
+  counter-increment: how;
+}
+.lw-howto li::before {
+  content: counter(how);
+  position: absolute;
+  top: 10px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--q-fill-2);
+  color: var(--q-label-2);
+  font: 600 13px/1 var(--q-font);
+}
+.lw-howto li::after {
+  content: '';
+  position: absolute;
+  top: 40px;
+  bottom: -8px;
+  left: 12.5px;
+  width: 1px;
+  background: var(--q-sep);
+}
+.lw-howto li:last-child::after {
+  display: none;
+}
+.lw-howto li.done::before,
+.lw-howto li.now::before {
+  background: var(--q-indigo);
+  color: #fff;
+}
+.lw-howto b {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 16px/22px var(--q-font);
+}
+.lw-howto span {
+  color: var(--q-label-2);
+  font: 400 14px/20px var(--q-font);
+}
+
+/* A ministry or agency row opens: a chevron that turns. */
+details.lw-bud-row > summary .lw-bud-line::after {
+  content: '';
+  flex: none;
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  margin: 0 2px 0 -2px;
+  border: solid var(--q-label-3, var(--q-label-2));
+  border-width: 0 2px 2px 0;
+  transform: rotate(-45deg);
+  transition: transform 0.2s;
+}
+details.lw-bud-row[open] > summary .lw-bud-line::after {
+  transform: rotate(45deg);
+}
+
+/* ---- 裁判: each court its colour (憲法法庭 purple, 釋字 gold, 最高法院 indigo, 最高行政 teal) ---- */
+:root {
+  --lw-cons: #7c3aed;
+  --lw-interp: #a16207;
+  --lw-tps: #4f46e5;
+  --lw-tpa: #0f766e;
+  --lw-low: #b45309;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --lw-cons: #a78bfa;
+    --lw-interp: #eab308;
+    --lw-tps: #818cf8;
+    --lw-tpa: #2dd4bf;
+    --lw-low: #fb923c;
+  }
+}
+:root[data-theme='dark'] {
+  --lw-cons: #a78bfa;
+  --lw-interp: #eab308;
+  --lw-tps: #818cf8;
+  --lw-tpa: #2dd4bf;
+  --lw-low: #fb923c;
+}
+.lw-ctile {
+  --c: var(--lw-tps);
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+  color: var(--c);
+}
+.lw-ctile.sm { width: 32px; height: 32px; border-radius: 9px; }
+.lw-ctile svg { width: 18px; height: 18px; }
+.lw-ctile.cons, .lw-bdoor.cons, .lw-ruling.cons, .lw-block.cons, .lw-jd-hero.cons, .lw-strip.cons { --c: var(--lw-cons); }
+.lw-ctile.interp, .lw-bdoor.interp, .lw-ruling.interp { --c: var(--lw-interp); }
+.lw-ctile.tps, .lw-bdoor.tps, .lw-ruling.tps { --c: var(--lw-tps); }
+.lw-ctile.tpa, .lw-bdoor.tpa, .lw-ruling.tpa { --c: var(--lw-tpa); }
+.lw-ruling .lw-bill-stage.court { color: var(--c, var(--q-label)); }
+.lw-ctile.low, .lw-bdoor.low, .lw-ruling.low { --c: var(--lw-low); }
+.lw-bill-doors.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.lw-bill-doors.five { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.lw-bill-doors.five .lw-bdoor small { font-size: 11px; white-space: nowrap; }
+.lw-low-head { margin: 4px 2px 10px; color: var(--q-label-2); font-size: 13px; }
+.lw-low-head b { color: var(--q-label); font-variant-numeric: tabular-nums; }
+.lw-titles .q-chip small { margin-left: 4px; color: var(--q-label-3); font-variant-numeric: tabular-nums; }
+.lw-titles .q-chip[aria-pressed='true'] small { color: inherit; opacity: 0.8; }
+.lw-rrow small .lw-tag { margin-right: 6px; vertical-align: 1px; }
+.lw-months .q-chip small { margin-left: 4px; color: var(--q-label-3); font-variant-numeric: tabular-nums; }
+.lw-months .q-chip[aria-pressed='true'] small { color: inherit; opacity: 0.8; }
+.lw-cons-page h4 { margin: 18px 0 8px; }
+.lw-cons-page .lw-block { margin: 12px 0 0; }
+.lw-cons-page .lw-block p { font: 16px/1.6 var(--q-font); }
+.lw-cons-main p { margin: 0 0 8px; }
+.lw-cons-main p:last-child { margin: 0; }
+.lw-cons-page .lw-list { background: var(--q-sheet-cell, var(--q-surface)); border-radius: 14px; overflow: hidden; }
+.lw-find-rulings .q-section { margin-top: 0; }
+a.q-more.lw-more-link { margin: 8px 0 16px; }
+.lw-bill-court { margin-top: 8px; }
+.lw-cons-main p { display: block; overflow: visible; -webkit-line-clamp: unset; }
+.lw-cons-page .lw-block h4 { margin: 0 0 6px; }
+.lw-ruling .lw-cites { flex-wrap: nowrap; overflow: hidden; }
+.lw-ruling .lw-bill-name { -webkit-line-clamp: 3; }
+.lw-ruling .lw-cites .lw-cite { white-space: normal; line-height: 18px; padding-block: 2px; }
+.lw-ruling .lw-cites { flex-wrap: wrap; }
+.lw-doc-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.lw-rrow .lw-row-name.q-fit-wrap { white-space: normal; }
+.lw-next-sit {
+  margin: -2px 0 8px;
+}
+
+/* 表決, explained: the question in plain words, the result, each party as a bar */
+.lw-vote-what { color: var(--q-label-2); font: 400 14px/1.45 var(--q-font); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.lw-vg-what { color: var(--q-label-2); font: 400 14px/1.45 var(--q-font); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.lw-vote-plain { margin: 6px 0 0; font: 400 16px/1.6 var(--q-font); color: var(--q-label); }
+.lw-vote-result { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 8px; font: 500 15px/1.3 var(--q-font); color: var(--q-label-2); }
+.lw-vote-result b { flex: none; font: 600 20px/1.2 var(--q-font); }
+.lw-vote-result.y b { color: var(--q-green); }
+.lw-vote-result.n b { color: var(--q-red); }
+.lw-vote-result span { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lw-vote-topic { margin: 0; font: 400 15px/1.55 var(--q-font); }
+.lw-vote-bill { display: grid; gap: 3px; }
+.lw-vote-bill span { color: var(--q-label-2); font: 400 14px/1.45 var(--q-font); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.lw-pbars { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.lw-pbar { display: contents; }
+.lw-pbar .lw-party { justify-self: start; white-space: nowrap; }
+.lw-pbar-track { min-width: 0; }
+.lw-pbar-fill { display: flex; height: 14px; min-width: 6px; overflow: hidden; border-radius: 7px; background: var(--q-fill-3); }
+.lw-pbar-fill i { min-width: 3px; }
+.lw-pbar-fill i.y { background: var(--q-green); }
+.lw-pbar-fill i.n { background: var(--q-red); }
+.lw-pbar-fill i.a { background: var(--q-gray); }
+.lw-pbar-n { display: flex; gap: 4px; justify-content: flex-end; min-width: 4.5em; }
+.lw-pbar-n b { min-width: 26px; padding: 1px 5px; border-radius: 7px; text-align: center; font: 600 13px/18px var(--q-font); font-variant-numeric: tabular-nums; }
+.lw-pbar-n .y { background: color-mix(in srgb, var(--q-green) 16%, transparent); color: var(--q-green); }
+.lw-pbar-n .n { background: color-mix(in srgb, var(--q-red) 16%, transparent); color: var(--q-red); }
+.lw-pbar-n .a { background: var(--q-fill-3); color: var(--q-label-2); }
+.lw-name-vote { display: inline-flex; align-items: center; gap: 6px; padding-right: 4px; }
+.lw-name-vote .lw-vote-me { padding: 2px 7px; font-size: 11px; line-height: 14px; }
+.lw-vote-raw { margin: 16px 0 4px; color: var(--q-label-3, var(--q-label-2)); font: var(--q-t-footnote); }
+
+/* 預算: a budget's road through 立法院 (six steps), the one in 立法院 now on top */
+.lw-road { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
+.lw-road > span { display: grid; justify-items: center; gap: 4px; min-width: 0; }
+.lw-road i { justify-self: stretch; height: 6px; border-radius: 3px; background: var(--q-fill-3); }
+.lw-road .done i { background: var(--q-indigo); }
+.lw-road .now i { background: color-mix(in srgb, var(--q-indigo) 45%, transparent); box-shadow: inset 0 0 0 1.5px var(--q-indigo); }
+.lw-road b { font: 600 12px/14px var(--q-font); color: var(--q-label-2); white-space: nowrap; }
+.lw-road .done b, .lw-road .now b { color: var(--q-label); }
+.lw-road .now b { color: var(--q-indigo); }
+.lw-road small { min-height: 14px; font: 500 11px/14px var(--q-font); color: var(--q-label-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lw-road.big i { height: 8px; border-radius: 4px; }
+.lw-bud-road-note { display: flex; flex-wrap: wrap; gap: 2px 10px; color: var(--q-label-2); font: 600 13px/18px var(--q-font); }
+.lw-bud-road-note span { white-space: nowrap; }
+.lw-bud-road-note .due { color: var(--q-orange); }
+.lw-road.passed .done i { background: var(--q-green); }
+.lw-bud-note.wrap { white-space: normal; }
+.lw-bud-legend { flex-wrap: wrap; height: 16px; row-gap: 4px; }
+.lw-road b { font-size: 11.5px; }
+.lw-bud-road { display: grid; gap: 8px; margin: 0 0 16px; }
+/* 問法律's answer at a glance: the verdict, its key facts as tiles, the why, the steps. */
+.lw-verdict {
+  margin: 0;
+  font: 600 20px/1.35 var(--q-font);
+  letter-spacing: -0.01em;
+}
+.lw-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.lw-facts.one {
+  grid-template-columns: minmax(0, 1fr);
+}
+.lw-facts > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--q-indigo) 12%, transparent);
+}
+.lw-facts small {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lw-facts b {
+  color: var(--q-indigo);
+  font: 600 16px/1.3 var(--q-font);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.lw-why {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 400 15px/1.6 var(--q-font);
+}
+.lw-time {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lw-time li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
+  padding: 0 0 10px 18px;
+}
+.lw-time li::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--q-indigo);
+}
+.lw-time li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 17px;
+  bottom: 0;
+  width: 1px;
+  background: var(--q-sep);
+}
+.lw-time li:last-child {
+  padding-bottom: 0;
+}
+.lw-time small {
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.lw-time b {
+  font: 600 15px/20px var(--q-font);
+}
+.lw-cards .lw-more-link {
+  margin: 2px 0 0;
+}
+/* Follow-ups: one line each, full width. */
+.lw-follow {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+.lw-follow button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--q-r-cell);
+  background: var(--q-surface);
+  color: var(--q-label);
+  font: 500 15px/1.25 var(--q-font);
+  text-align: start;
+  cursor: pointer;
+}
+.lw-follow span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-follow i {
+  color: var(--q-indigo);
+  font: 600 18px/1 var(--q-font);
+  font-style: normal;
+}
+
+/* 預告: a draft's card and page — days left, why, each article changed */
+.lw-bill-day.soon { color: var(--q-red); font-weight: 600; }
+.lw-notice-why { color: var(--q-label-2); font: 400 14px/1.45 var(--q-font); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.lw-bill.notice .lw-bill-foot { display: flex; gap: 6px; min-width: 0; overflow: hidden; }
+.lw-bill.notice .lw-bill-foot > * { flex: none; }
+.lw-stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lw-stat.red { --c: var(--q-red); }
+.lw-stat.teal { --c: var(--q-teal); }
+.lw-notice-page .lw-stat b { font-size: 20px; white-space: nowrap; overflow: hidden; }
+.lw-notice-who { display: grid; gap: 4px; margin: 8px 0 4px; }
+.lw-notice-who p { display: flex; gap: 10px; margin: 0; font: 400 15px/1.5 var(--q-font); }
+.lw-notice-who b { flex: none; width: 2.6em; color: var(--q-label-2); font-weight: 600; }
+.lw-nrows { display: grid; gap: 10px; }
+.lw-nrow { display: grid; gap: 6px; padding: 12px 14px; border-radius: 14px; background: var(--q-sheet-cell, var(--q-surface)); }
+.lw-nrow-head { display: flex; align-items: center; gap: 8px; }
+.lw-nrow-head b { font: 600 15px/20px var(--q-font); }
+.lw-nrow-text { font: 400 15px/1.7 var(--q-font); white-space: pre-line; overflow-wrap: anywhere; }
+.lw-nrow-text ins { background: color-mix(in srgb, var(--q-green) 20%, transparent); color: inherit; text-decoration: none; border-radius: 3px; }
+.lw-nrow-text del { background: color-mix(in srgb, var(--q-red) 16%, transparent); color: var(--q-label-2); border-radius: 3px; }
+.lw-nrow-why summary { color: var(--q-indigo); font: 600 14px/20px var(--q-font); cursor: pointer; list-style: none; }
+.lw-nrow-why summary::-webkit-details-marker { display: none; }
+.lw-nrow-why p { margin: 6px 0 0; color: var(--q-label-2); font: 400 14px/1.6 var(--q-font); white-space: pre-line; }
+.lw-notice-acts { display: grid; gap: 8px; margin: 18px 0 8px; }
+.lw-notice-go { justify-content: center; text-decoration: none; }
+.lw-stats.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lw-notice-who b { width: auto; min-width: 2.6em; white-space: nowrap; }
+.lw-notice-lead { margin: 0 0 8px; font: 600 16px/1.6 var(--q-font); }
+.lw-notice-arts { color: var(--q-label); font: 600 14px/1.4 var(--q-font); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.lw-notice-arts.big { margin: 2px 0 12px; color: var(--q-label-2); font-size: 16px; white-space: normal; }
+.lw-notice-page .lw-stat { padding: 12px 10px; }
+
+/* 問法律's start: the orb and its line, one list of questions (a tile each),
+   the 地方法規 row in a list of its own, the note under it. */
+.lw-ask-empty {
+  gap: 4px;
+  padding: 0 8px 16px;
+}
+.lw-ask-empty .lw-orb {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+}
+.lw-ask-empty .lw-orb svg {
+  width: 28px;
+  height: 28px;
+}
+.lw-ask-cap {
+  padding: 0 16px 6px;
+}
+.lw-ask-list .lw-row {
+  min-height: 48px;
+  padding-block: 6px;
+}
+.lw-ask-list .lw-row-name {
+  font: 500 16px/21px var(--q-font);
+  white-space: normal;
+}
+.lw-city-list {
+  margin-top: 16px;
+}
+.lw-row-val {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 16px/21px var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lw-row-val.off {
+  color: var(--q-accent);
+}
+.lw-ask-foot {
+  margin: 0;
+  padding: 8px 16px 0;
+  color: var(--q-label-2);
+  font: var(--q-t-footnote);
+}
+.lw-sheet-lede {
+  margin: 0 0 12px;
+  color: var(--q-label-2);
+  font: 15px/22px var(--q-font);
+}
+.lw-city-row i {
+  color: var(--q-accent);
+  font: 600 17px/1 var(--q-font);
+  font-style: normal;
+}
+.lw-city-row.on .lw-row-name {
+  color: var(--q-accent);
+  font-weight: 600;
+}
+
+/* Plain text read as its structure (view.mjs textBlocks): 一、 a point,
+   （一） 1. （1） hung under it by depth, a short numbered line a heading,
+   【N】 a quiet number; every law it names a link. The context's own p rule
+   gives the size. .lw-rule-text: a rule's whole text, on a card. */
+.lw-rule-text {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-sheet-cell, var(--q-surface));
+}
+.lw-prose {
+  display: grid;
+  gap: 8px;
+}
+.lw-rule-text .lw-prose {
+  gap: 10px;
+}
+.lw-rule {
+  font: 400 16px/1.65 var(--q-font);
+}
+.lw-prose .lw-rule {
+  --d: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px;
+  margin: 0;
+  padding-inline-start: calc(var(--d) * 1.4em);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.lw-prose .d1 { --d: 1; }
+.lw-prose .d2 { --d: 2; }
+.lw-prose .d3 { --d: 3; }
+.lw-prose .d4 { --d: 4; }
+.lw-rule b {
+  color: var(--q-accent);
+  font-weight: 600;
+}
+.lw-rule:not(.d0) b {
+  color: var(--q-label-2);
+}
+.lw-prose .lw-rule.p,
+.lw-prose .lw-rule[class*=' more'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.lw-prose .lw-rule[class*=' more'] {
+  padding-inline-start: calc(var(--d) * 1.4em + 2em);
+}
+.lw-rule-h {
+  margin: 6px 0 -2px;
+  color: var(--q-label);
+  font: 600 16px/1.45 var(--q-font);
+}
+.lw-rule-h:first-child {
+  margin-top: 0;
+}
+.lw-pn {
+  color: var(--q-label-3);
+  font: 500 11px/1 var(--q-font);
+  font-variant-numeric: tabular-nums;
+  vertical-align: 0.15em;
+}
+.lw-rule-art {
+  margin: 8px 0 -4px;
+  color: var(--q-accent);
+  font: 600 15px/20px var(--q-font);
+}
+.lw-rule-art:first-child {
+  margin-top: 0;
+}
+.lw-rule-text + .lw-out {
+  margin-top: 12px;
+}
+/* A ruling reads like the rest of the app (Jay 2026-10-31: "text pushing
+   to the side"): set from the start, never justified (justified Chinese
+   spread its characters apart), and the reasons inside their card's padding. */
+.lw-cons-main p,
+.lw-cons-reason p,
+.lw-jd-point p {
+  text-align: start;
+  letter-spacing: normal;
+}
+.lw-cons-reason .lw-fold-body {
+  padding: 0 16px 16px;
+}
+.lw-cons-reason .lw-fold-body p {
+  margin: 0 0 12px;
+  color: var(--q-label);
+  font: 15px/1.75 var(--q-font);
+  overflow-wrap: anywhere;
+}
+.lw-cons-reason .lw-fold-body p:last-child {
+  margin: 0;
+}
+.lw-cons-main p {
+  font: 16px/1.7 var(--q-font);
+}
+
+/* A ruling's AI: the button across the page under its name, and in its
+   sheet each reason's paragraph chip opening the ruling's own words. */
+.lw-ai-btn.lw-ruling-ai {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  margin: 12px 0 4px;
+  padding: 0 16px;
+  border-radius: var(--q-r-cell, 12px);
+  font-size: 15px;
+  line-height: 1.25;
+  text-align: center;
+}
+.lw-ai-btn.lw-ruling-ai span {
+  min-width: 0;
+}
+.lw-who p {
+  margin: 0;
+  font: 15px/1.6 var(--q-font);
+}
+.lw-held p {
+  margin: 0;
+  font: 16px/1.6 var(--q-font);
+}
+.lw-held h4,
+.lw-ai-h {
+  margin: 4px 0 0;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-held h4 {
+  margin: 0 0 4px;
+}
+.lw-points .lw-cite.lw-para {
+  border: 0;
+  color: var(--q-indigo);
+  font: 600 13px/16px var(--q-font);
+  cursor: pointer;
+}
+.lw-points .lw-cite.lw-para[aria-expanded='true'] {
+  background: var(--q-indigo);
+  color: #fff;
+}
+.lw-quote {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--lw-cons, var(--q-indigo));
+  border-radius: 0 10px 10px 0;
+  background: var(--q-sheet-cell, var(--q-surface));
+  color: var(--q-label);
+  font: 14px/1.7 var(--q-font);
+  overflow-wrap: anywhere;
+}
+.lw-quote small {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--q-label-2);
+  font: 600 12px/16px var(--q-font);
+}
+
+/* The composer right on the keys, where the keys really start (app.mjs
+   dockComposer: the visible part's foot, iOS's slide of the page counted;
+   the kit's --q-kb alone left it ~80px up with the slide, Jay 2026-10-27). */
+html body .lw-composer.lw-on-keys {
+  bottom: var(--lw-keys, 8px) !important;
+}
+
+/* 問法律's own button beside the tab bar: the spark, filled. */
+.q-tab-action svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* 白話解釋: the article folded on top, what it means in a line on the
+   sheet's one tinted card, then the parts as a teacher would tell them. */
+.lw-x-quote {
+  display: -webkit-box;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 0 0 0 12px;
+  overflow: hidden;
+  border: 0;
+  border-left: 3px solid var(--q-sep);
+  background: none;
+  color: var(--q-label-2);
+  font: 400 15px/23px var(--q-font);
+  text-align: left;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  cursor: pointer;
+}
+.lw-x-quote.open {
+  display: block;
+}
+.lw-x {
+  display: grid;
+  gap: 24px;
+}
+.lw-x-gist {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--q-r-card, 22px);
+  background: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--q-accent) 22%, transparent), transparent 65%), color-mix(in srgb, var(--q-accent) 9%, var(--q-surface));
+}
+.lw-x-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--q-accent);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-x-label svg {
+  width: 14px;
+  height: 14px;
+}
+.lw-x-gist p {
+  margin: 0;
+  font: 600 20px/29px var(--q-font);
+  text-wrap: pretty;
+}
+.lw-x-skel {
+  display: block;
+  height: 22px;
+  border-radius: 8px;
+}
+.lw-x-skel.short {
+  width: 60%;
+}
+.lw-x-skel.tall {
+  height: 72px;
+  border-radius: 16px;
+}
+.lw-x-part h3 {
+  margin: 0 0 8px;
+  color: var(--q-label-2);
+  font: 600 15px/20px var(--q-font);
+}
+.lw-x-part > p {
+  margin: 0;
+  font: 400 17px/27px var(--q-font);
+}
+.lw-x-points {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lw-x-points li {
+  position: relative;
+  padding-left: 18px;
+  font: 400 17px/26px var(--q-font);
+}
+.lw-x-points li::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--q-accent);
+}
+.lw-x-points .lw-cite {
+  margin-left: 6px;
+}
+.lw-x-examples,
+.lw-x-related {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--q-r-card, 22px);
+  background: var(--q-surface-2, var(--q-fill-3));
+}
+.lw-x-ex {
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+}
+.lw-x-ex + .lw-x-ex,
+.lw-x-rel + .lw-x-rel {
+  border-top: var(--q-hairline, 0.5px) solid var(--q-sep);
+}
+.lw-x-ex b {
+  font: 600 15px/20px var(--q-font);
+}
+.lw-x-ex p {
+  margin: 0;
+  color: var(--q-label);
+  font: 400 16px/24px var(--q-font);
+}
+.lw-x-terms {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.lw-x-terms dt {
+  font: 600 16px/22px var(--q-font);
+}
+.lw-x-terms dd {
+  margin: 2px 0 0;
+  color: var(--q-label-2);
+  font: 400 15px/22px var(--q-font);
+}
+a.lw-x-rel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--q-label);
+  text-decoration: none;
+}
+.lw-x-rel span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.lw-x-rel b {
+  color: var(--q-accent);
+  font: 600 16px/22px var(--q-font);
+}
+.lw-x-rel small {
+  color: var(--q-label-2);
+  font: 400 14px/19px var(--q-font);
+}
+.lw-x-rel .lw-chev {
+  width: 7px;
+  height: 12px;
+  color: var(--q-label-2);
+}
+.lw-x-qa:not(:empty) {
+  margin-top: 24px;
+}
+.lw-ask-sheet .lw-x + .lw-x-qa:empty + .lw-starters {
+  margin-top: 24px;
+}
+
+/* 沿革: a timeline, newest first; a dot and a line down the left. */
+.lw-h {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lw-h-ev {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 0 0 24px 24px;
+}
+.lw-h-ev::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--q-accent);
+}
+.lw-h-ev:not(:first-child)::before {
+  background: var(--q-surface, var(--q-page));
+  box-shadow: inset 0 0 0 2px var(--q-label-3, var(--q-sep));
+}
+.lw-h-ev::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  bottom: 2px;
+  left: 4.5px;
+  width: 1px;
+  background: var(--q-sep);
+}
+.lw-h-ev:last-child::after {
+  display: none;
+}
+.lw-h time {
+  font: 600 17px/22px var(--q-font);
+  font-variant-numeric: tabular-nums;
+}
+.lw-h-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.lw-h-what {
+  color: var(--q-label-2);
+  font: 400 14px/20px var(--q-font);
+}
+.lw-h-arts {
+  display: contents;
+}
+.lw-h-art,
+.lw-h-more {
+  min-width: 20px;
+  padding: 2px 8px;
+  text-align: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font: 500 14px/20px var(--q-font);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+/* (A cited article in a line: underlined, in the line's colour, never accent text.) */
+a.lw-h-art {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--q-label-3);
+  text-underline-offset: 3px;
+}
+.lw-h-art.gone {
+  color: var(--q-label-2);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+}
+.lw-h-more {
+  color: var(--q-label-2);
+  cursor: pointer;
+}
+.lw-h-note {
+  margin: 0;
+  color: var(--q-label);
+  font: 400 15px/21px var(--q-font);
+}
+.lw-h-doc {
+  color: var(--q-label-2);
+  font: 400 13px/18px var(--q-font);
+  overflow-wrap: anywhere;
+}
+.lw-h-sub {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: var(--q-r-cell, 12px);
+  background: var(--q-fill-3);
+}
+.lw-h-sub time {
+  font-size: 15px;
+}
+
+/* 繼續閱讀: how far through a law you are. */
+.lw-resume-bar {
+  display: block;
+  height: 3px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--q-fill-3);
+}
+.lw-resume-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--q-accent);
+}
+/* A diff as the article reads (cards.mjs diffBlocks): a line a 項, 款 and 目 hung. */
+.lw-dtext {
+  display: grid;
+  gap: 4px;
+}
+.lw-dtext .lw-dl {
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.lw-dl.k,
+.lw-dl.m {
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+}
+.lw-dl.m {
+  padding-left: 3.2em;
+}
+.lw-dl.c {
+  padding-left: 1.6em;
+}
+/* The structured text inside a sponsor's or a draft's 3-line card, a fold, a meeting. */
+.lw-why-row .lw-prose {
+  max-height: calc(3 * 1.6em);
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.lw-why-row.open .lw-prose {
+  max-height: none;
+}
+.lw-why-row .lw-prose span {
+  display: inline;
+  font-size: inherit;
+  -webkit-line-clamp: unset;
+}
+.lw-why-row .lw-rule,
+.lw-meet-why .lw-rule {
+  font: inherit;
+}
+.lw-fold > .lw-prose,
+.lw-why > .lw-prose,
+.lw-nrow-why > .lw-prose {
+  margin-top: 8px;
+}
+.lw-nrow-why .lw-rule {
+  color: var(--q-label-2);
+  font: 400 14px/1.6 var(--q-font);
+}
+.lw-jd-point .lw-prose {
+  margin: 8px 0 0 32px;
+}
+.lw-cons-main .lw-prose,
+.lw-cons-reason .lw-prose {
+  gap: 10px;
+}
+.lw-cons-reason .lw-fold-body .lw-rule {
+  margin: 0;
+}
+
+/* ---- Every screen, either way up (the kit's DESIGN §10, Jay 2026-10-31) ----
+   A phone upright is the phone's one column. With room for two (a phone on
+   its side, a tablet, a computer) the page grows to 1180 and each tab lays
+   its sections out side by side (app.mjs cols()), each column laid out as
+   on a phone; long lists flow into columns, cards into a grid. 問法律 (a
+   conversation) and a law's text keep a reading width; on a computer the
+   law's card and 目錄 stand beside its text. */
+:root.q-wide {
+  --q-page-max: 1180px;
+}
+:root.q-wide[data-lw-tab='ask'],
+:root.q-wide:not(.q-w3)[data-lw-law] {
+  --q-page-max: 760px;
+}
+/* In a column: nothing reaches past its edges (rails and chips bleed only on a phone). */
+.lw-col {
+  --q-margin: 0px;
+  min-width: 0;
+}
+.lw-col > :first-child,
+.lw-col > :first-child > .q-section:first-child {
+  margin-top: 0;
+}
+.lw-cols {
+  margin-top: var(--q-s-5, 24px);
+}
+/* Chips in a column wrap; what scrolls sideways fades at the column's edge. */
+.lw-col .q-chips {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.lw-col :is(.lw-covers, .lw-starters.rail) {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 24px);
+  mask-image: linear-gradient(to left, transparent, #000 24px);
+}
+/* Card rails on a wide page: whole cards, as many as fit, never a half one at the end. */
+:root.q-wide .lw-sec {
+  container-type: inline-size;
+}
+:root.q-wide .lw-rail {
+  --n: 1.2;
+  grid-auto-columns: calc((100cqw - (var(--n) - 1) * 8px) / var(--n));
+  margin-inline: 0;
+  padding-inline: 0;
+  scroll-padding-inline: 0;
+}
+@container (min-width: 540px) {
+  :root.q-wide .lw-rail { --n: 2; }
+}
+@container (min-width: 820px) {
+  :root.q-wide .lw-rail { --n: 3; }
+}
+@container (min-width: 1100px) {
+  :root.q-wide .lw-rail { --n: 4; }
+}
+/* A long list across the page (not in a column or a sheet): its rows in two
+   columns (three on a computer), read left to right, a hairline between. */
+:root.q-wide .lw-list:has(> :nth-child(4)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+:root.q-wide .lw-list:has(> :nth-child(4)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :nth-child(2)::before {
+  display: none;
+}
+:root.q-wide .lw-list:has(> :nth-child(4)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :nth-child(2n) {
+  box-shadow: inset var(--q-hairline, 0.5px) 0 0 var(--q-sep);
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :nth-child(3)::before {
+  display: none;
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :nth-child(n) {
+  box-shadow: inset var(--q-hairline, 0.5px) 0 0 var(--q-sep);
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :nth-child(3n + 1) {
+  box-shadow: none;
+}
+/* 立法 and 裁判: the doors and the search side by side across the top. */
+:root.q-wide :is(#panel-bills, #panel-rulings) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--q-s-5, 24px);
+  align-items: center;
+}
+:root.q-wide :is(#panel-bills, #panel-rulings) > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+:root.q-wide :is(#panel-bills, #panel-rulings) > .lw-bill-doors {
+  grid-column: 1;
+}
+:root.q-wide :is(#panel-bills, #panel-rulings) > .q-search {
+  grid-column: 2;
+  margin-block: 4px 12px;
+}
+/* A law on a computer: the card and the 目錄 beside the text, kept in view. */
+.lw-side-toc {
+  display: none;
+}
+:root.q-w3 .lw-law-page {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 760px);
+  justify-content: center;
+  gap: 0 40px;
+  align-items: start;
+}
+:root.q-w3 .lw-law-side {
+  position: sticky;
+  top: 68px;
+  display: grid;
+  gap: var(--q-s-4, 16px);
+  max-height: calc(100dvh - 84px);
+  margin-top: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+:root.q-w3 .lw-law-side::-webkit-scrollbar {
+  display: none;
+}
+:root.q-w3 .lw-law-side .lw-over-card {
+  margin: 0;
+}
+:root.q-w3 .lw-side-toc {
+  display: grid;
+  padding: 8px 0;
+  border-radius: var(--q-r-card);
+  background: var(--q-surface);
+}
+.lw-side-toc h3 {
+  margin: 4px 16px 6px;
+  color: var(--q-label-2);
+  font: 600 13px/18px var(--q-font);
+}
+.lw-side-toc button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 0;
+  background: none;
+  color: var(--q-label);
+  font: 500 14px/19px var(--q-font);
+  text-align: left;
+  cursor: pointer;
+}
+.lw-side-toc button.d1 {
+  padding-left: 30px;
+  color: var(--q-label-2);
+  font-size: 13px;
+}
+.lw-side-toc button:hover {
+  background: var(--q-fill-4, var(--q-fill-3));
+}
+.lw-side-toc button.on {
+  color: var(--q-indigo);
+}
+.lw-side-toc small {
+  color: var(--q-label-3);
+  font: 400 12px/16px var(--q-font);
+  white-space: nowrap;
+}
+/* A phone on its side: 問法律's welcome without its badge, so the questions show above the box. */
+@media (max-height: 520px) {
+  .lw-ask-empty .lw-orb {
+    display: none;
+  }
+}
+/* 表決's vote cards and 預告's drafts: a grid of phone-wide cards on a wide page. */
+:root.q-wide .lw-vgroups {
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  align-items: start;
+}
+/* 議程: a busy day's meetings in two columns, read left to right in time order. */
+:root.q-wide .lw-meets:has(> :nth-child(3)):not(.lw-col .lw-meets, dialog .lw-meets) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:root.q-wide .lw-meets:has(> :nth-child(3)):not(.lw-col .lw-meets, dialog .lw-meets) > :nth-child(2) {
+  border-top: 0;
+}
+:root.q-wide .lw-meets:has(> :nth-child(3)):not(.lw-col .lw-meets, dialog .lw-meets) > :nth-child(2n) {
+  box-shadow: inset var(--q-hairline, 0.5px) 0 0 var(--q-sep);
+}
+/* (A list's odd row out runs across, so the card has no hole.) */
+:root.q-wide .lw-list:has(> :nth-child(4)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :last-child:nth-child(odd),
+:root.q-wide .lw-meets:has(> :nth-child(3)):not(.lw-col .lw-meets, dialog .lw-meets) > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :last-child:nth-child(odd) {
+  grid-column: auto;
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :last-child:nth-child(3n + 1) {
+  grid-column: 1 / -1;
+}
+:root.q-w3 .lw-list:has(> :nth-child(6)):not(.lw-col .lw-list, dialog .lw-list, .lw-law-side .lw-list, #panel-ask .lw-list) > :last-child:nth-child(3n + 2) {
+  grid-column: span 2;
+}
+/* 政府公告: a headline whole, however narrow the column. */
+.lw-news .lw-row-name {
+  display: block;
+}

@@ -1,0 +1,1 @@
+{"token":"preview","wallet":{"v":1,"created":1783382429802,"entries":[{"id":"eco:start","t":1783382429802,"app":"eco","kind":"start","amount":110000},{"id":"eco:pay:1","t":1792022429802,"app":"eco","kind":"pay","amount":7000}],"snap":{},"settings":{"passkeyAsk":{"value":true,"t":1793750429800}},"apps":{},"inbox":{}},"active":true,"live":{"app":"law"}}
