@@ -14,7 +14,7 @@ import { ROOT, NODES, pathTo } from '../lib/tree.mjs';
 import { ROWS, STORIES } from '../lib/stories.mjs';
 import { SHOW } from '../lib/tree-show.mjs';
 
-const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', money: 'money' };
+const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', money: 'money', news: 'news', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock' };
 
 // ---- The tree ----
 // The whole tree at a glance: Orbit's nine branches in a grid, each naming
@@ -41,7 +41,7 @@ const icon = (node, size = 30) => (BRAND[node.id] ? appImg(BRAND[node.id], size)
 // Shorter names for the overview and the strip of branches, so each sits
 // on one line; the rows and the card keep the full title.
 const SHORT = {
-  apps: ['九個 App', 'Nine apps'],
+  apps: ['十個 App', 'Ten apps'],
   kit: ['共用零件', 'Shared parts'],
   pass: ['一張通行證', 'One pass'],
   cloud: ['雲端小幫手', 'Cloud helper'],
@@ -81,9 +81,13 @@ const SHORT = {
   'fast-lift': ['好了才顯示', 'Lifts when ready'],
   cheap: ['省錢不超額', 'Under limits'],
   'cheap-share': ['共用答案', 'Shared answers'],
-  'cheap-caps': ['付費都有上限', 'Caps on paid'],
+  'cheap-caps': ['外部都有上限', 'Caps on outside'],,
   'cheap-speeds': ['Jay 定速度', 'Jay sets speeds'],
-  'cheap-plan': ['5 美元方案', 'The $5 plan'],
+  'cheap-plan': ['免費方案', 'The free plan'],
+  'transit-tdx': ['業者的網站先', 'Operators first'],
+  'law-councils': ['縣市議會', 'Councils'],
+  'news-stories': ['依重要程度', 'By importance'],
+  'news-sides': ['立場的依據', 'Where places come from'],
   ship: ['怎麼上線', 'How it ships'],
   'ship-tests': ['測默默的錯', 'Silent-bug tests'],
   'ship-tools': ['Claude 看畫面', 'Claude sees it'],

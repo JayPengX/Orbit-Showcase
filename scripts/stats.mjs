@@ -23,6 +23,7 @@ export const REPOS = [
   { repo: 'Orbit-Law', app: 'law' },
   { repo: 'Orbit-Securities', app: 'stock' },
   { repo: 'Orbit-Money', app: 'money' },
+  { repo: 'Orbit-News', app: 'news' },
   { repo: 'Orbit-Showcase', app: null }
 ];
 

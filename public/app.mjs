@@ -82,7 +82,7 @@ document.body.prepend(side);
 function subBar(view, app) {
   const back =
     view === 'app'
-      ? h('a', { class: 'sc-sub-back', href: '#apps', 'data-jump': 'apps' }, [ico('chevron'), h('span', { text: t(['九個 App', 'Nine apps']) })])
+      ? h('a', { class: 'sc-sub-back', href: '#apps', 'data-jump': 'apps' }, [ico('chevron'), h('span', { text: t(['十個 App', 'Ten apps']) })])
       : h('a', { class: 'sc-sub-back', href: '#made', 'data-jump': 'made' }, [ico('chevron'), h('span', { text: t(['首頁', 'Start']) })]);
   const here =
     view === 'app'

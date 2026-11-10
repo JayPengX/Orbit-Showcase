@@ -27,7 +27,7 @@ One page, read top to bottom in a few minutes:
 | Part | What you see |
 | --- | --- |
 | The top | What Orbit is in one sentence, its numbers counted from git, three real screens |
-| 九個 App Apps | Each app's question, with 試玩 (Try) to run the real app at once |
+| 十個 App Apps | Each app's question, with 試玩 (Try) to run the real app at once |
 | 亮點 Highlights | Six things people don't expect, each opening its whole story (problem, idea, result) |
 | 怎麼做的 How it's made | Jay's part and Claude's, one problem from spotted to fixed, and the numbers from the code |
 
@@ -123,6 +123,7 @@ Push to `main`. GitHub Actions recounts the numbers, runs the tests, stamps ever
 | [Orbit Beats](https://github.com/JayPengX/Orbit-Beats) | Endless music and your own beats |
 | [Orbit Law](https://github.com/JayPengX/Orbit-Law) | Laws, rulings and bills, linked |
 | [Orbit Money](https://github.com/JayPengX/Orbit-Money) | Your own books |
+| [Orbit News](https://github.com/JayPengX/Orbit-News) | One story, every side |
 | [Orbit-Core](https://github.com/JayPengX/Orbit-Core) | The kit, the Orbit Pass and the Workers behind them all |
 
 How it was all built, in pictures and numbers: [jaypengx.com/showcase](https://jaypengx.com/showcase/).

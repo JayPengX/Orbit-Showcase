@@ -204,6 +204,12 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           tech: ['lib/aboard.mjs（trainAboard：時刻表加上 TDX 的誤點）。', 'lib/aboard.mjs (trainAboard: the timetable plus TDX’s delay).'],
           links: ['transit-nav']
         }),
+        n('transit-book', 'train', ['高鐵訂票一鍵到', 'HSR booking in one tap'], ['車次已經幫你填好', 'The train already filled in'], {
+          p: ['規劃好要搭的高鐵，還要再打開高鐵 App 重新選站、選時間。', 'With a 高鐵 ride planned, you still had to open the HSR app and pick the stations and time again.'],
+          i: ['行程裡的高鐵旁邊有「高鐵訂票」，直接打開高鐵自己的 App（T Express）或網站，起訖站和時間都已經填好。', 'A 高鐵 ride in a plan carries 高鐵訂票: it opens 高鐵’s own app (T Express) or site with the stations and time already filled in.'],
+          r: ['從規劃到訂票，少了一整段重打。', 'From plan to ticket without typing it all again.'],
+          tech: ['Orbit-Core /transit/book（TDX 訂票導訂連結，0 點）；Transit book.mjs 的小表單用真的連結，讓 iOS 能直接開 App。', 'Orbit-Core /transit/book (TDX’s booking hand-off link, 0 points); Transit book.mjs’s small sheet uses real links so iOS can open the app.']
+        }),
         n('transit-bike', 'bike', ['YouBike 一定有車', 'YouBike with real bikes'], ['不會叫你去空站', 'Never sends you to an empty dock'], {
           p: ['規劃器會建議「附近的 YouBike 站」，到了卻沒車。', 'Planners suggest a nearby YouBike dock that turns out to be empty.'],
           i: ['YouBike 一定接真實站點；從腳踏車出發時只選現在有車的站；租借計時到 25 分鐘提醒（TPASS 前 30 分鐘免費）。', 'YouBike legs always end at real docks; starting on a bike, only docks with bikes now; the timer warns at 25 minutes (TPASS’s free half hour).'],
@@ -235,16 +241,17 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           tech: ['transit.js /transit/eta：TDX 一個城市一次呼叫；城市第一次問時先用站牌自己的答案頂著。', 'transit.js /transit/eta: one TDX call a city; a city’s first ask is answered by its stops’ own ask beside it.'],
           links: ['transit-tdx']
         }),
-        n('transit-tdx', 'clock', ['即時資料大家共用', 'Live data shared by everyone'], ['TDX 的答案存 10 秒', 'TDX answers kept 10 s'], {
-          p: ['TDX 每分鐘有使用次數限制。', 'TDX limits calls per minute.'],
-          i: ['雲端把公車到站、捷運看板存 10 秒、YouBike 存 30 秒（TDX 本身 30 到 60 秒才更新一次），同時間的人共用。', 'The cloud keeps bus and metro boards 10 s and YouBike 30 s (TDX itself updates every 30–60 s), shared by everyone asking.'],
-          r: ['人再多也不會超過限制。', 'More people never means more than the limit.'],
-          tech: ['TDX_PER_MIN 240、TDX_PER_SEC 4；DEV tdxLive 10 s、tdxBike 30 s；TDX_RULES 允許清單。', 'TDX_PER_MIN 240, TDX_PER_SEC 4; DEV tdxLive 10 s, tdxBike 30 s; the TDX_RULES allowlist.']
+        n('transit-tdx', 'clock', ['先讀業者自己的網站', 'The operators’ own sites first'], ['交通部的 TDX 只當備援', 'TDX only as a backup'], {
+          p: ['交通部 TDX 的付費方案 12 月起不續了，免費方案一個月只有 3 點，撐不起即時公車和火車。', 'TDX’s paid plan ends in December, and its free tier, 3 points a month, can’t carry live buses and trains.'],
+          i: ['公車、台鐵、高鐵、捷運和 YouBike 都改讀業者自己的網站和開放資料，手機自己讀得到的就讓手機讀；TDX 只在讀不到的時候用，答案大家共用。', 'Buses, TRA, HSR, the metros and YouBike come from the operators’ own sites and open data, read by the phone wherever it can; TDX only when they fail, its answers shared by everyone.'],
+          r: ['即時到站、誤點和公告都還在，交通資料一毛錢都不用付。', 'Live arrivals, delays and notices all stay, and the transit data costs nothing.'],
+          tech: ['Orbit-Core transit-free.js 回答 TDX 形狀的資料：臺北、新北、新竹、桃園、臺中、臺南、高雄和公路局的公車網站，台鐵開放資料和車站時刻、車次查詢，高鐵 GTFS，臺北、桃園、高雄捷運的月台資訊，YouBike 自己的清單；公車資料每週從 TDX 的 GTFS 打包（0 點）；TDX 的答案依它更新的速度共用。', 'Orbit-Core transit-free.js answers in TDX’s shape: the bus sites of 臺北, 新北, 新竹, 桃園, 臺中, 臺南, 高雄 and 公路局, 台鐵’s open data, station boards and train lookup, 高鐵’s GTFS, the 臺北, 桃園 and 高雄 metros’ platform screens, YouBike’s own list; bus packs weekly from TDX’s GTFS (0 points); TDX’s answers shared at the speed it updates.'],
+          links: ['cheap-plan']
         })
       ]
     }),
     n('transit-data', 'map', ['資料從哪裡來', 'Where the data comes from'], ['政府開放資料加上地圖服務', 'Open government data plus maps'], {
-      tech: ['TDX 運輸資料流通服務（公車、台鐵、高鐵、捷運、YouBike、營運公告）、Google Maps / Places / Routes、國土測繪中心地圖（NLSC）、OpenStreetMap。', 'TDX (buses, TRA, HSR, metros, YouBike, operators’ notices), Google Maps / Places / Routes, NLSC maps, OpenStreetMap.'],
+      tech: ['各縣市公車網站、台鐵和高鐵自己的資料、各捷運的月台資訊、YouBike；TDX 運輸資料流通服務當備援；Google Maps / Places / Routes、國土測繪中心地圖（NLSC）、OpenStreetMap。', 'Each city’s bus site, 台鐵’s and 高鐵’s own data, the metros’ platform screens, YouBike; TDX as backup; Google Maps / Places / Routes, NLSC maps, OpenStreetMap.'],
       links: ['cloud-proxy']
     }),
     n('transit-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['照真實的通勤判斷', 'Judged by real commutes'], {
@@ -276,9 +283,9 @@ const weather = n('weather', 'cloud', ['Orbit Weather', 'Orbit Weather'], ['一�
         }),
         n('weather-soon', 'rain', ['兩小時內要下雨才說', 'Rain soon, only when it is'], ['一行提醒', 'One line'], {
           p: ['整天的降雨機率看不出幾點會下。', 'A day’s rain chance doesn’t say when.'],
-          i: ['只有兩小時內從乾變濕（50% 以上），或雨要停了，才在數字下面多一行；只用 30 分鐘內的新資料。', 'One line only when a wet hour (50%+) starts within two hours of a dry one, or rain eases, from data under 30 minutes old.'],
-          r: ['該帶傘的時候才提醒你。', 'Told when it’s time for an umbrella.'],
-          tech: ['lib/soon.mjs。', 'lib/soon.mjs.']
+          i: ['只有兩小時內從乾變濕（50% 以上），或雨要停了，才在數字下面多一行；接下來一小時直接看氣象署的雷達回波預報。', 'One line only when a wet hour (50%+) starts within two hours of a dry one, or rain eases; the next hour read straight from CWA’s radar forecast.'],
+          r: ['該帶傘的時候才提醒你，連「一小時內會下雨」都說得出來。', 'Told when it’s time for an umbrella, down to “rain within the hour”.'],
+          tech: ['lib/soon.mjs；Orbit-Core weather-radar.js 每 10 分鐘讀氣象署「未來1小時雷達定量降雨預報」（約 1.4 公里一格），1 毫米以上就算會下。', 'lib/soon.mjs; Orbit-Core weather-radar.js reads CWA’s one-hour radar rain forecast (about 1.4 km cells) every 10 minutes; 1 mm or more counts as rain.']
         }),
         n('weather-plan', 'pin', ['我的行程', 'Where you’ll be'], ['每個小時用那時候的地點', 'Each hour, where you’ll be then'], {
           p: ['早上在家看天氣，下午人在學校。', 'You check at home in the morning, but you’re at school in the afternoon.'],
@@ -358,6 +365,12 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
         })
       ]
     }),
+    n('class-cal', 'calendar', ['課表放進手機行事曆', 'The timetable in your Calendar'], ['訂閱一次，一直是最新的', 'Subscribe once, always current'], {
+      p: ['手機的行事曆看不到課表，調課了也要自己改。', 'The phone’s Calendar didn’t know the timetable, and a swap had to be copied by hand.'],
+      i: ['「加到行事曆」給一個訂閱連結，手機的行事曆自己去讀接下來四週的課，調了課就跟著變。', '加到行事曆 gives a subscription link: the phone’s Calendar reads the next four weeks of classes itself and follows every swap.'],
+      r: ['不用打開 App，行事曆和小工具上就看得到下一節課。', 'The next class shows in Calendar and its widgets without opening the app.'],
+      tech: ['src/calendar.js 做出 .ics；Orbit-Core cal.js 存在 KV、用 webcal 給行事曆訂閱。', 'src/calendar.js builds the .ics; Orbit-Core cal.js keeps it in KV and serves it as a webcal subscription.']
+    }),
     n('class-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['Orbit 的第一個 App', 'Orbit’s first app'], {
       tech: ['2026-08-26 Jay 上傳的第一個 App；AI 匯入不能改單雙週；分享金鑰 8 碼、24 小時，讓同學拿到一份自己的課表；離線也能打開。', 'Jay’s first app, uploaded 2026-08-26; AI import never changes the odd/even switch; an 8-character share key (24 h) gives a classmate their own copy; opens offline.']
     })
@@ -413,7 +426,7 @@ const beats = n('beats', 'play', ['Orbit Beats', 'Orbit Beats'], ['永不停的�
     n('beats-radio', 'live', ['無限電台', 'An endless radio'], ['每首歌都是新寫的', 'Every song freshly written'], {
       p: ['自動產生的音樂聽幾首就膩。', 'Generated music gets boring fast.'],
       i: ['每首歌有自己的樂團、調性、和弦和曲式（前奏、主歌、副歌、橋段）；下一首規定換曲風、換調、速度差 15 BPM 以上；最近六首不重複同一種律動。', 'Each song has its own band, key, chords and form (intro, verse, hook, bridge); the next must change groove family, key and tempo by 15 BPM or more; no groove repeats within six.'],
-      r: ['一首接一首，鎖螢幕也繼續播。', 'Song after song, playing on with the screen locked.'],
+      r: ['一首接一首，鎖螢幕、切去用別的 App 也繼續播。', 'Song after song, playing on with the screen locked or while you use other apps.'],
       tech: ['lib/radio.mjs radioPick、makeSong；iPhone 鎖屏只保證一個 <audio> 播放，所以全部接在一條音訊串流裡（lib/tape.mjs，Media Source + AudioEncoder）。', 'lib/radio.mjs radioPick, makeSong; iOS keeps only one <audio> playing locked, so songs go onto one stream (lib/tape.mjs, Media Source + AudioEncoder).']
     }),
     n('beats-ears', 'drop', ['聽久了不累', 'Easy on the ears'], ['Jay 聽久了覺得煩躁之後的修正', 'Fixed after Jay found it tiring'], {
@@ -481,6 +494,13 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
       r: ['點進去就是那場會議的直播。', 'Tap and it’s that meeting’s stream.'],
       tech: ['scripts/live-ly.mjs 由 live.yml 跑，每次結束自己啟動下一次（GitHub 的排程常常延遲）；寫到 live 分支的 live.json。', 'scripts/live-ly.mjs run by live.yml, each run starting the next (GitHub’s schedule runs late); live.json on the live branch.'],
       links: ['kit-dayoff']
+    }),
+    n('law-councils', 'flag', ['縣市議會也在裡面', 'The councils too'], ['22 個縣市議會和竹北市民代表會', '22 councils, and 竹北’s'], {
+      p: ['地方議會的議案、表決和會議紀錄多半是 PDF，散在各自的網站，有些只讓台灣的網路連。', 'Local councils’ bills, votes and minutes are mostly PDFs scattered over their own sites, some open only to Taiwan’s networks.'],
+      i: ['每晚讀每個議會自己的網站和公開資料，把 PDF 裡的議案、決議和質詢讀成 App 裡一列一列的卡片；公開的錄影直接在 App 裡播。', 'Each night read every council’s own site and open data, turn the bills, resolutions and questions in their PDFs into rows in the app, and play the public recordings in it.'],
+      r: ['Jay 住的竹北，從縣議會到市民代表會的議案、表決和錄影，都在 App 裡點得到。', 'For 竹北, where Jay lives, the county council’s and the town council’s bills, votes and recordings all open in the app.'],
+      tech: ['scripts/build-council.mjs；歐噴的議會 API（all.cc.govapi.tw）加上各議會自己的網站（新竹縣、新竹市、花蓮、彰化、苗栗、嘉義市…）；PDF 用 pdftotext 讀；只讓台灣連的網站透過台灣的中繼站；HiNet、高雄 IVOD、YouTube 的公開影片。', 'scripts/build-council.mjs; the open councils API (all.cc.govapi.tw) plus each council’s own site (新竹縣, 新竹市, 花蓮, 彰化, 苗栗, 嘉義市…); PDFs read by pdftotext; Taiwan-only sites through the Taiwan relay; public video from HiNet, 高雄’s IVOD and YouTube.'],
+      links: ['cloud-relay']
     }),
     n('law-build', 'history', ['每天自己把資料蓋好', 'Data built every day'], ['讀資料不用錢', 'Reading costs nothing'], {
       p: ['每次查法條都去問政府網站，又慢又會被擋。', 'Asking government sites on every read is slow and gets blocked.'],
@@ -554,7 +574,7 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
     }),
     n('money-photo', 'camera', ['拍照記帳', 'An entry from a photo'], ['任何一張圖都行', 'Any picture at all'], {
       p: ['只會讀發票的功能太窄：收據、帳單、App 截圖、轉帳通知、價目牌都還是要手打。', 'A tool that only read invoices was too narrow: receipts, bills, app screenshots, transfer notices and price tags still had to be typed.'],
-      i: ['拍一張任何東西，AI 讀出金額、日期、店名、品項、分類和付款方式（只用你自己的分類和付款方式），變成一筆填好的帳，存之前先看一眼；已經記過一樣的（同金額、一天內），會問要不要合併，不會記兩次。', 'Photograph anything: AI reads the amount, day, store, items, category and way to pay (only from your own lists) into a filled-in entry to check before saving; one already logged (same amount, within a day) is offered to merge, never added twice.'],
+      i: ['紙本電子發票的 QR code 先在手機上直接讀（不用 AI），店名查經濟部的登記；其他任何東西，AI 讀出金額、日期、店名、品項、分類和付款方式（只用你自己的分類和付款方式），變成一筆填好的帳，存之前先看一眼；已經記過一樣的（同金額、一天內），會問要不要合併，不會記兩次。', 'A paper e-invoice’s QR codes are read on the phone itself first (no AI), the store named from the company register; anything else, AI reads the amount, day, store, items, category and way to pay (only from your own lists) into a filled-in entry to check before saving; one already logged (same amount, within a day) is offered to merge, never added twice.'],
       r: ['一張照片就是一筆帳，原本的發票掃描、對獎和載具匯入都拿掉了。', 'One photo, one entry; the old invoice scanning, prize checking and carrier import are gone.'],
       tech: ['views/photo.mjs；代理的 /money-read 用 Gemini Flash-Lite 讀圖並檢查（真的日期、整數金額、分類只能從清單裡選），每個 Pass 一天 30 次。', 'views/photo.mjs; the proxy’s /money-read reads the picture with Gemini Flash-Lite and checks it (real days, whole totals, categories only from the list), 30 a day a Pass.']
     }),
@@ -564,4 +584,31 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
   ]
 });
 
-export const APP_BRANCHES = [sports, transit, weather, classApp, words, beats, law, securities, money];
+const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞，各家怎麼報', 'One story, every side'], {
+  app: 'news',
+  p: ['台灣的媒體各有立場，只看一家，很難知道另一邊怎麼說，也不知道哪些新聞只有一邊在報。', 'Taiwan’s outlets each lean a way: read one and you can’t tell what the other side says, or which stories only one side carries.'],
+  i: ['把同一件事的報導收成一則新聞，算出偏綠、中間、偏藍（英文新聞是左、中、右）各有幾家在報，標題並排。', 'Gather every report of the same event into one story, count how many outlets lean green, centre or blue (left, centre or right for English news) carry it, and set their headlines side by side.'],
+  r: ['一眼看出一件事各邊怎麼報、哪一邊沒報。', 'At a glance, how each side tells it and which side left it out.'],
+  kids: [
+    n('news-sides', 'flag', ['媒體的立場從哪裡來', 'Where an outlet’s place comes from'], ['照研究和公開評等，不是我們自己判', 'From research and public ratings, never our own reading'], {
+      p: ['自己判斷哪家媒體偏哪邊，很容易變成自己的偏見。', 'Judging each outlet’s lean ourselves would just be our own bias.'],
+      i: ['台灣媒體照已發表的研究（例如台灣選舉與民主化調查），新的網路媒體照老闆和公開立場（標成較弱）；英文媒體照 AllSides，沒有的再看 Media Bias/Fact Check；中國官媒另外列。', 'Taiwan’s outlets by published research (such as TEDS), newer web outlets by owner and stated stance (marked weaker); English outlets by AllSides, else Media Bias/Fact Check; China’s state media apart.'],
+      r: ['每家媒體的卡片都寫著為什麼放在那裡。', 'Every outlet’s card says why it sits where it does.'],
+      tech: ['Orbit-Core kit/news-outlets.mjs：OUTLETS（67 家）、BASIS（每個依據的出處）、藍綠和統獨兩條軸；沒有任何研究把一家媒體放在白色，所以只列新聞提到哪些政黨。', 'Orbit-Core kit/news-outlets.mjs: OUTLETS (67), BASIS (the source of each place), the green–blue and unification–independence axes; no study places an outlet as TPP-leaning, so stories list the parties their headlines name.']
+    }),
+    n('news-stories', 'grid', ['依重要程度排，不是依時間', 'By importance, not by time'], ['大新聞留好幾週，一直長大', 'Big stories stay for weeks and grow'], {
+      p: ['照時間排的新聞，大事一下就被小事蓋過去。', 'News sorted by time buries a big event under small ones.'],
+      i: ['看有幾家在報、寫了多少、持續幾天來排；同一件事的新報導併進原本那則；八卦、算命、標題黨和業配直接拿掉。', 'Rank by how many outlets carry it, how much they wrote and for how many days; new reports join the story they belong to; gossip, fortune-telling, clickbait and promos are left out.'],
+      r: ['打開就是現在最重要的事，各家的影片也在旁邊。', 'Open it and the biggest stories lead, with the outlets’ own clips beside them.'],
+      tech: ['Orbit-Core builders/news.js 每 10 分鐘讀各家的 RSS 和新聞地圖（輪流讀），分成 14 個主題，寫到 R2 的 news/index.json；手機讀這個檔，沒有用 AI。', 'Orbit-Core builders/news.js reads the outlets’ RSS feeds and news sitemaps every 10 minutes (in turns), sorts them into 14 topics and writes R2 news/index.json; phones read that file; no AI.']
+    }),
+    n('news-fair', 'shield', ['只放標題和連結', 'Headlines and links only'], ['點了就到原本的媒體', 'A tap opens the outlet itself'], {
+      tech: ['只用標題、連結、媒體自己的簡短摘要和圖片，都標明出處；圖片不存；影片用 YouTube 自己的播放器播。', 'Only headlines, links, the outlet’s own short summary and picture, each credited; no picture is kept; clips play in YouTube’s own player.']
+    }),
+    n('news-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['台灣和國際，不只政治', 'Taiwan and the world, not only politics'], {
+      tech: ['Jay 2026-11-10 開始：以台灣和國際英文新聞為主；不只政治，科技、經濟、社會也算；Orbit 自己的樣子和用語，不抄別人。', 'Begun by Jay 2026-11-10: Taiwan’s and the world’s English news; not only politics but tech, the economy and society; Orbit’s own look and words, copying nobody.']
+    })
+  ]
+});
+
+export const APP_BRANCHES = [sports, transit, weather, classApp, money, news, words, beats, law, securities];

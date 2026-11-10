@@ -72,6 +72,18 @@ export const APPS = [
     ]
   },
   {
+    id: 'news', brand: 'news', repo: 'Orbit-News', zh: true,
+    q: ['同一件事，各家媒體怎麼報？', 'How does each side tell the same story?'],
+    shots: [
+      ['news/1', ['今天的頭條，各家怎麼報', 'Today’s top stories, every side']],
+      ['news/2', ['同一則新聞，每一邊的標題', 'One story, each side’s headlines']],
+      ['news/3', ['台灣新聞，依重要程度排', 'Taiwan’s news, by importance']],
+      ['news/4', ['國際新聞，左中右一眼看', 'World news, left to right']],
+      ['news/5', ['只有一邊在報的新聞', 'Stories only one side carries']],
+      ['news/6', ['每家媒體的立場與來源', 'Every outlet’s place, and why']]
+    ]
+  },
+  {
     id: 'words', brand: 'vocab', repo: 'Orbit-Words', zh: true,
     q: ['今天該背哪些字，才記得住？', 'Which words today, so they stick?'],
     shots: [

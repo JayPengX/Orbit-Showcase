@@ -128,7 +128,7 @@ export function renderApp(box, stats, id) {
   const demo = hasDemo(app.id);
   box.replaceChildren(
     h('article', { class: 'sc-apppage', 'data-brand': app.brand }, [
-      h('a', { class: 'sc-back', href: '#apps' }, [ico('chevron'), t(['九個 App', 'Nine apps'])]),
+      h('a', { class: 'sc-back', href: '#apps' }, [ico('chevron'), t(['十個 App', 'Ten apps'])]),
       h('header', { class: 'sc-ahead' }, [
         appImg(app.brand, 64),
         h('div', {}, [h('h1', { text: appTitle(app) }), h('p', { class: 'sc-appq', text: `「${t(app.q)}」` }), h('p', { class: 'sc-appline', text: t(node.line) })]),

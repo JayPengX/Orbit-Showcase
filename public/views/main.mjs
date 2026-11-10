@@ -64,7 +64,7 @@ function top(stats) {
   return h('section', { class: 'sc-intro', id: 'home' }, [
     h('div', { class: 'sc-intro-text' }, [
       h('p', { class: 'sc-kicker', text: t(['高中自主學習作品', 'A high-school self-directed learning project']) }),
-      h('h1', { class: 'sc-headline' }, [line(['九個|每天在用的 App，', 'Nine apps used every day, ']), line(['一位高中生|帶著 AI| 做出來。', 'made by a high-school student directing an AI.'])]),
+      h('h1', { class: 'sc-headline' }, [line(['十個|每天在用的 App，', 'Ten apps used every day, ']), line(['一位高中生|帶著 AI| 做出來。', 'made by a high-school student directing an AI.'])]),
       h('p', {
         class: 'sc-intro-lede',
         text: t([
@@ -91,7 +91,7 @@ function top(stats) {
 // ---- 1. The nine apps: each one's question, its page, its demo ----
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
-    head(['九個 App，各回答一個問題', 'Nine apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
+    head(['十個 App，各回答一個問題', 'Ten apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
     h(
       'ul',
       { class: 'sc-applist' },
@@ -119,7 +119,7 @@ function apps() {
 const WOW = [
   { id: 'weather-typhoon', app: 'weather', fig: '68', say: ['個颱風，教它算出放颱風假的機率', 'typhoons taught it the chance of a typhoon day off'] },
   { id: 'law-links', app: 'law', fig: ['約 99%', '~99%'], say: ['法條裡約 28,000 個「第幾條」，點了就到那一條', 'of the ~28,000 article numbers in the law open that very article'] },
-  { id: 'cheap', app: null, fig: 'US$5', say: ['一個月：九個 App 背後的整套雲端', 'a month: the whole cloud behind all nine apps'] },
+  { id: 'cheap', app: null, fig: 'NT$0', say: ['一個月：十個 App 背後的整套雲端，只付網域的錢', 'a month: the whole cloud behind all ten apps; only the domain is paid'] },
   { id: 'sports-push', app: 'sports', fig: ['約 2 分鐘', '~2 min'], say: ['比賽一結束，結果就送到手機，App 關著也一樣', 'after the final whistle, the result is on your phone, app closed or not'] },
   { id: 'words-memory', app: 'words', fig: '20', say: ['個字一天，挑的都是你快忘記的', 'words a day, each just as you’re about to forget it'] },
   { id: 'beats-game', app: 'beats', fig: ['±45 毫秒', '±45 ms'], say: ['以內才算打中節拍：每首歌都是一關節奏遊戲', 'is how close a tap must land: every song is a rhythm-game level'] }
