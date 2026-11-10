@@ -1,10 +1,1 @@
-import { addDays as plus } from '#kit/format.mjs';
-
-// The days a date strip shows: `only` (a league's or a sport's game days,
-// the whole season's) as they are, else every day of `range` around `base`
-// (days from it); the day picked always among them. Dates 'YYYY-MM-DD'.
-export function stripDays(current, { only = null, range = { from: -30, to: 45 }, base }) {
-  const list = only ? [...only] : Array.from({ length: range.to - range.from + 1 }, (_, i) => plus(base, range.from + i));
-  if (current && !list.includes(current)) list.push(current);
-  return [...new Set(list)].sort();
-}
+import{addDays as plus}from"#kit/format.mjs";export function stripDays(current,{only=null,range={from:-30,to:45},base}){const list=only?[...only]:Array.from({length:range.to-range.from+1},(_,i)=>plus(base,range.from+i));return current&&!list.includes(current)&&list.push(current),[...new Set(list)].sort()}export const chosenOf=(d,today)=>d&&d!==today?d:null;export function sportBack(kept,{from,to,date,y}){return!from&&to?{kept:{date,y},back:null}:from&&!to?{kept:null,back:kept}:{kept,back:null}}export function sportDay(days,{from,today}){const list=[...days].sort();if(!list.length||days.has(from))return from;const on=from>today?from:today;return list.find(d=>d>=on)||list.at(-1)}

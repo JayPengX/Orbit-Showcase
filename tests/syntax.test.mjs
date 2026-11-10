@@ -9,7 +9,8 @@ import { spawnSync } from 'node:child_process';
 function files(dir) {
   return readdirSync(dir).flatMap((f) => {
     const p = join(dir, f);
-    if (statSync(p).isDirectory()) return f === 'vendor' ? [] : files(p);
+    // (the demos' app copies are built from the apps' own repos: only the sandbox is written here)
+    if (statSync(p).isDirectory()) return f === 'vendor' || (dir === 'public/demo' && f !== '_demo') ? [] : files(p);
     return /\.m?js$/.test(f) ? [p] : [];
   });
 }

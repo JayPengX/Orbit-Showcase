@@ -283,6 +283,10 @@
     const method = String(init.method || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
     if (url.origin === location.origin) {
       if (/\/version\.json$/.test(url.pathname)) {
+        // The built demo's own (the app's and the kit's, as their deploys write
+        // them: nothing newer, so nothing reloads); an unbuilt copy's made up.
+        const own = await realFetch(input, init).catch(() => null);
+        if (own?.ok) return own;
         const kit = /\/Orbit-Core\/kit\//.test(url.pathname);
         const v = kit ? 'local' : document.querySelector('meta[name="build-version"]')?.content || 'dev';
         return new Response(JSON.stringify({ version: v }), { headers: { 'content-type': 'application/json' } });

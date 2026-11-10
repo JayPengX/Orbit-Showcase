@@ -66,7 +66,7 @@ export const TOURS = {
     { tap: '.sc-movers .sc-row', say: ['點漲最多的這檔', 'Tap the top gainer'] },
     { tap: '[data-action="chart-style"][data-v="candle"]', say: ['換成 K 線', 'Switch to candles'] },
     { tap: '.q-btn.trade.buy', say: ['買進（練習資金）', 'Buy, with practice money'] },
-    { tap: '[data-action="qty"][data-qty="100"]', say: ['買 100 股零股', '100 shares, an odd lot'] },
+    { tap: '[data-action="qty"][data-qty="1"]', say: ['先買 1 股零股', 'Just 1 share, an odd lot'] },
     { tap: '[data-action="otype"][data-otype="limit"]', say: ['零股只能掛限價', 'Odd lots are limit orders'] },
     { tap: '[data-action="place"]', say: ['手續費和稅已算好，送出', 'Fees and tax included: send'] },
     { tap: '.q-ask-actions .q-btn.primary', say: ['確認', 'Confirm'] },

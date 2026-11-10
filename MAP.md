@@ -43,7 +43,13 @@ The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (la
 
 ## Keeping it true
 
-- **The numbers refresh by themselves.** The deploy runs on every push and daily at 00:17 Taipei.
+- **The demos are the apps as they are today.** The deploy (every push, and daily at 10:17 Taipei)
+  records every demo again from each app's main and builds it the way the app's own deploy does
+  (`scripts/demo/refresh.mjs` → `record.mjs --strict` → `build.mjs`: minified, hashed, the kit's
+  files preloaded). A demo whose walk fails keeps the copy committed in `public/demo/`, and so does
+  Transit at night in Taiwan (`daytime`). Nobody catches the demos up by hand; a tour step that no
+  longer matches the app (`lib/demos.mjs` `TOURS`) shows as that demo's warning in the deploy.
+- **The numbers refresh by themselves.** The deploy runs on every push and daily at 10:17 Taipei.
   It clones every family repo and recounts commits, lines, tests and days with `scripts/stats.mjs`.
   Nothing in the pages is typed in.
 - **Everything else changes only when Jay says "catch up the showcase".** At that point, update the

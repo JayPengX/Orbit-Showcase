@@ -35,7 +35,7 @@ Each app has its own page (`#apps/<app>`: its screens, the real app to try, its 
 
 - **For readers who know no tech:** plain everyday words, Chinese first and English second.
 - **Open to everyone:** no sign-in and no install step; a real desktop layout as well as the phone one, in Safari and Chrome.
-- **Real apps, frozen:** each demo is the app's own code recorded on made-up data at a fixed clock, so it runs the same every time without touching anyone's account.
+- **Real apps, today's:** every deploy (and every morning) records each demo again from the app's newest code and builds it the way the app itself is built; it runs on made-up or recorded data at a fixed clock, without touching anyone's account.
 
 ## Tech stack
 
@@ -44,20 +44,21 @@ Each app has its own page (`#apps/<app>`: its screens, the real app to try, its 
 | Site | Plain JavaScript (ES modules), HTML and CSS; no framework, no build step |
 | Look | The kit in [Orbit-Core](https://github.com/JayPengX/Orbit-Core) plus `showcase.css` |
 | Numbers | `scripts/stats.mjs` counts commits, lines, tests and days from every Orbit repo's git history |
-| Demos | Recorded with Playwright through Orbit-Core's preview tool, then frozen into `public/demo/` |
+| Demos | Recorded with Playwright through Orbit-Core's preview tool from each app's main at every deploy, then built into `public/demo/` (`scripts/demo/refresh.mjs`) |
 | Hosting | Cloudflare (static files), at jaypengx.com |
 | Tests | `node --test` (`tests/content.test.mjs` checks the content rules) |
 
 ## How it works
 
 ```
-GitHub Actions, every push and daily at 00:17 Taipei
+GitHub Actions, every push and daily at 10:17 Taipei
   clone every Orbit repo ─► scripts/stats.mjs ─► public/data/stats.json
+  scripts/demo/refresh.mjs ─► every demo recorded and built from each app's main
   npm test ─► stamp versions ─► Cloudflare
 
 scripts/demo/record.mjs <app>   the app served with made-up answers, its tour walked,
                                 every answer it got kept
-scripts/demo/build.mjs          the recording frozen into public/demo/<Repo>/
+scripts/demo/build.mjs          the recording built into public/demo/<Repo>/, like the app's own deploy
 ```
 
 - **Every number comes from git**, recounted daily; nothing on the pages is typed in.
@@ -104,7 +105,7 @@ mkdir -p /tmp/site && ln -sfn "$PWD/public" /tmp/site/Orbit-Showcase && ln -sfn 
 npx --yes http-server /tmp/site -p 8080 -c-1   # http://localhost:8080/Orbit-Showcase/
 ```
 
-Record a demo again: `node scripts/demo/record.mjs <app>`, then `node scripts/demo/build.mjs`.
+The deploy records every demo again by itself. By hand: `node scripts/demo/refresh.mjs --repos .. [app…]` (or `record.mjs <app>`, then `build.mjs`).
 
 ## Deploying
 
