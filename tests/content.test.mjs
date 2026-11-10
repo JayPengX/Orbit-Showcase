@@ -29,7 +29,7 @@ test('tree: ids unique, links real, every text in both languages, icons drawn', 
 });
 
 test('apps: a tree branch, screenshots on disk, captions in both languages', () => {
-  assert.equal(APPS.length, 9);
+  assert.equal(APPS.length, 10);
   for (const a of APPS) {
     assert.ok(NODES.has(a.id), a.id);
     assert.ok(pair(a.q), `${a.id}.q`);

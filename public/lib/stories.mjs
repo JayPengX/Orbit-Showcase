@@ -98,7 +98,7 @@ export const STORIES = [
       ['phone', ['Jay 在 iPhone 上截圖：「這個名字被切掉了」。', 'Jay screenshots it on his iPhone: “this name is cut off”.']],
       ['repo', ['Claude 找出真正的原因、修改程式，並在 iPhone 的 Safari 引擎上截圖確認。', 'Claude finds the real cause, changes the code and checks a screenshot in iPhone’s Safari engine.']],
       ['repo', ['上千個自動檢查全部通過，才可以往下走。', 'Thousands of automatic checks must all pass first.']],
-      ['kit', ['如果改的是共用零件，零件先上線，九個 App 一起變好。', 'If it was a shared part, the part goes live first and nine apps improve together.']],
+      ['kit', ['如果改的是共用零件，零件先上線，十個 App 一起變好。', 'If it was a shared part, the part goes live first and ten apps improve together.']],
       ['app', ['自動壓縮、每個檔案蓋上指紋、發布。', 'Files are minified, fingerprinted and published by themselves.']],
       ['phone', ['Jay 下次打開，只下載改過的那幾 KB。', 'Next time Jay opens it, only the few changed kilobytes download.']]
     ]

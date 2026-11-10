@@ -18,7 +18,7 @@ minutes"; keep the demos and screenshots).
 | Where | What it shows | Code, data |
 | --- | --- | --- |
 | `#home` the top | One sentence on what Orbit is and who does what, four numbers from git, three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
-| `#apps` | The nine apps, each its question; 試玩 runs the real app at once | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
+| `#apps` | The ten apps, each its question; 試玩 runs the real app at once (News has no demo yet) | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
 | `#wow` | Six things people don't expect: a figure the tree's own card states; a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
 | `#made` | Jay's part and Claude's, one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`), links to the whole system | `views/main.mjs` `made`, `views/numbers.mjs` |
 | `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |
@@ -27,7 +27,7 @@ minutes"; keep the demos and screenshots).
 The frame (`app.mjs`): a bar along the top with the brand, share and language, and the page's
 three chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay).
 On an app's page or the system's, the bar's second row is the way back, where you are and 試玩.
-On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the nine
+On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the ten
 apps by name, the whole system. A link to a chapter on the page scrolls there; back and forward
 return to where the reader was.
 

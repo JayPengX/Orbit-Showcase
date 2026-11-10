@@ -12,16 +12,16 @@
 const S = {
   // ---- The root and the big branches ----
   orbit: {
-    nums: [['9', ['個 App', 'apps']], ['1', ['張通行證', 'pass']], ['US$5', ['一個月', 'a month']]]
+    nums: [['10', ['個 App', 'apps']], ['1', ['張通行證', 'pass']], ['NT$0', ['雲端一個月', 'a month in the cloud']]]
   },
   apps: {
-    flow: [['backpack', ['一盒零件', 'One kit']], ['key', ['一張通行證', 'One pass']], ['grid', ['九個 App', 'Nine apps']]]
+    flow: [['backpack', ['一盒零件', 'One kit']], ['key', ['一張通行證', 'One pass']], ['grid', ['十個 App', 'Ten apps']]]
   },
   kit: {
-    flow: [['pencil', ['改一次', 'Fix once']], ['backpack', ['零件盒', 'The kit']], ['grid', ['9 個 App 一起變', 'Nine apps change']]]
+    flow: [['pencil', ['改一次', 'Fix once']], ['backpack', ['零件盒', 'The kit']], ['grid', ['10 個 App 一起變', 'Ten apps change']]]
   },
   pass: {
-    flow: [['key', ['一組碼', 'One code']], ['check', ['登入一次', 'Sign in once']], ['grid', ['9 個 App', 'Nine apps']]],
+    flow: [['key', ['一組碼', 'One code']], ['check', ['登入一次', 'Sign in once']], ['grid', ['10 個 App', 'Ten apps']]],
     nums: [['10', ['個字的通行碼', 'characters in a pass']]]
   },
   cloud: {
@@ -35,7 +35,7 @@ const S = {
     nums: [['12 Mbps', ['Jay 的 4G', 'Jay’s 4G']], ['300–470', ['毫秒延遲', 'ms of delay']]]
   },
   cheap: {
-    nums: [['US$5', ['整個家族一個月', 'the whole family, a month']], ['NT$0', ['App 本身的靜態檔案', 'the apps’ own files']]]
+    nums: [['NT$0', ['雲端一個月', 'the cloud, a month']], ['1', ['樣要付錢的：網域', 'thing paid for: the domain']]]
   },
   ship: {
     flow: [['pencil', ['修好', 'Fixed']], ['check', ['測試', 'Tested']], ['send', ['推上去', 'Pushed']], ['user', ['到你手機', 'On your phone']]]
@@ -89,7 +89,7 @@ const S = {
     nums: [['4', ['TDX 每秒最多次數', 'TDX calls a second, at most']], [['6 小時', '6 h'], ['時刻表共用', 'timetables shared']]]
   },
   'transit-data': {
-    tags: [['bus', ['TDX 公車', 'TDX buses']], ['train', ['台鐵、高鐵、捷運', 'Rail, HSR, metro']], ['bike', 'YouBike'], ['map', 'Google Maps'], ['map', ['國土測繪中心地圖', 'NLSC maps']], ['map', 'OpenStreetMap']]
+    tags: [['bus', ['各縣市公車網站', 'Each city’s buses']], ['train', ['台鐵、高鐵、捷運', 'Rail, HSR, metro']], ['bike', 'YouBike'], ['cloud', ['TDX（備援）', 'TDX (backup)']], ['map', 'Google Maps'], ['map', ['國土測繪中心地圖', 'NLSC maps']], ['map', 'OpenStreetMap']]
   },
   'transit-calls': {
     flow: [['pin', ['竹東南', 'Zhudong South']], ['bus', ['5608 公車', 'Bus 5608']], ['bike', ['YouBike 20 分', 'YouBike 20 min']], ['flag', ['成功九街', 'Chenggong 9th St']]],
@@ -99,7 +99,8 @@ const S = {
     pairs: [[['台北 7 到 10 秒', 'Taipei: 7 to 10 s'], ['1 到 2 秒', '1 to 2 s']]]
   },
   'transit-tdx': {
-    nums: [['240', ['TDX 每分鐘上限', 'TDX calls a minute, at most']], ['4', ['每秒', 'a second']]]
+    flow: [['user', ['手機先讀', 'The phone reads']], ['bus', ['業者自己的網站', 'The operators’ own sites']], ['cloud', ['不行才問 TDX', 'TDX only if not']]],
+    nums: [['3', ['TDX 免費方案一個月的點數', 'TDX free points a month']]]
   },
 
   // ---- Weather ----
@@ -127,6 +128,10 @@ const S = {
   class: {
     flow: [['clock', ['每秒看時鐘', 'Reads the clock']], ['list', ['課表規則', 'The rules']], ['school', ['現在、下一節', 'Now and next']]],
     nums: [['300', ['AI 每天全站上限', 'AI asks a day, all users']], ['6', ['一次最多張照片', 'photos at once']]]
+  },
+  'class-cal': {
+    flow: [['school', ['課表', 'The timetable']], ['calendar', ['手機行事曆', 'The phone’s Calendar']], ['swap', ['調課跟著變', 'Swaps follow']]],
+    nums: [['4', ['週的課先放進去', 'weeks ahead']]]
   },
   'class-calls': {
     nums: [['2026-08-26', ['第一個上 GitHub 的 App', 'the first app on GitHub']], [['8 碼', '8'], ['分享碼，24 小時有效', 'characters in a share key, 24 h']]],
@@ -171,6 +176,10 @@ const S = {
   },
   'law-links': {
     nums: [[['約 28,000', '~28,000'], ['個引用', 'citations']], [['約 99%', '~99%'], ['連到真實條文', 'reach the real article']]]
+  },
+  'law-councils': {
+    nums: [['22', ['個縣市議會', 'city and county councils']], ['1', ['個市民代表會：竹北', 'town council: 竹北']]],
+    flow: [['book', ['議會的 PDF', 'A council’s PDF']], ['list', ['讀成一列一列', 'Read into rows']], ['play', ['錄影直接播', 'Recordings play']]]
   },
   'law-live': {
     nums: [[['90 秒', '90 s'], ['看一次哪場在直播', 'between live checks']]]
@@ -312,20 +321,20 @@ const S = {
     nums: [[['5 公里', '5 km'], ['天氣一格共用', 'weather squares shared']], [['10 秒', '10 s'], ['交通結果共用', 'transit answers shared']], [['1 份', '1'], ['颱風機率一個縣市', 'typhoon chance a county']]]
   },
   'cheap-caps': {
-    nums: [['300', ['課表 AI 每天', 'timetable AI a day']], ['30', ['每人每天問法律', 'law asks a person a day']], ['500', ['Google 天氣每天', 'Google Weather a day']]]
+    nums: [['300', ['法律 AI 每天', 'law AI a day']], ['30', ['每人每天問法律', 'law asks a person a day']], ['8,500', ['Google 天氣每月', 'Google Weather a month']]]
   },
   'cheap-static': {
-    tags: [['grid', ['九個 App', 'Nine apps']], ['backpack', ['共用零件', 'The kit']], ['book', ['法律的全部資料', 'All of Law’s data']]],
+    tags: [['grid', ['十個 App', 'Ten apps']], ['backpack', ['共用零件', 'The kit']], ['book', ['法律的全部資料', 'All of Law’s data']]],
     nums: [['NT$0', ['讀多少都免費', 'however much is read']]]
   },
   'cheap-guard': {
-    flow: [['clock', ['60% 放慢', '60% slow']], ['x', ['90% 停到下個週期', '90% off till next period']]]
+    flow: [['clock', ['每 5 分鐘讀用量', 'Usage every 5 min']], ['clock', ['用多了就放慢', 'Slower when busy']], ['check', ['不收錢、不會停', 'Never billed, never off']]]
   },
   'cheap-speeds': {
     flow: [['user', ['人變多', 'More people']], ['clock', ['一起放慢', 'All slow a little']], ['check', ['空間夠就恢復', 'Back when there’s room']]]
   },
   'cheap-plan': {
-    nums: [[['約 2.1 萬', '~21,000'], ['每天的請求', 'requests a day']], [['約 14 毫秒', '~14 ms'], ['每個請求的計算', 'computing a request']], [['10 毫秒', '10 ms'], ['免費方案上限', 'the free plan’s cap']]]
+    nums: [[['10 毫秒', '10 ms'], ['免費方案每個請求', 'a request, free plan']], [['30 秒', '30 s'], ['小幫手每次', 'the helper, a go']], ['NT$0', ['一個月', 'a month']]]
   },
 
   // ---- Shipping ----
@@ -430,6 +439,9 @@ const S = {
   'transit-packs': {
     flow: [['clock', ['每週一次', 'Once a week']], ['backpack', ['每個縣市一包', 'A pack per city']], ['pin', ['手機算附近站牌', 'Stops found on the phone']]]
   },
+  'transit-book': {
+    flow: [['train', ['規劃好的高鐵', 'A planned 高鐵 ride']], ['send', ['高鐵訂票', '高鐵訂票']], ['check', ['車次已填好', 'Train filled in']]]
+  },
   'transit-caps': {
     flow: [['map', ['Google 地圖', 'Google Maps']], ['x', ['超過月上限', 'Over the month’s cap']], ['map', ['換成國土測繪中心地圖', 'Switch to NLSC maps']]]
   },
@@ -437,7 +449,8 @@ const S = {
     flow: [['sun', ['Google', 'Google']], ['cloud', ['氣象署', 'CWA']], ['rain', ['MET Norway…', 'MET Norway…']], ['check', ['一個數字', 'One number']]]
   },
   'weather-soon': {
-    pairs: [[['每次都說「可能下雨」', '“Might rain” all the time'], ['兩小時內要下才說', 'Only when it’s within two hours']]]
+    pairs: [[['每次都說「可能下雨」', '“Might rain” all the time'], ['兩小時內要下才說', 'Only when it’s within two hours']]],
+    nums: [[['1 小時', '1 h'], ['雷達看得到的雨', 'of rain the radar sees']], [['10 分鐘', '10 min'], ['讀一次雷達', 'between radar reads']]]
   },
   'weather-plan': {
     flow: [['school', ['早上在學校', 'Morning at school']], ['bus', ['下午出門', 'Afternoon out']], ['pin', ['晚上回家', 'Evening home']]]
@@ -501,7 +514,24 @@ const S = {
     pairs: [[['兩台手機，後存的蓋掉先存的', 'Two phones, the later save wins'], ['一筆一筆合併', 'Merged entry by entry']]]
   },
   'money-photo': {
-    flow: [['camera', ['拍收據、帳單、截圖', 'Snap a receipt, bill or screenshot']], ['spark', ['AI 讀出金額和分類', 'AI reads amount and category']], ['check', ['看一眼再存', 'Check, then save']]]
+    flow: [['camera', ['拍收據、發票、截圖', 'Snap a receipt, invoice or screenshot']], ['search', ['發票 QR 手機先讀', 'Invoice QR read on the phone']], ['spark', ['其他的 AI 讀', 'AI reads the rest']], ['check', ['看一眼再存', 'Check, then save']]]
+  },
+  'news-sides': {
+    nums: [['67', ['家媒體都有位置', 'outlets placed']]],
+    flow: [['book', ['研究和公開評等', 'Research and ratings']], ['flag', ['偏綠、中間、偏藍', 'Green, centre, blue']], ['check', ['寫出為什麼', 'Says why']]]
+  },
+  'news-stories': {
+    nums: [['14', ['個主題', 'topics']], [['10 分鐘', '10 min'], ['更新一次', 'between updates']]],
+    pairs: [[['照時間排', 'By time'], ['照重要程度排', 'By importance']]]
+  },
+  'news-fair': {
+    rules: [['只放標題和連結', 'Headlines and links only'], ['標明每一家出處', 'Every outlet credited'], ['圖片不存', 'No picture kept'], ['點了就到原本的媒體', 'A tap opens the outlet']]
+  },
+  'news-calls': {
+    rules: [['台灣和國際英文新聞', 'Taiwan’s and English news'], ['不只政治', 'Not only politics'], ['Orbit 自己的樣子', 'Orbit’s own look']]
+  },
+  news: {
+    flow: [['list', ['各家的報導', 'Every outlet’s reports']], ['grid', ['收成一則', 'One story']], ['flag', ['各邊幾家', 'How many each side']]]
   },
   'kit-look': {
     pairs: [[['整張卡片塗滿主色', 'A card filled with the app’s colour'], ['石墨色卡片，顏色只在它代表的東西上', 'Graphite cards, colour only on what it names']]]

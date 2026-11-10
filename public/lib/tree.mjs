@@ -7,17 +7,17 @@ import { APP_BRANCHES } from './tree-apps.mjs';
 
 const n = (id, icon, title, line, more = {}) => ({ id, icon, title, line, ...more });
 
-const apps = n('apps', 'grid', ['九個 App', 'Nine apps'], ['你手上真正會用到的東西', 'What you actually hold'], {
+const apps = n('apps', 'grid', ['十個 App', 'Ten apps'], ['你手上真正會用到的東西', 'What you actually hold'], {
   p: ['每天要用的東西散在一堆 App 和網站裡，很多還不是為台灣做的。', 'Everyday things are spread over many apps and sites, many not made for Taiwan.'],
-  i: ['九個各回答一個問題的 App：看比賽、搭車、天氣、課表、單字、音樂、法律、投資、記帳；長得像同一家人。', 'Nine apps, each answering one question: games, trips, weather, classes, words, music, law, investing, money, all looking like one family.'],
+  i: ['十個各回答一個問題的 App：看比賽、搭車、天氣、課表、記帳、新聞、單字、音樂、法律、投資；長得像同一家人。', 'Ten apps, each answering one question: games, trips, weather, classes, money, news, words, music, law, investing, all looking like one family.'],
   r: ['每個都是網頁，加到主畫面就像原生 App。', 'Each is a web page that works like a native app from the home screen.'],
   kids: APP_BRANCHES
 });
 
-const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高：九個 App 用同一盒積木', 'Like LEGO: nine apps, one box of bricks'], {
-  p: ['每個 App 各寫一份按鈕、視窗、日期選擇，改一個地方要改九次，而且長得都不一樣。', 'Each app had its own buttons, sheets and date pickers: nine copies to fix, and none alike.'],
+const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高：十個 App 用同一盒積木', 'Like LEGO: ten apps, one box of bricks'], {
+  p: ['每個 App 各寫一份按鈕、視窗、日期選擇，改一個地方要改好幾次，而且長得都不一樣。', 'Each app had its own buttons, sheets and date pickers: a copy in every app to fix, and none alike.'],
   i: ['兩個以上 App 會用到的東西都放進同一個「零件盒」，每個 App 打開時直接從那裡拿，不複製。', 'Anything two apps use goes in one kit; every app loads it from there, never copies it.'],
-  r: ['改一次，九個 App 同時變好，而且看起來是同一家。', 'Fix it once and nine apps improve together, looking like one family.'],
+  r: ['改一次，十個 App 同時變好，而且看起來是同一家。', 'Fix it once and ten apps improve together, looking like one family.'],
   tech: ['Orbit-Core/kit/，放在 Cloudflare 上（orbit.jaypengx.com/Orbit-Core/kit/）；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Orbit-Core/kit/ on Cloudflare (orbit.jaypengx.com/Orbit-Core/kit/); each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
   kids: [
     n('kit-look', 'spark', ['Orbit 自己的外觀', 'Orbit’s own look'], ['九個 App 一起重新設計', 'All nine apps redesigned together'], {
@@ -49,11 +49,11 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
     n('kit-screens', 'grid', ['每種螢幕都排好', 'Every screen laid out'], ['直的、橫的、平板、電腦', 'Upright, sideways, tablet, computer'], {
       p: ['原本只照手機直拿來做：手機一橫過來，或在平板、電腦上打開，就只是中間一條窄窄的手機畫面。', 'The apps were made for a phone held upright: turned sideways, or opened on a tablet or computer, they were a narrow phone column in the middle.'],
       i: ['共用零件先看螢幕多大：橫拿和電腦上，分頁列變成左邊一條細細的直欄；平板和電腦上，滑出來的視窗變成置中的卡片；頁面夠寬就排成兩到三欄，由左到右讀起來和手機的順序一樣。', 'The shared pieces read the screen first: sideways and on a computer the tab bar becomes a slim rail down the left; on a tablet or computer sheets become cards in the middle; a wide page becomes two or three columns, read in the phone’s order.'],
-      r: ['九個 App 在手機、平板、電腦上，直的橫的都好用（Jay 2026-10-31 的要求）。', 'All nine apps work on a phone, tablet or computer, either way up (Jay’s ask, 2026-10-31).'],
+      r: ['每個 App 在手機、平板、電腦上，直的橫的都好用（Jay 2026-10-31 的要求）。', 'Every app works on a phone, tablet or computer, either way up (Jay’s ask, 2026-10-31).'],
       tech: ['orbit.mjs 的 screenFit()／onScreen()；html 上的 q-tabrail（直欄 60 寬）、q-float、q-wide、q-w3；Orbit-Core docs/DESIGN.md §10。', 'orbit.mjs screenFit()/onScreen(); the html marks q-tabrail (a 60-wide rail), q-float, q-wide, q-w3; Orbit-Core docs/DESIGN.md §10.']
     }),
     n('kit-brand', 'star', ['品牌：從程式畫出來的圖示', 'Brand: icons drawn by code'], ['每個 App 一個顏色、一顆行星', 'Each app a colour and a planet'], {
-      p: ['九個圖示、分享卡片、主畫面圖示，手動做會不一致。', 'Nine icons, share cards and home-screen icons drawn by hand drift apart.'],
+      p: ['十個圖示、分享卡片、主畫面圖示，手動做會不一致。', 'Ten icons, share cards and home-screen icons drawn by hand drift apart.'],
       i: ['所有名稱、顏色和符號寫在一個檔案裡，圖示和分享卡片都由程式產生：一顆有光環和衛星的行星，上面是 App 的白色符號。', 'Every name, colour and symbol lives in one file; icons and share cards are generated: a planet with its ring and moon, the app’s white symbol on it.'],
       r: ['改一個顏色，全部圖示一起更新。', 'Change one colour and every icon follows.'],
       tech: ['brand.mjs（BRANDS、GLYPHS、appIcon、familyMark）；brand/generate.mjs 產生圖示、分享卡、manifest。頭像是 96 種有表情的小行星（16 色 × 6 種特徵）。', 'brand.mjs (BRANDS, GLYPHS, appIcon, familyMark); brand/generate.mjs writes icons, share cards, manifests. Avatars: 96 little planets with faces (16 colours × 6 features).']
@@ -97,7 +97,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
 });
 
 const pass = n('pass', 'key', ['一張通行證', 'One pass'], ['Orbit Pass：一組碼，所有 App', 'Orbit Pass: one code, every app'], {
-  p: ['九個 App 要九組帳號密碼，資料也分散。', 'Nine apps would mean nine logins and scattered data.'],
+  p: ['十個 App 要十組帳號密碼，資料也分散。', 'Ten apps would mean ten logins and scattered data.'],
   i: ['一組 10 個字的通行碼，由 Jay 發給朋友；登入任何一個 App，其他的也都登入了，資料存在雲端。', 'One 10-character pass that Jay hands out; sign in to one app and the rest follow, data kept in the cloud.'],
   r: ['換手機也什麼都不會少。', 'A new phone loses nothing.'],
   tech: ['Orbit-Core eco.js（/eco）；D1 資料庫 orbit-store。', 'Orbit-Core eco.js (/eco); the D1 database orbit-store.'],
@@ -184,8 +184,8 @@ const cloud = n('cloud', 'cloud', ['雲端小幫手', 'The helper in the cloud']
     }),
     n('cloud-guard', 'shield', ['成本警衛', 'The cost guard'], ['每 5 分鐘看一次帳單', 'Reads the bill every 5 minutes'], {
       p: ['雲端用量暴增會收到意外的帳單。', 'A usage spike means a surprise bill.'],
-      i: ['另一個小程式每 5 分鐘讀用量，預估整個月：到 60% 開始放慢，50/75/90% 通知 Jay 的手機，到 90% 直接關掉代理到下個週期。', 'Another small program reads usage every 5 minutes and projects the month: slows things from 60%, tells Jay at 50/75/90%, and switches the proxy off at 90% until the next period.'],
-      r: ['帳單不會超過每月 5 美元的方案。', 'The bill stays within the $5 plan.'],
+      i: ['另一個小程式每 5 分鐘讀一次用量，照免費方案每天的額度慢慢放慢，真的用到才放慢，不是用預估；Jay 的手機在 50/75/90% 收到通知。', 'Another small program reads usage every 5 minutes and paces things through the free plan’s day, slowing only on real use, never on a forecast; Jay’s phone hears at 50/75/90%.'],
+      r: ['在免費方案上不會收任何錢：用多了只會慢一點，不會壞。', 'On the free plan nothing is ever billed: heavy use only slows things a little, nothing breaks.'],
       tech: ['quota-guard（guard.js、Durable Object 鬧鐘）；pace.js；PLAN 列出每種 Cloudflare 產品的額度。', 'quota-guard (guard.js, a Durable Object alarm); pace.js; PLAN lists every Cloudflare product’s allowance.'],
       links: ['cheap-guard']
     })
@@ -284,10 +284,10 @@ const fast = n('fast', 'flame', ['為什麼打開很快', 'Why it opens fast'], 
   ]
 });
 
-const cheap = n('cheap', 'coin', ['不超過額度、不花大錢', 'Staying under limits, spending little'], ['一個月 5 美元', 'Five US dollars a month'], {
+const cheap = n('cheap', 'coin', ['不超過額度、不花錢', 'Staying under limits, spending nothing'], ['只付網域的錢', 'Only the domain is paid'], {
   p: ['很多資料來源有免費額度，超過就要錢或被封鎖。', 'Many sources have free allowances; past them you pay or get blocked.'],
   i: ['不先抓沒人要看的東西、大家共用同一個答案、能永久保存的就保存。', 'Never fetch what nobody opens, share one answer, and keep what can be kept for good.'],
-  r: ['整個家族一個月只花 Cloudflare 的 5 美元方案。', 'The whole family runs on Cloudflare’s $5 plan.'],
+  r: ['從 2026-11-13 起，整個家族跑在 Cloudflare 的免費方案和各個來源的免費額度上，只付網域的錢（AI 例外：Jay 決定 AI 可以付費）。', 'From 2026-11-13 the whole family runs on Cloudflare’s free plan and every source’s free allowance; only the domain is paid (AI aside: Jay decided AI may be paid).'],
   kids: [
     n('cheap-demand', 'clock', ['有人要才做', 'Built only on demand'], ['沒人打開就不跑', 'Nothing runs while nobody looks'], {
       tech: ['不預先抓沒人打開的資料；/sports-today 有人問才建；一天不會變的東西才放在每天整理的倉庫裡，即時的才走代理。', 'Nothing prefetched that nobody opens; /sports-today is built when asked; only what doesn’t change in a day goes in the daily-built storage, live things through the proxy.'],
@@ -297,23 +297,27 @@ const cheap = n('cheap', 'coin', ['不超過額度、不花大錢', 'Staying und
       tech: ['代理的邊緣快取（依資料種類）、天氣 5 公里格子、颱風機率一個縣市一份、TDX 結果 10 秒、AI 答案依法律版本存。', 'The proxy’s edge cache (by kind), 5 km weather squares, one typhoon number per county, TDX answers 10 s, AI answers kept by law version.'],
       links: ['cloud-proxy', 'weather-squares', 'transit-tdx']
     }),
-    n('cheap-caps', 'shield', ['每個付費服務都有上限', 'A cap on every paid service'], ['AI、地圖、天氣', 'AI, maps, weather'], {
-      tech: ['Gemini 每條路由每天都有全站上限（課表 300、一句話修改 300、法律 300、法律摘要 200）和每人上限（問法律 30）；Google 地圖每月上限；Google 天氣一天 500 次以內、依時段放額度；AI 一定要使用者按了才問。', 'Gemini has a daily cap per route (Class 300, edits 300, law 300, law gists 200) and per Pass (Ask the law 30); Google Maps monthly caps; Google Weather under 500 a day, paced by the hour; AI only ever on a tap.'],
+    n('cheap-caps', 'shield', ['每個外部服務都有上限', 'A cap on every outside service'], ['AI、地圖、天氣', 'AI, maps, weather'], {
+      tech: ['AI 每條路由每天都有全站上限（例如法律 300、拍照記帳 300）和每人上限（問法律 30）；Google 地圖用到每月免費額度的九成就停；Google 天氣一個月 8,500 次以內；AI 一定要使用者按了才問。', 'AI has a daily cap per route for everyone (Law 300, receipts 300, for example) and per Pass (Ask the law 30); Google Maps stops at 90% of each free month; Google Weather stays under 8,500 a month; AI only ever on a tap.'],
       links: ['law-ai', 'class-ai', 'weather-squares', 'transit-caps']
     }),
     n('cheap-static', 'book', ['能放靜態網站就放', 'Static whenever possible'], ['讀靜態檔案不用錢', 'Static files are free to read'], {
-      tech: ['九個 App 本身、共用零件、Orbit Law 的全部資料都是靜態檔案，放在 Cloudflare、Jay 自己的網域底下（2026-11-01 從 GitHub Pages 搬過來，GitHub 只放程式碼），讀多少都不用錢。', 'All nine apps, the kit and every bit of Orbit Law’s data are static files on Cloudflare under Jay’s own domain (moved off GitHub Pages on 2026-11-01; GitHub keeps only the code): free however much they’re read.'],
+      tech: ['十個 App 本身、共用零件、Orbit Law 的全部資料都是靜態檔案，放在 Cloudflare、Jay 自己的網域底下（2026-11-01 從 GitHub Pages 搬過來，GitHub 只放程式碼），讀多少都不用錢。', 'All ten apps, the kit and every bit of Orbit Law’s data are static files on Cloudflare under Jay’s own domain (moved off GitHub Pages on 2026-11-01; GitHub keeps only the code): free however much they’re read.'],
       links: ['store-pages']
     }),
-    n('cheap-guard', 'shield', ['成本警衛會踩煞車', 'The guard brakes'], ['60% 放慢，90% 停', 'Slows at 60%, stops at 90%'], {
-      tech: ['quota-guard 每 5 分鐘預估整個月；新增 Cloudflare 產品時一定要同時加進它的 PLAN。', 'quota-guard projects the month every 5 minutes; a new Cloudflare product goes into its PLAN in the same change.'],
+    n('cheap-guard', 'shield', ['成本警衛會踩煞車', 'The guard brakes'], ['照每天的免費額度放慢', 'Paced by the day’s free amounts'], {
+      tech: ['quota-guard 每 5 分鐘讀用量，照 Workers 免費方案每天的額度（請求、CPU、KV、Durable Objects）放慢，不會停；新增 Cloudflare 產品時一定要同時加進它的 PLAN。', 'quota-guard reads usage every 5 minutes and paces by the Workers Free plan’s daily amounts (requests, CPU, KV, Durable Objects), never stopping; a new Cloudflare product goes into its PLAN in the same change.'],
       links: ['cloud-guard']
     }),
     n('cheap-speeds', 'pencil', ['更新速度由 Jay 決定', 'Jay sets the speeds'], ['人變多就一起放慢', 'Slowed together as the family grows'], {
       tech: ['管理頁的開發者設定（brand.mjs DEV）：比分、F1、交通的更新秒數；autoScale 依預估人數一起放慢，空間夠就恢復。', 'The admin page’s developer settings (brand.mjs DEV): seconds for scores, F1, transit; autoScale slows them together as people grow, back when there’s room.']
     }),
-    n('cheap-plan', 'coin', ['為什麼留著 5 美元方案', 'Why keep the $5 plan'], ['免費方案每次只能算 10 毫秒', 'Free allows 10 ms of CPU a request'], {
-      tech: ['2026-10 的實際用量：每天約 2.1 萬個請求，平均每個請求約 14 毫秒 CPU；免費方案每次上限 10 毫秒，而且只能有 5 個排程（已經用滿），所以留著付費方案最划算。', 'Real use in Oct 2026: about 21k requests a day at about 14 ms of CPU each; the free plan caps a request at 10 ms and allows 5 schedules (all used), so the paid plan is the best deal.']
+    n('cheap-plan', 'coin', ['怎麼塞進免費方案', 'Fitting the free plan'], ['重的工作交給會自己醒來的小幫手', 'Heavy work goes to a helper that wakes itself'], {
+      p: ['Jay 把每月 5 美元的方案取消了（2026-11-13 到期），但免費方案每個請求只能算 10 毫秒，有些路線一次要算更久。', 'Jay cancelled the $5 plan (it ends 2026-11-13), but the free plan gives a request only 10 ms of computing, and some routes need longer.'],
+      i: ['把重的路線和所有排程工作搬進一個會自己醒來的小幫手（每次可以算 30 秒）；手機自己讀得到的來源就讓手機讀；交通資料改讀業者自己的網站。', 'Move the heavy routes and every scheduled job into a helper that wakes itself (30 s of computing a go); let the phone read whatever it can itself; read transit from the operators’ own sites.'],
+      r: ['同樣的 App、同樣快，雲端一毛錢都不用付。', 'The same apps, just as fast, for nothing in the cloud.'],
+      tech: ['Orbit-Core runner.js：Runner 是同一個 Worker 的 Durable Object，接手超過 10 毫秒的路線和偶數分鐘排程的工作，用它自己的鬧鐘醒來；guard.js PLAN 換成免費方案的每日額度；KV 每天 1,000 次寫入以內（通知改放 D1）。', 'Orbit-Core runner.js: the Runner, a Durable Object of the same Worker, takes the routes past 10 ms and the even-minute jobs, waking by its own alarm; guard.js PLAN set to the Free plan’s daily amounts; KV under 1,000 writes a day (notices moved to D1).'],
+      links: ['transit-tdx']
     })
   ]
 });
