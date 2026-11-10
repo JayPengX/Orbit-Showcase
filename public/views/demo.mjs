@@ -240,29 +240,43 @@ export function openDemo(app, title) {
       ring = doc.createElement('div');
       ring.className = 'sc-demo-ring';
       ring.setAttribute('style', `position:fixed;z-index:2147483647;pointer-events:none;border-radius:14px;box-shadow:0 0 0 2.5px ${c},0 0 0 8px color-mix(in srgb, ${c} 22%, transparent);transition:width .25s ease,height .25s ease;`);
-      ring.animate?.([{ opacity: 1 }, { opacity: 0.5 }, { opacity: 1 }], { duration: 1600, iterations: Infinity });
+      ring.animate?.([{ opacity: 1 }, { opacity: 0.7 }, { opacity: 1 }], { duration: 2400, iterations: Infinity });
       doc.body.append(ring);
     }
+    // Light on the app: the target is looked up again only once it's gone,
+    // the ring moved only when the target has, and a target off screen is
+    // brought into view once a step (never pulled back while the reader scrolls).
+    let el = null;
+    let last = '';
+    let shown = false;
+    let brought = false;
     const loop = () => {
-      const el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length);
+      if (!el?.isConnected || !el.getClientRects().length) el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length) || null;
       if (el) {
         // A sheet sits in the top layer, over anything in the page: the ring goes in with it.
         const home = el.closest('dialog[open], [popover]') || doc.body;
-        if (ring.parentNode !== home) home.append(ring);
+        if (ring.parentNode !== home) (home.append(ring), (last = ''));
         const r = el.getBoundingClientRect();
-        // Where the ring lands depends on what holds it (a sliding sheet moves
-        // its own origin): measured, then put right on the target.
-        ring.hidden = false;
-        const o = ring.getBoundingClientRect();
-        const x = parseFloat(ring.style.left) || 0;
-        const y = parseFloat(ring.style.top) || 0;
-        Object.assign(ring.style, { left: `${x + r.left - 4 - o.left}px`, top: `${y + r.top - 4 - o.top}px`, width: `${r.width + 8}px`, height: `${r.height + 8}px` });
-        if (r.bottom < 0 || r.top > frame.contentWindow.innerHeight) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        if (full) {
-          coach.hidden = false;
-          place(r);
+        const at = `${r.left}|${r.top}|${r.width}|${r.height}`;
+        if (at !== last || !shown) {
+          last = at;
+          shown = true;
+          // Where the ring lands depends on what holds it (a sliding sheet moves
+          // its own origin): measured, then put right on the target.
+          ring.hidden = false;
+          const o = ring.getBoundingClientRect();
+          const x = parseFloat(ring.style.left) || 0;
+          const y = parseFloat(ring.style.top) || 0;
+          Object.assign(ring.style, { left: `${x + r.left - 4 - o.left}px`, top: `${y + r.top - 4 - o.top}px`, width: `${r.width + 8}px`, height: `${r.height + 8}px` });
+          if (full) {
+            coach.hidden = false;
+            place(r);
+          }
         }
-      } else {
+        if (!brought && (r.bottom < 0 || r.top > frame.contentWindow.innerHeight)) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        brought = true;
+      } else if (shown) {
+        shown = false;
         ring.hidden = true;
         if (full) coach.hidden = true;
       }

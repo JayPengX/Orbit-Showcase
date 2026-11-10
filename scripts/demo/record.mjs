@@ -3,7 +3,9 @@
 // at a fixed clock, walks the steps in scripts/demo/apps.mjs, and keeps
 // every answer the page got. build.mjs turns the record into the frozen copy
 // under public/demo/. Run with the family's repos beside each other:
-//   node scripts/demo/record.mjs <app> [--repos dir] [--shots dir]
+//   node scripts/demo/record.mjs <app> [--repos dir] [--shots dir] [--strict]
+// --strict (the deploy's refresh.mjs): exits 1 when a step of the walk or the
+// page itself failed, so a broken recording never replaces a good demo.
 import { spawn, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
@@ -18,6 +20,8 @@ const opt = (name, fallback) => {
 };
 const repos = resolve(opt('repos', new URL('../../..', import.meta.url).pathname));
 const shots = opt('shots', '');
+const strict = args.includes('--strict') && (args.splice(args.indexOf('--strict'), 1), true);
+let broke = 0;
 const id = args[0];
 const demo = DEMOS[id];
 if (!demo) throw new Error(`no demo called ${id}: ${Object.keys(DEMOS).join(', ')}`);
@@ -87,7 +91,7 @@ page.on('response', async r => {
   got.push({ url: req.url(), method: req.method(), post: req.postData() || '', status: r.status(), type: r.headers()['content-type'] || '', body: body.toString('base64') });
 });
 page.on('requestfailed', req => misses.push(req.url()));
-page.on('pageerror', e => console.log('page error:', e.message));
+page.on('pageerror', e => (broke++, console.log('page error:', e.message)));
 
 const base = `http://localhost:${port}/${demo.repo}/`;
 await page.goto(base + (demo.hash || ''));
@@ -104,6 +108,8 @@ for (const step of [...(demo.tour || []), ...(demo.explore || [])]) {
     await page.waitForTimeout(step.wait || 1500);
     await snap(String(step.tap || step.hash || step.type?.[0] || 'back').replace(/[^\w-]+/g, '_').slice(0, 40));
   } catch (e) {
+    // (a tour step must work; an explore step is extra)
+    if ((demo.tour || []).includes(step)) broke++;
     console.log('step failed:', JSON.stringify(step), e.message.split('\n')[0]);
   }
 }
@@ -114,3 +120,4 @@ const out = join(repos, '.demo-records');
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, `${id}.json`), JSON.stringify({ id, base, at, got, misses }));
 console.log(`${id}: ${got.length} answers, ${misses.length} failed${misses.length ? `: ${misses.slice(0, 5).join(' ')}` : ''}`);
+if (strict && (broke || !got.length)) process.exit(1);

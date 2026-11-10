@@ -1,17 +1,26 @@
-// Turns the recordings (record.mjs) into the frozen demos under public/demo/:
-//   demo/<Repo>/            the app's own files as they were (its whole site
-//                           folder, but for big media folders: only the files
-//                           the recording used), index.html with the demo's
-//                           data and sandbox put first
-//   demo/Orbit-Core/kit/  the kit, as it was (the apps load it from ../)
+// Turns the recordings (record.mjs) into the demos under public/demo/, each
+// the app as its own deploy builds it today:
+//   demo/<Repo>/            the app's own files (its whole site folder, but
+//                           for big media folders: only the files the
+//                           recording used), minified and addressed by
+//                           their content like the real app's deploy
+//                           (Orbit-Core kit/stamp-app.mjs), index.html with
+//                           the demo's data and sandbox put first
+//   demo/Orbit-Core/kit/    the kit, built the way the kit's own deploy
+//                           builds it (kit/stamp.mjs: minified, hashed)
 //   demo/_x/                every outside answer and picture, one file each
 //   demo/_demo/<id>.js      the demo's data: its clock, place and answers
 //   demo/_demo/shim.js      the sandbox (written by hand, not built)
-// Nothing in a demo reaches outside the showcase or changes with the live apps.
+// The deploy records and builds every demo again from each repo's main
+// (scripts/demo/refresh.mjs), so a demo is the app as it is today.
+// Nothing in a demo reaches outside the showcase or changes the live apps.
 //   node scripts/demo/build.mjs [id…] [--repos dir]
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { DEMOS } from './apps.mjs';
 
 const args = process.argv.slice(2);
@@ -22,16 +31,28 @@ const site = new URL('../../public/demo/', import.meta.url).pathname;
 const TOKEN = 'eyJkIjoiMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWYifQ.preview';
 const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'image/gif': 'gif', 'application/json': 'json', 'text/javascript': 'js', 'text/css': 'css', 'audio/mpeg': 'mp3' };
 
-// The kit, once, from the same repos the recordings were made with.
-rmSync(join(site, 'Orbit-Core'), { recursive: true, force: true });
-cpSync(join(repos, 'Orbit-Core/kit'), join(site, 'Orbit-Core/kit'), { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|stamp-app\.mjs$|\.md$/.test(p) });
-// The demos run as recorded, on workers.dev and the repos' own paths, wherever the showcase is served.
-const domain = join(site, 'Orbit-Core/kit/domain.mjs');
+// The kit, once, from the same repos the recordings were made with: its
+// source with the demo's two changes, then built as its own deploy builds it.
+const kitSrc = join(mkdtempSync(join(tmpdir(), 'demo-kit-')), 'kit');
+cpSync(join(repos, 'Orbit-Core/kit'), kitSrc, { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|\.md$/.test(p) });
+// The demos run on the proxy's own addresses, wherever the showcase is served.
+const domain = join(kitSrc, 'domain.mjs');
 writeFileSync(domain, readFileSync(domain, 'utf8').replace(/^export const DOMAIN = '[^']*';/m, "export const DOMAIN = '';"));
-mkdirSync(join(site, '_x'), { recursive: true });
 // No betting anywhere in the showcase (Jay): Money's help names the betting app beside Securities.
-const help = join(site, 'Orbit-Core/kit/help.mjs');
+const help = join(kitSrc, 'help.mjs');
 writeFileSync(help, readFileSync(help, 'utf8').replace('和 Securities、Longshot 的遊戲錢', '和 Securities 的遊戲錢').replace('play money in Securities and Longshot.', 'play money in Securities.'));
+rmSync(join(site, 'Orbit-Core'), { recursive: true, force: true });
+const stamp = (() => {
+  try {
+    return execFileSync('git', ['-C', join(repos, 'Orbit-Core'), 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
+  } catch {
+    return 'local';
+  }
+})();
+execFileSync(process.execPath, [join(kitSrc, 'stamp.mjs'), join(site, 'Orbit-Core'), stamp], { stdio: 'inherit' });
+const kitBuilt = JSON.parse(readFileSync(join(site, 'Orbit-Core/kit/version.json'), 'utf8'));
+const { stampApp } = await import(pathToFileURL(join(kitSrc, 'stamp-app.mjs')).href);
+mkdirSync(join(site, '_x'), { recursive: true });
 
 for (const id of ids) {
   const demo = DEMOS[id];
@@ -96,8 +117,14 @@ for (const id of ids) {
   // (liveMap: the map the real app shows, asked of the proxy when the demo opens; shim.js)
   const data = { at: rec.at, geo: demo.geo, ua: demo.ua, wall: demo.wall, token: TOKEN, stores: demo.stores || [], answers, items, pics, ...(demo.liveMap ? { liveMap: 'https://api.jaypengx.com/transit/showcase-map' } : {}) };
   writeFileSync(join(site, '_demo', `${id}.js`), `window.__DEMO=${JSON.stringify(data)};\n`);
+  // Minified and addressed by content like the real app's deploy, its kit's
+  // files listed for modulepreload: the demo opens as fast as the app.
+  await stampApp({ root: to, version: `demo-${rec.at}`, kitDir: kitSrc, kit: { version: kitBuilt.version, files: kitBuilt.files } });
   const index = join(to, 'index.html');
   const html = readFileSync(index, 'utf8');
+  // (the page's version and version.json the same, whatever the app's build wrote: never "a newer deploy", never a reload)
+  const built = html.match(/<meta name="build-version" content="([^"]*)"/)?.[1];
+  if (built) writeFileSync(join(to, 'version.json'), `${JSON.stringify({ version: built })}\n`);
   const style = demo.css ? `<style>${demo.css}</style>` : '';
   writeFileSync(index, html.replace(/<head>/i, `<head><script src="../_demo/${id}.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">${style}`));
   console.log(`${id}: ${answers.length} answers, ${Object.keys(items).length} proxy reads, ${Object.keys(pics).length} pictures`);

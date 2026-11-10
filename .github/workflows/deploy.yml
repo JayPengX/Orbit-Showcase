@@ -1,15 +1,17 @@
 # Recounts the real numbers (every family repo's commits, lines and tests:
-# scripts/stats.mjs), tests, then deploys public/ to Cloudflare (Orbit-Core deploy/cf-site.mjs): on every
-# push to main and once a day by itself, so the numbers stay current with
-# nobody touching it. Everything else changes only with a push.
+# scripts/stats.mjs), records and builds every demo again from each app's
+# main (scripts/demo/refresh.mjs), tests, then deploys public/ to Cloudflare
+# (Orbit-Core deploy/cf-site.mjs): on every push to main and once a day by
+# itself, so the numbers and the demos stay current with nobody touching
+# them. Everything else changes only with a push.
 name: Deploy to Cloudflare
 
 on:
   push:
     branches: ['main']
   schedule:
-    # 00:17 in Taipei, every day.
-    - cron: '17 16 * * *'
+    # 10:17 in Taipei, every day (daylight and open markets for the demos).
+    - cron: '17 2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -83,6 +85,19 @@ jobs:
             node -e "const s=require('./public/data/stats.json');console.log(s.apps+' apps, '+s.commits+' updates, '+s.lines+' lines, '+s.tests+' checks')"
           else
             echo "::warning::Counts not refreshed; the last committed ones are published."
+          fi
+      - name: Every demo again, from each app's main
+        # Recorded afresh and built from today's code (scripts/demo/refresh.mjs);
+        # a demo whose recording fails keeps the copy committed here. Never
+        # stops the deploy.
+        timeout-minutes: 40
+        run: |
+          if [ -d .family/Orbit-Core ] && [ -d .family/Orbit-Class ]; then
+            npm i --no-save --no-audit --no-fund playwright@1.63.0 && npx playwright install --with-deps chromium && ln -sfn "$PWD/node_modules" .family/node_modules || echo "::warning::No browser for the demos"
+            (cd .family/Orbit-Class && npm ci --no-audit --no-fund && npm run build) || echo "::warning::Class didn't build; its demo stays as committed"
+            node scripts/demo/refresh.mjs --repos .family || echo "::warning::The demos weren't refreshed; the committed ones are published."
+          else
+            echo "::warning::The family's repos weren't cloned; the committed demos are published."
           fi
       - name: Run tests
         run: npm test

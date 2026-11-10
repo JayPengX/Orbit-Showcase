@@ -1,10 +1,1 @@
-// What a game's change of state is, for a notice on this device: 'start'
-// when it goes on, 'end' when it is truly over, else null. A game called off
-// (postponed, canceled) or suspended is "post" in ESPN's state but has no
-// result: it is never a final, so no score is announced for it.
-export const isFinal = s => s?.state === 'post' && !s.void && !/SUSPENDED/.test(s.name || '');
-export function transition(was, status) {
-  if (!was || was === status?.state) return null;
-  if (status?.state === 'in') return 'start';
-  return isFinal(status) ? 'end' : null;
-}
+export const isFinal=s=>s?.state==="post"&&!s.void&&!/SUSPENDED/.test(s.name||"");export function transition(was,status){return!was||was===status?.state?null:status?.state==="in"?"start":isFinal(status)?"end":null}const SENT_MS=2*864e5;export function pickFinals(events,sent={},now=Date.now()){const kept=Object.fromEntries(Object.entries(sent||{}).filter(([,at])=>at>now-SENT_MS)),out=[],seen=new Set;for(const{e,picked}of events){const key=`${e.league}:${e.id}`;!picked||seen.has(key)||(seen.add(key),(e.status?.state==="post"||e.status?.void)&&!kept[key])||(out.push(e),kept[key]||(kept[key]=now))}return{games:out,sent:kept}}export const gameHash=(e,day="")=>`game=${encodeURIComponent(e.league)}/${encodeURIComponent(e.id)}${/^\d{4}-\d{2}-\d{2}$/.test(day)?`/${day}`:""}`;export function readGameHash(hash){const m=/^#?game=([^/&]+)\/([^/&]+)(?:\/(\d{4}-\d{2}-\d{2}))?$/.exec(String(hash||""));if(!m)return null;try{return{league:decodeURIComponent(m[1]),id:decodeURIComponent(m[2]),day:m[3]||null}}catch{return null}}
