@@ -119,7 +119,7 @@ for (const id of ids) {
   writeFileSync(join(site, '_demo', `${id}.js`), `window.__DEMO=${JSON.stringify(data)};\n`);
   // Minified and addressed by content like the real app's deploy, its kit's
   // files listed for modulepreload: the demo opens as fast as the app.
-  await stampApp({ root: to, version: `demo-${rec.at}`, kitDir: kitSrc, kit: { version: kitBuilt.version, files: kitBuilt.files } });
+  await stampApp({ root: to, version: `demo-${rec.at}`, kitDir: kitSrc, kit: { version: kitBuilt.version, files: {} } });
   const index = join(to, 'index.html');
   const html = readFileSync(index, 'utf8');
   // (the page's version and version.json the same, whatever the app's build wrote: never "a newer deploy", never a reload)

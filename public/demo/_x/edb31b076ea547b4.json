@@ -1,1 +1,0 @@
-[{"OriginStationID":"1030","DestinationStationID":"1000","Direction":1,"Fares":[{"TicketType":1,"FareClass":1,"CabinClass":1,"Price":290},{"TicketType":1,"FareClass":1,"CabinClass":2,"Price":640},{"TicketType":1,"FareClass":1,"CabinClass":3,"Price":280}]}]

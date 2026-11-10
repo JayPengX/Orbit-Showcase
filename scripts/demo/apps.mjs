@@ -1,4 +1,3 @@
-// `daytime`: recorded only in Taiwan's day (refresh.mjs).
 // Each demo: the app (preview.mjs's name), its repo, the clock it is
 // frozen at, where the phone is, and the steps walked while recording:
 // `tour` (the guided tour the showcase shows, in public/lib/demos.mjs) and
@@ -36,5 +35,5 @@ export const DEMOS = {
   // Today's real laws, rulings and bills (the live site's data, as recorded); 問法律 needs a Pass, so it stays out.
   law: { app: 'law', repo: 'Orbit-Law', clock: 'now', geo: [25.034, 121.565], tour: steps('law'), explore: [{ tap: '#tab-rulings', wait: 4000 }, { tap: '#tab-laws', wait: 3000 }, { tap: '#tab-home', wait: 2000 }], settle: 8000 },
   // Today's real buses, trains and bikes (--live), on Google's map in the showcase like the real app (liveMap).
-  transit: { app: 'transit', repo: 'Orbit-Transit', daytime: true, clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 }
+  transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 }
 };
