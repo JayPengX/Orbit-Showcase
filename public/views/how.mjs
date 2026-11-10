@@ -81,7 +81,7 @@ const SHORT = {
   'fast-lift': ['好了才顯示', 'Lifts when ready'],
   cheap: ['省錢不超額', 'Under limits'],
   'cheap-share': ['共用答案', 'Shared answers'],
-  'cheap-caps': ['外部都有上限', 'Caps on outside'],,
+  'cheap-caps': ['外部都有上限', 'Caps on outside'],
   'cheap-speeds': ['Jay 定速度', 'Jay sets speeds'],
   'cheap-plan': ['免費方案', 'The free plan'],
   'transit-tdx': ['業者的網站先', 'Operators first'],
