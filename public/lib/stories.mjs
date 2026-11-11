@@ -28,7 +28,7 @@ export const ROWS = [
   ] },
   { id: 'world', label: ['外面的世界', 'The outside world'], nodes: [
     { id: 'src', icon: 'tv', label: ['資料來源', 'Data sources'], tree: 'store-layers' },
-    { id: 'ai', icon: 'spark', label: ['Gemini AI', 'Gemini AI'], tree: 'law-ai' }
+    { id: 'ai', icon: 'ai', label: ['AI（Claude、GPT、Gemini）', 'AI (Claude, GPT, Gemini)'], tree: 'ai' }
   ] }
 ];
 
@@ -56,11 +56,11 @@ export const STORIES = [
       ['phone', ['你問：「房東不還押金怎麼辦？」AI 只在你按下送出才會跑。', 'You ask: “My landlord won’t return my deposit.” The AI runs only when you tap send.']],
       ['gate', ['確認 Pass；每人每天最多 30 次，費用不會失控。', 'Your Pass is checked; 30 questions a day each keeps costs in hand.']],
       ['kv', ['一樣的問題、一樣版本的法律，答過就直接用。', 'The same question on the same version of the law reuses its answer.']],
-      ['app', ['從 Orbit Law 自己的資料找出最多 14 條相關條文，加上類似的判決。', 'Up to 14 relevant articles are found in Orbit Law’s own data, with similar rulings.']],
-      ['relay', ['經過台灣的中繼站去問 AI（AI 不接受香港機房的請求）。', 'The question goes through the Taiwan relay (the AI refuses Hong Kong’s data centre).']],
-      ['ai', ['AI 只能用找到的資料回答，還要判斷誰可能有理。', 'The AI may answer only from what was found, and must judge who is likely right.']],
+      ['app', ['從 Orbit Law 自己的資料找出最多 14 條相關條文，加上類似的判決、條文交給主管機關定的辦法、議員和代表的質詢。', 'Up to 14 relevant articles are found in Orbit Law’s own data, with similar rulings, the regulations an article leaves details to, and councillors’ questions.']],
+      ['relay', ['經過台灣的中繼站去問 AI。', 'The question goes through the Taiwan relay to the AI.']],
+      ['ai', ['Claude 只能用找到的資料回答，還要判斷誰可能有理；它忙的時候，換另一家同等級的 AI 回答。', 'Claude may answer only from what was found, and must judge who is likely right; when it’s busy, an AI of its class from another maker answers.']],
       ['proxy', ['每一個引用都被檢查過才送回來。', 'Every citation is checked before the answer comes back.']],
-      ['phone', ['答案的每一點都能點開原文。', 'Every point of the answer opens its source.']]
+      ['phone', ['答案一邊寫一邊出現，畫成結論、重點和條文卡片，每一點都能點開原文。', 'The answer streams in, drawn as a verdict, points and article cards, every point opening its source.']]
     ]
   },
   {

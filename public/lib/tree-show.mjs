@@ -14,6 +14,53 @@ const S = {
   orbit: {
     nums: [['10', ['個 App', 'apps']], ['1', ['張通行證', 'pass']], ['NT$0', ['雲端一個月', 'a month in the cloud']]]
   },
+  ai: {
+    flow: [['chat', ['你說一句', 'You say it']], ['list', ['程式先整理', 'Code sorts it']], ['ai', ['AI 寫一句', 'AI writes a line']], ['chart', ['畫成圖', 'Drawn']]],
+    nums: [['10', ['個 App 都有', 'apps have it']], ['1', ['個 AI 門口', 'AI door']]]
+  },
+  'ai-door': {
+    flow: [['user', ['手機只說功能名', 'The phone names a feature']], ['lock', ['題目在雲端', 'Prompts in the cloud']], ['check', ['答案被檢查', 'Answers checked']]]
+  },
+  'ai-ahead': {
+    nums: [['3,500', ['條常用法條先解釋好', 'everyday articles explained ahead']], ['0', ['多一個人看多花的錢', 'extra cost per reader']]]
+  },
+  'ai-backup': {
+    flow: [['ai', ['一家忙', 'One maker busy']], ['swap', ['同等級的另一家', 'Its class at another']], ['check', ['照樣回答', 'Still answers']]]
+  },
+  'sports-ai': {
+    tags: [['ai', ['問比賽', 'Ask about games']], ['list', ['賽後三句話', 'Three lines after']], ['flag', ['F1 勝負關鍵', 'What decided the race']]]
+  },
+  'transit-ai': {
+    flow: [['chat', ['明天八點到台北101', '8am tomorrow to Taipei 101']], ['ai', ['讀成起點、終點、時間', 'Read into from, to, when']], ['map', ['看路線', 'The routes']]]
+  },
+  'weather-ask': {
+    flow: [['chat', ['明天竹北會下雨嗎', 'Rain in 竹北 tomorrow?']], ['cloud', ['程式讀預報', 'Code reads the forecast']], ['sun', ['畫出那天', 'That day, drawn']]]
+  },
+  'class-more': {
+    tags: [['bell', ['學校公告', 'School news']], ['check', ['待辦', 'To-dos']], ['book', ['讀書計畫', 'Study plans']], ['ai', ['問我的課表', 'Ask your timetable']]]
+  },
+  'words-ai': {
+    tags: [['chat', ['用新字聊天', 'Chat with new words']], ['camera', ['拍照找單字', 'Words from a photo']], ['pencil', ['用它造句', 'Make a sentence']]]
+  },
+  'beats-say': {
+    flow: [['chat', ['讀書用的 lo-fi', 'lo-fi to study']], ['list', ['程式讀成律動和速度', 'Code reads grooves, tempo']], ['play', ['馬上換歌', 'The radio switches']]]
+  },
+  'sec-ai': {
+    flow: [['chat', ['用 5 萬買台積電零股', '50,000 of TSMC odd lots']], ['list', ['程式算股數', 'Code counts shares']], ['check', ['填好的單，你確認', 'A filled ticket to confirm']]]
+  },
+  'money-ai': {
+    flow: [['chat', ['這個月吃飯花多少', 'Food this month?']], ['chart', ['手機加總', 'The phone adds up']], ['ai', ['AI 挑表、寫一句', 'AI picks, writes a line']]]
+  },
+  'news-more': {
+    tags: [['flag', ['各方怎麼說', 'Each side’s angle']], ['star', ['今天五則', 'Today’s five']], ['user', ['你關心的', 'What you follow']], ['book', ['看法案', 'The laws named']]]
+  },
+  'ai-family': {
+    flow: [['rain', ['天氣：會下雨', 'Weather: rain']], ['bus', ['交通：改搭車', 'Transit: take the bus']], ['user', ['只在手機上', 'Only on the phone']]]
+  },
+  'law-towns': {
+    nums: [['204', ['個代表會的代表', 'township councils’ members']], ['69', ['個讀進每次會期', 'read session by session']], ['1,655', ['個會期', 'sessions']]],
+    flow: [['book', ['公所網站的 PDF、Word、錄音', 'Offices’ PDFs, Word files, recordings']], ['list', ['讀成一列一列', 'Read into rows']], ['play', ['錄影直接播', 'Recordings play']]]
+  },
   apps: {
     flow: [['backpack', ['一盒零件', 'One kit']], ['key', ['一張通行證', 'One pass']], ['grid', ['十個 App', 'Ten apps']]]
   },
@@ -178,7 +225,7 @@ const S = {
     nums: [[['約 28,000', '~28,000'], ['個引用', 'citations']], [['約 99%', '~99%'], ['連到真實條文', 'reach the real article']]]
   },
   'law-councils': {
-    nums: [['22', ['個縣市議會', 'city and county councils']], ['1', ['個市民代表會：竹北', 'town council: 竹北']]],
+    nums: [['22', ['個縣市議會', 'city and county councils']], ['204', ['個鄉鎮市民代表會', 'township councils']]],
     flow: [['book', ['議會的 PDF', 'A council’s PDF']], ['list', ['讀成一列一列', 'Read into rows']], ['play', ['錄影直接播', 'Recordings play']]]
   },
   'law-live': {

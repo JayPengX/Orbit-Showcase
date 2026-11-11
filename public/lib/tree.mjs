@@ -14,6 +14,40 @@ const apps = n('apps', 'grid', ['十個 App', 'Ten apps'], ['你手上真正會�
   kids: APP_BRANCHES
 });
 
+const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你的話，但先讓程式做', 'Every app takes plain words, code first'], {
+  p: ['很多 App 加 AI 只是多一個聊天框：答案是一大段字，還常常編造。', 'Many apps bolt on a chat box: answers in paragraphs, often made up.'],
+  i: ['程式讀得懂、算得出來的就由程式做；AI 只拿到程式先整理好的一小份事實，寫一句話、挑出要畫哪幾張表。答案一定畫成圖：隊徽、大頭照、分類圖示、長條；等待時先畫出答案的形狀。凡是聰明的地方都標 Orbit AI 的記號。', 'What code can read or add up, code does; AI gets only a small digest of facts that code picked, writes one line and picks which tables to draw. Answers are always drawn: logos, faces, category tiles, bars; while waiting, the answer’s shape shimmers. Every smart thing carries the Orbit AI mark.'],
+  r: ['十個 App 都能用說的，答案一眼看懂，數字都是 App 自己讀到的。', 'All ten apps take plain words, answers read at a glance, and every number is one the app itself read.'],
+  kids: [
+    n('ai-door', 'chat', ['一個 AI 門口', 'One AI door'], ['每個功能有固定的題目和上限', 'Each feature a fixed prompt and a cap'], {
+      p: ['如果手機自己送題目給 AI，任何人都能拿我們的 AI 免費用，費用也可能失控。', 'If phones sent their own prompts, anyone could use our AI for free, and the bill could run away.'],
+      i: ['手機只說要用哪個功能、送它需要的資料；題目放在雲端，每個答案的格式都被檢查，每個功能每天有上限；資料不夠時，會反問並給選項讓你點。', 'Phones only name a feature and send its inputs; the prompts stay in the cloud, every answer’s shape is checked, and each feature has a daily cap; when something is missing, it asks back with options to tap.'],
+      r: ['不會有意外的帳單，每次呼叫花多少錢都在管理頁看得到。', 'No surprise bills, and every call’s cost shows on the admin page.'],
+      tech: ['Orbit-Core ai.js、ai-features.js（固定題目、maxIn、上限、反問）；kit ai.mjs（aiCall、aiFlow、aiAnswer、aiAnswerWait、aiMark）；D1 gemini_call 每次呼叫一列；管理頁 AI 錢包。', 'Orbit-Core ai.js, ai-features.js (fixed prompts, maxIn, caps, asking back); kit ai.mjs (aiCall, aiFlow, aiAnswer, aiAnswerWait, aiMark); D1 gemini_call, a row a call; the admin AI wallet.'],
+      links: ['cheap-caps']
+    }),
+    n('ai-ahead', 'history', ['先做好的 AI', 'AI made ahead'], ['大家都會看的，只做一次', 'What everyone reads, made once'], {
+      p: ['每個人打開比賽回顧或法條解釋都叫一次 AI，又慢又浪費。', 'Calling AI each time someone opens a game recap or a law’s explanation is slow and wasteful.'],
+      i: ['大家都看得到的東西先做好存起來：比賽的三句話、F1 的勝負關鍵、各方怎麼說、單字的例句和記憶法、常用法條的白話解釋、重大訊息的白話。', 'What everyone sees is made once and kept: a game’s three lines, an F1 race’s deciding moments, each side’s angle on a story, word examples and hooks, everyday law articles explained, filings in plain words.'],
+      r: ['一打開就有，多一個人看也不多花一毛錢。', 'There the moment you open it, and one more reader costs nothing.'],
+      tech: ['Orbit-Core builders/ai.js、recaps.js、f1story.js 寫到 R2；Law 的 data/ai/（多 3,500 條常用法條，用批次 API 一次做好）；filings.js。', 'Orbit-Core builders/ai.js, recaps.js, f1story.js write to R2; Law’s data/ai/ (3,500 more everyday articles, made in one batch); filings.js.']
+    }),
+    n('ai-backup', 'shield', ['一家忙，換另一家', 'One maker busy, another answers'], ['同等級、不同公司', 'Same class, another maker'], {
+      p: ['11-10 免費的 Gemini 排隊超過 20 秒、常常答不出來，問法律三題只答一題。', 'On 11-10 free Gemini queued for over 20 seconds and often failed; 問法律 answered one question in three.'],
+      i: ['改用付費的 AI，每個模型都有另一家公司同等級的備援；管理頁顯示是誰回答的。', 'Paid AI instead, each model backed by one of its class from another maker; the admin page shows which answered.'],
+      r: ['一家出問題，答案還是會來。', 'When one maker has a bad day, the answer still comes.'],
+      tech: ['Claude Sonnet ↔ GPT 同級、小模型 ↔ 小模型、Gemini Flash 只用在照片；ai-other.js 透過台灣的中繼站呼叫；預付額度，用完就停。', 'Claude Sonnet ↔ a GPT of its class, small ↔ small, Gemini Flash only for photos; ai-other.js calls through the Taiwan relay; prepaid credit with a hard stop.'],
+      links: ['cloud-relay']
+    }),
+    n('ai-family', 'share', ['App 之間互相幫忙', 'Apps that help each other'], ['只在你的手機上', 'Only on your phone'], {
+      p: ['每個 App 只知道自己：交通不知道會下雨，新聞不知道你持有哪些股票。', 'Each app knew only itself: Transit didn’t know it would rain, News didn’t know what you hold.'],
+      i: ['手機上有一本家族筆記：天氣寫下哪裡會下雨，課表寫下接下來的課，股票寫下持有的名稱（不含金額），單字寫下正在背的字。於是交通下雨時改搭車、新聞先放你關心的、Pass 的「今天」一次看完；在 Pass 上「問 Orbit」，它會打開能回答的那個 App 並幫你問。', 'A family notebook on the phone: Weather notes where rain is due, Class the next classes, Securities the names held (never amounts), Words the words being learned. So Transit avoids rain, News leads with what you care about, the Pass’s 今天 sums up the day; 問 Orbit on the Pass opens the app that can answer and asks there.'],
+      r: ['十個 App 像一個，而且這些都不會傳到雲端。', 'Ten apps that feel like one, with none of it sent to the cloud.'],
+      tech: ['kit family.mjs（tell、heard）、today.mjs、ask-orbit.mjs（#ask=）。', 'kit family.mjs (tell, heard), today.mjs, ask-orbit.mjs (#ask=).']
+    })
+  ]
+});
+
 const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高：十個 App 用同一盒積木', 'Like LEGO: ten apps, one box of bricks'], {
   p: ['每個 App 各寫一份按鈕、視窗、日期選擇，改一個地方要改好幾次，而且長得都不一樣。', 'Each app had its own buttons, sheets and date pickers: a copy in every app to fix, and none alike.'],
   i: ['兩個以上 App 會用到的東西都放進同一個「零件盒」，每個 App 打開時直接從那裡拿，不複製。', 'Anything two apps use goes in one kit; every app loads it from there, never copies it.'],
@@ -359,7 +393,7 @@ const ship = n('ship', 'send', ['改好之後怎麼到你手機', 'From a change
 const team = n('team', 'user', ['怎麼做出來的', 'How it was made'], ['Jay 決定，Claude 寫程式', 'Jay decides, Claude writes the code'], {
   p: ['Jay 不寫程式，卻想做出一整個家族的 App。', 'Jay doesn’t write code, yet wanted a whole family of apps.'],
   i: ['Jay 當「老闆和測試員」：決定要什麼、在 iPhone 上試、把不滿意的地方說出來；好幾個 Claude 分工寫程式、測試、上線。', 'Jay is owner and tester: he decides, tries it on his iPhone and says what’s wrong; several Claude sessions split the coding, testing and shipping.'],
-  r: ['兩個月內做出九個 App 和背後的整套系統。', 'Nine apps and the system behind them in two months.'],
+  r: ['不到三個月做出十個 App 和背後的整套系統。', 'Ten apps and the system behind them in under three months.'],
   kids: [
     n('team-jay', 'user', ['Jay 的角色', 'Jay’s part'], ['出題目、做決定、當最挑剔的使用者', 'Sets the goals, decides, the pickiest user'], {
       tech: ['用 iPhone 主畫面 App 測試，傳截圖和除錯紀錄；決定每個產品要什麼（例如只放台灣看得到的比賽、券商規則要跟真的一樣）；把每次抱怨變成全家族的規則。', 'Tests as home-screen apps on his iPhone, sending screenshots and debug logs; decides what each product is (only games Taiwan can watch, broker rules as real as the real thing); turns each complaint into a family-wide rule.'],
@@ -386,7 +420,7 @@ const team = n('team', 'user', ['怎麼做出來的', 'How it was made'], ['Jay 
 });
 
 export const ROOT = n('orbit', 'spark', ['Orbit', 'Orbit'], ['每天用得到的 App，一個人和 Claude 一起做的', 'Everyday apps, made by one person with Claude'], {
-  kids: [apps, kit, pass, cloud, store, fast, cheap, ship, team]
+  kids: [apps, ai, kit, pass, cloud, store, fast, cheap, ship, team]
 });
 
 // Every node by id, with its parent and depth; the colour of the app it's
