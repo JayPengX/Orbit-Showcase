@@ -15,6 +15,13 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
   i: ['只放愛爾達和 Apple TV 有轉播的聯賽，比分、排名、轉播台放在同一個地方，還幫你排好今晚要看哪幾場。', 'Only leagues on ELTA or Apple TV here, with scores, tables and channels in one place, plus a plan for tonight.'],
   r: ['打開就知道現在有什麼好看、在哪一台。', 'Open it and you know what’s worth watching and where.'],
   kids: [
+    n('sports-ai', 'ai', ['問比賽、賽後三句話', 'Ask, and three lines after'], ['AI 只說卡片上沒有的', 'AI says only what the card doesn’t'], {
+      p: ['比分卡片已經寫了誰贏、誰得最多分，AI 再講一次只是浪費時間。', 'The score card already says who won and who scored most; AI saying it again wastes your time.'],
+      i: ['程式先讀出比賽的故事（逆轉、連續得分、哪一節拉開），AI 只用三句話講卡片上沒有的；F1 每場正賽的勝負關鍵，一列一圈，配車手的臉；「問比賽」讓 AI 從 App 讀到的排名、賽程和比分裡挑表回答，數字都是 App 的。', 'Code reads the game’s story first (comebacks, runs, the period that broke it open), and AI writes three lines on what the card doesn’t show; each F1 race’s deciding moments, a row a lap with the driver’s face; 問比賽 lets AI pick from the tables the app read (places, next and last games, today) and every number is the app’s.'],
+      r: ['看完比分就懂這場為什麼這樣打，球員是大頭照、球隊有隊徽，點了就打開。', 'After the score you know why it went that way; players as faces and teams with logos, each opening its page.'],
+      tech: ['Orbit-Core builders/recaps.js、f1story.js 先做好放 R2；/ai 的 sports-ask；kit aiAnswer 把答案畫成列。', 'Orbit-Core builders/recaps.js and f1story.js made ahead into R2; /ai’s sports-ask; kit aiAnswer draws answers as rows.'],
+      links: ['ai']
+    }),
     n('sports-own', 'spark', ['比原始資料更快、更準', 'Better than the raw feed'], ['我們自己算的部分', 'What we work out ourselves'], {
       kids: [
         n('sports-table', 'trophy', ['排名自己算', 'Tables counted ourselves'], ['比賽一結束，排名就變', 'The table moves the moment a game ends'], {
@@ -149,6 +156,13 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
   i: ['照一個人真正的移動方式來規劃和排名，再用即時資料一路導航。', 'Plan and rank the way a person really travels, then navigate with live data all the way.'],
   r: ['第一個推薦就是你會選的那條。', 'The first suggestion is the one you’d pick.'],
   kids: [
+    n('transit-ai', 'ai', ['用說的查路線', 'Just say where you’re going'], ['下雨改搭車、這班為什麼慢', 'Rain-aware trips, why a train is late'], {
+      p: ['規劃路線要一格一格選起點、終點和時間；下雨天還推薦騎 YouBike。', 'Planning meant picking start, end and time field by field; on a rainy day it still suggested a YouBike.'],
+      i: ['說一句「明天早上八點從新竹車站到台北101」，簡單的由程式讀，有時間的交給 AI 讀成起點、終點和時間，先給你看懂了什麼再查；Weather 說路上會下雨，就把公車、捷運排在 YouBike 前面，淋雨的那段標一滴水；台鐵誤點時點「晚 N 分」看它現在在哪、什麼時候到你這站。', 'Say “tomorrow 8am from Hsinchu Station to Taipei 101”: plain phrases read by code, a time read by AI into from, to and when, shown as understood before searching; when Weather says rain is due, a bus or the metro goes before a YouBike, the wet legs marked with a drop; a late train’s “N min late” opens where it is now and when it reaches you.'],
+      r: ['少打很多字，下雨天不會被叫去騎車。', 'Far less typing, and no bike ride into the rain.'],
+      tech: ['/ai 的 transit-say（只讀成 from、to、時間）；手機上的家族筆記 weather.rain；lib/rain.mjs。', '/ai’s transit-say (only from, to and time); the phone’s family notebook weather.rain; lib/rain.mjs.'],
+      links: ['ai', 'ai-family']
+    }),
     n('transit-own', 'spark', ['比原始資料更快、更準', 'Better than the raw feed'], ['我們自己算的部分', 'What we work out ourselves'], {
       kids: [
         n('transit-rank', 'target', ['像人一樣排名', 'Ranked like a person would'], ['分鐘加上「麻煩成本」', 'Minutes plus a cost of bother'], {
@@ -266,6 +280,13 @@ const weather = n('weather', 'cloud', ['Orbit Weather', 'Orbit Weather'], ['一�
   i: ['把好幾個來源混成一個答案，再學會哪個來源在哪裡比較準。', 'Blend several sources into one answer, and learn which is right where.'],
   r: ['一個數字，不用自己比對。', 'One number, nothing to compare yourself.'],
   kids: [
+    n('weather-ask', 'ai', ['問天氣', 'Just ask the weather'], ['程式從預報回答', 'Answered by code from the forecast'], {
+      p: ['想知道「明天竹北會下雨嗎」，要自己找地點、找日期、讀一整排數字。', 'To know “will it rain in 竹北 tomorrow” you had to find the place, the day, and read a row of numbers.'],
+      i: ['在搜尋框直接問，程式找出地點和日期，從預報畫出那天的天空、一句結論、高低溫和降雨機率；只有程式找不到的地名才問 AI 在哪。雷達追蹤的陣雨變成天空卡片上的一塊，說幾點、哪裡會下。', 'Ask in the search box: code finds the place and day and draws that day’s sky, a verdict, low–high and rain chance from the forecast; only a place code can’t find goes to AI. A shower the radar tracks becomes a panel on the sky card saying when and where.'],
+      r: ['一句話問，一眼看到答案。', 'Ask in a sentence, see the answer at a glance.'],
+      tech: ['lib/ask.mjs；/ai 的 weather-ask 只回答地點；Orbit-Core weather-radar.js 追蹤氣象署雷達回波。', 'lib/ask.mjs; /ai’s weather-ask answers only a place; Orbit-Core weather-radar.js tracks CWA’s radar echoes.'],
+      links: ['ai']
+    }),
     n('weather-own', 'spark', ['比原始資料更準', 'Better than the raw feed'], ['我們自己算的部分', 'What we work out ourselves'], {
       kids: [
         n('weather-blend', 'cloud', ['多個來源混成一個答案', 'Many sources, one answer'], ['還會自己打分數', 'And it grades them'], {
@@ -328,6 +349,13 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
   i: ['每秒照時鐘重算現在第幾節，一張卡片回答「今天還剩什麼」。', 'Work out the period from the clock every second; one card answers “what’s left today”.'],
   r: ['打開就知道現在、下一節、幾點放學。', 'Open it to see now, next and when school’s out.'],
   kids: [
+    n('class-more', 'ai', ['學校公告、待辦和讀書計畫', 'School news, to-dos, study plans'], ['和課表放在一起', 'Kept with the timetable'], {
+      p: ['學校網站的公告一大堆，真正跟你有關的很難找；聯絡簿和考試範圍要自己抄。', 'A school site’s notices are endless and the ones that matter are hard to find; homework and exam scopes had to be copied by hand.'],
+      i: ['學校公告每小時讀學校自己的網站，分成考試、升學、活動、獎助，「跟你有關」放最前面，轉知的另放；拍聯絡簿變待辦；考前讀書計畫由程式排、AI 只負責講清楚；「問我的課表」在課表編輯器裡直接問；上課前一鍵打開到學校的路線，下課提醒背五個單字。', 'School news reads the school’s own site every hour, sorted into exams, admissions, events and awards, what concerns you first and notices passed on kept apart; a photo of the homework book becomes to-dos; an exam study plan is laid out by code and only worded by AI; ask your timetable in its editor; before class, one tap opens the trip to school, and a break offers five words to review.'],
+      r: ['每天要看的東西都在一個 App 裡。', 'What you check every school day, in one app.'],
+      tech: ['Orbit-Core class-news.js（R2，45 天）；/ai 的 class-book、class-plan、class-ask；家族筆記把下兩週的課告訴其他 App。', 'Orbit-Core class-news.js (R2, 45 days); /ai’s class-book, class-plan, class-ask; the family notebook tells the other apps the next two weeks of classes.'],
+      links: ['ai', 'ai-family']
+    }),
     n('class-own', 'spark', ['自己算的部分', 'What it works out'], ['規則都在一個地方', 'Every rule in one place'], {
       kids: [
         n('class-clock', 'clock', ['每秒重算', 'Recomputed every second'], ['只改有變的字', 'Only changed text is rewritten'], {
@@ -383,6 +411,13 @@ const words = n('words', 'book', ['Orbit Words', 'Orbit Words'], ['背得住的�
   i: ['預測你什麼時候會忘，在快忘的時候考你，而且故意考最容易搞混的。', 'Predict when you’ll forget and ask just before, with the likeliest mix-ups.'],
   r: ['少花時間，記得更久。', 'Less time, longer memory.'],
   kids: [
+    n('words-ai', 'ai', ['用新字聊天、拍照找單字', 'Chat with new words, words from a photo'], ['背了就用得上', 'Learned words, put to use'], {
+      p: ['背過的單字不會用，課本上的生字還要一個一個查。', 'Words learned but never used, and a textbook page’s words looked up one by one.'],
+      i: ['跟 AI 用英文聊幾句，它會邀你用上剛背的字，每句只改最少的地方並說為什麼；拍課本或講義，只留大考單字表裡有的字加入收藏；每個字有 AI 寫的例句和記憶法，「用它造句」AI 幫你看自然不自然。', 'Chat a few lines in English with AI, which invites the words you just learned and fixes each line with the fewest changes and why; photograph a textbook page and only the exam list’s words are starred; each word has AI examples and a memory hook, and 用它造句 checks your sentence.'],
+      r: ['背的字真的變成會用的字。', 'Learned words become words you use.'],
+      tech: ['/ai 的 words-chat、words-photo、words-check；例句和記憶法由 builders/ai.js 先做好（words/cards/）。', '/ai’s words-chat, words-photo, words-check; examples and hooks made ahead by builders/ai.js (words/cards/).'],
+      links: ['ai']
+    }),
     n('words-memory', 'spark', ['記憶模型', 'A memory model'], ['算出你快忘的時間', 'When you’re about to forget'], {
       p: ['固定天數複習，太早浪費、太晚忘光。', 'Fixed review days are too early or too late.'],
       i: ['每個字記下「穩定度」和「難度」，預測還記得的機率；穩定度到 10 天算學會。', 'Each word keeps a stability and a difficulty that predict the chance you still know it; 10 days’ stability is mastered.'],
@@ -423,6 +458,13 @@ const beats = n('beats', 'play', ['Orbit Beats', 'Orbit Beats'], ['永不停的�
   i: ['手機自己作曲：和弦、旋律、鼓、編曲、混音全部在手機上算出來，聲音不會上傳。', 'The phone composes: chords, melodies, drums, arrangement and mix, all worked out on the phone, nothing uploaded.'],
   r: ['按一下就有一首首不重複的歌。', 'One tap, and songs that never repeat.'],
   kids: [
+    n('beats-say', 'ai', ['用說的選電台', 'Say what to play'], ['程式先聽懂', 'Code understands first'], {
+      p: ['想聽「讀書用的 lo-fi」，要自己在一堆類型裡找。', 'For “lo-fi to study” you had to dig through genres.'],
+      i: ['說想聽什麼，程式把它讀成律動、場景和速度，馬上換成那種歌；程式讀不懂的字才問 AI，AI 只回答律動和速度，從不碰聲音。別的 App 開始出聲，Beats 就停下，不會自己再開。自己做的歌透過 Pass 同步到每支手機。', 'Say what you’d like; code reads it into grooves, a scene and a tempo and the radio switches at once; only words code can’t place go to AI, which answers grooves and a tempo, never sound. When another app starts sound, Beats stops and never restarts itself. Songs you make sync to every phone through the Pass.'],
+      r: ['說一句就換歌，也不會跟別的聲音搶。', 'One sentence changes the music, and it never fights other sound.'],
+      tech: ['lib/say.mjs；/ai 的 beats-say；歌曲以配方（每首約 300 bytes）存在 Pass。', 'lib/say.mjs; /ai’s beats-say; songs kept on the Pass as recipes (about 300 bytes each).'],
+      links: ['ai']
+    }),
     n('beats-radio', 'live', ['無限電台', 'An endless radio'], ['每首歌都是新寫的', 'Every song freshly written'], {
       p: ['自動產生的音樂聽幾首就膩。', 'Generated music gets boring fast.'],
       i: ['每首歌有自己的樂團、調性、和弦和曲式（前奏、主歌、副歌、橋段）；下一首規定換曲風、換調、速度差 15 BPM 以上；最近六首不重複同一種律動。', 'Each song has its own band, key, chords and form (intro, verse, hook, bridge); the next must change groove family, key and tempo by 15 BPM or more; no groove repeats within six.'],
@@ -463,6 +505,13 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
   i: ['把三邊做成同一套編號、互相連結，每個條號都能點，再加上會引用條文的 AI。', 'Give the three sides one set of ids, link everything, make every article number tappable, and add an AI that cites.'],
   r: ['從一條法律，一路點到判它的判決和正在修它的法案。', 'From one law, tap through to the rulings on it and the bills changing it.'],
   kids: [
+    n('law-towns', 'flag', ['連鄉鎮市民代表會都有', 'Down to every township council'], ['全台 204 個代表會', 'All 204 township councils'], {
+      p: ['鄉鎮市民代表會離生活最近，資料卻最難找：每個公所的網站都不一樣，很多只有 PDF、Word 或錄音檔。', 'Township councils are closest to daily life but hardest to read: every office’s site differs, many only PDFs, Word files or recordings.'],
+      i: ['204 個代表會都有代表名單；其中 69 個從它們自己的網站讀進每一次會期的議程、議事錄、決議、質詢和錄音（共 1,655 個會期），47 個的 YouTube 錄影直接在 App 裡播；一位代表的總質詢可以點「重點摘要」，每一點都標出根據哪一段。22 個縣市議會也都有每天的議程和錄影。', 'All 204 have their members; 69 are read from their own sites into every session’s agenda, minutes, resolutions, questions and recordings (1,655 sessions), and 47 play their YouTube recordings in the app; a member’s questions can be summed up on a tap, each point citing the turn it rests on. All 22 city and county councils have their day-by-day sittings and recordings too.'],
+      r: ['從立法院到你家鄉的代表會，都在同一個 App 裡查得到、聽得到。', 'From the legislature down to your own township, all searchable and playable in one app.'],
+      tech: ['scripts/build-town.mjs 每天輪流重讀最久沒讀的鎮；只讓台灣連的網站透過台灣的中繼站；/law-ask 的 town 模式做重點摘要；問法律也會引用議員和代表的質詢。', 'scripts/build-town.mjs re-reads the town read longest ago each day; Taiwan-only sites through the Taiwan relay; /law-ask’s town mode sums up; 問法律 cites councillors’ questions too.'],
+      links: ['law-councils', 'cloud-relay']
+    }),
     n('law-links', 'spark', ['每個條號都能點', 'Every reference tappable'], ['約 99% 對到真的條文', 'About 99% land on the real article'], {
       p: ['「第 184 條」「前項」「同法第 3 條」都只是文字。', '“Article 184”, “the preceding paragraph” are just words.'],
       i: ['一套規則讀懂各種寫法（第X條之Y、至、前N條、其他法律名稱加條號），不認識的法律名稱就不亂連。', 'One set of rules reads every form (之, ranges, 前N條, another law’s name before 第X條); an unknown name links nothing rather than the wrong thing.'],
@@ -485,7 +534,7 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
       p: ['一般 AI 回答法律問題會亂編條文。', 'A general AI makes up articles.'],
       i: ['先在 App 自己的資料裡找出最多 14 條相關條文，加上類似判決、釋字、行政規則、最新公告；AI 只能用這些回答，每一點的引用都被檢查過，還要判斷誰可能有理、罰則和下一步。', 'First find up to 14 articles in the app’s own data, plus similar rulings, 釋字, agency rules and notices; the AI may answer only from these, every cite is checked, and it must judge who is likely right, penalties and next steps.'],
       r: ['每一點都能點開原文。', 'Every point opens its source.'],
-      tech: ['Orbit-Core law-chat.js（計畫用 flash-lite、回答用 Flash）、law-ground.js、law-more.js；每人每天 30 次；只有點了才問。', 'Orbit-Core law-chat.js (plan on flash-lite, answer on Flash), law-ground.js, law-more.js; 30 a day a Pass; only on a tap.'],
+      tech: ['Orbit-Core law-chat.js（計畫用 Flash-Lite，回答用 Claude Sonnet，忙的時候換 GPT 同級的模型；五個模型用十個真實問題盲測後選的）、law-ground.js、law-more.js、law-local.js（議會和代表會）；條文交給主管機關定的，也跟去找那個辦法；記得前 8 題；每人每天 30 次；只有點了才問。', 'Orbit-Core law-chat.js (plan on Flash-Lite, answered by Claude Sonnet, a GPT model of its class when busy; picked by a blind test of five models on ten real questions), law-ground.js, law-more.js, law-local.js (councils and township councils); an article that leaves the details to a regulation is followed to it; remembers 8 questions back; 30 a day a Pass; only on a tap.'],
       links: ['cloud-relay', 'cheap-caps']
     }),
     n('law-live', 'tv', ['立法院直播', 'The legislature live'], ['真的在播才說直播中', 'Live only when it really is'], {
@@ -495,10 +544,10 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
       tech: ['scripts/live-ly.mjs 由 live.yml 跑，每次結束自己啟動下一次（GitHub 的排程常常延遲）；寫到 live 分支的 live.json。', 'scripts/live-ly.mjs run by live.yml, each run starting the next (GitHub’s schedule runs late); live.json on the live branch.'],
       links: ['kit-dayoff']
     }),
-    n('law-councils', 'flag', ['縣市議會也在裡面', 'The councils too'], ['22 個縣市議會和竹北市民代表會', '22 councils, and 竹北’s'], {
+    n('law-councils', 'flag', ['縣市議會也在裡面', 'The councils too'], ['22 個縣市議會，和全台的代表會', '22 councils, and the township councils'], {
       p: ['地方議會的議案、表決和會議紀錄多半是 PDF，散在各自的網站，有些只讓台灣的網路連。', 'Local councils’ bills, votes and minutes are mostly PDFs scattered over their own sites, some open only to Taiwan’s networks.'],
       i: ['每晚讀每個議會自己的網站和公開資料，把 PDF 裡的議案、決議和質詢讀成 App 裡一列一列的卡片；公開的錄影直接在 App 裡播。', 'Each night read every council’s own site and open data, turn the bills, resolutions and questions in their PDFs into rows in the app, and play the public recordings in it.'],
-      r: ['Jay 住的竹北，從縣議會到市民代表會的議案、表決和錄影，都在 App 裡點得到。', 'For 竹北, where Jay lives, the county council’s and the town council’s bills, votes and recordings all open in the app.'],
+      r: ['每個議會每天開什麼會、錄影和議員的質詢，都在 App 裡點得到；「各議會的議程」把 22 個議會放在同一條日期上。', 'Every council’s sittings, recordings and councillors’ questions open in the app, day by day; 各議會的議程 puts all 22 on one strip of days.'],
       tech: ['scripts/build-council.mjs；歐噴的議會 API（all.cc.govapi.tw）加上各議會自己的網站（新竹縣、新竹市、花蓮、彰化、苗栗、嘉義市…）；PDF 用 pdftotext 讀；只讓台灣連的網站透過台灣的中繼站；HiNet、高雄 IVOD、YouTube 的公開影片。', 'scripts/build-council.mjs; the open councils API (all.cc.govapi.tw) plus each council’s own site (新竹縣, 新竹市, 花蓮, 彰化, 苗栗, 嘉義市…); PDFs read by pdftotext; Taiwan-only sites through the Taiwan relay; public video from HiNet, 高雄’s IVOD and YouTube.'],
       links: ['cloud-relay']
     }),
@@ -522,6 +571,13 @@ const securities = n('securities', 'chart', ['Orbit Securities', 'Orbit Securiti
   i: ['真實報價、真實券商規則，連麻煩的開戶申請都照做。', 'Real prices and a real broker’s rules, even the annoying applications.'],
   r: ['台灣的個人能買的商品幾乎都在：台股、美股、期貨、選擇權、基金、債券、外匯、黃金、加密貨幣。', 'Almost everything a person in Taiwan can buy: stocks, futures, options, funds, bonds, FX, gold, crypto.'],
   kids: [
+    n('sec-ai', 'ai', ['用說的下單、重大訊息白話', 'Orders in words, filings in plain words'], ['程式算，AI 只說一句', 'Code works it out, AI says one line'], {
+      p: ['新手看不懂公司的重大訊息；下單要自己算 5 萬元能買幾股。', 'A beginner can’t read company filings, and has to work out how many shares NT$50,000 buys.'],
+      i: ['在搜尋框打「用 5 萬買台積電零股」，程式算出能買幾股、打開填好的下單單，你確認才送出；每支台股的重大訊息讀成一列一列，AI 用一句白話說重點；賣掉一檔股票後，用帳戶自己的數字說這筆交易學到什麼；持股的新聞從 Orbit News 來。', 'Type “use 50,000 to buy TSMC odd lots” in search: code works out the shares and opens a filled ticket you confirm; each Taiwan stock’s filings read into rows with AI’s one plain line; after selling a holding, what the trade taught, told from the account’s own numbers; news about what you hold comes from Orbit News.'],
+      r: ['像有個耐心的學長在旁邊，但錢和數字都是真的規則算的。', 'Like a patient senior beside you, with every number from the real rules.'],
+      tech: ['lib/sayorder.mjs（不用 AI）；Orbit-Core builders/filings.js 寫 stock/filings/；/ai 的 sec-filing、sec-lesson，一則重大訊息只問一次、大家共用。', 'lib/sayorder.mjs (no AI); Orbit-Core builders/filings.js writes stock/filings/; /ai’s sec-filing and sec-lesson, each filing asked once for everyone.'],
+      links: ['ai']
+    }),
     n('sec-ledger', 'list', ['帳戶是一本流水帳', 'The account is a log'], ['數字都從頭重算', 'Every figure replayed'], {
       p: ['直接改「現金」這種數字，兩台手機同時用就會算錯。', 'Editing a cash figure directly breaks when two phones trade.'],
       i: ['帳戶只記事件（委託、成交、配息），現金、持股、成本都從頭重算出來；兩台裝置合併就是把兩本記錄合起來。', 'The account records only events (orders, fills, dividends); cash, holdings and cost are replayed from them; two devices merge by joining logs.'],
@@ -559,6 +615,13 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
   i: ['做一個 Orbit 家族的記帳 App，和 Securities 的模擬金完全分開。', 'An Orbit accounting app, kept fully apart from Securities’ practice money.'],
   r: ['月曆一眼看每天花多少，拍一張照就記好一筆。', 'Each day’s spending at a glance, an entry from one photo.'],
   kids: [
+    n('money-ai', 'ai', ['問我的帳、車資記帳', 'Ask your books, rides logged'], ['手機算，AI 只挑表', 'The phone adds up, AI picks the tables'], {
+      p: ['想知道「這個月吃飯花了多少」，要自己翻統計、加總。', 'To know “how much did I spend on food this month” you dug through stats and added it up.'],
+      i: ['問一句，手機先把帳本整理成幾張小表（花在哪、怎麼付、比上個月），AI 只挑哪幾張回答並寫一句話，畫成有分類圖示和長條的列；每月回顧由程式算、AI 給一句建議；Orbit Transit 規劃好的車資，月曆上一點就記成一筆交通。', 'Ask a sentence: the phone sums the books into small tables (where it went, how it was paid, against last month), AI only picks which answer and writes one line, drawn as rows with category tiles and bars; the monthly review is added up by code with one AI suggestion; a fare Orbit Transit planned is one tap from an entry on the calendar.'],
+      r: ['答案一眼看懂，帳本內容不會整本送給 AI。', 'Answers at a glance, and the whole book is never handed to AI.'],
+      tech: ['/ai 的 money-ask、money-month、money-say；只送整理過的事實；家族筆記 transit.ride。', '/ai’s money-ask, money-month, money-say; only the digest is sent; the family notebook’s transit.ride.'],
+      links: ['ai', 'ai-family']
+    }),
     n('money-guess', 'spark', ['記一筆幾乎不用選', 'An entry nearly fills itself'], ['從你自己的紀錄猜', 'Guessed from your own entries'], {
       p: ['每記一筆都要選收支、分類、細項、付款方式，記帳很快就懶得記。', 'Every entry asked for its kind, category, sub-category and way to pay, so people soon stop logging.'],
       i: ['從你過去最像現在的紀錄（同一個時段、星期幾、今天已經記過的）猜出全部，常用金額點一下就填好；分類是一組大家都用的十二大類，每類兩到五個細項（早餐、午餐、晚餐各算各的，統計看得出每一餐；YouBike、捷運、公車都在「交通 › 搭車」）。', 'Guess it all from your past entries most like now (the hour, the weekday, what you logged today), with your usual amounts one tap away; one broad set of twelve categories for everyone, each with two to five subs (breakfast, lunch and dinner each their own, so the stats show every meal; YouBike, the MRT and buses all under Transport › Rides).'],
@@ -590,6 +653,13 @@ const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞�
   i: ['把同一件事的報導收成一則新聞，算出偏綠、中間、偏藍（英文新聞是左、中、右）各有幾家在報，標題並排。', 'Gather every report of the same event into one story, count how many outlets lean green, centre or blue (left, centre or right for English news) carry it, and set their headlines side by side.'],
   r: ['一眼看出一件事各邊怎麼報、哪一邊沒報。', 'At a glance, how each side tells it and which side left it out.'],
   kids: [
+    n('news-more', 'ai', ['各方怎麼說、今天五則', 'Each side’s angle, today’s five'], ['只講差在哪', 'Only where they differ'], {
+      p: ['標題並排還是要自己讀出各家的角度；重要的新聞不一定是你關心的。', 'Headlines side by side still left you to read each side’s angle; the biggest news isn’t always what you care about.'],
+      i: ['政治和國際大新聞上，AI 只從各家自己的標題寫出每一邊的角度，和最重要的一個差別，從不判斷誰對；每天早上挑五則給你；你在 Securities 持有的股票、在 Sports 追蹤的球隊排在「你關心的」；新聞提到的法律一點就在 Orbit Law 打開，英文新聞裡正在背的單字畫底線。', 'On big political and world stories, AI writes each side’s angle and the one difference that matters, from their own headlines only, never who’s right; five stories picked for you each morning; what you hold in Securities and follow in Sports leads 你關心的; laws a story names open in Orbit Law, and words you’re learning are underlined in English stories.'],
+      r: ['看懂各邊怎麼說，也看到跟你有關的事。', 'See how each side tells it, and what concerns you.'],
+      tech: ['Orbit-Core builders/ai.js 寫 news/sides.json；news-laws.js 對照 Law 的法案；家族筆記（只在手機上）。', 'Orbit-Core builders/ai.js writes news/sides.json; news-laws.js matches Law’s bills; the family notebook (on the phone only).'],
+      links: ['ai', 'ai-family']
+    }),
     n('news-sides', 'flag', ['媒體的立場從哪裡來', 'Where an outlet’s place comes from'], ['照研究和公開評等，不是我們自己判', 'From research and public ratings, never our own reading'], {
       p: ['自己判斷哪家媒體偏哪邊，很容易變成自己的偏見。', 'Judging each outlet’s lean ourselves would just be our own bias.'],
       i: ['台灣媒體照已發表的研究（例如台灣選舉與民主化調查），新的網路媒體照老闆和公開立場（標成較弱）；英文媒體照 AllSides，沒有的再看 Media Bias/Fact Check；中國官媒另外列。', 'Taiwan’s outlets by published research (such as TEDS), newer web outlets by owner and stated stance (marked weaker); English outlets by AllSides, else Media Bias/Fact Check; China’s state media apart.'],
