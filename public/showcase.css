@@ -1552,6 +1552,10 @@ html.sc-playing body {
 .sc-coach.done {
   padding: 10px 14px;
 }
+.sc-coach.done.offer .sc-coach-foot {
+  display: flex;
+  justify-content: flex-end;
+}
 /* the tip, on the side facing the target */
 .sc-coach-tip {
   position: absolute;
@@ -3077,4 +3081,8 @@ html.q-tabrail {
 }
 .sc-howhead {
   margin-bottom: 16px;
+}
+/* the tour's end offers 即時 on the card's main button */
+.sc-btn-main .sc-live-dot {
+  background: currentColor;
 }
