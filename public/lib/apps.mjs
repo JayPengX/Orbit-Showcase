@@ -42,7 +42,7 @@ export const APPS = [
     q: ['今天要不要帶傘？', 'Do I need an umbrella today?'],
     shots: [
       ['weather/1', ['今天天氣一眼看完', 'Today, in one look']],
-      ['weather/2', ['用問的：明天會下雨嗎？', 'Just ask: will it rain tomorrow? (in Chinese)']],
+      ['weather/2', ['用問的：明天會下雨嗎？', 'Just ask: will it rain tomorrow?']],
       ['weather/3', ['未來十天降雨', 'Rain, ten days ahead']],
       ['weather/4', ['一天的每小時', 'Every hour of the day']],
       ['weather/5', ['附近空氣品質', 'The air around you']],
