@@ -285,34 +285,48 @@ export function openDemo(app, title) {
     loop();
   }
 
+  // At the tour's end, a demo that can run on today's data offers it (Jay
+  // 2026-11-11: the tour first, 即時 one tap away once it's done).
+  const offerLive = () => Boolean(liveBtn) && !liveOn && !resting;
+  const LIVE_GO = ['看現在的真實資料', 'See today’s real data'];
+
   // The tour's end: a phone says so for a moment and gets out of the way.
   function finish() {
     at = tour.length;
     cancelAnimationFrame(watch);
     if (ring) ring.hidden = true;
     if (!full) return step(tour.length);
-    say.textContent = t(['好了，自由點點看。', 'That’s it. Tap around.']);
+    const offer = offerLive();
+    say.textContent = t(offer ? ['好了，自由點點看。也可以換成現在的真實資料。', 'That’s it. Tap around, or switch to today’s real data.'] : ['好了，自由點點看。', 'That’s it. Tap around.']);
     n.textContent = '';
     skip.hidden = true;
-    next.hidden = true;
+    next.hidden = !offer;
+    if (offer) (next.replaceChildren(t(LIVE_GO)), (next.onclick = () => switchLive()));
     coach.hidden = false;
     coach.classList.add('done');
+    coach.classList.toggle('offer', offer);
     place(null);
     clearTimeout(fade);
-    fade = setTimeout(() => (coach.hidden = true), 2200);
+    fade = setTimeout(() => (coach.hidden = true), offer ? 7000 : 2200);
   }
 
   function step(i) {
     moving = false;
     at = Math.max(-1, Math.min(i, tour.length));
     back.disabled = at <= 0;
-    coach.classList.remove('done');
+    coach.classList.remove('done', 'offer');
     if (at >= tour.length || at < 0) {
       if (full) return tour.length && at >= 0 ? finish() : (coach.hidden = true);
       n.textContent = tour.length ? t(['導覽結束', 'Tour done']) : '';
-      say.textContent = t(['接下來自由點點看：每個分頁、每個按鈕都是真的 App。', 'Now tap around freely: every tab and button is the real app.']);
-      next.replaceChildren(t(['再看一次導覽', 'Tour again']));
-      next.onclick = () => load();
+      if (offerLive()) {
+        say.textContent = t(['接下來自由點點看，或換成現在的真實資料：同一個 App，今天的資料，什麼都不會存。', 'Now tap around, or switch to today’s real data: the same app on today’s data, and nothing is kept.']);
+        next.replaceChildren(h('span', { class: 'sc-live-dot', 'aria-hidden': 'true' }), t(LIVE_GO));
+        next.onclick = () => switchLive();
+      } else {
+        say.textContent = t(['接下來自由點點看：每個分頁、每個按鈕都是真的 App。', 'Now tap around freely: every tab and button is the real app.']);
+        next.replaceChildren(t(['再看一次導覽', 'Tour again']));
+        next.onclick = () => load();
+      }
       cancelAnimationFrame(watch);
       if (ring) ring.hidden = true;
       return;
