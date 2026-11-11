@@ -1,7 +1,7 @@
 // Orbit Showcase: Orbit explained for anyone with a few minutes, open to all
 // (no Orbit Pass, no home-screen step: teachers open it on a laptop or a
 // phone). One page read top to bottom (views/main.mjs): what Orbit is, the
-// nine apps, six things people don't expect, how it was made. Each app has
+// ten apps, six things people don't expect, how it was made. Each app has
 // its own page (screens, the real app to try, its clever parts), and the
 // whole system its own (the tree and the journeys), each one tap deeper.
 // The frame: a bar along the top naming the page's chapters (on a phone its
@@ -55,7 +55,7 @@ const nav = h('nav', { class: 'sc-bar-nav', 'aria-label': t(['章節', 'Chapters
 const sub = h('div', { class: 'sc-bar-sub', hidden: true });
 $('bar').replaceChildren(brand(), h('div', { class: 'sc-bar-acts' }, [shareBtn(), langBtn()]), nav, sub);
 
-// A computer's side bar: the chapters, the nine apps under App, the whole system.
+// A computer's side bar: the chapters, the ten apps under App, the whole system.
 const sideApps = h(
   'div',
   { class: 'sc-side-apps' },

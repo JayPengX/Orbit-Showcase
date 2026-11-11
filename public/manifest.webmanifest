@@ -1,7 +1,7 @@
 {
   "name": "Orbit Showcase",
   "short_name": "Showcase",
-  "description": "一位高中生和 Claude 一起做的九個 App：每個 App 的畫面、整個系統怎麼運作、一路怎麼長大。",
+  "description": "一位高中生和 Claude 一起做的十個 App：每個 App 的畫面、整個系統怎麼運作、一路怎麼長大。",
   "lang": "zh-Hant-TW",
   "start_url": "./",
   "scope": "./",
