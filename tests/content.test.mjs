@@ -114,3 +114,10 @@ test('every demo is a frozen copy behind the sandbox, with a tour that says both
     for (const s of TOURS[id] || []) assert.ok(s.say?.length === 2 && s.say.every(Boolean), `${id}: ${s.tap}`);
   }
 });
+
+// The web manifest says how many apps there are (it can't read APPS): it says what APPS holds.
+test('the manifest counts the apps there are', () => {
+  const words = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五'];
+  const { description } = JSON.parse(readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8'));
+  assert.match(description, new RegExp(`的${words[APPS.length]}個 App`), `manifest: ${description}`);
+});

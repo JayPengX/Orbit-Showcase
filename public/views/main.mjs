@@ -1,6 +1,6 @@
 // The showcase's one page, for a reader with a few minutes, read top to
 // bottom: what Orbit is (one sentence, its numbers counted from git, three
-// real screens), the nine apps (each one's question; its page a tap away,
+// real screens), the ten apps (each one's question; its page a tap away,
 // 試玩 runs the real app at once), six things people don't expect (each opens
 // its whole story) and how it was made (Jay's part and Claude's, the loop,
 // every day's updates). Each app's page and the whole system are one tap
@@ -89,7 +89,7 @@ function top(stats) {
   ]);
 }
 
-// ---- 1. The nine apps: each one's question, its page, its demo ----
+// ---- 1. The ten apps: each one's question, its page, its demo ----
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
     head(['十個 App，各回答一個問題', 'Ten apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
