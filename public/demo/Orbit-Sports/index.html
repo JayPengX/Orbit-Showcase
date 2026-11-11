@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
-<meta name="build-version" content="demo-1794325640591" />
+<meta name="build-version" content="demo-1794357087924" />
 <!-- brand: Orbit-Core/brand/generate.mjs writes this block -->
 <title>Orbit Sports</title>
 <meta name="description" content="所有運動的賽程、比分、排名與球員數據，還有依你追蹤的運動排好的今日推薦。" />
@@ -43,7 +43,7 @@
 <link rel="manifest" href="./manifest.webmanifest" />
 <link rel="preconnect" href="https://site.api.espn.com" crossorigin />
 <link rel="preconnect" href="https://a.espncdn.com" crossorigin />
-<link rel="stylesheet" href="./styles.css?v=69a9a941a806" />
+<link rel="stylesheet" href="./styles.css?v=a37e3bf9e500" />
 <link rel="stylesheet" href="./look.css?v=756599ec5c2d" />
 <!-- kit:head: where the app's stylesheets end, before any module. The kit
      comes from one place for every app (Orbit-Core's GitHub Pages, same
@@ -54,7 +54,7 @@
      to Orbit-Core and a phone downloads only the files it changed. A kit
      file newer than the app's deploy (not in its list) is mapped from those
      hashes too, never left at a bare address the browser keeps 10 minutes. -->
-<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['brand.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','domain.mjs','f1live.mjs','feedback.mjs','flight.mjs','format.mjs','gov.mjs','help.mjs','hold-place.mjs','holidays.mjs','lang.mjs','logos.mjs','mirror.mjs','names.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','qrcode.mjs','share.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Orbit-Core/kit/',{"version":"kdd88646038a5","files":{}})</script>
+<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['brand.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','domain.mjs','f1live.mjs','feedback.mjs','flight.mjs','format.mjs','gov.mjs','help.mjs','hold-place.mjs','holidays.mjs','lang.mjs','logos.mjs','mirror.mjs','names.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','qrcode.mjs','share.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Orbit-Core/kit/',{"version":"k2a8ecaac6d62","files":{}})</script>
 <!-- /kit:head -->
 <script>['catalog.mjs','dayoff.mjs','domain.mjs','f1live.mjs','family.mjs','feedback.mjs','format.mjs','gov.mjs','hold-place.mjs','holidays.mjs','lang.mjs','logos.mjs','names.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','source-watch.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','steady-pics.mjs','ui.mjs'].forEach(function(f){document.write('<link rel="modulepreload" href="'+ORBIT_KIT.url(f)+'">')})</script>
 <link rel="modulepreload" href="./lib/strip.mjs?v=168282dc7a19" />
@@ -95,8 +95,11 @@
 <link rel="modulepreload" href="./lib/close.mjs?v=d3dd31406efa" />
 <link rel="modulepreload" href="./lib/compname.mjs?v=1a2ff3b66a0e" />
 <link rel="modulepreload" href="./lib/pictures.mjs?v=a70073a1a499" />
-<link rel="modulepreload" href="./sheets.js?v=236ff3a14a14" />
+<link rel="modulepreload" href="./sheets.js?v=19d0c826eeef" />
 <link rel="modulepreload" href="./lib/career.mjs?v=24d68f19927d" />
+<link rel="modulepreload" href="./lib/why.mjs?v=c73315d90aac" />
+<link rel="modulepreload" href="./lib/parks.mjs?v=facd0f0bc6ca" />
+<link rel="modulepreload" href="./lib/preview.mjs?v=7affa92f9939" />
 <link rel="modulepreload" href="./lib/wpline.mjs?v=4009b030d001" />
 <link rel="modulepreload" href="./lib/moments.mjs?v=a6ba4484cf18" />
 <link rel="modulepreload" href="./lib/plays.mjs?v=1cda3ecad4d5" />
@@ -132,6 +135,6 @@
   <div id="panel-live" class="tab-panel" role="tabpanel" hidden></div>
   <div id="panel-following" class="tab-panel" role="tabpanel" hidden></div>
 </main>
-<script type="module" src="./app.js?v=f837943d7fd2" onerror="window.__fxFail()"></script>
+<script type="module" src="./app.js?v=4f6a23e8f95a" onerror="window.__fxFail()"></script>
 </body>
 </html>
