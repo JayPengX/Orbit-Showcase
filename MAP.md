@@ -9,6 +9,18 @@ computers, either way up, in Safari and Chrome. The page lays itself out by its 
 (`.page` is a CSS container): one column on a phone upright, the wide arrangements from 560 px of
 page (a phone on its side, a tablet, a computer).
 
+## Rules
+
+Jay's, dated (Taiwan day), newest wins; the family's are in Orbit-Core `docs/RULEBOOK.md`.
+
+- 10-27 Open to all (no Pass, no Add to Home Screen step; an exception to the family) and a real desktop layout besides the phone one: its own side bar on computers (900 px wide, over 520 tall) in place of the kit's rail; pages lay out by the page's width (`@container page`, wide from 560 px), never the screen's. Check WebKit and Chromium on every screen.
+- 10-27 Only structure, numbers and demos; plain everyday words for readers who know no tech (problem → idea → result; technical names only inside the 技術細節 fold); Chinese first, English second. The story of how it was made is kept privately for Jay, never in a repo.
+- 10-27 Honest framing: Jay sets the direction, the standards and the judgement calls; Claude does the typing. Every number comes from git (`scripts/stats.mjs`), never estimated; "on GitHub since", never "began on".
+- 10-27 No betting anywhere (`tests/content.test.mjs`).
+- 10-30 Demos may run the real apps on live data, read-only behind a short showcase pass (`showcase.js`: from the showcase's address only, per-address and daily caps; past any limit the recording plays); full screen on phones, bug-free, small coach-mark tours.
+- 11-04 One page a reader with a few minutes (a teacher, a professor) reads top to bottom; keep the demos and screenshots.
+- Content changes only when Jay says "catch up the showcase"; the deploy recounts the numbers and re-records the demos daily by itself.
+
 ## One page, then one tap deeper
 
 Built for a reader with a few minutes (a teacher, a professor): one page read top to bottom,
@@ -30,9 +42,6 @@ On an app's page or the system's, the bar's second row is the way back, where yo
 On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the ten
 apps by name, the whole system. A link to a chapter on the page scrolls there; back and forward
 return to where the reader was.
-
-Jay 2026-10-27: the showcase is structure, numbers and demos only. The story of how it was made
-(requests, decisions, setbacks) is kept privately for Jay, not on the site.
 
 Jay's own homepage lives here too: `public/home/index.html`, one self-contained file (no kit,
 no betting, open to all) that the `orbit-home` Worker serves at https://jaypengx.com/ (published to Cloudflare by `deploy/cf-site.mjs`). It links Orbit, the
