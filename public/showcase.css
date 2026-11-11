@@ -2868,6 +2868,32 @@ html.q-tabrail {
     font-size: 14px;
   }
 }
+/* 問 Orbit (views/ask.mjs): the kit's AI bar, three questions to tap, the answer drawn under them. */
+.sc-ask {
+  display: grid;
+  gap: 10px;
+  max-width: 640px;
+}
+.sc-ask .sc-subhead {
+  margin-bottom: 0;
+}
+.sc-ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sc-ask-chips .q-chip {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+.sc-ask-out:empty {
+  display: none;
+}
+.sc-ask-out .q-aia-pic .sc-ico {
+  width: 20px;
+  height: 20px;
+}
 .sc-deeper {
   display: grid;
   gap: 8px;
