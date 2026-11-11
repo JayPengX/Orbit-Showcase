@@ -47,7 +47,8 @@ The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (la
   records every demo again from each app's main and builds it the way the app's own deploy does
   (`scripts/demo/refresh.mjs` → `record.mjs --strict` → `build.mjs`: minified, hashed, the kit's
   files preloaded). A demo whose walk fails keeps the copy committed in `public/demo/`, and every
-  demo keeps it when the deploy runs at night in Taiwan. A demo's kit is addressed by its build, not
+  demo keeps it when the deploy runs outside 08:00–22:00 in Taiwan (before 08:00, Taiwan's date isn't
+  UTC's, and a recording played in another time zone asks for other days). A demo's kit is addressed by its build, not
   file by file, so a copy kept from an older day still runs beside a rebuilt kit. Nobody catches the demos up by hand; a tour step that no
   longer matches the app (`lib/demos.mjs` `TOURS`) shows as that demo's warning in the deploy.
 - **The numbers refresh by themselves.** The deploy runs on every push and daily at 10:17 Taipei.

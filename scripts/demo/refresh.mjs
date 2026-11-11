@@ -1,8 +1,10 @@
 // Every demo again from each app's main, run by the deploy (deploy.yml): each
 // recorded afresh (record.mjs --strict) and, if its walk went through, built
 // (build.mjs) from today's code; a demo whose recording failed keeps the copy
-// committed here, and every demo keeps its copy when the deploy runs at night
-// in Taiwan (a push after 22:00: buses, games and markets asleep). Nothing to catch up by hand:
+// committed here, and every demo keeps its copy when the deploy runs outside
+// 08:00–22:00 in Taiwan: at night buses, games and markets are asleep, and
+// before 08:00 Taiwan's day isn't yet the world's (UTC's), so a recording
+// would ask for other days when played on a phone set to another zone. Nothing to catch up by hand:
 // the showcase's demos are the apps as they are on the day it deploys.
 //   node scripts/demo/refresh.mjs --repos dir [id…]
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -18,8 +20,8 @@ const ids = args.length ? args : Object.keys(DEMOS);
 const here = new URL('./', import.meta.url).pathname;
 const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: 'numeric', hourCycle: 'h23' }).format(new Date()));
 
-if (hour < 7 || hour >= 22) {
-  console.log('night in Taiwan: the committed demos stay');
+if (hour < 8 || hour >= 22) {
+  console.log('outside 08:00–22:00 in Taiwan: the committed demos stay');
   process.exit(0);
 }
 // Each app's .kit, as its own npm test makes it (record.mjs's helpers import it).
