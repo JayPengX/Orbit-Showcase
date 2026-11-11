@@ -20,7 +20,7 @@ minutes"; keep the demos and screenshots).
 | `#home` the top | One sentence on what Orbit is and who does what, four numbers from git, three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
 | `#apps` | The ten apps, each its question; 試玩 runs the real app at once (News has no demo yet) | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
 | `#wow` | Six things people don't expect: a figure the tree's own card states; a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
-| `#made` | Jay's part and Claude's, one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`), links to the whole system | `views/main.mjs` `made`, `views/numbers.mjs` |
+| `#made` | Jay's part and Claude's, one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`), 問 Orbit, links to the whole system | `views/main.mjs` `made`, `views/numbers.mjs`, `views/ask.mjs` |
 | `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |
 | `#how`, `#how/<node>`, `#how/map[-<story>]` | The whole system: the structure tree (each card a small picture first, then problem → idea → result, technical names folded away) and the journeys | `views/how.mjs`, `lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
 
@@ -40,6 +40,17 @@ showcase and GitHub.
 
 The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (language, icons, app titles, screenshot addresses, a card's problem → idea → result). The look is the kit's
 (`Orbit-Core/kit`), with the showcase's own `public/showcase.css`.
+
+## 問 Orbit
+
+A reader's question about how Orbit was made (the AI plan, 2026-11-11). Code first: `lib/ask.mjs`
+`cardsFor` picks the structure tree's cards that share its words (pairs of Chinese characters,
+English words; a title counts double). Then one AI call, `showcase-ask` (Orbit-Core
+`ai-features.js`: Haiku, Luna next), on the showcase's own pass (`/showcase/pass`, as the demos
+take theirs; 20 a day an address) says the answer from those cards only and names the ones to
+open, drawn by the kit's `aiAnswer` (rows open the card). No pass, the day's answers spent or
+offline: the cards code picked, as they are. Nothing new is written about Orbit for it: it reads
+the tree as it stands.
 
 ## Keeping it true
 

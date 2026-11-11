@@ -11,6 +11,7 @@ import { APPS } from '../lib/apps.mjs';
 import { hasDemo, openDemo } from './demo.mjs';
 import { openCard } from './how.mjs';
 import { heatmap, hours, churn } from './numbers.mjs';
+import { askOrbit } from './ask.mjs';
 
 // The page's three chapters, as the bar along the top (the side bar on a
 // computer) names them.
@@ -201,6 +202,7 @@ function made(stats) {
           churn(stats)
         ])
       : null,
+    askOrbit(),
     h('div', { class: 'sc-deeper' }, [
       h('a', { class: 'q-more q-more-go', href: '#how' }, [
         h('span', { text: t(['整個系統怎麼運作', 'How the whole system works']) }),
