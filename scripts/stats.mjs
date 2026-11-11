@@ -5,7 +5,7 @@
 // hour of the day, plus the churn: code lines written and later taken out
 // again, and the updates that were undone outright (reverts), and the
 // rules Jay has set (each dated line of Orbit-Core's docs/RULEBOOK.md before
-// its "Replaced" part). Run by the deploy (daily too) with the repos beside this one:
+// its "Replaced" part, and of each repo's MAP.md "Rules" part). Run by the deploy (daily too) with the repos beside this one:
 //   node scripts/stats.mjs [folder holding the repos] > public/data/stats.json
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -89,6 +89,12 @@ export function countRules(text) {
   return (live.match(/^- \d{1,2}-\d{2} /gm) || []).length;
 }
 
+// An app's own rules: the dated lines of its MAP.md's "## Rules" part.
+export function countMapRules(text) {
+  const part = text.split(/^## Rules\b.*$/m)[1];
+  return part ? (part.split(/^## /m)[0].match(/^- \d{1,2}-\d{2} /gm) || []).length : 0;
+}
+
 export function collect(root) {
   const repos = [];
   const days = {};
@@ -117,7 +123,11 @@ export function collect(root) {
     removed: sum('removed'),
     reverts: sum('reverts'),
     tests: sum('tests'),
-    rules: countRules(readFileSync(join(root, 'Orbit-Core', 'docs', 'RULEBOOK.md'), 'utf8')),
+    rules: countRules(readFileSync(join(root, 'Orbit-Core', 'docs', 'RULEBOOK.md'), 'utf8'))
+      + REPOS.reduce((n, r) => {
+        const map = join(root, r.repo, 'MAP.md');
+        return n + (existsSync(map) ? countMapRules(readFileSync(map, 'utf8')) : 0);
+      }, 0),
     first,
     days: Object.fromEntries(Object.entries(days).sort()),
     hours,
