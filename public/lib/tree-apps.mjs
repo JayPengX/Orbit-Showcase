@@ -17,7 +17,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
   kids: [
     n('sports-ai', 'ai', ['問比賽、賽後三句話', 'Ask, and three lines after'], ['AI 只說卡片上沒有的', 'AI says only what the card doesn’t'], {
       p: ['比分卡片已經寫了誰贏、誰得最多分，AI 再講一次只是浪費時間。', 'The score card already says who won and who scored most; AI saying it again wastes your time.'],
-      i: ['程式先讀出比賽的故事（逆轉、連續得分、哪一節拉開），AI 只用三句話講卡片上沒有的；F1 每場正賽的勝負關鍵，一列一圈，配車手的臉；「問比賽」讓 AI 從 App 讀到的排名、賽程和比分裡挑表回答，數字都是 App 的。', 'Code reads the game’s story first (comebacks, runs, the period that broke it open), and AI writes three lines on what the card doesn’t show; each F1 race’s deciding moments, a row a lap with the driver’s face; 問比賽 lets AI pick from the tables the app read (places, next and last games, today) and every number is the app’s.'],
+      i: ['程式先讀出比賽的故事（逆轉、連續得分、哪一節拉開），AI 只用三句話講卡片上沒有的；F1 每場正賽的勝負關鍵，一列一圈，配車手的臉；「問比賽」讓 AI 從 App 讀到的排名、賽程和比分裡挑表回答，數字都是 App 的。', 'Code reads the game’s story first (comebacks, runs, the period that broke it open), and AI writes three lines on what the card doesn’t show; each F1 race’s deciding moments, a row a lap with the driver’s face; “Ask about your teams” lets AI pick from the tables the app read (places, next and last games, today) and every number is the app’s.'],
       r: ['看完比分就懂這場為什麼這樣打，球員是大頭照、球隊有隊徽，點了就打開。', 'After the score you know why it went that way; players as faces and teams with logos, each opening its page.'],
       tech: ['Orbit-Core builders/recaps.js、f1story.js 先做好放 R2；/ai 的 sports-ask；kit aiAnswer 把答案畫成列。', 'Orbit-Core builders/recaps.js and f1story.js made ahead into R2; /ai’s sports-ask; kit aiAnswer draws answers as rows.'],
       links: ['ai']
@@ -145,7 +145,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
       links: ['cloud-proxy', 'store-r2']
     }),
     n('sports-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['像真的觀眾一樣想', 'Thinking like a real viewer'], {
-      tech: ['只放台灣看得到的聯賽；球隊用中文、球員和車手用英文原名（機器翻的「勒布朗·詹姆斯」很怪）；不放新聞也不放 AI；延期的比賽點了不開；過去的比賽頁只顯示那一刻。', 'Only leagues Taiwan can watch; teams in Chinese, players and drivers in their own English names (a machine’s 勒布朗·詹姆斯 reads oddly); no news and no AI; a postponed game opens nothing; a past game shows only its own moment.']
+      tech: ['只放台灣看得到的聯賽；球隊用中文、球員和車手用英文原名（機器翻的「勒布朗·詹姆斯」很怪）；不放新聞也不放 AI；延期的比賽點了不開；過去的比賽頁只顯示那一刻。', 'Only leagues Taiwan can watch; teams in Chinese, players and drivers in their own English names (a machine’s Chinese spelling of LeBron James reads oddly); no news and no AI; a postponed game opens nothing; a past game shows only its own moment.']
     })
   ]
 });
@@ -179,7 +179,7 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           tech: ['lib/rail.mjs Connection Scan；捷運另有自己的路線規劃。', 'lib/rail.mjs Connection Scan; the metro has its own router too.']
         }),
         n('transit-stopped', 'shield', ['停駛自己判斷', 'What isn’t running, worked out'], ['颱風天不會叫你去搭不存在的車', 'No ghost trains on typhoon days'], {
-          p: ['颱風天，政府的時刻表資料還列著已經停駛的內灣線火車。', 'On a typhoon day the official timetable still listed 內灣線 trains that weren’t running.'],
+          p: ['颱風天，政府的時刻表資料還列著已經停駛的內灣線火車。', 'On a typhoon day the official timetable still listed Neiwan Line trains that weren’t running.'],
           i: ['讀營運單位公告的文字，分辨全線停駛、部分停駛、減班；路上看得到公車就算有開。', 'Read the operators’ notices and tell full stops from partial ones and fewer runs; a bus seen on the road counts as running.'],
           r: ['規劃會避開停駛的車，沒得搭時會說清楚哪幾線停了。', 'Plans avoid stopped services, and say which routes stopped when nothing is left.'],
           tech: ['lib/service.mjs；TDX Alert/News；代理 /transit/running 看路上有幾台車。', 'lib/service.mjs; TDX Alert/News; the proxy’s /transit/running counts buses on the road.'],
@@ -206,7 +206,7 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
         }),
         n('transit-ticket', 'train', ['照你買的那班車規劃', 'Planned around your ticket'], ['TPASS 以外的台鐵、高鐵也行', 'Any TRA or HSR train, past TPASS'], {
           p: ['住在 TPASS 範圍內，規劃只會用月票能搭的車；可是有時候你已經買了高鐵票。', 'Inside a TPASS area plans kept to the pass’s trains, though sometimes you already hold an HSR ticket.'],
-          i: ['輸入車次、選日期，或在查時刻按「用這班規劃路線」：整趟路線就繞著那一班車排，先準時到車站，下車後再接著走。', 'Type a train number and pick the day, or tap 用這班規劃路線 in 查時刻: the whole trip is planned around that exact train, to its station in time and on from where it gets in.'],
+          i: ['輸入車次、選日期，或在查時刻按「用這班規劃路線」：整趟路線就繞著那一班車排，先準時到車站，下車後再接著走。', 'Type a train number and pick the day, or tap “Plan a trip on it” in Timetables: the whole trip is planned around that exact train, to its station in time and on from where it gets in.'],
           r: ['買了票的那班車，就是規劃裡的那班車。', 'The train on your ticket is the train in your plan.'],
           tech: ['lib/ticket.mjs、planner.mjs planTicket；車次從已經載入的時刻表找，不多讀資料。', 'lib/ticket.mjs, planner.mjs planTicket; the train found in the timetable already loaded, no extra read.'],
           links: ['transit-rail']
@@ -219,8 +219,8 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           links: ['transit-nav']
         }),
         n('transit-book', 'train', ['高鐵訂票一鍵到', 'HSR booking in one tap'], ['車次已經幫你填好', 'The train already filled in'], {
-          p: ['規劃好要搭的高鐵，還要再打開高鐵 App 重新選站、選時間。', 'With a 高鐵 ride planned, you still had to open the HSR app and pick the stations and time again.'],
-          i: ['行程裡的高鐵旁邊有「高鐵訂票」，直接打開高鐵自己的 App（T Express）或網站，起訖站和時間都已經填好。', 'A 高鐵 ride in a plan carries 高鐵訂票: it opens 高鐵’s own app (T Express) or site with the stations and time already filled in.'],
+          p: ['規劃好要搭的高鐵，還要再打開高鐵 App 重新選站、選時間。', 'With an HSR ride planned, you still had to open the HSR app and pick the stations and time again.'],
+          i: ['行程裡的高鐵旁邊有「高鐵訂票」，直接打開高鐵自己的 App（T Express）或網站，起訖站和時間都已經填好。', 'An HSR ride in a plan carries “Book on THSR”: it opens THSR’s own app (T Express) or site with the stations and time already filled in.'],
           r: ['從規劃到訂票，少了一整段重打。', 'From plan to ticket without typing it all again.'],
           tech: ['Orbit-Core /transit/book（TDX 訂票導訂連結，0 點）；Transit book.mjs 的小表單用真的連結，讓 iOS 能直接開 App。', 'Orbit-Core /transit/book (TDX’s booking hand-off link, 0 points); Transit book.mjs’s small sheet uses real links so iOS can open the app.']
         }),
@@ -259,17 +259,17 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
           p: ['交通部 TDX 的付費方案 12 月起不續了，免費方案一個月只有 3 點，撐不起即時公車和火車。', 'TDX’s paid plan ends in December, and its free tier, 3 points a month, can’t carry live buses and trains.'],
           i: ['公車、台鐵、高鐵、捷運和 YouBike 都改讀業者自己的網站和開放資料，手機自己讀得到的就讓手機讀；TDX 只在讀不到的時候用，答案大家共用。', 'Buses, TRA, HSR, the metros and YouBike come from the operators’ own sites and open data, read by the phone wherever it can; TDX only when they fail, its answers shared by everyone.'],
           r: ['即時到站、誤點和公告都還在，交通資料一毛錢都不用付。', 'Live arrivals, delays and notices all stay, and the transit data costs nothing.'],
-          tech: ['Orbit-Core transit-free.js 回答 TDX 形狀的資料：臺北、新北、新竹、桃園、臺中、臺南、高雄和公路局的公車網站，台鐵開放資料和車站時刻、車次查詢，高鐵 GTFS，臺北、桃園、高雄捷運的月台資訊，YouBike 自己的清單；公車資料每週從 TDX 的 GTFS 打包（0 點）；TDX 的答案依它更新的速度共用。', 'Orbit-Core transit-free.js answers in TDX’s shape: the bus sites of 臺北, 新北, 新竹, 桃園, 臺中, 臺南, 高雄 and 公路局, 台鐵’s open data, station boards and train lookup, 高鐵’s GTFS, the 臺北, 桃園 and 高雄 metros’ platform screens, YouBike’s own list; bus packs weekly from TDX’s GTFS (0 points); TDX’s answers shared at the speed it updates.'],
+          tech: ['Orbit-Core transit-free.js 回答 TDX 形狀的資料：臺北、新北、新竹、桃園、臺中、臺南、高雄和公路局的公車網站，台鐵開放資料和車站時刻、車次查詢，高鐵 GTFS，臺北、桃園、高雄捷運的月台資訊，YouBike 自己的清單；公車資料每週從 TDX 的 GTFS 打包（0 點）；TDX 的答案依它更新的速度共用。', 'Orbit-Core transit-free.js answers in TDX’s shape: the bus sites of Taipei, New Taipei, Hsinchu, Taoyuan, Taichung, Tainan, Kaohsiung and the Highway Bureau, TRA’s open data, station boards and train lookup, THSR’s GTFS, the Taipei, Taoyuan and Kaohsiung metros’ platform screens, YouBike’s own list; bus packs weekly from TDX’s GTFS (0 points); TDX’s answers shared at the speed it updates.'],
           links: ['cheap-plan']
         })
       ]
     }),
     n('transit-data', 'map', ['資料從哪裡來', 'Where the data comes from'], ['政府開放資料加上地圖服務', 'Open government data plus maps'], {
-      tech: ['各縣市公車網站、台鐵和高鐵自己的資料、各捷運的月台資訊、YouBike；TDX 運輸資料流通服務當備援；Google Maps / Places / Routes、國土測繪中心地圖（NLSC）、OpenStreetMap。', 'Each city’s bus site, 台鐵’s and 高鐵’s own data, the metros’ platform screens, YouBike; TDX as backup; Google Maps / Places / Routes, NLSC maps, OpenStreetMap.'],
+      tech: ['各縣市公車網站、台鐵和高鐵自己的資料、各捷運的月台資訊、YouBike；TDX 運輸資料流通服務當備援；Google Maps / Places / Routes、國土測繪中心地圖（NLSC）、OpenStreetMap。', 'Each city’s bus site, TRA’s and THSR’s own data, the metros’ platform screens, YouBike; TDX as backup; Google Maps / Places / Routes, NLSC maps, OpenStreetMap.'],
       links: ['cloud-proxy']
     }),
     n('transit-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['照真實的通勤判斷', 'Judged by real commutes'], {
-      tech: ['永遠有一個推薦；不規劃計程車；高鐵不算免費；不要跟自己的火車賽跑到下一站；地圖被手指動過就不再拉回；例：竹東南 → 成功九街，5608 公車接 20 分鐘 YouBike。', 'There is always a recommendation; never taxis; HSR is never free; never race your own train to the next station; the map never pulls back once moved; e.g. 竹東南 → 成功九街: the 5608 then a 20-minute ride.']
+      tech: ['永遠有一個推薦；不規劃計程車；高鐵不算免費；不要跟自己的火車賽跑到下一站；地圖被手指動過就不再拉回；例：竹東南 → 成功九街，5608 公車接 20 分鐘 YouBike。', 'There is always a recommendation; never taxis; HSR is never free; never race your own train to the next station; the map never pulls back once moved; e.g. Zhudong South → Chenggong 9th St.: the 5608 then a 20-minute ride.']
     })
   ]
 });
@@ -281,7 +281,7 @@ const weather = n('weather', 'cloud', ['Orbit Weather', 'Orbit Weather'], ['一�
   r: ['一個數字，不用自己比對。', 'One number, nothing to compare yourself.'],
   kids: [
     n('weather-ask', 'ai', ['問天氣', 'Just ask the weather'], ['程式從預報回答', 'Answered by code from the forecast'], {
-      p: ['想知道「明天竹北會下雨嗎」，要自己找地點、找日期、讀一整排數字。', 'To know “will it rain in 竹北 tomorrow” you had to find the place, the day, and read a row of numbers.'],
+      p: ['想知道「明天竹北會下雨嗎」，要自己找地點、找日期、讀一整排數字。', 'To know “will it rain in Zhubei tomorrow” you had to find the place, the day, and read a row of numbers.'],
       i: ['在搜尋框直接問，程式找出地點和日期，從預報畫出那天的天空、一句結論、高低溫和降雨機率；只有程式找不到的地名才問 AI 在哪。雷達追蹤的陣雨變成天空卡片上的一塊，說幾點、哪裡會下。', 'Ask in the search box: code finds the place and day and draws that day’s sky, a verdict, low–high and rain chance from the forecast; only a place code can’t find goes to AI. A shower the radar tracks becomes a panel on the sky card saying when and where.'],
       r: ['一句話問，一眼看到答案。', 'Ask in a sentence, see the answer at a glance.'],
       tech: ['lib/ask.mjs；/ai 的 weather-ask 只回答地點；Orbit-Core weather-radar.js 追蹤氣象署雷達回波。', 'lib/ask.mjs; /ai’s weather-ask answers only a place; Orbit-Core weather-radar.js tracks CWA’s radar echoes.'],
@@ -297,7 +297,7 @@ const weather = n('weather', 'cloud', ['Orbit Weather', 'Orbit Weather'], ['一�
         }),
         n('weather-typhoon', 'wind', ['颱風停班停課機率', 'Typhoon day-off chance'], ['用過去 68 個颱風學出來', 'Learnt from 68 past storms'], {
           p: ['颱風天大家都在猜明天放不放假。', 'On typhoon days everyone guesses whether tomorrow is off.'],
-          i: ['用 2019 到 2026 年 68 個颱風、4,671 個縣市日的真實決定做出模型：暴風圈多近、颱風多強、陣風、雨量、鄰近縣市已經宣布的比例。人事行政總處一公布就換成正式結果。', 'A model fitted to 68 storms and 4,671 county-days of real decisions (2019–2026): how close the storm circle is, its strength, gusts, rain, and how many neighbours already announced. The official word replaces it once 人事行政總處 posts it.'],
+          i: ['用 2019 到 2026 年 68 個颱風、4,671 個縣市日的真實決定做出模型：暴風圈多近、颱風多強、陣風、雨量、鄰近縣市已經宣布的比例。人事行政總處一公布就換成正式結果。', 'A model fitted to 68 storms and 4,671 county-days of real decisions (2019–2026): how close the storm circle is, its strength, gusts, rain, and how many neighbours already announced. The official word replaces it once the government’s personnel office (DGPA) posts it.'],
           r: ['每個縣市一個 1% 到 99% 的機率，隨預報更新。', 'One 1–99% chance per county that moves with each forecast.'],
           tech: ['typhoon.js 邏輯斯迴歸；22 縣市每 3 分鐘一起算進 KV；颱風路徑 CWA W-C0034-005；雨量 MET Norway（Open-Meteo 後備）。', 'typhoon.js logistic fit; all 22 counties every 3 minutes into KV; track CWA W-C0034-005; rain MET Norway (Open-Meteo fallback).'],
           links: ['kit-dayoff', 'cloud-relay']
@@ -329,12 +329,12 @@ const weather = n('weather', 'cloud', ['Orbit Weather', 'Orbit Weather'], ['一�
           p: ['每個地點各算一次，同一個縣市還可能算出不同數字。', 'Working it out per place costs more and can disagree inside one county.'],
           i: ['22 個縣市每 3 分鐘一起算，以縣市政府所在地為準，每個地點讀自己縣市那一份。', 'All 22 counties at once every 3 minutes, at each county seat; every place reads its county’s.'],
           r: ['一致又省。', 'Consistent and cheap.'],
-          tech: ['KV weather:dayoff；人事行政總處頁面 3 分鐘讀一次（透過台灣的 AI 中繼站）。', 'KV weather:dayoff; 人事行政總處’s page read every 3 minutes (through the Taiwan relay).']
+          tech: ['KV weather:dayoff；人事行政總處頁面 3 分鐘讀一次（透過台灣的 AI 中繼站）。', 'KV weather:dayoff; the DGPA’s page read every 3 minutes (through the Taiwan relay).']
         })
       ]
     }),
     n('weather-data', 'sun', ['資料從哪裡來', 'Where the data comes from'], ['政府和國際來源', 'Government and global sources'], {
-      tech: ['Google Weather、中央氣象署（預報、測站、颱風路徑、強風燈號）、環境部空氣品質、國家災害防救中心警報、人事行政總處停班停課、MET Norway、Open-Meteo、CODiS 歷史測站資料（做模型用）。', 'Google Weather, CWA (forecasts, stations, typhoon tracks, gust lamps), MOENV air quality, NCDR alerts, 人事行政總處 closures, MET Norway, Open-Meteo, CODiS station history (for the model).']
+      tech: ['Google Weather、中央氣象署（預報、測站、颱風路徑、強風燈號）、環境部空氣品質、國家災害防救中心警報、人事行政總處停班停課、MET Norway、Open-Meteo、CODiS 歷史測站資料（做模型用）。', 'Google Weather, CWA (forecasts, stations, typhoon tracks, gust lamps), MOENV air quality, NCDR alerts, DGPA closures, MET Norway, Open-Meteo, CODiS station history (for the model).']
     }),
     n('weather-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['一個數字只有一個意思', 'One number, one meaning'], {
       tech: ['同一個小時，文字、圖表、十天預報都讀同一個數字；舊預報不能假裝是現在（過 6 小時就隱藏）；天氣圖都自己畫，不用 emoji；不顯示來源名稱；颱風假在每個 App 都算假日。', 'The line, the graph and the 10-day row read the same hours; an old forecast never poses as now (hidden after 6 hours); the app draws its own pictures, no emoji; no source names; a typhoon day off is a holiday in every app.'],
@@ -367,7 +367,7 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
         n('class-weeks', 'calendar', ['單雙週自己數', 'Odd and even weeks counted'], ['跨年也不會亂', 'Right across the new year'], {
           p: ['用一般的週數，2026 年有第 53 週，單雙週會重複一次。', 'With ISO week numbers, 2026’s 53rd week would repeat “odd”.'],
           i: ['從 2025-12-29 那週開始一直往下數；學校算法不同可以一鍵對調。', 'Count straight on from the week of 2025-12-29; one switch flips it if a school counts differently.'],
-          r: ['「語文/公民」這種隔週上的課永遠對。', 'Alternating slots like 語文/公民 are always right.'],
+          r: ['「語文/公民」這種隔週上的課永遠對。', 'Alternating slots like Language/Civics are always right.'],
           tech: ['WEEK_EPOCH。', 'WEEK_EPOCH.']
         }),
         n('class-swap', 'swap', ['調課一個規則', 'Swaps, one rule'], ['每個畫面和通知都讀同一個', 'Every screen and notice reads it'], {
@@ -395,7 +395,7 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
     }),
     n('class-cal', 'calendar', ['課表放進手機行事曆', 'The timetable in your Calendar'], ['訂閱一次，一直是最新的', 'Subscribe once, always current'], {
       p: ['手機的行事曆看不到課表，調課了也要自己改。', 'The phone’s Calendar didn’t know the timetable, and a swap had to be copied by hand.'],
-      i: ['「加到行事曆」給一個訂閱連結，手機的行事曆自己去讀接下來四週的課，調了課就跟著變。', '加到行事曆 gives a subscription link: the phone’s Calendar reads the next four weeks of classes itself and follows every swap.'],
+      i: ['「加到行事曆」給一個訂閱連結，手機的行事曆自己去讀接下來四週的課，調了課就跟著變。', '“Add to Calendar” gives a subscription link: the phone’s Calendar reads the next four weeks of classes itself and follows every swap.'],
       r: ['不用打開 App，行事曆和小工具上就看得到下一節課。', 'The next class shows in Calendar and its widgets without opening the app.'],
       tech: ['src/calendar.js 做出 .ics；Orbit-Core cal.js 存在 KV、用 webcal 給行事曆訂閱。', 'src/calendar.js builds the .ics; Orbit-Core cal.js keeps it in KV and serves it as a webcal subscription.']
     }),
@@ -413,7 +413,7 @@ const words = n('words', 'book', ['Orbit Words', 'Orbit Words'], ['背得住的�
   kids: [
     n('words-ai', 'ai', ['用新字聊天、拍照找單字', 'Chat with new words, words from a photo'], ['背了就用得上', 'Learned words, put to use'], {
       p: ['背過的單字不會用，課本上的生字還要一個一個查。', 'Words learned but never used, and a textbook page’s words looked up one by one.'],
-      i: ['跟 AI 用英文聊幾句，它會邀你用上剛背的字，每句只改最少的地方並說為什麼；拍課本或講義，只留大考單字表裡有的字加入收藏；每個字有 AI 寫的例句和記憶法，「用它造句」AI 幫你看自然不自然。', 'Chat a few lines in English with AI, which invites the words you just learned and fixes each line with the fewest changes and why; photograph a textbook page and only the exam list’s words are starred; each word has AI examples and a memory hook, and 用它造句 checks your sentence.'],
+      i: ['跟 AI 用英文聊幾句，它會邀你用上剛背的字，每句只改最少的地方並說為什麼；拍課本或講義，只留大考單字表裡有的字加入收藏；每個字有 AI 寫的例句和記憶法，「用它造句」AI 幫你看自然不自然。', 'Chat a few lines in English with AI, which invites the words you just learned and fixes each line with the fewest changes and why; photograph a textbook page and only the exam list’s words are starred; each word has AI examples and a memory hook, and “Make a sentence” checks your sentence.'],
       r: ['背的字真的變成會用的字。', 'Learned words become words you use.'],
       tech: ['/ai 的 words-chat、words-photo、words-check；例句和記憶法由 builders/ai.js 先做好（words/cards/）。', '/ai’s words-chat, words-photo, words-check; examples and hooks made ahead by builders/ai.js (words/cards/).'],
       links: ['ai']
@@ -509,14 +509,14 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
       p: ['鄉鎮市民代表會離生活最近，資料卻最難找：每個公所的網站都不一樣，很多只有 PDF、Word 或錄音檔。', 'Township councils are closest to daily life but hardest to read: every office’s site differs, many only PDFs, Word files or recordings.'],
       i: ['204 個代表會都有代表名單；其中 69 個從它們自己的網站讀進每一次會期的議程、議事錄、決議、質詢和錄音（共 1,655 個會期），47 個的 YouTube 錄影直接在 App 裡播；一位代表的總質詢可以點「重點摘要」，每一點都標出根據哪一段。22 個縣市議會也都有每天的議程和錄影。', 'All 204 have their members; 69 are read from their own sites into every session’s agenda, minutes, resolutions, questions and recordings (1,655 sessions), and 47 play their YouTube recordings in the app; a member’s questions can be summed up on a tap, each point citing the turn it rests on. All 22 city and county councils have their day-by-day sittings and recordings too.'],
       r: ['從立法院到你家鄉的代表會，都在同一個 App 裡查得到、聽得到。', 'From the legislature down to your own township, all searchable and playable in one app.'],
-      tech: ['scripts/build-town.mjs 每天輪流重讀最久沒讀的鎮；只讓台灣連的網站透過台灣的中繼站；/law-ask 的 town 模式做重點摘要；問法律也會引用議員和代表的質詢。', 'scripts/build-town.mjs re-reads the town read longest ago each day; Taiwan-only sites through the Taiwan relay; /law-ask’s town mode sums up; 問法律 cites councillors’ questions too.'],
+      tech: ['scripts/build-town.mjs 每天輪流重讀最久沒讀的鎮；只讓台灣連的網站透過台灣的中繼站；/law-ask 的 town 模式做重點摘要；問法律也會引用議員和代表的質詢。', 'scripts/build-town.mjs re-reads the town read longest ago each day; Taiwan-only sites through the Taiwan relay; /law-ask’s town mode sums up; Ask the law cites councillors’ questions too.'],
       links: ['law-councils', 'cloud-relay']
     }),
     n('law-links', 'spark', ['每個條號都能點', 'Every reference tappable'], ['約 99% 對到真的條文', 'About 99% land on the real article'], {
       p: ['「第 184 條」「前項」「同法第 3 條」都只是文字。', '“Article 184”, “the preceding paragraph” are just words.'],
-      i: ['一套規則讀懂各種寫法（第X條之Y、至、前N條、其他法律名稱加條號），不認識的法律名稱就不亂連。', 'One set of rules reads every form (之, ranges, 前N條, another law’s name before 第X條); an unknown name links nothing rather than the wrong thing.'],
+      i: ['一套規則讀懂各種寫法（第X條之Y、至、前N條、其他法律名稱加條號），不認識的法律名稱就不亂連。', 'One set of rules reads every form (sub-articles like 5-1, ranges, “the first N articles”, another law’s name before “Article X”); an unknown name links nothing rather than the wrong thing.'],
       r: ['約 28,000 個引用中，約 99% 連到真實條文。', 'Of about 28,000 references, about 99% land on a real article.'],
-      tech: ['lib/refs.mjs；法律簡稱只用真的常用的（勞基法、道交條例）。', 'lib/refs.mjs; short names only in real use (勞基法, 道交條例).']
+      tech: ['lib/refs.mjs；法律簡稱只用真的常用的（勞基法、道交條例）。', 'lib/refs.mjs; short names only in real use (the Labor Standards Act, the Road Traffic Act).']
     }),
     n('law-three', 'grid', ['三邊用同一套編號', 'One id scheme for three sides'], ['法規、裁判、立法', 'Laws, rulings, bills'], {
       p: ['三個資料來源各有各的編號，彼此不認識。', 'The three sources each number things their own way.'],
@@ -532,7 +532,7 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
     }),
     n('law-ai', 'send', ['問法律', 'Ask the law'], ['只用找到的資料回答，每點都附來源', 'Answers only from what it found, every point cited'], {
       p: ['一般 AI 回答法律問題會亂編條文。', 'A general AI makes up articles.'],
-      i: ['先在 App 自己的資料裡找出最多 14 條相關條文，加上類似判決、釋字、行政規則、最新公告；AI 只能用這些回答，每一點的引用都被檢查過，還要判斷誰可能有理、罰則和下一步。', 'First find up to 14 articles in the app’s own data, plus similar rulings, 釋字, agency rules and notices; the AI may answer only from these, every cite is checked, and it must judge who is likely right, penalties and next steps.'],
+      i: ['先在 App 自己的資料裡找出最多 14 條相關條文，加上類似判決、釋字、行政規則、最新公告；AI 只能用這些回答，每一點的引用都被檢查過，還要判斷誰可能有理、罰則和下一步。', 'First find up to 14 articles in the app’s own data, plus similar rulings, constitutional interpretations, agency rules and notices; the AI may answer only from these, every cite is checked, and it must judge who is likely right, penalties and next steps.'],
       r: ['每一點都能點開原文。', 'Every point opens its source.'],
       tech: ['Orbit-Core law-chat.js（計畫用 Flash-Lite，回答用 Claude Sonnet，忙的時候換 GPT 同級的模型；五個模型用十個真實問題盲測後選的）、law-ground.js、law-more.js、law-local.js（議會和代表會）；條文交給主管機關定的，也跟去找那個辦法；記得前 8 題；每人每天 30 次；只有點了才問。', 'Orbit-Core law-chat.js (plan on Flash-Lite, answered by Claude Sonnet, a GPT model of its class when busy; picked by a blind test of five models on ten real questions), law-ground.js, law-more.js, law-local.js (councils and township councils); an article that leaves the details to a regulation is followed to it; remembers 8 questions back; 30 a day a Pass; only on a tap.'],
       links: ['cloud-relay', 'cheap-caps']
@@ -547,19 +547,19 @@ const law = n('law', 'shield', ['Orbit Law', 'Orbit Law'], ['法規、裁判、�
     n('law-councils', 'flag', ['縣市議會也在裡面', 'The councils too'], ['22 個縣市議會，和全台的代表會', '22 councils, and the township councils'], {
       p: ['地方議會的議案、表決和會議紀錄多半是 PDF，散在各自的網站，有些只讓台灣的網路連。', 'Local councils’ bills, votes and minutes are mostly PDFs scattered over their own sites, some open only to Taiwan’s networks.'],
       i: ['每晚讀每個議會自己的網站和公開資料，把 PDF 裡的議案、決議和質詢讀成 App 裡一列一列的卡片；公開的錄影直接在 App 裡播。', 'Each night read every council’s own site and open data, turn the bills, resolutions and questions in their PDFs into rows in the app, and play the public recordings in it.'],
-      r: ['每個議會每天開什麼會、錄影和議員的質詢，都在 App 裡點得到；「各議會的議程」把 22 個議會放在同一條日期上。', 'Every council’s sittings, recordings and councillors’ questions open in the app, day by day; 各議會的議程 puts all 22 on one strip of days.'],
-      tech: ['scripts/build-council.mjs；歐噴的議會 API（all.cc.govapi.tw）加上各議會自己的網站（新竹縣、新竹市、花蓮、彰化、苗栗、嘉義市…）；PDF 用 pdftotext 讀；只讓台灣連的網站透過台灣的中繼站；HiNet、高雄 IVOD、YouTube 的公開影片。', 'scripts/build-council.mjs; the open councils API (all.cc.govapi.tw) plus each council’s own site (新竹縣, 新竹市, 花蓮, 彰化, 苗栗, 嘉義市…); PDFs read by pdftotext; Taiwan-only sites through the Taiwan relay; public video from HiNet, 高雄’s IVOD and YouTube.'],
+      r: ['每個議會每天開什麼會、錄影和議員的質詢，都在 App 裡點得到；「各議會的議程」把 22 個議會放在同一條日期上。', 'Every council’s sittings, recordings and councillors’ questions open in the app, day by day; “Every council’s agenda” puts all 22 on one strip of days.'],
+      tech: ['scripts/build-council.mjs；歐噴的議會 API（all.cc.govapi.tw）加上各議會自己的網站（新竹縣、新竹市、花蓮、彰化、苗栗、嘉義市…）；PDF 用 pdftotext 讀；只讓台灣連的網站透過台灣的中繼站；HiNet、高雄 IVOD、YouTube 的公開影片。', 'scripts/build-council.mjs; the open councils API (all.cc.govapi.tw) plus each council’s own site (Hsinchu County, Hsinchu City, Hualien, Changhua, Miaoli, Chiayi City…); PDFs read by pdftotext; Taiwan-only sites through the Taiwan relay; public video from HiNet, Kaohsiung’s IVOD and YouTube.'],
       links: ['cloud-relay']
     }),
     n('law-build', 'history', ['每天自己把資料蓋好', 'Data built every day'], ['讀資料不用錢', 'Reading costs nothing'], {
       p: ['每次查法條都去問政府網站，又慢又會被擋。', 'Asking government sites on every read is slow and gets blocked.'],
-      i: ['每天凌晨 3:30 自動下載、整理成靜態檔案放上網站；判決在司法院開放的半夜 00:05 到 06:00 一個月一個月補；全文檢索用預先做好的索引。', 'Every day at 03:30 the data is downloaded and built into static files; rulings are back-filled month by month from 00:05 to 06:00 when 司法院 opens; full-text search uses a prebuilt index.'],
+      i: ['每天凌晨 3:30 自動下載、整理成靜態檔案放上網站；判決在司法院開放的半夜 00:05 到 06:00 一個月一個月補；全文檢索用預先做好的索引。', 'Every day at 03:30 the data is downloaded and built into static files; rulings are back-filled month by month from 00:05 to 06:00 when the Judicial Yuan’s site opens; full-text search uses a prebuilt index.'],
       r: ['法條、判決、法案都秒開、離線也能讀，而且一毛錢都不用。', 'Laws, rulings and bills open instantly, offline too, for nothing.'],
       tech: ['pages.yml：build-data、notices、ly、photos、budget、agency、local、rulings、cons、news；rulings.yml；全文檢索用二字索引；判決全文不存，打開時才透過 /law-page 讀。', 'pages.yml: build-data, notices, ly, photos, budget, agency, local, rulings, cons, news; rulings.yml; bigram full-text index; judgments open through /law-page, never stored.'],
       links: ['ship-pages', 'cheap-static']
     }),
     n('law-data', 'book', ['資料從哪裡來', 'Where the data comes from'], ['全部是公開資料', 'All public data'], {
-      tech: ['全國法規資料庫（中英文）、g0v 立法院 API、司法院裁判書（近 3 年）、憲法法庭（釋字 1–813 和憲判字）、各部會行政規則、22 縣市中的 20 個地方法規（有些只接受台灣連線，透過台灣的中繼站讀）、主計總處預算、公共政策網路參與平台預告、立委照片。', '全國法規資料庫 (zh and en), the g0v 立法院 API, 司法院 judgments (3 years), the Constitutional Court (釋字 1–813 and 憲判字), ministries’ rules, local rules from 20 of 22 counties (some answer only from Taiwan, read through the Taiwan relay), 主計總處 budgets, join.gov.tw notices, legislators’ photos.'],
+      tech: ['全國法規資料庫（中英文）、g0v 立法院 API、司法院裁判書（近 3 年）、憲法法庭（釋字 1–813 和憲判字）、各部會行政規則、22 縣市中的 20 個地方法規（有些只接受台灣連線，透過台灣的中繼站讀）、主計總處預算、公共政策網路參與平台預告、立委照片。', 'the national Laws & Regulations Database (zh and en), the g0v Legislative Yuan API, Judicial Yuan judgments (3 years), the Constitutional Court (interpretations 1–813 and its new judgments), ministries’ rules, local rules from 20 of 22 counties (some answer only from Taiwan, read through the Taiwan relay), DGBAS budgets, join.gov.tw notices, legislators’ photos.'],
       links: ['cloud-relay']
     })
   ]
@@ -599,7 +599,7 @@ const securities = n('securities', 'chart', ['Orbit Securities', 'Orbit Securiti
       tech: ['kit stock-markets.mjs、stock-credit.mjs、stock-access.mjs；期貨價 = 加權指數 + 期交所結算價差；選擇權用 Black-76 模型。', 'The kit’s stock-markets.mjs, stock-credit.mjs, stock-access.mjs; futures = live index + TAIFEX settle basis; options priced with Black-76.']
     }),
     n('sec-data', 'chart', ['資料從哪裡來', 'Where the data comes from'], ['報價和交易所名單', 'Quotes and exchange lists'], {
-      tech: ['Yahoo Finance（報價、K 線、搜尋）、證交所和櫃買中心（新股申購、處置和注意股、全額交割股、興櫃）、期交所（結算價、保證金）、投信投顧公會基金淨值、鉅亨網基金歷史、台灣銀行定存利率。雲端代理不固定在台灣，因為固定在台灣時 Yahoo 擋了 16 次中的 11 次。', 'Yahoo Finance (quotes, charts, search), TWSE and TPEx (IPOs, disposition lists, full-delivery stocks, 興櫃), TAIFEX (settles, margins), SITCA fund NAVs, cnyes fund history, Bank of Taiwan rates. The proxy isn’t pinned to Taiwan: pinned, Yahoo refused 11 of 16 reads.'],
+      tech: ['Yahoo Finance（報價、K 線、搜尋）、證交所和櫃買中心（新股申購、處置和注意股、全額交割股、興櫃）、期交所（結算價、保證金）、投信投顧公會基金淨值、鉅亨網基金歷史、台灣銀行定存利率。雲端代理不固定在台灣，因為固定在台灣時 Yahoo 擋了 16 次中的 11 次。', 'Yahoo Finance (quotes, charts, search), TWSE and TPEx (IPOs, disposition lists, full-delivery stocks, the emerging market), TAIFEX (settles, margins), SITCA fund NAVs, cnyes fund history, Bank of Taiwan rates. The proxy isn’t pinned to Taiwan: pinned, Yahoo refused 11 of 16 reads.'],
       links: ['cloud-proxy']
     }),
     n('sec-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['像真的券商', 'Like a real broker'], {
@@ -655,7 +655,7 @@ const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞�
   kids: [
     n('news-more', 'ai', ['各方怎麼說、今天五則', 'Each side’s angle, today’s five'], ['只講差在哪', 'Only where they differ'], {
       p: ['標題並排還是要自己讀出各家的角度；重要的新聞不一定是你關心的。', 'Headlines side by side still left you to read each side’s angle; the biggest news isn’t always what you care about.'],
-      i: ['政治和國際大新聞上，AI 只從各家自己的標題寫出每一邊的角度，和最重要的一個差別，從不判斷誰對；每天早上挑五則給你；你在 Securities 持有的股票、在 Sports 追蹤的球隊排在「你關心的」；新聞提到的法律一點就在 Orbit Law 打開，英文新聞裡正在背的單字畫底線。', 'On big political and world stories, AI writes each side’s angle and the one difference that matters, from their own headlines only, never who’s right; five stories picked for you each morning; what you hold in Securities and follow in Sports leads 你關心的; laws a story names open in Orbit Law, and words you’re learning are underlined in English stories.'],
+      i: ['政治和國際大新聞上，AI 只從各家自己的標題寫出每一邊的角度，和最重要的一個差別，從不判斷誰對；每天早上挑五則給你；你在 Securities 持有的股票、在 Sports 追蹤的球隊排在「你關心的」；新聞提到的法律一點就在 Orbit Law 打開，英文新聞裡正在背的單字畫底線。', 'On big political and world stories, AI writes each side’s angle and the one difference that matters, from their own headlines only, never who’s right; five stories picked for you each morning; what you hold in Securities and follow in Sports leads “What you follow”; laws a story names open in Orbit Law, and words you’re learning are underlined in English stories.'],
       r: ['看懂各邊怎麼說，也看到跟你有關的事。', 'See how each side tells it, and what concerns you.'],
       tech: ['Orbit-Core builders/ai.js 寫 news/sides.json；news-laws.js 對照 Law 的法案；家族筆記（只在手機上）。', 'Orbit-Core builders/ai.js writes news/sides.json; news-laws.js matches Law’s bills; the family notebook (on the phone only).'],
       links: ['ai', 'ai-family']

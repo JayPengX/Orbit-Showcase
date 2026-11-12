@@ -128,3 +128,16 @@ test("Jay's homepage: the wide screen's bigger sky comes after the sky's own rul
   const wide = page.indexOf('@media (min-width: 900px) { h1 { font-size: 56px; }');
   assert.ok(base > 0 && wide > base, 'the 900 px rule follows .sky');
 });
+
+// English mode reads all English: no Chinese name left inside a card's English
+// line (2026-11-12: 31 lines quoted 人事行政總處, 高鐵, 問法律 and the like).
+test('every card line in English is English', async () => {
+  const { NODES } = await import('../public/lib/tree.mjs');
+  const left = [];
+  const walk = (o, at) => {
+    if (Array.isArray(o) && o.length === 2 && typeof o[0] === 'string' && typeof o[1] === 'string') return void (/[㐀-鿿]/.test(o[1]) && left.push(`${at}: ${o[1]}`));
+    if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) if (k !== 'kids') walk(v, `${at}.${k}`);
+  };
+  for (const [id, { node }] of NODES) walk(node, id);
+  assert.deepEqual(left, []);
+});

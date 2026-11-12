@@ -33,7 +33,7 @@ const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你�
       tech: ['Orbit-Core builders/ai.js、recaps.js、f1story.js 寫到 R2；Law 的 data/ai/（多 3,500 條常用法條，用批次 API 一次做好）；filings.js。', 'Orbit-Core builders/ai.js, recaps.js, f1story.js write to R2; Law’s data/ai/ (3,500 more everyday articles, made in one batch); filings.js.']
     }),
     n('ai-backup', 'shield', ['一家忙，換另一家', 'One maker busy, another answers'], ['同等級、不同公司', 'Same class, another maker'], {
-      p: ['11-10 免費的 Gemini 排隊超過 20 秒、常常答不出來，問法律三題只答一題。', 'On 11-10 free Gemini queued for over 20 seconds and often failed; 問法律 answered one question in three.'],
+      p: ['11-10 免費的 Gemini 排隊超過 20 秒、常常答不出來，問法律三題只答一題。', 'On 11-10 free Gemini queued for over 20 seconds and often failed; Ask the law answered one question in three.'],
       i: ['改用付費的 AI，每個模型都有另一家公司同等級的備援；管理頁顯示是誰回答的。', 'Paid AI instead, each model backed by one of its class from another maker; the admin page shows which answered.'],
       r: ['一家出問題，答案還是會來。', 'When one maker has a bad day, the answer still comes.'],
       tech: ['Claude Sonnet ↔ GPT 同級、小模型 ↔ 小模型、Gemini Flash 只用在照片；ai-other.js 透過台灣的中繼站呼叫；預付額度，用完就停。', 'Claude Sonnet ↔ a GPT of its class, small ↔ small, Gemini Flash only for photos; ai-other.js calls through the Taiwan relay; prepaid credit with a hard stop.'],
@@ -41,7 +41,7 @@ const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你�
     }),
     n('ai-family', 'share', ['App 之間互相幫忙', 'Apps that help each other'], ['只在你的手機上', 'Only on your phone'], {
       p: ['每個 App 只知道自己：交通不知道會下雨，新聞不知道你持有哪些股票。', 'Each app knew only itself: Transit didn’t know it would rain, News didn’t know what you hold.'],
-      i: ['手機上有一本家族筆記：天氣寫下哪裡會下雨，課表寫下接下來的課，股票寫下持有的名稱（不含金額），單字寫下正在背的字。於是交通下雨時改搭車、新聞先放你關心的、Pass 的「今天」一次看完；在 Pass 上「問 Orbit」，它會打開能回答的那個 App 並幫你問。', 'A family notebook on the phone: Weather notes where rain is due, Class the next classes, Securities the names held (never amounts), Words the words being learned. So Transit avoids rain, News leads with what you care about, the Pass’s 今天 sums up the day; 問 Orbit on the Pass opens the app that can answer and asks there.'],
+      i: ['手機上有一本家族筆記：天氣寫下哪裡會下雨，課表寫下接下來的課，股票寫下持有的名稱（不含金額），單字寫下正在背的字。於是交通下雨時改搭車、新聞先放你關心的、Pass 的「今天」一次看完；在 Pass 上「問 Orbit」，它會打開能回答的那個 App 並幫你問。', 'A family notebook on the phone: Weather notes where rain is due, Class the next classes, Securities the names held (never amounts), Words the words being learned. So Transit avoids rain, News leads with what you care about, the Pass’s Today sums up the day; Ask Orbit on the Pass opens the app that can answer and asks there.'],
       r: ['十個 App 像一個，而且這些都不會傳到雲端。', 'Ten apps that feel like one, with none of it sent to the cloud.'],
       tech: ['kit family.mjs（tell、heard）、today.mjs、ask-orbit.mjs（#ask=）。', 'kit family.mjs (tell, heard), today.mjs, ask-orbit.mjs (#ask=).']
     })
@@ -96,7 +96,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
       p: ['颱風停班停課時，課表還在提醒上課、股市還在開。', 'On a typhoon day off, Class still rang and Securities still traded.'],
       i: ['國定假日和颱風假放在同一個零件裡，每個 App 依自己需要問：上課看學校的縣市、上班看工作地點、股市看臺北市。', 'Holidays and typhoon days off live in one piece; each app asks what it needs: classes by the school’s county, work by the workplace, the market by Taipei.'],
       r: ['颱風假在每個 App 都像假日一樣。', 'A typhoon day off acts like a holiday in every app.'],
-      tech: ['holidays.mjs、dayoff.mjs dayOffOn(date, place, class|work|trade)；雲端 /weather/dayoff 讀人事行政總處公告。', 'holidays.mjs, dayoff.mjs dayOffOn(date, place, class|work|trade); the cloud’s /weather/dayoff reads 人事行政總處.'],
+      tech: ['holidays.mjs、dayoff.mjs dayOffOn(date, place, class|work|trade)；雲端 /weather/dayoff 讀人事行政總處公告。', 'holidays.mjs, dayoff.mjs dayOffOn(date, place, class|work|trade); the cloud’s /weather/dayoff reads the DGPA.'],
       links: ['weather-typhoon', 'transit-stopped', 'law-live']
     }),
     n('kit-shared-logic', 'swap', ['手機和雲端用同一段程式', 'One code for phone and cloud'], ['答案永遠一樣', 'The answers always agree'], {
@@ -116,7 +116,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
     n('kit-learn', 'spark', ['推薦會學', 'Picks that learn'], ['你跳過的會沉下去', 'What you pass over sinks'], {
       p: ['推薦的比賽或股票一直出現你從來不點的。', 'Picks kept showing games or stocks you never open.'],
       i: ['手機記下每次推薦了什麼、你點了哪個；常被跳過的同類（同一聯盟、球隊、產業、市場）分數變低，常點的變高，30 天後慢慢淡掉。', 'The phone notes what each list of picks showed and what you opened; the kinds you pass over (a league, a team, a sector, a market) score lower, those you open higher, fading over 30 days.'],
-      r: ['Sports 的今日推薦和 Securities 的為你推薦越用越懂你，而且資料不離開手機。', 'Sports’ 今日推薦 and Securities’ 為你推薦 get to know you, and nothing leaves the phone.'],
+      r: ['Sports 的今日推薦和 Securities 的為你推薦越用越懂你，而且資料不離開手機。', 'Sports’ Today’s picks and Securities’ For you get to know you, and nothing leaves the phone.'],
       tech: ['kit feedback.mjs：每個 App 最多記 400 項，分數乘上 0.5 到 1.6，半衰期 30 天。', 'kit feedback.mjs: up to 400 items per app, a score times 0.5 to 1.6, a 30-day half-life.'],
       links: ['sports-picks']
     }),
@@ -203,7 +203,7 @@ const cloud = n('cloud', 'cloud', ['雲端小幫手', 'The helper in the cloud']
       links: ['sports-push', 'class-swap']
     }),
     n('cloud-relay', 'send', ['台灣的 AI 中繼站', 'The AI relay in Taiwan'], ['固定在台灣的機房', 'Pinned to a Taiwan data centre'], {
-      p: ['Gemini 不接受香港機房的請求，有些縣市法規網站和人事行政總處只接受台灣的連線。可是如果整個代理都固定在台灣，Yahoo 會擋 16 次中的 11 次。', 'Gemini refuses Hong Kong, and some county law sites and 人事行政總處 answer only Taiwan; yet pinning the whole proxy to Taiwan made Yahoo refuse 11 of 16 reads.'],
+      p: ['Gemini 不接受香港機房的請求，有些縣市法規網站和人事行政總處只接受台灣的連線。可是如果整個代理都固定在台灣，Yahoo 會擋 16 次中的 11 次。', 'Gemini refuses Hong Kong, and some county law sites and the DGPA answer only Taiwan; yet pinning the whole proxy to Taiwan made Yahoo refuse 11 of 16 reads.'],
       i: ['另外做一個只固定在台灣的小中繼站，沒有公開網址，只有代理叫得到它。', 'A separate small relay pinned to Taiwan, with no public address: only the proxy can call it.'],
       r: ['兩邊都能用：AI 和台灣網站走台灣，其他的走最近的機房。', 'Both work: AI and Taiwan-only sites through Taiwan, everything else from the nearest place.'],
       tech: ['gemini-relay.js（wrangler.gemini.toml placement gcp:asia-east1）；service binding GEMINI_RELAY。', 'gemini-relay.js (wrangler.gemini.toml placement gcp:asia-east1); service binding GEMINI_RELAY.'],
