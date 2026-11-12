@@ -35,6 +35,7 @@ export function openDemo(app, title) {
   let accent = '';
   let fade = 0;
   let moving = false; // (the step's tap is in, its next step on the way)
+  let unhands = null; // (stops noticing the reader's own touches and scrolls, the step's)
 
   const body = h('div', { class: 'sc-player-body' });
   const stage = h('div', { class: 'sc-player-stage' });
@@ -249,12 +250,20 @@ export function openDemo(app, title) {
       doc.body.append(ring);
     }
     // Light on the app: the target is looked up again only once it's gone,
-    // the ring moved only when the target has, and a target off screen is
-    // brought into view once a step (never pulled back while the reader scrolls).
+    // the ring moved only when the target has, and a target off screen (or
+    // under something) is brought into view, looked at again every 0.7 s
+    // (the app may still be laying out), until the reader touches or scrolls
+    // the app themselves: never pulled back while they scroll.
     let el = null;
     let last = '';
     let shown = false;
-    let brought = false;
+    let brought = 0;
+    let touched = false;
+    unhands?.();
+    const hands = () => (touched = true);
+    const opts = { capture: true, passive: true };
+    for (const ev of ['pointerdown', 'wheel', 'touchstart', 'keydown']) doc.addEventListener(ev, hands, opts);
+    unhands = () => ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => doc.removeEventListener(ev, hands, opts));
     const loop = () => {
       if (!el?.isConnected || !el.getClientRects().length) el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length) || null;
       if (el) {
@@ -278,10 +287,16 @@ export function openDemo(app, title) {
             place(r);
           }
         }
-        // (Off screen, or under something of the app's own, such as its floating tab bar: a tap on the
-        // ring would land on that, so the target is brought to the middle, once a step.)
-        if (!brought && (r.bottom < 0 || r.top > frame.contentWindow.innerHeight || hidden(el, r))) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        brought = true;
+        // (Off screen, off the side of a row that scrolls, or under something of the app's own such as
+        // its floating tab bar: a tap on the ring would miss it, so the target is brought to the middle.)
+        const now = performance.now();
+        if (!touched && now - brought > 700) {
+          const win = frame.contentWindow;
+          const cx = r.left + r.width / 2;
+          const cy = r.top + r.height / 2;
+          if (cx < 0 || cx > win.innerWidth || cy < 0 || cy > win.innerHeight || hidden(el, r)) el.scrollIntoView({ block: 'center', inline: 'center', behavior: brought ? 'auto' : 'smooth' });
+          brought = now;
+        }
       } else if (shown) {
         shown = false;
         ring.hidden = true;
