@@ -56,11 +56,12 @@
   .sub { font-size: 15px; color: var(--label-2); }
   .chev { flex: none; width: 8px; height: 14px; color: var(--label-2); opacity: 0.6; }
   footer { margin-top: 48px; font-size: 13px; color: var(--label-2); }
-  @media (min-width: 900px) { h1 { font-size: 56px; } .line { font-size: 19px; } .sky { height: 280px; margin: -48px -120px 0; } }
 
   /* The sky: a little orbit, one planet per Orbit app, in its colour. */
   .sky { position: relative; height: 200px; margin: -24px -16px 0; }
   .sky svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  /* A wide screen: a bigger name and sky (after .sky: before it, .sky's own height won and the sky stayed small). */
+  @media (min-width: 900px) { h1 { font-size: 56px; } .line { font-size: 19px; } .sky { height: 280px; margin: -48px -120px 0; } }
   .ring { fill: none; stroke: var(--sep); stroke-width: 1; }
   .core { animation: breathe 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
   .stars { position: fixed; inset: 0; pointer-events: none; z-index: -1; display: none; }

@@ -121,3 +121,10 @@ test('the manifest counts the apps there are', () => {
   const { description } = JSON.parse(readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8'));
   assert.match(description, new RegExp(`的${words[APPS.length]}個 App`), `manifest: ${description}`);
 });
+
+test("Jay's homepage: the wide screen's bigger sky comes after the sky's own rule (before it, it never applied)", () => {
+  const page = readFileSync(new URL('../public/home/index.html', import.meta.url), 'utf8');
+  const base = page.indexOf('  .sky { position: relative; height: 200px;');
+  const wide = page.indexOf('@media (min-width: 900px) { h1 { font-size: 56px; }');
+  assert.ok(base > 0 && wide > base, 'the 900 px rule follows .sky');
+});
