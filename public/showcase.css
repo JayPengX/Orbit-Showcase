@@ -2593,7 +2593,20 @@ html.q-tabrail {
 }
 .sc-app-text strong {
   font: 600 16px/1.35 var(--q-font);
-  text-wrap: pretty;
+  text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+/* A narrow phone: 試玩 is its play mark alone (its name stays in aria-label), so the question has the room */
+@container page (max-width: 419px) {
+  .sc-app .sc-trypill {
+    width: 34px;
+    justify-content: center;
+    padding: 0;
+  }
+  .sc-app .sc-trypill-t {
+    display: none;
+  }
 }
 .sc-app-main:active {
   opacity: 0.6;
