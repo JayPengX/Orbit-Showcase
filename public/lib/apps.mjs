@@ -24,15 +24,12 @@ export const APPS = [
     id: 'transit', brand: 'transit', repo: 'Orbit-Transit', zh: true,
     q: ['怎麼去最實際？公車還要等多久？', 'What’s the practical way there, and how long for the bus?'],
     shots: [
-      ['transit/1', ['路線畫在 Google 地圖上', 'Your trip on Google Maps']],
-      ['transit/2', ['用說的查路線', 'Just say where you’re going']],
-      ['transit/3', ['最快的走法，一眼看懂', 'The fastest way, at a glance']],
-      ['transit/4', ['兩站之間每一班車', 'Every train between two stations']],
-      ['transit/5', ['公車還要等多久', 'How long until the bus']],
-      ['transit/6', ['YouBike 即時車位', 'YouBike docks, live']],
-      ['transit/7', ['車站即時班次', 'Live trains at the station']],
-      ['transit/8', ['捷運路網，照真的路線畫', 'Metro maps, true to the lines']],
-      ['transit/9', ['高鐵訂位一路帶到底', 'High-speed rail, booked through']]
+      ['transit/1', ['火車、公車、YouBike，一次排好', 'Train, bus and YouBike in one plan']],
+      ['transit/2', ['每個車站的下一班，即時', 'Every station’s next train, live']],
+      ['transit/3', ['兩站之間，每一班車', 'Every train between two stations']],
+      ['transit/4', ['公車還要等幾分鐘', 'Minutes until your bus']],
+      ['transit/5', ['YouBike 車位，即時', 'YouBike docks, live']],
+      ['transit/6', ['全台捷運，照真的路線畫', 'Every metro, drawn true to its lines']]
     ]
   },
   {
@@ -53,15 +50,11 @@ export const APPS = [
     id: 'class', brand: 'orbit', repo: 'Orbit-Class', zh: true,
     q: ['現在上什麼課？下一節去哪？', 'Which class is it now, and what’s next?'],
     shots: [
-      ['class/1', ['現在、下一節與剩餘時間', 'Now, next, and time left']],
-      ['class/2', ['跟著真的飛機專注', 'Focus on a real flight']],
-      ['class/3', ['用說的改課表，也能問課表', 'Change or ask your timetable in words']],
-      ['class/4', ['整週課表一眼看', 'Your whole week']],
-      ['class/5', ['每一節課的細節', 'Every class, in detail']],
-      ['class/6', ['調課幾秒完成', 'Swap a class in seconds']],
-      ['class/7', ['拍下課表，AI 幫你讀', 'Snap it, AI reads it']],
-      ['class/8', ['課表加到手機行事曆', 'Your timetable in your calendar']],
-      ['class/9', ['今天的課與倒數', 'Today’s classes and countdowns']]
+      ['class/1', ['現在上什麼、還剩幾分鐘', 'What’s on now, and how long is left']],
+      ['class/2', ['整週課表，單雙週都對', 'Your whole week, odd and even weeks']],
+      ['class/3', ['待辦與考試倒數', 'To-dos and exam countdowns']],
+      ['class/4', ['調課，幾秒完成', 'Swap a class in seconds']],
+      ['class/5', ['跟著一班真的飛機專注', 'Focus along a real flight']]
     ],
     now: 'class/1',
     then: ['then-class', ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use']]
