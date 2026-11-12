@@ -225,6 +225,11 @@ export function openDemo(app, title) {
     coach.style.setProperty('--tip', `${Math.max(18, Math.min(bw - 18, cx - left))}px`);
   }
 
+  // Whether what's at the target's middle is something else laid over it (the ring itself lets taps through).
+  function hidden(el, r) {
+    const top = frame.contentDocument.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return Boolean(top) && top !== el && !el.contains(top) && !top.contains(el);
+  }
   // The ring around the step's target, inside the app, kept on it while it moves.
   function track() {
     cancelAnimationFrame(watch);
@@ -273,7 +278,9 @@ export function openDemo(app, title) {
             place(r);
           }
         }
-        if (!brought && (r.bottom < 0 || r.top > frame.contentWindow.innerHeight)) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        // (Off screen, or under something of the app's own, such as its floating tab bar: a tap on the
+        // ring would land on that, so the target is brought to the middle, once a step.)
+        if (!brought && (r.bottom < 0 || r.top > frame.contentWindow.innerHeight || hidden(el, r))) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
         brought = true;
       } else if (shown) {
         shown = false;
