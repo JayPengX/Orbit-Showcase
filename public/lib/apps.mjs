@@ -43,7 +43,7 @@ export const APPS = [
       ['weather/2', ['直接問：明天會下雨嗎？', 'Just ask: will it rain tomorrow?']],
       ['weather/3', ['未來十天，哪天會下雨', 'Which of the next ten days it rains']],
       ['weather/4', ['每小時的溫度與降雨', 'Every hour’s temperature and rain']],
-      ['weather/5', ['穿什麼、帶不帶傘，直接說', 'What to wear, whether to take an umbrella']],
+      ['weather/5', ['穿什麼、帶不帶傘，直接說', 'What to wear, umbrella or not']],
       ['weather/6', ['家、學校，每個地點都顧到', 'Home, school, every place you keep']]
     ],
     now: 'weather/1',
@@ -71,7 +71,7 @@ export const APPS = [
     q: ['這個月的錢花到哪裡去了？', 'Where did this month’s money go?'],
     shots: [
       ['money/1', ['一整個月，花多少一眼看', 'Your month, at a glance']],
-      ['money/2', ['幾秒記一筆，分類自動猜好', 'Log in seconds, the category already guessed']],
+      ['money/2', ['幾秒記一筆，分類自動猜好', 'Log in seconds, category guessed']],
       ['money/3', ['錢花到哪裡，一圈看懂', 'Where the money went']],
       ['money/4', ['銀行、信用卡、悠遊卡，全都管', 'Banks, cards and EasyCard, all in one']],
       ['money/5', ['問你的帳，答案畫成圖', 'Ask your books, see the answer']]
@@ -107,7 +107,7 @@ export const APPS = [
     id: 'beats', brand: 'beats', repo: 'Orbit-Beats', zh: true,
     q: ['來點好聽、不會重複的音樂', 'Something good to hear that never repeats'],
     shots: [
-      ['beats/1', ['手機現做的音樂，首首不重複', 'Music made on your phone, never repeated']],
+      ['beats/1', ['手機現做的音樂，首首不重複', 'Endless music, made on your phone']],
       ['beats/2', ['49 種曲風，說想聽什麼就換', '49 styles: say what you want to hear']],
       ['beats/3', ['用你的素材，做成整首歌', 'Your own sounds, made into songs']],
       ['beats/4', ['在樂器室做節拍', 'Make beats in the studio']],
@@ -137,8 +137,8 @@ export const APPS = [
       ['securities/1', ['你的總資產，一眼看', 'Everything you own, at a glance']],
       ['securities/2', ['真實報價與 K 線', 'Real prices, real charts']],
       ['securities/3', ['全世界的市場，一個帳戶買', 'Every market, one account']],
-      ['securities/4', ['市價、限價、停損，像真的券商', 'Market, limit and stop orders, like a real broker']],
-      ['securities/5', ['當沖、權證、期貨，資格都照真的', 'Day trading and warrants, by the real rules']],
+      ['securities/4', ['市價、限價、停損，像真的券商', 'Market, limit and stop orders']],
+      ['securities/5', ['當沖、權證、期貨，資格都照真的', 'Day trading and warrants, real rules']],
       ['securities/6', ['換匯照銀行牌價', 'Exchange at the bank’s rates']]
     ],
     now: 'securities/1',
