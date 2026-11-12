@@ -14,9 +14,19 @@ export function wordsOf(text) {
     if (run.length === 1) out.add(run);
     for (let i = 0; i < run.length - 1; i++) out.add(run.slice(i, i + 2));
   }
-  for (const w of s.match(/[a-z][a-z0-9]+/g) || []) out.add(w.replace(/(ies|es|s)$/, w.endsWith('ies') ? 'y' : ''));
   for (const w of [...out]) if (STOP.has(w)) out.delete(w);
+  for (const w of s.match(/[a-z][a-z0-9]+/g) || []) if (!STOP.has(w)) out.add(stem(w));
   return out;
+}
+// One form for a word and its plural, the same on both sides (it cut every
+// -es, so times/phones/games never met time/phone/game, 11-12): stories → story,
+// buses/classes/matches → bus/class/match, then a last -s and -e go (times,
+// time → tim; class, bus, status keep theirs).
+function stem(w) {
+  if (w.length > 4 && w.endsWith('ies')) return w.slice(0, -3) + 'y';
+  if (/(ss|sh|ch|x|z|us)es$/.test(w)) return w.slice(0, -2);
+  if (/[^su]s$/.test(w)) w = w.slice(0, -1);
+  return w.length > 2 && w.endsWith('e') ? w.slice(0, -1) : w;
 }
 
 // A card as the AI reads it: { id, title, text } (problem, idea, result; no technical names).
