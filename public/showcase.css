@@ -162,6 +162,9 @@
   font: 700 17px/1.3 var(--q-font);
   letter-spacing: -0.01em;
   text-wrap: balance;
+  /* Chinese breaks only at its punctuation and spaces (法案 never split). */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
 }
 .sc-ad-screen {
