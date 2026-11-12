@@ -57,7 +57,8 @@ function top(stats) {
   const days = stats ? daysBetween(stats.first, twToday(Date.parse(stats.at))) + 1 : null;
   const figs = stats
     ? [
-        [stats.apps, ['個 App', 'apps']],
+        // (The apps are the list's, as the headline counts them: stats.json was 9 before News.)
+        [Math.max(stats.apps, APPS.length), ['個 App', 'apps']],
         [days, ['天', 'days']],
         [stats.commits, ['次更新', 'updates']],
         [stats.tests, ['個自動檢查', 'automatic checks']]
@@ -91,6 +92,10 @@ function top(stats) {
 }
 
 // ---- 1. The ten apps: each one's question, its page, its demo ----
+// A question breaks after its own commas (with keep-all in the CSS), never
+// mid-word (「今晚有什 / 麼比賽」 at 320 in Safari).
+const phrased = s => s.replace(/([，、？；])(?=.)/g, '$1\u200b');
+
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
     head(['十個 App，|各回答一個問題', 'Ten apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
@@ -101,12 +106,12 @@ function apps() {
         h('li', { class: 'sc-app', 'data-brand': a.brand }, [
           h('a', { class: 'sc-app-main', href: `#apps/${a.id}` }, [
             appImg(a.brand, 48),
-            h('span', { class: 'sc-app-text' }, [h('small', {}, [appName(a), ico('chevron', 'sc-app-chev')]), h('strong', { text: t(a.q) })])
+            h('span', { class: 'sc-app-text' }, [h('small', {}, [appName(a), ico('chevron', 'sc-app-chev')]), h('strong', { text: phrased(t(a.q)) })])
           ]),
           hasDemo(a.id)
             ? h('button', { class: 'sc-trypill', type: 'button', 'aria-label': `${t(['試玩', 'Try'])} ${appTitle(a)}`, onclick: () => tryApp(a) }, [
                 ico('play'),
-                h('span', { text: t(['試玩', 'Try']) })
+                h('span', { class: 'sc-trypill-t', text: t(['試玩', 'Try']) })
               ])
             : null
         ])
