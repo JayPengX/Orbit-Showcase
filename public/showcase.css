@@ -2678,6 +2678,15 @@ html.q-tabrail {
   color: var(--q-label-2);
   font: 500 12px/1.2 var(--q-font);
 }
+.sc-wow-name {
+  white-space: nowrap;
+}
+/* (A narrow page: the app's own name, its icon beside it says Orbit: 「Orbit / Weather」 ran to two lines at 320.) */
+@container page (max-width: 379px) {
+  .sc-wow-orbit {
+    display: none;
+  }
+}
 .sc-wow-chev {
   margin-left: auto;
   color: var(--q-label-3);

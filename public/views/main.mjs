@@ -25,7 +25,8 @@ const appName = a => appTitle(a).replace(/^Orbit /, '');
 export const tryApp = a => openDemo(a, appTitle(a));
 
 // A chapter's head: its title and one plain line under it.
-const head = (title, line) => h('header', { class: 'sc-sechead' }, [h('h2', { text: t(title) }), line ? h('p', { text: t(line) }) : null]);
+// (A title breaks only between its |-marked phrases, as the headline does: at 320 「十個 App，各 / 回答一個問題」 split mid-phrase.)
+const head = (title, sub) => h('header', { class: 'sc-sechead' }, [h('h2', {}, [line(title)]), sub ? h('p', { text: t(sub) }) : null]);
 
 // ---- The top: what it is, in one look ----
 // Three real screens fanned out (each app's first screenshot, in the page's
@@ -92,7 +93,7 @@ function top(stats) {
 // ---- 1. The ten apps: each one's question, its page, its demo ----
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
-    head(['十個 App，各回答一個問題', 'Ten apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
+    head(['十個 App，|各回答一個問題', 'Ten apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
     h(
       'ul',
       { class: 'sc-applist' },
@@ -136,7 +137,7 @@ function wow() {
         return h('button', { class: 'sc-wowcard', type: 'button', onclick: () => openCard(w.id) }, [
           h('strong', { class: 'sc-wow-fig', text: t(w.fig) }),
           h('span', { class: 'sc-wow-say', text: t(w.say) }),
-          h('span', { class: 'sc-wow-from' }, [appImg(a?.brand || null, 20), h('span', { text: a ? appTitle(a) : t(['整個 Orbit', 'All of Orbit']) }), ico('chevron', 'sc-wow-chev')])
+          h('span', { class: 'sc-wow-from' }, [appImg(a?.brand || null, 20), h('span', { class: 'sc-wow-name' }, a ? [h('span', { class: 'sc-wow-orbit', text: 'Orbit ' }), appName(a)] : [t(['整個 Orbit', 'All of Orbit'])]), ico('chevron', 'sc-wow-chev')])
         ]);
       })
     )

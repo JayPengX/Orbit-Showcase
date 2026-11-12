@@ -31,6 +31,12 @@ test('at 320 the phone demo label fits beside 即時 and ↻', async t => {
     await page.setContent(home.replace(/<script[\s\S]*?<\/script>/g, ''));
     const split = await page.evaluate(() => { const nb = document.querySelector('.nb'); return nb.getClientRects().length; });
     assert.equal(split, 1, '法律⋯⋯ on one line');
+    // 亮點's card foot: on a narrow page the app's own name (「Orbit / Weather」 ran to two lines at 320).
+    for (const [w, shown] of [[320, false], [700, true]]) {
+      await page.setViewportSize({ width: w, height: 700 });
+      await page.setContent(`<style>${css}</style><main class="page"><span class="sc-wow-from"><span class="sc-wow-name"><span class="sc-wow-orbit">Orbit </span>Weather</span></span></main>`);
+      assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.sc-wow-orbit')).display !== 'none'), shown, `${w}: Orbit shown ${!shown}`);
+    }
   } finally {
     await browser.close();
   }
