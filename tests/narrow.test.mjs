@@ -31,6 +31,10 @@ test('at 320 the phone demo label fits beside 即時 and ↻', async t => {
     await page.setContent(home.replace(/<script[\s\S]*?<\/script>/g, ''));
     const split = await page.evaluate(() => { const nb = document.querySelector('.nb'); return nb.getClientRects().length; });
     assert.equal(split, 1, '法律⋯⋯ on one line');
+    // 整個系統's branch rail: the family mark and every branch on one row (eleven of them now).
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.setContent(`<style>${css}</style><main class="page" style="padding:0 16px"><nav class="sc-rail">${'<button class="sc-rail-b">●</button>'.repeat(11)}</nav></main>`);
+    assert.equal(await page.evaluate(() => new Set([...document.querySelectorAll('.sc-rail-b')].map(b => Math.round(b.getBoundingClientRect().top))).size), 1, 'the rail on one row');
     // 亮點's card foot: on a narrow page the app's own name (「Orbit / Weather」 ran to two lines at 320).
     for (const [w, shown] of [[320, false], [700, true]]) {
       await page.setViewportSize({ width: w, height: 700 });
