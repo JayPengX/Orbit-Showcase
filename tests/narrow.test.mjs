@@ -35,6 +35,14 @@ test('at 320 the phone demo label fits beside 即時 and ↻', async t => {
     await page.setViewportSize({ width: 320, height: 700 });
     await page.setContent(`<style>${css}</style><main class="page" style="padding:0 16px"><nav class="sc-rail">${'<button class="sc-rail-b">●</button>'.repeat(11)}</nav></main>`);
     assert.equal(await page.evaluate(() => new Set([...document.querySelectorAll('.sc-rail-b')].map(b => Math.round(b.getBoundingClientRect().top))).size), 1, 'the rail on one row');
+    // Stuck while the rows scroll, it sits under the bar's row that stays, not behind it (11-12).
+    for (const w of [390, 700]) {
+      await page.setViewportSize({ width: w, height: 700 });
+      await page.setContent(`<style>${css}</style><header class="sc-bar"><div class="sc-bar-brand" style="height:var(--sc-bar-row)">Orbit</div><div class="sc-bar-sub">整個系統</div></header><main class="page"><nav class="sc-rail">${'<button class="sc-rail-b">●</button>'.repeat(11)}</nav><div style="height:3000px"></div></main>`);
+      await page.evaluate(() => scrollTo(0, 1500));
+      const r = await page.evaluate(() => ({ bar: document.querySelector('.sc-bar').getBoundingClientRect().bottom, rail: document.querySelector('.sc-rail-b').getBoundingClientRect().top }));
+      assert.ok(r.rail >= r.bar, `${w}: the rail's buttons at ${r.rail}, the bar ends at ${r.bar}`);
+    }
     // Ten apps in rows of three on a wide page: the tenth takes its row whole.
     await page.setViewportSize({ width: 1100, height: 800 });
     await page.setContent(`<style>${css}</style><main class="page"><ul class="sc-applist">${'<li class="sc-app"><a class="sc-app-main"><span class="sc-app-text"><strong>q</strong></span></a><button class="sc-trypill">試玩</button></li>'.repeat(10)}</ul></main>`);
