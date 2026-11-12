@@ -16,3 +16,11 @@ test('ask: a card as the AI reads it holds no technical names', () => {
   assert.ok(!/orbit\.css|import map|\.mjs/.test(c.text));
   assert.ok(wordsOf('AI 做了什麼').has('ai'));
 });
+
+test('ask: a plural meets its singular, the same form on both sides', () => {
+  const one = w => [...wordsOf(w)][0];
+  for (const [a, b] of [['buses', 'bus'], ['stories', 'story'], ['times', 'time'], ['phones', 'phone'], ['games', 'game'], ['classes', 'class'], ['matches', 'match'], ['statuses', 'status']]) assert.equal(one(a), one(b), `${a} / ${b}`);
+  assert.equal(wordsOf('what was it').size, 0);
+  assert.ok(wordsOf('單').has('單'));
+  assert.equal(cardsFor('how do the buses work', { en: true })[0].id.startsWith('transit'), true);
+});
