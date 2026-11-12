@@ -33,7 +33,7 @@ let openSheet = null;
 let anchor = null; // the key of the button just tapped, kept where it was through the redraw
 
 // Each top branch its own colour, carried down to everything under it.
-const HUE = { apps: 'var(--q-orange)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
+const HUE = { apps: 'var(--q-orange)', ai: 'var(--q-purple)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
 const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
 const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
 const icon = (node, size = 30) => (BRAND[node.id] ? appImg(BRAND[node.id], size) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]));
