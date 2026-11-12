@@ -516,10 +516,11 @@
   animation: sc-fade 260ms ease-out;
 }
 /* The strip stays at the top while the rows scroll, so another branch is
-   always one tap away. */
+   always one tap away: under the bar's row that stays (it stuck at 0, behind
+   the bar, on a phone and a tablet, 11-12). */
 .sc-rail {
   position: sticky;
-  top: 0;
+  top: var(--sc-stick);
   z-index: 4;
   display: grid;
   /* One row however many branches (it was ten columns; with Orbit AI's the last went alone to a second row, 11-12). */
@@ -527,7 +528,7 @@
   grid-auto-columns: minmax(0, 1fr);
   gap: 4px;
   margin: 0 -8px;
-  padding: calc(8px + env(safe-area-inset-top, 0px)) 8px 8px;
+  padding: 8px;
   background: color-mix(in srgb, var(--q-page) 86%, transparent);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
