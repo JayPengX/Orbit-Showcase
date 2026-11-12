@@ -2632,6 +2632,22 @@ html.q-tabrail {
     align-self: flex-start;
     margin: 0 18px 18px;
   }
+  /* (Ten in rows of three: the last, alone on its row, takes the whole row laid out as a phone's row, as the tree's tenth branch does; it stood alone in a third of the width, 11-12.) */
+  .sc-app:last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+  }
+  .sc-app:last-child:nth-child(3n + 1) .sc-app-main {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    padding: 18px;
+  }
+  .sc-app:last-child:nth-child(3n + 1) .sc-trypill {
+    align-self: center;
+    margin: 0 18px 0 0;
+  }
 }
 
 /* ---- 2. Things people don't expect ---- */

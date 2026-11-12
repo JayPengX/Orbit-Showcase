@@ -35,6 +35,11 @@ test('at 320 the phone demo label fits beside 即時 and ↻', async t => {
     await page.setViewportSize({ width: 320, height: 700 });
     await page.setContent(`<style>${css}</style><main class="page" style="padding:0 16px"><nav class="sc-rail">${'<button class="sc-rail-b">●</button>'.repeat(11)}</nav></main>`);
     assert.equal(await page.evaluate(() => new Set([...document.querySelectorAll('.sc-rail-b')].map(b => Math.round(b.getBoundingClientRect().top))).size), 1, 'the rail on one row');
+    // Ten apps in rows of three on a wide page: the tenth takes its row whole.
+    await page.setViewportSize({ width: 1100, height: 800 });
+    await page.setContent(`<style>${css}</style><main class="page"><ul class="sc-applist">${'<li class="sc-app"><a class="sc-app-main"><span class="sc-app-text"><strong>q</strong></span></a><button class="sc-trypill">試玩</button></li>'.repeat(10)}</ul></main>`);
+    const widths = await page.evaluate(() => [...document.querySelectorAll('.sc-app')].map(e => Math.round(e.getBoundingClientRect().width)));
+    assert.ok(widths[9] > widths[0] * 2.5, `the last ${widths[9]} beside the others ${widths[0]}`);
     // 亮點's card foot: on a narrow page the app's own name (「Orbit / Weather」 ran to two lines at 320).
     for (const [w, shown] of [[320, false], [700, true]]) {
       await page.setViewportSize({ width: w, height: 700 });
