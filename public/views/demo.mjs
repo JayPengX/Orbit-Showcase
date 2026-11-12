@@ -72,14 +72,16 @@ export function openDemo(app, title) {
   // The phone's back gesture: the app goes back inside itself first; once
   // there is nothing left, back leaves the demo.
   const popped = () => open && close();
-  const recorded = t(demo.real ? ['試玩 · 錄下那一刻的真實資料', 'Demo · real data, as recorded'] : ['試玩 · 範例資料，什麼都不會存', 'Demo · sample data, nothing kept']);
+  // (A phone's slim head has room for a short line beside 即時 and ↻: the long one was cut with … at 320, 11-12.)
+  const L = (long, short) => t(full ? short : long);
+  const recorded = demo.real ? L(['試玩 · 錄下那一刻的真實資料', 'Demo · real data, as recorded'], ['錄下的真實資料', 'Recorded real data']) : L(['試玩 · 範例資料，什麼都不會存', 'Demo · sample data, nothing kept'], ['範例資料，不會存', 'Sample data, not kept']);
   const label = h('small', { text: recorded });
   // (the sandbox says whether the live data came: past its limits it plays the recording)
   const heard = e => {
     if (e.source !== frame?.contentWindow || e.data?.scDemo !== 'live' || !liveOn || resting) return;
-    if (e.data.ok) return void (label.textContent = t(['即時 · 現在的真實資料，什麼都不會存', 'Live · today’s real data, nothing kept']));
+    if (e.data.ok) return void (label.textContent = L(['即時 · 現在的真實資料，什麼都不會存', 'Live · today’s real data, nothing kept'], ['真實資料，不會存', 'Real data, not kept']));
     resting = true;
-    label.textContent = t(['即時資料休息中 · 先播錄好的', 'Live data is resting · playing the recording']);
+    label.textContent = L(['即時資料休息中 · 先播錄好的', 'Live data is resting · playing the recording'], ['休息中，播錄好的', 'Resting: recording']);
     freeSay.textContent = t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']);
     load();
   };
@@ -109,7 +111,7 @@ export function openDemo(app, title) {
     resting = false;
     tour = liveOn ? [] : TOUR;
     liveBtn.setAttribute('aria-pressed', String(liveOn));
-    label.textContent = liveOn ? t(['即時 · 連線中…', 'Live · connecting…']) : recorded;
+    label.textContent = liveOn ? L(['即時 · 連線中…', 'Live · connecting…'], ['連線中…', 'Connecting…']) : recorded;
     freeSay.textContent = liveOn ? t(['現在的真實資料：每個分頁、每個按鈕都是真的 App，什麼都不會存。', 'Today’s real data: every tab and button is the real app, and nothing is kept.']) : t(['自由點點看：每個分頁、每個按鈕都是真的 App。', 'Tap around: every tab and button is the real app.']);
     if (!full) body.children[1]?.replaceWith(tour.length ? card : freeCard);
     at = -1;
