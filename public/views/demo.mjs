@@ -158,10 +158,13 @@ export function openDemo(app, title) {
     frame.addEventListener('load', () => {
       const doc = frame.contentDocument;
       if (!doc) return;
-      // A tap on the step's target moves the tour on.
+      // A tap on the step's target moves the tour on (never on its loading placeholder: tapping
+      // a grey card does nothing in the app, and the next step would wait for a page never opened).
       const onTap = e => {
         const s = tour[at];
-        if (s?.tap && !moving && e.target.closest?.(s.tap)) {
+        const hit = s?.tap ? e.target.closest?.(s.tap) : null;
+        if (s?.tap && !moving && hit && !real(hit)) return;
+        if (s?.tap && !moving && hit) {
           moving = true;
           coach.hidden = true;
           if (ring) ring.hidden = true;
@@ -227,6 +230,9 @@ export function openDemo(app, title) {
   }
 
   // Whether what's at the target's middle is something else laid over it (the ring itself lets taps through).
+  // (A target still a loading placeholder, the kit's .q-skel, isn't the thing yet.)
+  const real = el => !el.closest('.q-skel');
+
   function hidden(el, r) {
     const top = frame.contentDocument.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
     return Boolean(top) && top !== el && !el.contains(top) && !top.contains(el);
@@ -265,7 +271,7 @@ export function openDemo(app, title) {
     for (const ev of ['pointerdown', 'wheel', 'touchstart', 'keydown']) doc.addEventListener(ev, hands, opts);
     unhands = () => ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => doc.removeEventListener(ev, hands, opts));
     const loop = () => {
-      if (!el?.isConnected || !el.getClientRects().length) el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length) || null;
+      if (!el?.isConnected || !el.getClientRects().length) el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length && real(x)) || null;
       if (el) {
         // A sheet sits in the top layer, over anything in the page: the ring goes in with it.
         const home = el.closest('dialog[open], [popover]') || doc.body;
