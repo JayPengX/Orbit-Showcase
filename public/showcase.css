@@ -424,11 +424,15 @@
     line-height: 1;
   }
 }
-/* The tree at a glance: nine branches, each naming what's inside. */
+/* The tree at a glance: ten branches, each naming what's inside. */
 .sc-ov {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+/* (A last branch alone on its row takes the whole row, not a third of it.) */
+.sc-ov-b:last-child:nth-child(3n + 1) {
+  grid-column: 1 / -1;
 }
 .sc-ov-b {
   position: relative;
