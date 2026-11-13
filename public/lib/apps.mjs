@@ -16,7 +16,7 @@ export const APPS = [
       ['sports/3', ['每場比賽在哪一台播，一次看', 'Every game, and the channel it’s on']],
       ['sports/4', ['勝率走勢與關鍵時刻', 'How the game swung, and when']],
       ['sports/5', ['積分榜與爭冠形勢', 'The table and the title race']],
-      ['sports/6', ['每位球員的完整生涯', 'Every player’s whole career']],
+      ['sports/6', ['每位球員的數據，一頁看完', 'Every player’s numbers on one page']],
       ['sports/7', ['F1 每一站，倒數到起跑', 'Every F1 weekend, counted down']]
     ]
   },
@@ -37,11 +37,10 @@ export const APPS = [
     q: ['今天要不要帶傘？', 'Do I need an umbrella today?'],
     shots: [
       ['weather/1', ['你所在的鄉鎮，天氣一眼看完', 'Your township’s weather, in one look']],
-      ['weather/2', ['直接問：明天會下雨嗎？', 'Just ask: will it rain tomorrow?']],
-      ['weather/3', ['未來十天，哪天會下雨', 'Which of the next ten days it rains']],
-      ['weather/4', ['每小時的溫度與降雨', 'Every hour’s temperature and rain']],
-      ['weather/5', ['穿什麼、帶不帶傘，直接說', 'What to wear, umbrella or not']],
-      ['weather/6', ['家、學校，每個地點都顧到', 'Home, school, every place you keep']]
+      ['weather/2', ['未來十天，哪天會下雨', 'Which of the next ten days it rains']],
+      ['weather/3', ['每小時的溫度與降雨', 'Every hour’s temperature and rain']],
+      ['weather/4', ['穿什麼、帶不帶傘，直接說', 'What to wear, umbrella or not']],
+      ['weather/5', ['空氣品質，每小時都看得到', 'Air quality, hour by hour']]
     ],
     now: 'weather/1',
     then: ['then-weather', ['第一天：一個簡單的預報頁（這張截圖的位置是伺服器所在地）', 'Day one: a simple forecast page (placed where the screenshot server is)']]
@@ -52,7 +51,7 @@ export const APPS = [
     shots: [
       ['class/1', ['現在上什麼、還剩幾分鐘', 'What’s on now, and how long is left']],
       ['class/2', ['整週課表，單雙週都對', 'Your whole week, odd and even weeks']],
-      ['class/3', ['待辦與考試倒數', 'To-dos and exam countdowns']],
+      ['class/3', ['考前讀書計畫，照範圍排好', 'A study plan for every exam']],
       ['class/4', ['調課，幾秒完成', 'Swap a class in seconds']],
       ['class/5', ['跟著一班真的飛機專注', 'Focus along a real flight']]
     ],
@@ -78,7 +77,7 @@ export const APPS = [
       ['news/2', ['同一件事，偏綠、中間、偏藍怎麼下標', 'One story, each side’s headline']],
       ['news/3', ['只有一邊在報的新聞', 'The stories only one side carries']],
       ['news/4', ['國際大事，台灣媒體怎麼報', 'World news, and how Taiwan reports it']],
-      ['news/5', ['81 家媒體，立場都有出處', '81 outlets, each place sourced']],
+      ['news/5', ['122 家媒體，立場都有出處', '122 outlets, each place sourced']],
       ['news/6', ['14 個主題，照重要程度排', '14 topics, ranked by importance']]
     ]
   },
@@ -87,11 +86,10 @@ export const APPS = [
     q: ['今天該背哪些字，才記得住？', 'Which words today, so they stick?'],
     shots: [
       ['words/1', ['今天該背的字，一打開就知道', 'Today’s words, the moment you open it']],
-      ['words/2', ['答錯馬上知道為什麼', 'Wrong? See why, right away']],
+      ['words/2', ['每題答完，整個字馬上看懂', 'Each answer shows you the whole word']],
       ['words/3', ['6,169 個大考單字，真人發音', '6,169 exam words, each in a real voice']],
       ['words/4', ['8 種練習方式，記得更牢', '8 ways to practise']],
-      ['words/5', ['搞混過的字，自動排進複習', 'The words you mix up come back for review']],
-      ['words/6', ['用新學的字跟 AI 聊天', 'Chat with AI using new words']]
+      ['words/5', ['搞混過的字，下次直接提醒你', 'Your mix-ups, shown to you next time']]
     ],
     now: 'words/1',
     then: ['then-words', ['第一天：高中英文參考詞彙表 Level 4–6', 'Day one: the high-school word list, Levels 4–6']]
@@ -102,12 +100,12 @@ export const APPS = [
     shots: [
       ['beats/1', ['手機現做的音樂，首首不重複', 'Endless music, made on your phone']],
       ['beats/2', ['49 種曲風，說想聽什麼就換', '49 styles: say what you want to hear']],
-      ['beats/3', ['用你的素材，做成整首歌', 'Your own sounds, made into songs']],
+      ['beats/3', ['喜歡就收藏，首首都有封面', 'Keep favorites, each with its own cover']],
       ['beats/4', ['在樂器室做節拍', 'Make beats in the studio']],
       ['beats/5', ['打擊墊，隨手即興', 'Jam on the pads']],
       ['beats/6', ['每首歌都能玩節奏遊戲', 'A rhythm game for any song']]
     ],
-    now: 'beats/3',
+    now: 'beats/1',
     then: ['then-beats', ['第一天叫 Passion Beats：用錄音切成的節拍做歌', 'Day one was Passion Beats: songs from a recording cut into beats']]
   },
   {
@@ -116,8 +114,8 @@ export const APPS = [
     shots: [
       ['law/1', ['法律、判決、法案，一個 App 全包', 'Laws, rulings and bills, all in one app']],
       ['law/2', ['5.4 萬部法規，中央到地方', '54,000 laws and rules, national to local']],
-      ['law/3', ['每一條都連到判決、修法和引用', 'Every article linked to its rulings and bills']],
-      ['law/4', ['4.7 萬則判決，大法官解釋全收', '47,000 rulings, every constitutional one']],
+      ['law/3', ['每部法律，連到修法、判決和釋憲', 'Every law linked to its bills and rulings']],
+      ['law/4', ['4.7 萬則判決，憲法法庭到各級法院', '47,000 rulings, from the top court down']],
       ['law/5', ['白話問，答案附上條文', 'Ask in plain words, every point cited']],
       ['law/6', ['立法院近 8 千案，走到哪一步', 'Nearly 8,000 bills, each one’s stage']],
       ['law/7', ['22 縣市議會和代表會，影音都在', 'Every council, down to the townships']]
@@ -131,8 +129,7 @@ export const APPS = [
       ['securities/2', ['真實報價與 K 線', 'Real prices, real charts']],
       ['securities/3', ['全世界的市場，一個帳戶買', 'Every market, one account']],
       ['securities/4', ['市價、限價、停損，像真的券商', 'Market, limit and stop orders']],
-      ['securities/5', ['當沖、權證、期貨，資格都照真的', 'Day trading and warrants, real rules']],
-      ['securities/6', ['換匯照銀行牌價', 'Exchange at the bank’s rates']]
+      ['securities/5', ['換匯照銀行牌價', 'Exchange at the bank’s rates']]
     ],
     now: 'securities/1',
     then: ['then-securities', ['第一天叫 Stock Study：開一個模擬帳戶', 'Day one was Stock Study: open a practice account']]
