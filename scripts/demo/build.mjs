@@ -35,9 +35,13 @@ const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'im
 // source with the demo's two changes, then built as its own deploy builds it.
 const kitSrc = join(mkdtempSync(join(tmpdir(), 'demo-kit-')), 'kit');
 cpSync(join(repos, 'Orbit-Core/kit'), kitSrc, { recursive: true, filter: p => !/\/(tests?|node_modules)(\/|$)|\.md$/.test(p) });
-// The demos run on the proxy's own addresses, wherever the showcase is served.
+// The demos run on the proxy's own addresses (workers.dev, as recorded), wherever the
+// showcase is served: the page counts as off the domain.
 const domain = join(kitSrc, 'domain.mjs');
-writeFileSync(domain, readFileSync(domain, 'utf8').replace(/^export const DOMAIN = '[^']*';/m, "export const DOMAIN = '';"));
+const domainSrc = readFileSync(domain, 'utf8');
+const offDomain = domainSrc.replace('const here = homes(DOMAIN, globalThis.location?.hostname);', "const here = homes(DOMAIN, 'demo.invalid');");
+if (offDomain === domainSrc) throw new Error('kit/domain.mjs changed: the demos need its `here` taken off the domain');
+writeFileSync(domain, offDomain);
 // No betting anywhere in the showcase (Jay): Money's help names the betting app beside Securities.
 const help = join(kitSrc, 'help.mjs');
 writeFileSync(help, readFileSync(help, 'utf8').replace('和 Securities、Longshot 的遊戲錢', '和 Securities 的遊戲錢').replace('play money in Securities and Longshot.', 'play money in Securities.'));
