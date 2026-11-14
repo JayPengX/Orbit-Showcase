@@ -97,7 +97,7 @@ function top(stats) {
 // ---- 1. The ten apps: each one's question, its page, its demo ----
 // A question breaks after its own commas (with keep-all in the CSS), never
 // mid-word (「今晚有什 / 麼比賽」 at 320 in Safari).
-const phrased = s => (en ? [s] : s.split(/(?<=[，、？；])(?=.)/).map(p => h('span', { class: 'sc-ph', text: p })));
+const phrased = s => (en ? [s] : s.split(/(?<=[，、？；：])(?=.)/).map(p => h('span', { class: 'sc-ph', text: p })));
 
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
@@ -131,10 +131,15 @@ function apps() {
 const WOW = [
   { id: 'weather-typhoon', app: 'weather', fig: '68', say: ['個颱風，教它算出放颱風假的機率', 'typhoons taught it the chance of a typhoon day off'] },
   { id: 'law-links', app: 'law', fig: ['約 99%', '~99%'], say: ['法條裡約 28,000 個「第幾條」，點了就到那一條', 'of the ~28,000 article numbers in the law open that very article'] },
-  { id: 'cheap', app: null, fig: 'NT$0', say: ['一個月：十個 App 背後的整套雲端，只付網域的錢', 'a month: the whole cloud behind all ten apps; only the domain is paid'] },
+  { id: 'transit-fast', app: 'transit', fig: ['快 2–5 倍', '2–5× faster'], say: ['規劃路線：台北從 7 到 10 秒，變成 1 到 2 秒', 'to plan a trip: Taipei went from 7–10 s to 1–2 s'] },
   { id: 'sports-push', app: 'sports', fig: ['約 2 分鐘', '~2 min'], say: ['比賽一結束，結果就送到手機，App 關著也一樣', 'after the final whistle, the result is on your phone, app closed or not'] },
+  { id: 'news-sides', app: 'news', fig: '118', say: ['家媒體，每一家偏哪邊都附研究出處', 'outlets, each one’s lean backed by a published source'] },
+  { id: 'class-flight', app: 'class', fig: ['25–90 分', '25–90 min'], say: ['專心讀書，跟著一架天上真的飛機，降落就是時間到', 'of study, flying with a real plane in the sky; it lands when time’s up'] },
   { id: 'words-memory', app: 'words', fig: '20', say: ['個字一天，挑的都是你快忘記的', 'words a day, each just as you’re about to forget it'] },
-  { id: 'beats-game', app: 'beats', fig: ['±45 毫秒', '±45 ms'], say: ['以內才算打中節拍：每首歌都是一關節奏遊戲', 'is how close a tap must land: every song is a rhythm-game level'] }
+  { id: 'money-photo', app: 'money', fig: ['1 張照片', '1 photo'], say: ['就是一筆帳：收據、發票、App 截圖都讀得懂', 'is one entry: receipts, invoices, app screenshots all read'] },
+  { id: 'securities', app: 'securities', fig: '9', say: ['種商品，照真實報價和真的券商規則買賣', 'kinds of investment, traded at real prices by a real broker’s rules'] },
+  { id: 'beats-game', app: 'beats', fig: ['±45 毫秒', '±45 ms'], say: ['以內才算打中節拍：每首歌都是一關節奏遊戲', 'is how close a tap must land: every song is a rhythm-game level'] },
+  { id: 'cheap', app: null, fig: 'NT$0', say: ['一個月：十個 App 背後的整套雲端，只付網域的錢', 'a month: the whole cloud behind all ten apps; only the domain is paid'] }
 ];
 const brandOf = a => BRANDS[a?.brand] || null;
 function wow() {
@@ -149,7 +154,7 @@ function wow() {
         return h('button', { class: `sc-wowcard${i === 0 ? ' big' : ''}`, type: 'button', style: b ? `--w-c:${b.color};--w-ink:${b.ink};--w-from:${b.from}` : '', onclick: () => openCard(w.id) }, [
           h('span', { class: 'sc-wow-from' }, [appImg(a?.brand || null, 22), h('span', { class: 'sc-wow-name' }, a ? [h('span', { class: 'sc-wow-orbit', text: 'Orbit ' }), appName(a)] : [t(['整個 Orbit', 'All of Orbit'])])]),
           h('strong', { class: 'sc-wow-fig', text: t(w.fig) }),
-          h('span', { class: 'sc-wow-say', text: t(w.say) }),
+          h('span', { class: 'sc-wow-say' }, phrased(t(w.say))),
           // (the big card: the rest of its card's numbers, beside the line)
           i === 0 && SHOW[w.id]?.nums?.length > 1
             ? h('span', { class: 'sc-wow-more' }, SHOW[w.id].nums.slice(1).map(([v, l]) => h('span', {}, [h('strong', { text: t(v) }), h('small', { text: t(l) })])))

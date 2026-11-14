@@ -184,6 +184,32 @@
   height: auto;
   border-radius: 25px 25px 0 0;
 }
+.sc-ad.dev-tablet {
+  flex-basis: min(76vw, 330px);
+  aspect-ratio: auto;
+}
+.sc-ad.dev-tablet .sc-ad-screen {
+  border-width: 7px;
+  border-radius: 22px 22px 0 0;
+}
+.sc-ad.dev-tablet .sc-ad-screen img {
+  border-radius: 15px 15px 0 0;
+}
+/* A computer's screen: whole, in the middle of its card, on a stand. */
+.sc-ad.dev-computer {
+  flex-basis: min(88vw, 560px);
+  aspect-ratio: auto;
+}
+.sc-ad.dev-computer .sc-ad-screen {
+  flex: none;
+  margin: auto 16px;
+  border: 7px solid #0b0b0f;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.5);
+}
+.sc-ad.dev-computer .sc-ad-screen img {
+  border-radius: 7px;
+}
 .sc-arrow {
   position: absolute;
   z-index: 3;
@@ -2756,6 +2782,12 @@ html.q-tabrail {
     box-shadow: var(--sc-edge), 0 10px 28px -12px color-mix(in srgb, var(--w-c) 45%, transparent);
   }
 }
+.sc-wowcard.big {
+  grid-column: span 2;
+}
+.sc-wowcard.big .sc-wow-fig {
+  font-size: clamp(48px, 17cqi, 72px);
+}
 .sc-wow-from {
   display: flex;
   align-items: center;
@@ -2775,7 +2807,7 @@ html.q-tabrail {
 .sc-wow-fig {
   margin-top: 6px;
   color: var(--w-c);
-  font: 300 clamp(26px, 8.6cqi, 38px) / 1.05 var(--nv-display, var(--q-font));
+  font: 300 clamp(24px, 8cqi, 38px) / 1.05 var(--nv-display, var(--q-font));
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -2811,20 +2843,14 @@ html.q-tabrail {
     padding: 18px 20px 16px;
   }
   .sc-wowcard.big {
-    grid-column: span 2;
-    grid-row: span 2;
-    justify-content: flex-end;
     padding: 24px 28px 22px;
     background: radial-gradient(90% 110% at 100% 0%, color-mix(in srgb, var(--w-c) 24%, transparent), transparent 64%), var(--nv-card, var(--sc-card));
   }
   .sc-wowcard.big .sc-wow-from {
-    position: absolute;
-    top: 22px;
-    left: 28px;
     font-size: 14px;
   }
   .sc-wowcard.big .sc-wow-fig {
-    font-size: clamp(96px, 16cqi, 168px);
+    font-size: clamp(72px, 10cqi, 112px);
     line-height: 0.95;
     letter-spacing: -0.04em;
   }

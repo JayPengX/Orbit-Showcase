@@ -664,7 +664,7 @@ const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞�
       p: ['自己判斷哪家媒體偏哪邊，很容易變成自己的偏見。', 'Judging each outlet’s lean ourselves would just be our own bias.'],
       i: ['台灣媒體照已發表的研究（例如台灣選舉與民主化調查），新的網路媒體照老闆和公開立場（標成較弱）；英文媒體照 AllSides，沒有的再看 Media Bias/Fact Check；中國官媒另外列。', 'Taiwan’s outlets by published research (such as TEDS), newer web outlets by owner and stated stance (marked weaker); English outlets by AllSides, else Media Bias/Fact Check; China’s state media apart.'],
       r: ['每家媒體的卡片都寫著為什麼放在那裡。', 'Every outlet’s card says why it sits where it does.'],
-      tech: ['Orbit-Core kit/news-outlets.mjs：OUTLETS（67 家）、BASIS（每個依據的出處）、藍綠和統獨兩條軸；沒有任何研究把一家媒體放在白色，所以只列新聞提到哪些政黨。', 'Orbit-Core kit/news-outlets.mjs: OUTLETS (67), BASIS (the source of each place), the green–blue and unification–independence axes; no study places an outlet as TPP-leaning, so stories list the parties their headlines name.']
+      tech: ['Orbit-Core kit/news-outlets.mjs：OUTLETS（118 家新聞媒體，另有 7 家體育）、BASIS（每個依據的出處）、藍綠和統獨兩條軸；沒有任何研究把一家媒體放在白色，所以只列新聞提到哪些政黨。', 'Orbit-Core kit/news-outlets.mjs: OUTLETS (118 news outlets, plus 7 sports), BASIS (the source of each place), the green–blue and unification–independence axes; no study places an outlet as TPP-leaning, so stories list the parties their headlines name.']
     }),
     n('news-stories', 'grid', ['依重要程度排，不是依時間', 'By importance, not by time'], ['大新聞留好幾週，一直長大', 'Big stories stay for weeks and grow'], {
       p: ['照時間排的新聞，大事一下就被小事蓋過去。', 'News sorted by time buries a big event under small ones.'],

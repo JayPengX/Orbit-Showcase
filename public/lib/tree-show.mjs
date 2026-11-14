@@ -564,7 +564,7 @@ const S = {
     flow: [['camera', ['拍收據、發票、截圖', 'Snap a receipt, invoice or screenshot']], ['search', ['發票 QR 手機先讀', 'Invoice QR read on the phone']], ['spark', ['其他的 AI 讀', 'AI reads the rest']], ['check', ['看一眼再存', 'Check, then save']]]
   },
   'news-sides': {
-    nums: [['67', ['家媒體都有位置', 'outlets placed']]],
+    nums: [['118', ['家媒體都有位置', 'outlets placed']]],
     flow: [['book', ['研究和公開評等', 'Research and ratings']], ['flag', ['偏綠、中間、偏藍', 'Green, centre, blue']], ['check', ['寫出為什麼', 'Says why']]]
   },
   'news-stories': {
