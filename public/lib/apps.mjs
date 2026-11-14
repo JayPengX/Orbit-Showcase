@@ -1,7 +1,7 @@
-// The App tab: each app's screens, the same six as its README (made-up data,
-// never anyone's own; light and dark mixed; about half sell the app's main
-// idea, half show its general look; framing only, never an edited screen),
-// `now`, the light one the day-one picture is compared with, what it is in
+// The App tab: each app's screens, the README's own six posters (shots/<app>/N.webp,
+// made by Orbit-Core tools/store-shots.mjs: real data, made-up accounts, light and
+// dark mixed, Chinese and English the same screen), `now`, the bare first screen
+// (shots/<app>/screen.webp) the day-one picture is compared with, what it is in
 // one line, the question it answers, its tree branch, and how it looked on its
 // first day where that first version still runs. `brand` is the kit's BRANDS
 // id, `repo` matches scripts/stats.mjs. In the family's order (Orbit-Core
@@ -14,11 +14,11 @@ export const APPS = [
       ['sports/1', ['你的比賽，一打開就看到', 'Your games, the moment you open it']],
       ['sports/2', ['台灣轉播的 15 項賽事，全在這', 'All 15 competitions on TV in Taiwan'], 'computer'],
       ['sports/3', ['每場比賽在哪一台播，一次看', 'Every game, and the channel it’s on']],
-      ['sports/4', ['勝率走勢與關鍵時刻', 'How the game swung, and when']],
+      ['sports/4', ['打完的比賽，比分和誰最亮眼', 'A finished game: the score and who stood out']],
       ['sports/5', ['積分榜與爭冠形勢', 'The table and the title race'], 'tablet'],
       ['sports/6', ['每位球員的數據，一頁看完', 'Every player’s numbers on one page']]
     ],
-    now: 'sports/1',
+    now: 'sports/screen',
     then: ['then-sports', ['第一天叫 Match Find：一個網頁，推薦今天最值得看的一場', 'Day one was Match Find: one page recommending the game worth watching']]
   },
   {
@@ -26,13 +26,13 @@ export const APPS = [
     q: ['怎麼去最實際？公車還要等多久？', 'What’s the practical way there, and how long for the bus?'],
     shots: [
       ['transit/1', ['火車、公車、YouBike，一次排好', 'Train, bus and YouBike in one plan']],
-      ['transit/2', ['每個車站的下一班，即時', 'Every station’s next train, live']],
+      ['transit/2', ['每個車站的下一班，即時', 'Every station’s next train, live'], 'computer'],
       ['transit/3', ['兩站之間，每一班車', 'Every train between two stations']],
       ['transit/4', ['公車還要等幾分鐘', 'Minutes until your bus']],
-      ['transit/5', ['YouBike 車位，即時', 'YouBike docks, live']],
-      ['transit/6', ['全台捷運，照真的路線畫', 'Every metro, drawn true to its lines']]
+      ['transit/5', ['全台捷運，照真的路線畫', 'Every metro, drawn true to its lines'], 'tablet'],
+      ['transit/6', ['YouBike 車位，即時', 'YouBike docks, live']]
     ],
-    now: 'transit/1',
+    now: 'transit/screen',
     then: ['then-transit', ['第一天：一張地圖，標出附近的 YouBike、公車站和火車站', 'Day one: a map of the YouBikes, bus stops and stations nearby']]
   },
   {
@@ -46,7 +46,7 @@ export const APPS = [
       ['weather/5', ['每小時的溫度與降雨', 'Every hour’s temperature and rain'], 'tablet'],
       ['weather/6', ['空氣品質，每小時都看得到', 'Air quality, hour by hour']]
     ],
-    now: 'weather/1',
+    now: 'weather/screen',
     then: ['then-weather', ['第一天：一個簡單的預報頁（這張截圖的位置是伺服器所在地）', 'Day one: a simple forecast page (placed where the screenshot server is)']]
   },
   {
@@ -60,7 +60,7 @@ export const APPS = [
       ['class/5', ['跟著一班真的飛機專注', 'Focus along a real flight'], 'tablet'],
       ['class/6', ['待辦和作業，跟課表放一起', 'To-dos and homework, beside your timetable']]
     ],
-    now: 'class/1',
+    now: 'class/screen',
     then: ['then-class', ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use']]
   },
   {
@@ -74,7 +74,7 @@ export const APPS = [
       ['money/5', ['一整年，每個月比一比', 'The whole year, month by month'], 'tablet'],
       ['money/6', ['問你的帳，答案畫成圖', 'Ask your books, see the answer']]
     ],
-    now: 'money/1',
+    now: 'money/screen',
     then: ['then-money', ['第一天：一本金色的月曆帳本，還沒有一筆帳', 'Day one: a gold calendar book, not one entry yet']]
   },
   {
@@ -100,7 +100,7 @@ export const APPS = [
       ['words/5', ['8 種練習方式，記得更牢', '8 ways to practise'], 'tablet'],
       ['words/6', ['搞混過的字，下次直接提醒你', 'Your mix-ups, shown to you next time']]
     ],
-    now: 'words/1',
+    now: 'words/screen',
     then: ['then-words', ['第一天：高中英文參考詞彙表 Level 4–6', 'Day one: the high-school word list, Levels 4–6']]
   },
   {
@@ -114,7 +114,7 @@ export const APPS = [
       ['beats/5', ['喜歡就收藏，首首都有封面', 'Keep favorites, each with its own cover'], 'tablet'],
       ['beats/6', ['每首歌都能玩節奏遊戲', 'A rhythm game for any song']]
     ],
-    now: 'beats/1',
+    now: 'beats/screen',
     then: ['then-beats', ['第一天叫 Passion Beats：用錄音切成的節拍做歌', 'Day one was Passion Beats: songs from a recording cut into beats']]
   },
   {
@@ -128,7 +128,7 @@ export const APPS = [
       ['law/5', ['立法院近 8 千案，走到哪一步', 'Nearly 8,000 bills, each one’s stage'], 'tablet'],
       ['law/6', ['22 縣市議會和代表會，影音都在', 'Every council, down to the townships']]
     ],
-    now: 'law/1',
+    now: 'law/screen',
     then: ['then-law', ['第一天：一個法規閱讀器，1,351 部法律', 'Day one: a law reader, 1,351 laws']]
   },
   {
@@ -142,7 +142,7 @@ export const APPS = [
       ['securities/5', ['換匯照銀行牌價', 'Exchange at the bank’s rates'], 'tablet'],
       ['securities/6', ['今天誰漲誰跌，一頁看完', 'Today’s movers, on one page']]
     ],
-    now: 'securities/1',
+    now: 'securities/screen',
     then: ['then-securities', ['第一天叫 Stock Study：開一個模擬帳戶', 'Day one was Stock Study: open a practice account']]
   }
 ];

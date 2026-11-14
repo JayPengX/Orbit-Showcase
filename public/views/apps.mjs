@@ -16,21 +16,15 @@ import { tryApp } from './main.mjs';
 
 const shot = (app, f) => shotUrl(f, Boolean(app.zh));
 
-// The screens the way an app store shows them: each on the app's own
-// colour under a one-line headline, a row you swipe (the next one peeks in),
-// in the app's own dark look; a phone's, an iPad's or a computer's screen.
+// The screens the way an app store shows them: the README's posters, a row
+// you swipe (the next one peeks in); a phone's, an iPad's or a computer's.
 function ads(app) {
   const [hi, mid, lo] = BRANDS[app.brand].paint;
   const row = h('div', { class: 'sc-ads', tabindex: '0', 'aria-label': t(['截圖', 'Screens']) });
-  // (a shot taken on an iPad or a computer, its third field, keeps that screen's shape)
-  const SIZE = { phone: [375, 812], tablet: [820, 1180], computer: [1440, 900] };
-  app.shots.forEach(([f, c, dev = 'phone'], i) =>
-    row.append(
-      h('figure', { class: `sc-ad dev-${dev}` }, [
-        h('figcaption', { text: t(c) }),
-        h('div', { class: 'sc-ad-screen' }, [h('img', { src: shot(app, f), alt: t(c), loading: i > 1 ? 'lazy' : 'eager', decoding: 'async', width: SIZE[dev][0], height: SIZE[dev][1] })])
-      ])
-    )
+  // (each shot the README's poster, 900×1770: its headline, the app's colour and the whole phone,
+  // iPad or computer are in the picture; store-shots.mjs)
+  app.shots.forEach(([f, c], i) =>
+    row.append(h('figure', { class: 'sc-ad' }, [h('img', { src: shot(app, f), alt: t(c), loading: i > 1 ? 'lazy' : 'eager', decoding: 'async', width: 900, height: 1770 })]))
   );
   const step = dir => row.scrollBy({ left: dir * (row.firstChild.offsetWidth + 12), behavior: reduced() ? 'auto' : 'smooth' });
   const arrow = (dir, label) => h('button', { class: `sc-arrow sc-arrow-${dir > 0 ? 'r' : 'l'}`, type: 'button', 'aria-label': t(label), onclick: () => step(dir) }, [ico('chevron')]);
@@ -53,7 +47,7 @@ function ads(app) {
 function thenNow(app) {
   if (!app.then) return null;
   const [f, c] = app.then;
-  const now = app.now || app.shots[0][0];
+  const now = app.now || `${app.shots[0][0].split('/')[0]}/screen`;
   const box = h('div', { class: 'sc-compare', style: '--k:50%' }, [
     h('img', { class: 'sc-cmp-now', src: shot(app, now), alt: t(['現在', 'Now']), loading: 'lazy', decoding: 'async' }),
     h('div', { class: 'sc-cmp-then' }, [h('img', { src: shot(app, f), alt: t(c), loading: 'lazy', decoding: 'async' })]),

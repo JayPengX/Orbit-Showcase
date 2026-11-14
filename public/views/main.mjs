@@ -42,7 +42,7 @@ function fan() {
     FAN.map((id, i) => {
       const a = APPS.find(x => x.id === id);
       return h('a', { class: `sc-fan-p sc-fan-${i}`, href: `#apps/${id}`, 'aria-label': appTitle(a) }, [
-        h('img', { src: shotUrl(a.shots[0][0], Boolean(a.zh)), alt: '', width: 375, height: 812, decoding: 'async', fetchpriority: i === 1 ? 'high' : 'auto' })
+        h('img', { src: shotUrl(`${a.shots[0][0].split('/')[0]}/screen`, Boolean(a.zh)), alt: '', width: 375, height: 812, decoding: 'async', fetchpriority: i === 1 ? 'high' : 'auto' })
       ]);
     })
   );

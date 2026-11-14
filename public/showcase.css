@@ -144,71 +144,16 @@
   display: none;
 }
 .sc-ad {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 min(66vw, 250px);
-  aspect-ratio: 9 / 17;
+  flex: 0 0 min(62vw, 240px);
   margin: 0;
-  border-radius: var(--sc-r);
-  background: linear-gradient(160deg, var(--ad-hi) -10%, var(--ad-mid) 45%, var(--ad-lo) 110%);
-  overflow: hidden;
   scroll-snap-align: start;
-  isolation: isolate;
 }
-.sc-ad figcaption {
-  padding: 18px 16px 14px;
-  color: #fff;
-  font: 700 17px/1.3 var(--q-font);
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-  /* Chinese breaks only at its punctuation and spaces (法案 never split). */
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
-}
-.sc-ad-screen {
-  flex: 1;
-  min-height: 0;
-  margin: 0 14px;
-  border: 5px solid #0b0b0f;
-  border-bottom: 0;
-  border-radius: 30px 30px 0 0;
-  background: #0b0b0f;
-  overflow: hidden;
-  box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.45);
-}
-.sc-ad-screen img {
+/* (each one the README's own poster: its headline and the whole device are in the picture) */
+.sc-ad img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 25px 25px 0 0;
-}
-.sc-ad.dev-tablet {
-  flex-basis: min(76vw, 330px);
-  aspect-ratio: auto;
-}
-.sc-ad.dev-tablet .sc-ad-screen {
-  border-width: 7px;
-  border-radius: 22px 22px 0 0;
-}
-.sc-ad.dev-tablet .sc-ad-screen img {
-  border-radius: 15px 15px 0 0;
-}
-/* A computer's screen: whole, in the middle of its card, on a stand. */
-.sc-ad.dev-computer {
-  flex-basis: min(88vw, 560px);
-  aspect-ratio: auto;
-}
-.sc-ad.dev-computer .sc-ad-screen {
-  flex: none;
-  margin: auto 16px;
-  border: 7px solid #0b0b0f;
-  border-radius: 14px;
-  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.5);
-}
-.sc-ad.dev-computer .sc-ad-screen img {
-  border-radius: 7px;
+  border-radius: var(--sc-r);
 }
 .sc-arrow {
   position: absolute;
