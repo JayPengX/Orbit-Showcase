@@ -249,7 +249,7 @@ function system() {
       )
     ),
     h('a', { class: 'sc-journey', href: '#how/map' }, [
-      h('span', { class: 'sc-journey-t' }, [h('strong', { text: t(['按一下，背後發生什麼事', 'What happens behind one tap']) }), h('small', { text: t(['五個日常的例子，一步一步走過整個系統', 'Five everyday stories, step by step across the system']) })]),
+      h('span', { class: 'sc-journey-t' }, [h('strong', { text: t(['按一下，背後發生什麼事', 'What happens behind one tap']) }), h('small', { text: t(['打開 Orbit、每個 App 各一個例子，一步一步走過整個系統', 'Opening Orbit and a story for every app, step by step across the system']) })]),
       h(
         'span',
         { class: 'sc-journey-flow', 'aria-hidden': 'true' },

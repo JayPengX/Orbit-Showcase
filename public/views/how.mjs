@@ -3,7 +3,7 @@
 // small picture first (steps, big numbers, before → after: lib/tree-show.mjs),
 // then problem → idea → result, what's inside, related nodes, and the
 // technical names behind a fold. Beside it on a computer, in a sheet on a
-// phone. The map walks five everyday stories across the system's five rows,
+// phone. The map walks everyday stories (Orbit, each app, a fix) across the system's five rows,
 // a dot travelling between the places each step happens.
 //   #how, #how/tree  the tree
 //   #how/<node id>   the tree, that node open (an old #how/sys-<app> opens the app)
@@ -15,12 +15,14 @@ import { ROWS, STORIES } from '../lib/stories.mjs';
 import { SHOW } from '../lib/tree-show.mjs';
 import { openAsk, setAskContext, askContextFor } from './ask.mjs';
 
-const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', money: 'money', news: 'news', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock' };
+const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', money: 'money', news: 'news', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock', 'orbit-app': null };
+// (Orbit itself, among the apps: the family's mark.)
+const branded = id => id in BRAND;
 
 // ---- The tree ----
-// The whole tree at a glance: Orbit's nine branches in a grid, each naming
-// what's inside it, every part one tap away (on a phone the nine as tiles).
-// A tap opens that branch in place: a strip of all nine along the top with
+// The whole tree at a glance: Orbit's ten branches in a grid, each naming
+// what's inside it, every part one tap away (on a phone the ten as tiles).
+// A tap opens that branch in place: a strip of all ten along the top with
 // the previous and next beside its name, then its parts as rows that open to
 // show their own parts. The picked part's card sits beside them on a
 // computer and comes up in a sheet on a phone.
@@ -36,13 +38,14 @@ let anchor = null; // the key of the button just tapped, kept where it was throu
 // Each top branch its own colour, carried down to everything under it.
 const HUE = { apps: 'var(--q-orange)', ai: 'var(--q-purple)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
 export const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
-const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
-const icon = (node, size = 30) => (BRAND[node.id] ? appImg(BRAND[node.id], size) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]));
+const mark = node => (branded(node.id) ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
+const icon = (node, size = 30) => (branded(node.id) ? appImg(BRAND[node.id], size) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]));
 
 // Shorter names for the overview and the strip of branches, so each sits
 // on one line; the rows and the card keep the full title.
 const SHORT = {
   apps: ['十個 App', 'Ten apps'],
+  'orbit-app': ['Orbit 本身', 'Orbit itself'],
   kit: ['共用零件', 'Shared parts'],
   pass: ['一張通行證', 'One pass'],
   cloud: ['雲端小幫手', 'Cloud helper'],
@@ -106,7 +109,7 @@ function overview() {
         h(
           'div',
           { class: 'sc-ov-kids' },
-          b.kids.map(k => h('button', { class: 'sc-ov-k', type: 'button', onclick: () => tap(k.id) }, [BRAND[k.id] ? appImg(BRAND[k.id], 18) : null, shortName(k)]))
+          b.kids.map(k => h('button', { class: 'sc-ov-k', type: 'button', onclick: () => tap(k.id) }, [branded(k.id) ? appImg(BRAND[k.id], 18) : null, shortName(k)]))
         )
       ])
     )
@@ -259,7 +262,7 @@ function nodeView(id, inside = true) {
   const related = [...new Set([...back, ...pointing])];
   return h('div', { class: 'sc-detail-in' }, [
     path.length > 1 ? crumbs : null,
-    h('header', { class: 'sc-detail-head' }, [BRAND[node.id] ? appImg(BRAND[node.id], 52) : node.id === 'orbit' ? appImg(null, 52) : tile(ico(node.icon), hue(node.id), ''), h('div', {}, [h('h2', { text: t(node.title) }), h('p', { text: t(node.line) })])]),
+    h('header', { class: 'sc-detail-head' }, [branded(node.id) ? appImg(BRAND[node.id], 52) : node.id === 'orbit' ? appImg(null, 52) : tile(ico(node.icon), hue(node.id), ''), h('div', {}, [h('h2', { text: t(node.title) }), h('p', { text: t(node.line) })])]),
     showView(id),
     node.p || node.i || node.r ? h('div', { class: 'sc-pir' }, pir(node)) : null,
     node.tech
@@ -271,7 +274,7 @@ function nodeView(id, inside = true) {
           h(
             'div',
             { class: 'sc-inside' },
-            node.kids.map(k => h('a', { class: 'sc-inside-k', href: `#how/${k.id}`, style: `--c:${hue(k.id)}` }, [BRAND[k.id] ? appImg(BRAND[k.id], 34) : h('span', { class: 'sc-tn-i' }, [ico(k.icon)]), h('span', { class: 'sc-row-text' }, [h('strong', { text: t(k.title) }), h('small', { text: t(k.line) })])]))
+            node.kids.map(k => h('a', { class: 'sc-inside-k', href: `#how/${k.id}`, style: `--c:${hue(k.id)}` }, [branded(k.id) ? appImg(BRAND[k.id], 34) : h('span', { class: 'sc-tn-i' }, [ico(k.icon)]), h('span', { class: 'sc-row-text' }, [h('strong', { text: t(k.title) }), h('small', { text: t(k.line) })])]))
           )
         ])
       : null,
@@ -417,7 +420,7 @@ function mapView(storyId) {
   const pickers = h(
     'div',
     { class: 'sc-stories' },
-    STORIES.map(s => h('a', { href: `#how/map-${s.id}`, class: `sc-story${s === story ? ' on' : ''}`, title: t(s.title), 'aria-current': s === story ? 'true' : null }, [s.app ? appImg(s.app, 28) : tile(ico(s.icon), '', 'sm'), h('span', { text: t(s.short) })]))
+    STORIES.map(s => h('a', { href: `#how/map-${s.id}`, class: `sc-story${s === story ? ' on' : ''}`, title: t(s.title), 'aria-current': s === story ? 'true' : null }, [s.app !== undefined ? appImg(s.app, 28) : tile(ico(s.icon), '', 'sm'), h('span', { text: t(s.short) })]))
   );
   const card = h('div', { class: 'sc-stepcard' }, [h('strong', { class: 'sc-step-title', text: t(story.title) }), h('div', { class: 'sc-step-top' }, [nth, h('span', { class: 'sc-step-track' }, [bar])]), say, h('div', { class: 'sc-step-btns' }, [prev, playBtn, next])]);
 

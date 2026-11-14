@@ -19,7 +19,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
       p: ['比分卡片已經寫了誰贏、誰得最多分，AI 再講一次只是浪費時間。', 'The score card already says who won and who scored most; AI saying it again wastes your time.'],
       i: ['程式先讀出比賽的故事（逆轉、連續得分、哪一節拉開），AI 只用三句話講卡片上沒有的；F1 每場正賽的勝負關鍵，一列一圈，配車手的臉；「問比賽」讓 AI 從 App 讀到的排名、賽程和比分裡挑表回答，數字都是 App 的。', 'Code reads the game’s story first (comebacks, runs, the period that broke it open), and AI writes three lines on what the card doesn’t show; each F1 race’s deciding moments, a row a lap with the driver’s face; “Ask about your teams” lets AI pick from the tables the app read (places, next and last games, today) and every number is the app’s.'],
       r: ['看完比分就懂這場為什麼這樣打，球員是大頭照、球隊有隊徽，點了就打開。', 'After the score you know why it went that way; players as faces and teams with logos, each opening its page.'],
-      tech: ['Orbit-Core builders/recaps.js、f1story.js 先做好放 R2；/ai 的 sports-ask；kit aiAnswer 把答案畫成列。', 'Orbit-Core builders/recaps.js and f1story.js made ahead into R2; /ai’s sports-ask; kit aiAnswer draws answers as rows.'],
+      tech: ['賽後一句話和看點在第一個人打開時才做（Orbit-Core ai-open.js），之後大家共用；/ai 的 sports-ask；kit aiAnswer 把答案畫成列。', 'The why-it-ended line and the preview are made when the first person opens the game (Orbit-Core ai-open.js), then shared; /ai’s sports-ask; kit aiAnswer draws answers as rows.'],
       links: ['ai']
     }),
     n('sports-own', 'spark', ['比原始資料更快、更準', 'Better than the raw feed'], ['我們自己算的部分', 'What we work out ourselves'], {
@@ -415,7 +415,7 @@ const words = n('words', 'book', ['Orbit Words', 'Orbit Words'], ['背得住的�
       p: ['背過的單字不會用，課本上的生字還要一個一個查。', 'Words learned but never used, and a textbook page’s words looked up one by one.'],
       i: ['跟 AI 用英文聊幾句，它會邀你用上剛背的字，每句只改最少的地方並說為什麼；拍課本或講義，只留大考單字表裡有的字加入收藏；每個字有 AI 寫的例句和記憶法，「用它造句」AI 幫你看自然不自然。', 'Chat a few lines in English with AI, which invites the words you just learned and fixes each line with the fewest changes and why; photograph a textbook page and only the exam list’s words are starred; each word has AI examples and a memory hook, and “Make a sentence” checks your sentence.'],
       r: ['背的字真的變成會用的字。', 'Learned words become words you use.'],
-      tech: ['/ai 的 words-chat、words-photo、words-check；例句和記憶法由 builders/ai.js 先做好（words/cards/）。', '/ai’s words-chat, words-photo, words-check; examples and hooks made ahead by builders/ai.js (words/cards/).'],
+      tech: ['/ai 的 words-chat、words-photo、words-check；已經做好的例句和記憶法留著（words/cards/），不再整批做新的。', '/ai’s words-chat, words-photo, words-check; the examples and hooks already made are kept (words/cards/), no new batch made ahead.'],
       links: ['ai']
     }),
     n('words-memory', 'spark', ['記憶模型', 'A memory model'], ['算出你快忘的時間', 'When you’re about to forget'], {
@@ -657,7 +657,7 @@ const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞�
       p: ['標題並排還是要自己讀出各家的角度；重要的新聞不一定是你關心的。', 'Headlines side by side still left you to read each side’s angle; the biggest news isn’t always what you care about.'],
       i: ['政治和國際大新聞上，AI 只從各家自己的標題寫出每一邊的角度，和最重要的一個差別，從不判斷誰對；每天早上挑五則給你；你在 Securities 持有的股票、在 Sports 追蹤的球隊排在「你關心的」；新聞提到的法律一點就在 Orbit Law 打開，英文新聞裡正在背的單字畫底線。', 'On big political and world stories, AI writes each side’s angle and the one difference that matters, from their own headlines only, never who’s right; five stories picked for you each morning; what you hold in Securities and follow in Sports leads “What you follow”; laws a story names open in Orbit Law, and words you’re learning are underlined in English stories.'],
       r: ['看懂各邊怎麼說，也看到跟你有關的事。', 'See how each side tells it, and what concerns you.'],
-      tech: ['Orbit-Core builders/ai.js 寫 news/sides.json；news-laws.js 對照 Law 的法案；家族筆記（只在手機上）。', 'Orbit-Core builders/ai.js writes news/sides.json; news-laws.js matches Law’s bills; the family notebook (on the phone only).'],
+      tech: ['各方怎麼說在第一個人打開那則新聞時才做（Orbit-Core ai-open.js），頭條例外；news-laws.js 對照 Law 的法案；家族筆記（只在手機上）。', 'Each side’s angle is made when the first person opens the story (Orbit-Core ai-open.js), the lead stories excepted; news-laws.js matches Law’s bills; the family notebook (on the phone only).'],
       links: ['ai', 'ai-family']
     }),
     n('news-sides', 'flag', ['媒體的立場從哪裡來', 'Where an outlet’s place comes from'], ['照研究和公開評等，不是我們自己判', 'From research and public ratings, never our own reading'], {

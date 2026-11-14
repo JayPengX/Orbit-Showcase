@@ -11,7 +11,16 @@ const apps = n('apps', 'grid', ['十個 App', 'Ten apps'], ['你手上真正會�
   p: ['每天要用的東西散在一堆 App 和網站裡，很多還不是為台灣做的。', 'Everyday things are spread over many apps and sites, many not made for Taiwan.'],
   i: ['十個各回答一個問題的 App：看比賽、搭車、天氣、課表、記帳、新聞、單字、音樂、法律、投資；長得像同一家人。', 'Ten apps, each answering one question: games, trips, weather, classes, money, news, words, music, law, investing, all looking like one family.'],
   r: ['十個都在 Orbit 一個 App 裡，加到主畫面就像原生 App；也能單獨加其中一個。', 'All ten live in one app, Orbit, that works like a native app from the home screen; each can also be added on its own.'],
-  kids: APP_BRANCHES
+  kids: [
+    n('orbit-app', 'grid', ['Orbit：十個 App 在一個裡面', 'Orbit: ten apps in one'], ['分頁切換，不用回主畫面', 'Tabs, no trip back to the home screen'], {
+      p: ['十個 App 就是主畫面上十個圖示，換一個 App 要回主畫面再找、重新載入；公車還在路上，看一下天氣就找不回來了。', 'Ten apps meant ten icons: switching meant the home screen, a hunt and a reload, and a glance at the weather lost the bus trip under way.'],
+      i: ['一個 Orbit 圖示裝著所有 App：上方的 ⌄ 和分頁像瀏覽器一樣切換，回到原本的畫面、捲到的位置；正在進行的（路線導航、YouBike、公車提醒、專注飛行、Beats 播放）標「進行中」，一點就回去。加到主畫面前可以自己取名、挑 App 和圖示，一個主畫面可以放好幾個 Orbit，也可以只放一個 App。', 'One Orbit icon holds every app: the ⌄ and tabs at the top switch like a browser, back to the same screen and scroll; what’s under way (a trip, a YouBike ride, a bus alert, a focus flight, Beats playing) says Live and is one tap away. Before adding it you can name it and pick its apps and icon; a home screen can hold several Orbits, or one with a single app.'],
+      r: ['切換不重新載入、不閃白，正在做的事一直都在。', 'Switching never reloads or flashes white, and what’s under way stays with you.'],
+      tech: ['orbit.jaypengx.com/app/：Orbit-Core site/app/index.html、kit suite.mjs；每個 Orbit 的設定寫在它的網址（/app/?o=…）和自己的 manifest（/api/orbit-manifest）；行為的每一種情況寫在 docs/ORBIT.md。', 'orbit.jaypengx.com/app/: Orbit-Core site/app/index.html, the kit’s suite.mjs; each Orbit’s setup lives in its address (/app/?o=…) and its own manifest (/api/orbit-manifest); every case of its behaviour is in docs/ORBIT.md.'],
+      links: ['pass', 'kit-boot']
+    }),
+    ...APP_BRANCHES
+  ]
 });
 
 const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你的話，但先讓程式做', 'Every app takes plain words, code first'], {
@@ -26,11 +35,11 @@ const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你�
       tech: ['Orbit-Core ai.js、ai-features.js（固定題目、maxIn、上限、反問）；kit ai.mjs（aiCall、aiFlow、aiAnswer、aiAnswerWait、aiMark）；D1 gemini_call 每次呼叫一列；管理頁 AI 錢包。', 'Orbit-Core ai.js, ai-features.js (fixed prompts, maxIn, caps, asking back); kit ai.mjs (aiCall, aiFlow, aiAnswer, aiAnswerWait, aiMark); D1 gemini_call, a row a call; the admin AI wallet.'],
       links: ['cheap-caps']
     }),
-    n('ai-ahead', 'history', ['先做好的 AI', 'AI made ahead'], ['大家都會看的，只做一次', 'What everyone reads, made once'], {
-      p: ['每個人打開比賽回顧或法條解釋都叫一次 AI，又慢又浪費。', 'Calling AI each time someone opens a game recap or a law’s explanation is slow and wasteful.'],
-      i: ['大家都看得到的東西先做好存起來：比賽的三句話、F1 的勝負關鍵、各方怎麼說、單字的例句和記憶法、常用法條的白話解釋、重大訊息的白話。', 'What everyone sees is made once and kept: a game’s three lines, an F1 race’s deciding moments, each side’s angle on a story, word examples and hooks, everyday law articles explained, filings in plain words.'],
-      r: ['一打開就有，多一個人看也不多花一毛錢。', 'There the moment you open it, and one more reader costs nothing.'],
-      tech: ['Orbit-Core builders/ai.js、recaps.js、f1story.js 寫到 R2；Law 的 data/ai/（多 3,500 條常用法條，用批次 API 一次做好）；filings.js。', 'Orbit-Core builders/ai.js, recaps.js, f1story.js write to R2; Law’s data/ai/ (3,500 more everyday articles, made in one batch); filings.js.']
+    n('ai-ahead', 'history', ['打開了才做，做一次大家共用', 'Made on first open, kept for all'], ['沒人看的不花錢', 'Nothing spent on what nobody opens'], {
+      p: ['先替每則新聞、每場比賽、每個單字都做好 AI，大部分根本沒人打開：11 月有四天就花掉了一大筆。', 'Making AI ahead for every story, game and word paid for things nobody opened: four days in November ran up a real bill.'],
+      i: ['第一個人打開時才做（例如一則新聞的重點整理和各方怎麼說、一場比賽的看點和賽後一句話），做好就留給之後的每個人；等的時候先畫出答案的形狀，幾秒就到。唯一先做好的是幾乎每個人都會打開的頭條。程式做得到的（讀標題、分類）就不用 AI。', 'Made when the first person opens it (a story’s brief and each side’s angle, a game’s preview and why-it-ended line), then kept for everyone after; while it’s made, the answer’s shape shows, and it arrives in seconds. Only the lead stories nearly everyone opens are made ahead. Whatever code can do (reading a title, sorting) never uses AI.'],
+      r: ['錢只花在有人看的東西上，多一個人看也不多花一毛錢。', 'Money goes only on what someone reads, and one more reader costs nothing.'],
+      tech: ['Orbit-Core ai-open.js（/ai/open：news-brief、news-sides、sports-recap、sports-preview）、kept-store.js；ai.js BULK_PAUSED 停掉整批預先做的；頭條例外 newsOpenAhead，每天有上限；每家 AI 每天的上限（PROVIDER_DAY）只是安全網。', 'Orbit-Core ai-open.js (/ai/open: news-brief, news-sides, sports-recap, sports-preview), kept-store.js; ai.js BULK_PAUSED stops making things ahead; the lead stories are the one exception (newsOpenAhead, capped a day); each maker’s day cap (PROVIDER_DAY) is only a safety net.']
     }),
     n('ai-backup', 'shield', ['一家忙，換另一家', 'One maker busy, another answers'], ['同等級、不同公司', 'Same class, another maker'], {
       p: ['11-10 免費的 Gemini 排隊超過 20 秒、常常答不出來，問法律三題只答一題。', 'On 11-10 free Gemini queued for over 20 seconds and often failed; Ask the law answered one question in three.'],
@@ -54,10 +63,10 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
   r: ['改一次，十個 App 同時變好，而且看起來是同一家。', 'Fix it once and ten apps improve together, looking like one family.'],
   tech: ['Orbit-Core/kit/，放在 Cloudflare 上（orbit.jaypengx.com/Orbit-Core/kit/）；每個 App 的網頁用 import map 指向 #kit/…；新功能用 kit.x?.() 呼叫，舊手機沒有也不會整個掛掉。', 'Orbit-Core/kit/ on Cloudflare (orbit.jaypengx.com/Orbit-Core/kit/); each app’s page maps #kit/… with an import map; new exports are called as kit.x?.() so an older kit on a phone never stops the app.'],
   kids: [
-    n('kit-look', 'spark', ['Orbit 自己的外觀', 'Orbit’s own look'], ['九個 App 一起重新設計', 'All nine apps redesigned together'], {
+    n('kit-look', 'spark', ['Orbit 自己的外觀', 'Orbit’s own look'], ['十個 App 同一套外觀', 'Ten apps, one look'], {
       p: ['Jay 覺得介面看起來很普通；第一版的新設計又太像別人家的 App（整頁天空的天氣、兩隊顏色混在一起的卡片），他不要抄。', 'Jay found the screens plain and generic; the first redesign looked too much like other companies’ apps (a sky filling Weather, cards blending two clubs’ colours), and he didn’t want a copy.'],
-      i: ['保留原本的深色頁面，卡片統一成石墨色；顏色只放在它代表的東西上（一支球隊、一條公車路線、一個花費分類），主色只用在「正在發生」和主要按鈕。一份樣式管所有字級、間距、圓角和動畫，九個 App 一起換。', 'Keep today’s dark page and make every card graphite; colour goes only on what it names (a team, a bus line, a spending category), and the app’s own colour only on what’s live and the main action. One stylesheet sets every type size, gap, corner and motion, and all nine apps changed together.'],
-      r: ['Jay 把九個 App 新舊並排看過，按下「全部上線」。', 'Jay looked at all nine side by side with the old ones and pressed “Ship all nine”.'],
+      i: ['保留原本的深色頁面，卡片統一成石墨色；顏色只放在它代表的東西上（一支球隊、一條公車路線、一個花費分類），主色只用在「正在發生」和主要按鈕。一份樣式管所有字級、間距、圓角和動畫，所有 App 一起換。', 'Keep today’s dark page and make every card graphite; colour goes only on what it names (a team, a bus line, a spending category), and the app’s own colour only on what’s live and the main action. One stylesheet sets every type size, gap, corner and motion, and every app changed together.'],
+      r: ['Jay 把當時的九個 App 新舊並排看過，按下「全部上線」；第十個（News）生來就是這個樣子。', 'Jay looked at the nine of the time side by side with the old ones and pressed “Ship all nine”; the tenth, News, was born in this look.'],
       tech: ['orbit.css 的 Orbit 外觀層（每個 App 的網頁 data-look="native"）、.q-band 顏色帶；規則寫在 Orbit-Core docs/DESIGN.md §11。', 'orbit.css’s Orbit look layer (each app’s page says data-look="native"), the .q-band colour row; the rules in Orbit-Core docs/DESIGN.md §11.']
     }),
     n('kit-help', 'book', ['每個 App 的說明', 'A guide in every app'], ['真的畫面，一頁一頁看', 'Real screens, one by one'], {
@@ -132,7 +141,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
 
 const pass = n('pass', 'key', ['一張通行證', 'One pass'], ['Orbit Pass：一組碼，所有 App', 'Orbit Pass: one code, every app'], {
   p: ['十個 App 要十組帳號密碼，資料也分散。', 'Ten apps would mean ten logins and scattered data.'],
-  i: ['一組 10 個字的通行碼，由 Jay 發給朋友；登入任何一個 App，其他的也都登入了，資料存在雲端。', 'One 10-character pass that Jay hands out; sign in to one app and the rest follow, data kept in the cloud.'],
+  i: ['一組 10 個字的通行碼（也能用 Face ID 的通行金鑰）；任何人都能用收得到驗證碼的信箱自己建立，一個人一個帳號；登入一次，Orbit 和每個 App 都登入了，資料存在雲端。', 'One 10-character pass (or a passkey with Face ID); anyone can make one with an email that receives a code, one account a person; sign in once and Orbit and every app follow, data kept in the cloud.'],
   r: ['換手機也什麼都不會少。', 'A new phone loses nothing.'],
   tech: ['Orbit-Core eco.js（/eco）；D1 資料庫 orbit-store。', 'Orbit-Core eco.js (/eco); the D1 database orbit-store.'],
   kids: [
@@ -140,7 +149,14 @@ const pass = n('pass', 'key', ['一張通行證', 'One pass'], ['Orbit Pass：�
       p: ['密碼存在伺服器上，被看到就完了。', 'A stored password is a leak waiting to happen.'],
       i: ['伺服器只存通行碼的「指紋」；手機也不存通行碼，只存一張 60 天的更新票和一張短效的通行票。登出時把手機上的資料清乾淨。', 'The server keeps only the code’s fingerprint; phones keep only a 60-day refresh ticket and a short session ticket. Signing out wipes the device.'],
       r: ['就算資料外洩，也拿不到通行碼。', 'Even a leak doesn’t reveal a pass.'],
-      tech: ['SHA-256；orbit-token.js 以 ECO_TOKEN_SECRET 做 HMAC；wipeDevice。沒有註冊，只能由 Jay 發碼。', 'SHA-256; orbit-token.js HMAC under ECO_TOKEN_SECRET; wipeDevice. No sign-up: passes are issued by Jay.']
+      tech: ['SHA-256；orbit-token.js 以 ECO_TOKEN_SECRET 做 HMAC；wipeDevice。', 'SHA-256; orbit-token.js HMAC under ECO_TOKEN_SECRET; wipeDevice.']
+    }),
+    n('pass-levels', 'user', ['基本和完整', 'Basic and full'], ['會花錢的功能另外給', 'What costs money is given separately'], {
+      p: ['任何人都能建立帳號以後，如果新帳號也能無限用 AI，帳單就會失控，也會鼓勵一個人開很多個帳號。', 'Once anyone can make an account, new accounts with unlimited AI would run up the bill and invite people to make several.'],
+      i: ['自己建立的是「基本」：每個 App 都能用，但不會花錢的 AI 才有（大家共用、已經做好的答案照樣看得到）；「完整」由 Jay 在管理頁給，附 Orbit AI。每個帳號一天、一個月能用幾次 AI，Jay 可以按等級或一個一個設定；用完了，按鈕會平靜地說明。', 'A pass you make yourself is Basic: every app, but no AI that costs money (answers already kept for everyone still show); Full comes from Jay in admin, with Orbit AI. Jay sets how many AI answers an account may have a day or a month, by level or one by one; used up, the button says so calmly.'],
+      r: ['朋友可以自己加入，費用照樣在 Jay 手上。', 'Friends can join on their own, and the cost stays in Jay’s hands.'],
+      tech: ['Orbit-Core ai-allow.js 每次都從帳號本身判斷（手機、票、合併都不能提高等級）；只有驗證過信箱的帳號能拿到額度。', 'Orbit-Core ai-allow.js decides from the account itself at every ask (no phone, ticket or merge can raise it); only an account with a proved email gets an allowance.'],
+      links: ['ai-door']
     }),
     n('pass-session', 'live', ['同一個 App 只有一處在用', 'One live place per app'], ['另一處自動暫停', 'The other one pauses'], {
       p: ['同一個 App 在兩支手機同時改，資料會打架。', 'One app edited on two phones at once fights itself.'],

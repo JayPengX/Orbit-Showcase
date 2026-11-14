@@ -37,7 +37,7 @@ minutes"; keep the demos and screenshots).
 | `#made` | Jay's part and Claude's (each led by its number), one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`, each card led by one figure) | `views/main.mjs` `made`, `views/numbers.mjs` |
 | `#system` | The whole system's ten parts as tiles (each opens it in the tree), the journey of one tap, and 問 Orbit's box where the page ends | `views/main.mjs` `system`, `views/ask.mjs` |
 | `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe; the README's own posters, each URL stamped by `scripts/shot-versions.mjs` so no phone shows a kept old one), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |
-| `#how`, `#how/<node>`, `#how/map[-<story>]` | The whole system: the structure tree (each card a small picture first, then problem → idea → result, technical names folded away) and the journeys | `views/how.mjs`, `lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
+| `#how`, `#how/<node>`, `#how/map[-<story>]` | The whole system: the structure tree (each card a small picture first, then problem → idea → result, technical names folded away) and the journeys (opening Orbit, one for every app, a fix) | `views/how.mjs`, `lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
 
 The frame (`app.mjs`): a bar along the top with the brand and share, and the page's
 four chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay).

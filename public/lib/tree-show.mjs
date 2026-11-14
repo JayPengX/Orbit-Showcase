@@ -22,7 +22,14 @@ const S = {
     flow: [['user', ['手機只說功能名', 'The phone names a feature']], ['lock', ['題目在雲端', 'Prompts in the cloud']], ['check', ['答案被檢查', 'Answers checked']]]
   },
   'ai-ahead': {
-    nums: [['3,500', ['條常用法條先解釋好', 'everyday articles explained ahead']], ['0', ['多一個人看多花的錢', 'extra cost per reader']]]
+    flow: [['user', ['第一個人打開', 'The first person opens it']], ['ai', ['這時才做', 'Made then']], ['grid', ['大家共用', 'Kept for everyone']]],
+    nums: [['0', ['多一個人看多花的錢', 'extra cost per reader']]]
+  },
+  'orbit-app': {
+    tags: [['grid', ['分頁切換', 'Tabs']], ['live', ['進行中', 'Under way']], ['pencil', ['自訂名稱和圖示', 'Your name and icon']], ['star', ['好幾個 Orbit', 'Several Orbits']]]
+  },
+  'pass-levels': {
+    pairs: [[['基本：自己建立', 'Basic: made yourself'], ['每個 App，不含花錢的 AI', 'Every app, no paid AI']], [['完整：Jay 給的', 'Full: from Jay'], ['加上 Orbit AI 額度', 'Plus an Orbit AI allowance']]]
   },
   'ai-backup': {
     flow: [['ai', ['一家忙', 'One maker busy']], ['swap', ['同等級的另一家', 'Its class at another']], ['check', ['照樣回答', 'Still answers']]]
@@ -62,13 +69,13 @@ const S = {
     flow: [['book', ['公所網站的 PDF、Word、錄音', 'Offices’ PDFs, Word files, recordings']], ['list', ['讀成一列一列', 'Read into rows']], ['play', ['錄影直接播', 'Recordings play']]]
   },
   apps: {
-    flow: [['backpack', ['一盒零件', 'One kit']], ['key', ['一張通行證', 'One pass']], ['grid', ['十個 App', 'Ten apps']]]
+    flow: [['backpack', ['一盒零件', 'One kit']], ['key', ['一張通行證', 'One pass']], ['grid', ['十個 App', 'Ten apps']], ['spark', ['一個 Orbit', 'One Orbit']]]
   },
   kit: {
     flow: [['pencil', ['改一次', 'Fix once']], ['backpack', ['零件盒', 'The kit']], ['grid', ['10 個 App 一起變', 'Ten apps change']]]
   },
   pass: {
-    flow: [['key', ['一組碼', 'One code']], ['check', ['登入一次', 'Sign in once']], ['grid', ['10 個 App', 'Ten apps']]],
+    flow: [['key', ['一組碼或 Face ID', 'A code or Face ID']], ['check', ['登入一次', 'Sign in once']], ['grid', ['10 個 App', 'Ten apps']]],
     nums: [['10', ['個字的通行碼', 'characters in a pass']]]
   },
   cloud: {
