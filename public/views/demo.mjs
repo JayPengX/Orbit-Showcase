@@ -3,15 +3,30 @@
 // On a phone the app fills the screen as itself, under a slim, quiet bar
 // (close, the app's name, start over), and the tour is a small coach mark:
 // a bubble that points at what to tap, in the app's own colour, gone the
-// moment it's tapped. 略過 ends it; the app can be tapped freely at any time.
-// On a computer the app sits in a phone frame with the tour beside it.
+// moment it's tapped. While the tour runs, only the step's target answers a
+// tap (Jay 2026-11-14: a tap on another tab broke the tour); scrolling stays
+// free, and 略過 or the tour's end frees the whole app.
+// On a computer the app sits in a device's frame with the tour beside it: a
+// phone, a tablet or a computer, picked in the head (Jay 2026-11-14), the
+// app laid out for that screen as it is on one.
 // The browser's back closes the demo once the app has nothing left to go
 // back to.
 import { h, t, ico, appImg, en, reduced, framed } from '../shell.mjs';
 import { DEMOS, TOURS } from '../lib/demos.mjs';
 
-const W = 390;
-const H = 844;
+// The screens a computer can show the app on (a phone shows it on itself).
+const DEVICES = {
+  phone: { w: 390, h: 844, short: 667, label: ['手機', 'Phone'], icon: 'phone' },
+  tablet: { w: 820, h: 1180, short: 1180, label: ['平板', 'Tablet'], icon: 'tablet' },
+  computer: { w: 1280, h: 800, short: 800, label: ['電腦', 'Computer'], icon: 'computer' }
+};
+let device = 'phone';
+const svg = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const DEV_ICONS = {
+  phone: svg('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>'),
+  tablet: svg('<rect x="4.5" y="2.5" width="15" height="19" rx="2.5"/><path d="M11 18.5h2"/>'),
+  computer: svg('<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8.5 20h7M12 16.5V20"/>')
+};
 let open = null;
 
 export const hasDemo = id => Boolean(DEMOS[id]);
@@ -36,12 +51,14 @@ export function openDemo(app, title) {
   let fade = 0;
   let moving = false; // (the step's tap is in, its next step on the way)
   let unhands = null; // (stops noticing the reader's own touches and scrolls, the step's)
+  let felt = null; // (tells the step the reader touched the app)
 
   const body = h('div', { class: 'sc-player-body' });
   const stage = h('div', { class: 'sc-player-stage' });
   const screen = h('div', { class: 'sc-player-screen' });
   if (full) stage.append(screen);
   else stage.append(h('div', { class: 'sc-player-phone' }, [screen]));
+  const shell = stage.firstChild;
 
   // A phone: the coach mark. A computer: the card beside the phone.
   const say = h('p', { class: full ? 'sc-coach-say' : 'sc-player-say', 'aria-live': 'polite' });
@@ -89,6 +106,22 @@ export function openDemo(app, title) {
   const liveBtn = demo.live
     ? h('button', { class: 'sc-player-live', type: 'button', 'aria-pressed': 'false', title: t(['用現在的真實資料', 'Use today’s real data']), onclick: () => switchLive() }, [h('span', { class: 'sc-live-dot', 'aria-hidden': 'true' }), t(['即時', 'Live'])])
     : null;
+  // (a computer: which screen the app is shown on)
+  const sizes = full
+    ? null
+    : h(
+        'div',
+        { class: 'sc-player-sizes', role: 'group', 'aria-label': t(['螢幕大小', 'Screen size']) },
+        Object.entries(DEVICES).map(([id, d]) =>
+          h('button', { type: 'button', 'data-device': id, 'aria-pressed': String(id === device), onclick: () => pick(id) }, [h('span', { class: 'sc-dev-ico', 'aria-hidden': 'true', html: DEV_ICONS[id] }), h('span', { text: t(d.label) })])
+        )
+      );
+  function pick(id) {
+    if (id === device) return;
+    device = id;
+    for (const b of sizes.children) b.setAttribute('aria-pressed', String(b.dataset.device === id));
+    load();
+  }
   const head = full
     ? h('header', { class: 'sc-player-head slim' }, [
         h('button', { class: 'sc-player-x', type: 'button', 'aria-label': t(['結束試玩', 'Close the demo']), onclick: close }, [ico('x')]),
@@ -99,6 +132,7 @@ export function openDemo(app, title) {
     : h('header', { class: 'sc-player-head' }, [
         appImg(app.brand, 34),
         h('div', {}, [h('strong', { text: title }), label]),
+        sizes,
         liveBtn,
         h('button', { class: 'sc-btn', type: 'button', 'aria-label': t(['重來', 'Restart']), onclick: () => load() }, [ico('history'), h('span', { class: 'sc-player-again', text: t(['重來', 'Restart']) })]),
         h('button', { class: 'sc-btn sc-icon', type: 'button', 'aria-label': t(['關閉', 'Close']), onclick: close }, [ico('x')])
@@ -128,7 +162,6 @@ export function openDemo(app, title) {
   // phone gets shorter (down to an iPhone SE's 667) before its text gets
   // smaller. The phone and the tour card sit side by side, centred together.
   // A phone: the app at the screen's own size.
-  const SHORT = 667;
   function fit() {
     if (!frame) return;
     if (full) {
@@ -140,9 +173,12 @@ export function openDemo(app, title) {
     const cs = getComputedStyle(body);
     const px = k => parseFloat(cs[k]) || 0;
     // (less the phone's 6 px rim on each side, and the card and the gap beside it)
-    const tall = body.clientHeight - px('paddingTop') - px('paddingBottom') - 12;
-    const across = body.clientWidth - px('paddingLeft') - px('paddingRight') - (body.children[1]?.offsetWidth || 0) - px('columnGap') - 12;
-    const k = Math.min(across / W, 1.3, Math.max(tall / H, Math.min(1, tall / SHORT)));
+    const { w: W, h: H, short: SHORT } = DEVICES[device];
+    shell.dataset.device = device;
+    const rim = { phone: 12, tablet: 20, computer: 16 }[device] + 8;
+    const tall = body.clientHeight - px('paddingTop') - px('paddingBottom') - rim;
+    const across = Math.min(body.clientWidth, document.documentElement.clientWidth) - px('paddingLeft') - px('paddingRight') - (body.children[1]?.offsetWidth || 0) - px('columnGap') - rim;
+    const k = Math.min(across / W, device === 'phone' ? 1.3 : 1, Math.max(tall / H, Math.min(1, tall / SHORT)));
     const high = Math.min(H, Math.max(SHORT, tall / k));
     screen.style.width = `${W * k}px`;
     screen.style.height = `${high * k}px`;
@@ -154,7 +190,8 @@ export function openDemo(app, title) {
     cancelAnimationFrame(watch);
     clearTimeout(fade);
     coach.hidden = true;
-    frame = h('iframe', { class: 'sc-player-frame', src: liveOn && !resting ? `${src}&live` : src, title, width: String(W), height: String(H), loading: 'eager' });
+    const d = full ? DEVICES.phone : DEVICES[device];
+    frame = h('iframe', { class: 'sc-player-frame', src: liveOn && !resting ? `${src}&live` : src, title, width: String(d.w), height: String(d.h), loading: 'eager' });
     screen.replaceChildren(frame);
     fit();
     frame.addEventListener('load', () => {
@@ -177,9 +214,24 @@ export function openDemo(app, title) {
       };
       // (a box to type in counts once it has the focus: a phone's tap there may never make a click)
       const onFocus = e => tour[at]?.type && onTap(e);
+      // While the tour runs, a tap anywhere but the step's target is held back
+      // (the app never hears it) and the step's ring and bubble nudge instead;
+      // scrolling is the browser's own, so it stays free.
+      const win = frame.contentWindow;
+      const gate = e => {
+        if (at < 0 || at >= tour.length || moving) return;
+        const s = tour[at];
+        if (s?.tap && e.target.closest?.(s.tap)) return;
+        if (e.type === 'touchstart' || e.type === 'pointerdown') felt?.();
+        e.stopPropagation();
+        if (e.type === 'click' || e.type === 'mousedown') e.preventDefault();
+        if (e.type === 'click') nudge();
+      };
+      const GATED = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click', 'dblclick', 'contextmenu'];
+      for (const ev of GATED) win.addEventListener(ev, gate, true);
       doc.addEventListener('click', onTap, true);
       doc.addEventListener('focusin', onFocus, true);
-      unhook = () => (doc.removeEventListener('click', onTap, true), doc.removeEventListener('focusin', onFocus, true));
+      unhook = () => (GATED.forEach(ev => win.removeEventListener(ev, gate, true)), doc.removeEventListener('click', onTap, true), doc.removeEventListener('focusin', onFocus, true));
       ring = null;
       // the app's own colour, once its page has its styles
       setTimeout(() => {
@@ -205,6 +257,15 @@ export function openDemo(app, title) {
       }, 250 + i * 160)
     );
     return 250 + text.length * 160;
+  }
+
+  // A tap held back: the ring and the words say where to tap instead.
+  function nudge() {
+    if (reduced()) return;
+    const pulse = [{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }];
+    if (ring && !ring.hidden) ring.animate?.(pulse, { duration: 360, easing: 'ease-out' });
+    const words = full ? coach : card;
+    if (words && !words.hidden) words.animate?.([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 300, easing: 'ease-out' });
   }
 
   // The bubble beside the target, its tip pointing at it; above the target
@@ -269,6 +330,7 @@ export function openDemo(app, title) {
     let touched = false;
     unhands?.();
     const hands = () => (touched = true);
+    felt = hands;
     const opts = { capture: true, passive: true };
     for (const ev of ['pointerdown', 'wheel', 'touchstart', 'keydown']) doc.addEventListener(ev, hands, opts);
     unhands = () => ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => doc.removeEventListener(ev, hands, opts));

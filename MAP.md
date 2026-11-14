@@ -21,6 +21,7 @@ Jay's, dated (Taiwan day), newest wins; the family's are in Orbit-Core `docs/RUL
 - 11-04 One page a reader with a few minutes (a teacher, a professor) reads top to bottom; keep the demos and screenshots.
 - Content changes only when Jay says "catch up the showcase"; the deploy recounts the numbers and re-records the demos daily by itself.
 - 11-14 A showcase of the Orbit project, never named a school or 自主學習 piece; no language switch (the browser's language picks it, as on the homepage and the Pass site).
+- 11-14 It is Jay's representative piece: the design bar is high, still quick to scan for a professor with minutes. 問 Orbit is everywhere on the page (a pill along the bottom asking about what's on screen), lean on AI (asked only when sent, an answer kept on the device). Demos run in a phone, tablet or computer frame on a computer; while a guided tour runs only its step's target answers a tap (scrolling stays free).
 
 ## One page, then one tap deeper
 
@@ -32,13 +33,14 @@ minutes"; keep the demos and screenshots).
 | --- | --- | --- |
 | `#home` the top | One sentence on what Orbit is and who does what, four numbers from git, three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
 | `#apps` | The ten apps, each its question; 試玩 runs the real app at once (News has no demo yet) | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
-| `#wow` | Six things people don't expect: a figure the tree's own card states; a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
-| `#made` | Jay's part and Claude's, one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`), 問 Orbit, links to the whole system | `views/main.mjs` `made`, `views/numbers.mjs`, `views/ask.mjs` |
+| `#wow` | Six things people don't expect: a figure the tree's own card states, in its app's colour (on a wide page the first is the big card); a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
+| `#made` | Jay's part and Claude's (each led by its number), one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`, each card led by one figure) | `views/main.mjs` `made`, `views/numbers.mjs` |
+| `#system` | The whole system's ten parts as tiles (each opens it in the tree), the journey of one tap, and 問 Orbit's box where the page ends | `views/main.mjs` `system`, `views/ask.mjs` |
 | `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |
 | `#how`, `#how/<node>`, `#how/map[-<story>]` | The whole system: the structure tree (each card a small picture first, then problem → idea → result, technical names folded away) and the journeys | `views/how.mjs`, `lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
 
-The frame (`app.mjs`): a bar along the top with the brand, share and language, and the page's
-three chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay).
+The frame (`app.mjs`): a bar along the top with the brand and share, and the page's
+four chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay).
 On an app's page or the system's, the bar's second row is the way back, where you are and 試玩.
 On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the ten
 apps by name, the whole system. A link to a chapter on the page scrolls there; back and forward
@@ -54,13 +56,18 @@ The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (la
 
 ## 問 Orbit
 
-A reader's question about how Orbit was made (the AI plan, 2026-11-11). Code first: `lib/ask.mjs`
+A reader's question about how Orbit was made (the AI plan, 2026-11-11), asked from anywhere
+(2026-11-14): a pill along the bottom (`askDock`) names a question about what's on screen
+(`setAskContext`: the chapter, an app's page, the system; every tree card ends on its own ask) and
+opens the conversation in a sheet. Code first: `lib/ask.mjs`
 `cardsFor` picks the structure tree's cards that share its words (pairs of Chinese characters,
 English words; a title counts double). Then one AI call, `showcase-ask` (Orbit-Core
 `ai-features.js`: Haiku, Luna next), on the showcase's own pass (`/showcase/pass`, as the demos
 take theirs; 20 a day an address) says the answer from those cards only and names the ones to
 open, drawn by the kit's `aiAnswer` (rows open the card). No pass, the day's answers spent or
-offline: the cards code picked, as they are. Nothing new is written about Orbit for it: it reads
+offline: the cards code picked, as they are. An answer once given is kept on the device
+(localStorage `orbitShowcase.asked`, 40 at most) and never asked again; the cards of what's on
+screen join the ones code picked. Nothing new is written about Orbit for it: it reads
 the tree as it stands.
 
 ## Keeping it true

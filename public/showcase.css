@@ -442,9 +442,9 @@
   display: grid;
   align-content: start;
   min-width: 0;
-  border-radius: 18px;
-  background: var(--sc-card);
-  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--c) 70%, transparent);
+  border-radius: var(--q-r-card);
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
   overflow: hidden;
 }
 .sc-ov-head {
@@ -479,9 +479,8 @@
   padding: 2px 5px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--c) 14%, transparent);
-  color: var(--c);
-  font: 700 11px/14px var(--q-font);
+  color: var(--q-label-3);
+  font: 500 12px/14px var(--q-font);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -1384,6 +1383,59 @@ html.sc-playing body {
   height: 844px;
   border: 0;
   transform-origin: 0 0;
+}
+/* The screen a computer shows the app on: a phone, a tablet, a computer. */
+.sc-player-phone[data-device='tablet'] {
+  padding: 10px;
+  border-radius: 30px;
+}
+.sc-player-phone[data-device='tablet'] .sc-player-screen {
+  border-radius: 20px;
+}
+.sc-player-phone[data-device='computer'] {
+  padding: 8px;
+  border-radius: 14px;
+}
+.sc-player-phone[data-device='computer'] .sc-player-screen {
+  border-radius: 6px;
+}
+.sc-player-head > .sc-player-sizes {
+  display: flex;
+  flex: none;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
+}
+.sc-player-sizes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--q-label-2);
+  font: 500 14px/1 var(--q-font);
+  cursor: pointer;
+}
+.sc-player-sizes button[aria-pressed='true'] {
+  background: var(--sc-card);
+  color: var(--q-label);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.sc-dev-ico svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 1100px) {
+  .sc-player-sizes button span:last-child {
+    display: none;
+  }
+  .sc-player-sizes button {
+    padding: 0 9px;
+  }
 }
 .sc-player-card {
   display: grid;
@@ -2666,13 +2718,18 @@ html.q-tabrail {
   }
 }
 
-/* ---- 2. Things people don't expect ---- */
+/* ---- 2. Things people don't expect ----
+   Six cards, each one figure in its app's colour (the only colour on the
+   card, with a faint wash of it from the corner) and one line. A wide page:
+   the first is the big one, two by two, the rest around it. */
 .sc-wow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .sc-wowcard {
+  --w-c: var(--sc-ac);
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -2681,34 +2738,28 @@ html.q-tabrail {
   padding: 14px 14px 12px;
   border: 0;
   border-radius: var(--q-r-card);
-  background: var(--nv-card, var(--sc-card));
+  background: radial-gradient(130% 90% at 100% 0%, color-mix(in srgb, var(--w-c) 15%, transparent), transparent 62%), var(--nv-card, var(--sc-card));
   box-shadow: var(--sc-edge);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: transform 160ms var(--sc-spring);
+  overflow: hidden;
+  transition: transform 220ms var(--sc-spring), box-shadow 220ms;
 }
 .sc-wowcard:active {
   transform: scale(0.98);
 }
-.sc-wow-fig {
-  font: 300 clamp(24px, 8.4cqi, 36px) / 1.1 var(--nv-display, var(--q-font));
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-.sc-wow-say {
-  flex: 1;
-  font: 400 15px/1.45 var(--q-font);
-  text-wrap: pretty;
+@media (hover: hover) {
+  .sc-wowcard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sc-edge), 0 10px 28px -12px color-mix(in srgb, var(--w-c) 45%, transparent);
+  }
 }
 .sc-wow-from {
   display: flex;
   align-items: center;
   gap: 6px;
-  width: 100%;
-  margin-top: 4px;
   color: var(--q-label-2);
   font: 500 12px/1.2 var(--q-font);
 }
@@ -2721,10 +2772,35 @@ html.q-tabrail {
     display: none;
   }
 }
-.sc-wow-chev {
-  margin-left: auto;
-  color: var(--q-label-3);
-  font-size: 11px;
+.sc-wow-fig {
+  margin-top: 6px;
+  color: var(--w-c);
+  font: 300 clamp(26px, 8.6cqi, 38px) / 1.05 var(--nv-display, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.sc-wow-say {
+  flex: 1;
+  font: 400 15px/1.45 var(--q-font);
+  text-wrap: pretty;
+}
+.sc-wow-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 6px;
+  color: var(--q-label-2);
+  font: 500 13px/1 var(--q-font);
+}
+.sc-wow-go .sc-ico {
+  font-size: 10px;
+  transition: transform 200ms var(--sc-spring);
+}
+@media (hover: hover) {
+  .sc-wowcard:hover .sc-wow-go .sc-ico {
+    transform: translateX(3px);
+  }
 }
 @container page (min-width: 640px) {
   .sc-wow {
@@ -2732,32 +2808,77 @@ html.q-tabrail {
     gap: 12px;
   }
   .sc-wowcard {
-    padding: 18px 18px 14px;
+    padding: 18px 20px 16px;
+  }
+  .sc-wowcard.big {
+    grid-column: span 2;
+    grid-row: span 2;
+    justify-content: flex-end;
+    padding: 24px 28px 22px;
+    background: radial-gradient(90% 110% at 100% 0%, color-mix(in srgb, var(--w-c) 24%, transparent), transparent 64%), var(--nv-card, var(--sc-card));
+  }
+  .sc-wowcard.big .sc-wow-from {
+    position: absolute;
+    top: 22px;
+    left: 28px;
+    font-size: 14px;
+  }
+  .sc-wowcard.big .sc-wow-fig {
+    font-size: clamp(96px, 16cqi, 168px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+  .sc-wowcard.big .sc-wow-say {
+    flex: none;
+    max-width: 26em;
+    font-size: 20px;
+    line-height: 1.4;
   }
   .sc-wow-fig {
-    font-size: clamp(32px, 4cqi, 42px);
+    font-size: clamp(32px, 4cqi, 44px);
   }
   .sc-wow-say {
     font-size: 16px;
   }
 }
 
-/* ---- 3. How it was made ---- */
+.sc-wow-more {
+  display: none;
+}
+@container page (min-width: 640px) {
+  .sc-wowcard.big .sc-wow-more {
+    display: flex;
+    gap: 28px;
+    margin-top: 14px;
+    padding-top: 14px;
+    box-shadow: inset 0 0.5px 0 var(--q-sep);
+  }
+  .sc-wow-more > span {
+    display: grid;
+    gap: 2px;
+  }
+  .sc-wow-more strong {
+    font: 400 24px/1.1 var(--nv-display, var(--q-font));
+    font-variant-numeric: tabular-nums;
+  }
+  .sc-wow-more small {
+    color: var(--q-label-2);
+    font: 400 13px/1.3 var(--q-font);
+  }
+}
+
+/* ---- 3. How it was made ----
+   Jay and Claude side by side, each led by the one number that proves their
+   part; between them, the swap of who does what. */
 .sc-roles {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-}
-@container page (max-width: 379px) {
-  .sc-roles {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 .sc-role {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 16px;
+  padding: 18px;
   border-radius: var(--q-r-card);
   background: var(--nv-card, var(--sc-card));
   box-shadow: var(--sc-edge);
@@ -2765,102 +2886,181 @@ html.q-tabrail {
 .sc-role-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 12px;
+}
+.sc-role-head > span:last-child {
+  display: grid;
 }
 .sc-role-head strong {
-  font: 600 19px/1.2 var(--q-font);
+  font: 600 20px/1.2 var(--q-font);
 }
-.sc-role-does {
-  display: grid;
-  flex: 1;
-  align-content: start;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.sc-role-head small {
+  color: var(--q-label-2);
+  font: 400 14px/1.3 var(--q-font);
 }
-.sc-role-does li {
-  position: relative;
-  padding-left: 14px;
-  font: 400 15px/1.4 var(--q-font);
-}
-.sc-role-does li::before {
-  content: '';
-  position: absolute;
-  top: 0.6em;
-  left: 2px;
-  width: 5px;
-  height: 5px;
+.sc-role-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--q-label-3);
+  font-size: 22px;
+}
+.sc-role-mark.jay {
+  background: var(--q-fill-3);
+  color: var(--q-label);
+}
+.sc-role-mark.claude {
+  --cl: #d97757;
+  background: color-mix(in srgb, var(--cl) 18%, transparent);
+  color: var(--cl);
 }
 .sc-role-fig {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-  margin: 14px 0 0;
-  padding-top: 12px;
-  box-shadow: inset 0 0.5px 0 var(--q-sep);
+  display: grid;
+  gap: 2px;
+  margin: 18px 0 14px;
 }
 .sc-role-fig strong {
-  font: 300 28px/1 var(--nv-display, var(--q-font));
+  font: 300 48px/1 var(--nv-display, var(--q-font));
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 .sc-role-fig span {
   color: var(--q-label-2);
-  font: 500 13px/1.3 var(--q-font);
+  font: 400 14px/1.35 var(--q-font);
 }
-/* One problem, from spotted to fixed: steps down a card, a line between. */
+.sc-role-does {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 0 0;
+  box-shadow: inset 0 0.5px 0 var(--q-sep);
+  list-style: none;
+}
+.sc-role-does li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font: 400 15px/1.4 var(--q-font);
+}
+.sc-role-does .sc-ico {
+  flex: none;
+  margin-top: 3px;
+  color: var(--q-label-3);
+  font-size: 14px;
+}
+@container page (min-width: 560px) {
+  .sc-roles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .sc-role {
+    padding: 22px 24px;
+  }
+  .sc-role-fig strong {
+    font-size: 56px;
+  }
+}
+
+/* One problem, from spotted to fixed: four stops on one line (down the card
+   on a phone), each a dot, what happens, and how. */
 .sc-cycle {
   display: grid;
   margin: 0;
-  padding: 6px 16px;
+  padding: 18px;
   border-radius: var(--q-r-card);
   background: var(--nv-card, var(--sc-card));
   box-shadow: var(--sc-edge);
   list-style: none;
+  counter-reset: step;
 }
 .sc-cycle li {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  font: 500 15px/1.35 var(--q-font);
+  align-items: flex-start;
+  gap: 14px;
+  padding: 0 0 18px;
 }
-.sc-cycle li + li::before {
+.sc-cycle li:last-child {
+  padding-bottom: 0;
+}
+.sc-cycle li:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: -8px;
-  left: 16.25px;
-  width: 1.5px;
-  height: 16px;
-  background: var(--q-sep);
+  top: 40px;
+  bottom: 2px;
+  left: 19px;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(var(--sc-ac-soft), var(--sc-ac-soft));
+}
+.sc-cycle-dot {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--sc-ac-soft);
+  color: var(--sc-ac);
+  font-size: 18px;
+}
+.sc-cycle li:last-child .sc-cycle-dot {
+  background: var(--sc-ac);
+  color: #fff;
+}
+.sc-cycle-t {
+  display: grid;
+  gap: 2px;
+  padding-top: 2px;
+}
+.sc-cycle-t strong {
+  font: 600 16px/1.35 var(--q-font);
+}
+.sc-cycle-t small {
+  color: var(--q-label-2);
+  font: 400 14px/1.35 var(--q-font);
 }
 @container page (min-width: 640px) {
   .sc-cycle {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 20px;
-    padding: 16px 18px;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: 16px;
+    padding: 22px 24px;
   }
   .sc-cycle li {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
     padding: 0;
   }
-  .sc-cycle li + li::before {
-    content: '›';
-    top: 4px;
-    left: -15px;
+  .sc-cycle li:not(:last-child)::after {
+    top: 19px;
+    right: -16px;
+    bottom: auto;
+    left: 48px;
     width: auto;
-    height: auto;
-    background: none;
-    color: var(--q-label-3);
-    font: 400 22px/1 var(--q-font);
+    height: 2px;
   }
+}
+
+/* The numbers: each card opens on what it says, in one figure. */
+.sc-numfig {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 0 0 14px;
+}
+.sc-numfig strong {
+  font: 300 40px/1 var(--nv-display, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.sc-numfig span {
+  color: var(--q-label-2);
+  font: 400 14px/1.3 var(--q-font);
 }
 .sc-made-nums {
   scroll-margin-top: var(--sc-stick);
@@ -2915,51 +3115,357 @@ html.q-tabrail {
     font-size: 14px;
   }
 }
-/* 問 Orbit (views/ask.mjs): the kit's AI bar, three questions to tap, the answer drawn under them. */
+
+/* ---- 4. The whole system ----
+   Its ten parts as tiles, each in its branch's colour on a faint wash; then
+   the journey of one tap across them, and 問 Orbit to end the page. */
+.sc-sys {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.sc-sys-b {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: var(--q-r-card);
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 220ms var(--sc-spring), box-shadow 220ms;
+}
+.sc-sys-b:active {
+  transform: scale(0.98);
+}
+@media (hover: hover) {
+  .sc-sys-b:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sc-edge), 0 10px 24px -14px color-mix(in srgb, var(--c) 60%, transparent);
+  }
+}
+.sc-sys-i {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+  color: var(--c);
+  font-size: 19px;
+}
+.sc-sys-t {
+  display: grid;
+  gap: 3px;
+}
+.sc-sys-t strong {
+  font: 600 16px/1.25 var(--q-font);
+}
+.sc-sys-t small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 13px/1.4 var(--q-font);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+@container page (min-width: 640px) {
+  .sc-sys {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+.sc-journey {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 18px;
+  border-radius: var(--q-r-card);
+  background: radial-gradient(120% 140% at 100% 0%, var(--sc-ac-soft), transparent 60%), var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+  color: inherit;
+  text-decoration: none;
+}
+.sc-journey-t {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+.sc-journey-t strong {
+  font: 600 17px/1.3 var(--q-font);
+}
+.sc-journey-t small {
+  color: var(--q-label-2);
+  font: 400 14px/1.4 var(--q-font);
+}
+.sc-journey-flow {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+.sc-journey-i {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--q-page);
+  box-shadow: var(--sc-edge);
+  color: var(--sc-ac);
+  font-size: 18px;
+}
+.sc-journey-arrow {
+  width: 22px;
+  height: 2px;
+  border-radius: 1px;
+  background: repeating-linear-gradient(90deg, var(--sc-ac) 0 4px, transparent 4px 8px);
+  opacity: 0.6;
+}
+.sc-journey-chev {
+  flex: none;
+  color: var(--q-label-3);
+  font-size: 12px;
+}
+@container page (min-width: 640px) {
+  .sc-journey {
+    padding: 20px 24px;
+  }
+  .sc-journey-flow {
+    display: flex;
+  }
+}
+
+/* 問 Orbit: the box where the page ends, the pill along the bottom, the
+   conversation's sheet and a card's own ask (views/ask.mjs). */
+.sc-ask-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--q-indigo) 16%, transparent);
+  color: var(--q-indigo);
+  font-size: 18px;
+}
 .sc-ask {
   display: grid;
-  gap: 10px;
-  max-width: 640px;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: var(--q-r-card);
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+  scroll-margin-top: var(--sc-stick);
 }
-.sc-ask .sc-subhead {
-  margin-bottom: 0;
+.sc-ask-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sc-ask-head > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+.sc-ask-head strong {
+  font: 600 18px/1.3 var(--q-font);
+}
+.sc-ask-head small {
+  color: var(--q-label-2);
+  font: 400 14px/1.35 var(--q-font);
 }
 .sc-ask-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
+.sc-ask-chips:empty {
+  display: none;
+}
 .sc-ask-chips .q-chip {
   max-width: 100%;
   white-space: normal;
   text-align: left;
 }
-.sc-ask-out:empty {
-  display: none;
-}
-.sc-ask-out .q-aia-pic .sc-ico {
+.sc-ask-a .q-aia-pic .sc-ico {
   width: 20px;
   height: 20px;
 }
-.sc-deeper {
-  display: grid;
-  gap: 8px;
-  margin-top: 24px;
-}
-.sc-deeper .q-more {
-  box-sizing: border-box;
-  justify-content: space-between;
-  min-height: 46px;
-  margin: 0;
-  padding: 0 16px;
-  font-size: 15px;
-  white-space: normal;
-  text-align: left;
-}
 @container page (min-width: 640px) {
-  .sc-deeper {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .sc-ask {
+    padding: 22px 24px;
   }
+}
+/* The pill: always a tap away, naming a question about what's on screen. */
+.sc-dock {
+  position: fixed;
+  z-index: 35;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(calc(100% - 32px), 420px);
+  min-height: 56px;
+  padding: 7px 7px 7px 8px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--nv-card, var(--q-surface, #fff)) 88%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  backdrop-filter: blur(20px) saturate(1.8);
+  box-shadow: inset 0 0 0 0.5px var(--nv-edge, var(--q-sep)), 0 10px 30px -8px rgba(0, 0, 0, 0.35);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform: translateX(-50%);
+  transition: transform 360ms var(--sc-spring), opacity 260ms;
+}
+.sc-dock:active {
+  transform: translateX(-50%) scale(0.98);
+}
+.sc-dock.away {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 140%);
+}
+html.sc-playing .sc-dock,
+html[data-view='how'] .sc-dock.how-off {
+  display: none;
+}
+.sc-dock-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--q-indigo) 16%, transparent);
+  color: var(--q-indigo);
+  font-size: 19px;
+}
+.sc-dock-t {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.sc-dock-t strong {
+  font: 600 15px/1.25 var(--q-font);
+}
+.sc-dock-q {
+  overflow: hidden;
+  color: var(--q-label-2);
+  font: 400 14px/1.3 var(--q-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sc-dock-go {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--q-fill-3);
+  color: var(--q-label);
+  font-size: 17px;
+}
+/* A computer: the pill centred under the page, beside the side bar. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .sc-dock {
+    left: calc(50% + 124px);
+    bottom: 22px;
+    width: 460px;
+  }
+}
+/* Room under the page's end for the pill. */
+.page {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+/* The conversation. */
+.sc-asksheet .q-sheet-head .sc-ask-mark {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+}
+.sc-ask-body {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0 8px;
+}
+.sc-ask-hello p {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 400 15px/1.5 var(--q-font);
+}
+.sc-ask-hello[hidden] {
+  display: none;
+}
+.sc-ask-thread {
+  display: grid;
+  gap: 18px;
+}
+.sc-ask-thread:empty {
+  display: none;
+}
+.sc-ask-x {
+  display: grid;
+  gap: 10px;
+  scroll-margin-top: 12px;
+}
+.sc-ask-q {
+  justify-self: end;
+  max-width: 85%;
+  margin: 0;
+  padding: 9px 14px;
+  border-radius: 18px 18px 6px 18px;
+  background: var(--sc-ac);
+  color: #fff;
+  font: 400 15px/1.4 var(--q-font);
+}
+.sc-ask-foot {
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: inherit;
+}
+/* A card's own ask (the tree's cards). */
+.sc-ask-this {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--sc-ac-soft);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sc-ask-this > span:nth-child(2) {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.sc-ask-this strong {
+  font: 600 15px/1.3 var(--q-font);
+}
+.sc-ask-this small {
+  color: var(--q-label-2);
+  font: 400 13px/1.35 var(--q-font);
+}
+.sc-ask-this > .sc-ico:last-child {
+  color: var(--q-label-3);
+  font-size: 11px;
 }
 .sc-foot {
   margin-top: 48px;
