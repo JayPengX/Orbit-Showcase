@@ -44,7 +44,8 @@ apps by name, the whole system. A link to a chapter on the page scrolls there; b
 return to where the reader was.
 
 Jay's own homepage lives here too: `public/home/index.html`, one self-contained file (no kit,
-no betting, open to all) that the `orbit-home` Worker serves at https://jaypengx.com/ (published to Cloudflare by `deploy/cf-site.mjs`). It links Orbit, the
+no betting, open to all) that the `orbit-home` Worker serves at https://jaypengx.com/ (published to Cloudflare by `deploy/cf-site.mjs`). It leads with Orbit (a card of its own, opening
+orbit.jaypengx.com/app/), then the
 showcase and GitHub.
 
 The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (language, icons, app titles, screenshot addresses, a card's problem → idea → result). The look is the kit's
