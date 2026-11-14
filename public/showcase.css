@@ -2032,7 +2032,6 @@ html.q-tabrail {
   align-items: center;
   gap: 8px;
 }
-.sc-lang,
 .sc-share {
   display: inline-grid;
   place-items: center;

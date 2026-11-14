@@ -31,13 +31,7 @@ const statsReady = fetch('./data/stats.json', { cache: 'no-cache' })
 let stats = null;
 
 // ---- The frame ----
-const otherLang = () => {
-  try {
-    localStorage.setItem('orbit.lang', en ? 'zh' : 'en');
-  } catch {}
-  location.reload();
-};
-const langBtn = () => h('button', { class: 'sc-lang', type: 'button', onclick: otherLang, 'aria-label': en ? '切換成中文' : 'Switch to English' }, [en ? '中文' : 'EN']);
+// (No language switch: the browser's language picks it, kit lang.mjs; Jay 2026-11-14.)
 // The showcase's link and its QR code (the kit's share sheet: colours, shapes, PNG or SVG to print).
 const share = async () => {
   const [{ shareSheet }, { SITE, DOMAIN }, { familyMark }] = await Promise.all([import('#kit/share.mjs'), import('#kit/domain.mjs'), import('#kit/brand.mjs')]);
@@ -53,7 +47,7 @@ const chapterLinks = cls => CHAPTERS.map(c => h('a', { class: cls, href: `#${c.i
 // page and the system's, the way back and what's here).
 const nav = h('nav', { class: 'sc-bar-nav', 'aria-label': t(['章節', 'Chapters']) }, chapterLinks('sc-chap'));
 const sub = h('div', { class: 'sc-bar-sub', hidden: true });
-$('bar').replaceChildren(brand(), h('div', { class: 'sc-bar-acts' }, [shareBtn(), langBtn()]), nav, sub);
+$('bar').replaceChildren(brand(), h('div', { class: 'sc-bar-acts' }, [shareBtn()]), nav, sub);
 
 // A computer's side bar: the chapters, the ten apps under App, the whole system.
 const sideApps = h(
@@ -71,9 +65,9 @@ const side = h('aside', { class: 'sc-side', 'aria-label': t(['導覽', 'Navigati
     h('a', { class: 'sc-side-chap sc-side-how', href: '#how', 'data-view': 'how' }, [ico('list'), h('span', { text: t(['整個系統', 'The whole system']) })])
   ]),
   h('div', { class: 'sc-side-foot' }, [
-    h('div', { class: 'sc-side-btns' }, [langBtn(), shareBtn()]),
+    h('div', { class: 'sc-side-btns' }, [shareBtn()]),
     // (two set lines, so neither breaks on its own)
-    h('p', {}, [h('span', { text: t(['Jay 的自主學習作品', 'Jay’s self-directed learning']) }), h('span', { text: t(['和 Claude 一起做', 'project, made with Claude']) })])
+    h('p', {}, [h('span', { text: t(['Orbit，Jay 做的', 'Orbit, by Jay,']) }), h('span', { text: t(['和 Claude 一起', 'made with Claude']) })])
   ])
 ]);
 document.body.prepend(side);

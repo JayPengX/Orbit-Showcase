@@ -225,7 +225,9 @@
   })();
 
   document.getElementById('y').textContent = new Date().getFullYear();
-  if (!/^zh/i.test(navigator.language || '')) {
+  // The language by itself, no switch (Jay 2026-11-14): Chinese for a browser in any Chinese, else English.
+  var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'zh-TW'];
+  if (!langs.some(function (x) { return /^zh/i.test(x); })) {
     document.documentElement.lang = 'en';
     document.querySelectorAll('[data-en]').forEach(el => { el.textContent = el.dataset.en; });
   }
