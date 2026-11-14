@@ -5,6 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { icons } from '#kit/ui.mjs';
 import { ROOT, NODES } from '../public/lib/tree.mjs';
 import { APPS } from '../public/lib/apps.mjs';
@@ -142,4 +143,9 @@ test('every card line in English is English', async () => {
   };
   for (const [id, { node }] of NODES) walk(node, id);
   assert.deepEqual(left, []);
+});
+
+test('every screenshot URL carries its current content stamp', () => {
+  const r = spawnSync(process.execPath, [new URL('../scripts/shot-versions.mjs', import.meta.url).pathname, '--check'], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
 });
