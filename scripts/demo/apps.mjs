@@ -7,7 +7,8 @@
 // them it needs anyway; `built`, files the app's deploy makes, from its live
 // site; `css`, rules put into the copy; `ua`, the phone's name for an app
 // that asks for it; `stores`, what the app finds saved on the phone; `wall`,
-// an app on the phone's own clock hands (shown Taiwan's time anywhere).
+// an app on the phone's own clock hands (shown Taiwan's time anywhere);
+// `linkPictures`, another site's pictures asked of that site, never copied.
 // A step: { tap: selector } | { hash: '#…' } | { type: [selector, text] } | { back: true }, with an optional wait (ms).
 import { TOURS } from '../../public/lib/demos.mjs';
 import { timetable } from './class-timetable.mjs';
@@ -35,5 +36,7 @@ export const DEMOS = {
   // Today's real laws, rulings and bills (the live site's data, as recorded); 問法律 needs a Pass, so it stays out.
   law: { app: 'law', repo: 'Orbit-Law', clock: 'now', geo: [25.034, 121.565], tour: steps('law'), explore: [{ tap: '#tab-rulings', wait: 4000 }, { tap: '#tab-laws', wait: 3000 }, { tap: '#tab-home', wait: 2000 }], settle: 8000 },
   // Today's real buses, trains and bikes (--live), on Google's map in the showcase like the real app (liveMap).
-  transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 }
+  transit: { app: 'transit', repo: 'Orbit-Transit', clock: 'now', geo: [24.8016, 120.9716], serve: ['--live'], liveMap: true, tour: steps('transit'), explore: [], settle: 9000 },
+  // Today's real stories (the live builder's), as recorded; the outlets' pictures stay theirs (linked, never copied).
+  news: { app: 'news', repo: 'Orbit-News', clock: 'now', linkPictures: true, geo: [25.034, 121.565], tour: steps('news'), explore: [{ hash: '#intl', wait: 3000 }, { hash: '#top', wait: 2000 }], settle: 9000 }
 };

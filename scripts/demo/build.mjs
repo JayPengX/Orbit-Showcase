@@ -104,6 +104,8 @@ for (const id of ids) {
       }
       continue;
     }
+    // (linkPictures: another site's picture is never copied, the page asks that site as the app does; Orbit News keeps no picture.)
+    if (demo.linkPictures && /^image\//.test(type)) continue;
     const name = `${createHash('sha1').update(body).digest('hex').slice(0, 16)}.${EXT[type] || 'bin'}`;
     if (!existsSync(join(site, '_x', name))) writeFileSync(join(site, '_x', name), body);
     if (/^image\/|^text\/css|javascript/.test(type) && g.method === 'GET') pics[url] = `../_x/${name}`;
