@@ -122,12 +122,11 @@ export const APPS = [
     q: ['我遇到的事，法律怎麼說？', 'What does the law say about what happened to me?'],
     shots: [
       ['law/1', ['法律、判決、法案，一個 App 全包', 'Laws, rulings and bills, all in one app']],
-      ['law/2', ['5.4 萬部法規，中央到地方', '54,000 laws and rules, national to local']],
-      ['law/3', ['每部法律，連到修法、判決和釋憲', 'Every law linked to its bills and rulings']],
-      ['law/4', ['4.7 萬則判決，憲法法庭到各級法院', '47,000 rulings, from the top court down']],
-      ['law/5', ['白話問，答案附上條文', 'Ask in plain words, every point cited']],
-      ['law/6', ['立法院近 8 千案，走到哪一步', 'Nearly 8,000 bills, each one’s stage']],
-      ['law/7', ['22 縣市議會和代表會，影音都在', 'Every council, down to the townships']]
+      ['law/2', ['每部法律，連到修法、判決和釋憲', 'Every law linked to its bills and rulings'], 'computer'],
+      ['law/3', ['4.7 萬則判決，憲法法庭到各級法院', '47,000 rulings, from the top court down']],
+      ['law/4', ['白話問，答案附上條文', 'Ask in plain words, every point cited']],
+      ['law/5', ['立法院近 8 千案，走到哪一步', 'Nearly 8,000 bills, each one’s stage'], 'tablet'],
+      ['law/6', ['22 縣市議會和代表會，影音都在', 'Every council, down to the townships']]
     ],
     now: 'law/1',
     then: ['then-law', ['第一天：一個法規閱讀器，1,351 部法律', 'Day one: a law reader, 1,351 laws']]
