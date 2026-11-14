@@ -6,6 +6,7 @@ import { lang } from '#kit/lang.mjs';
 import { appIcon, familyMark } from '#kit/brand.mjs';
 import { h, icons } from '#kit/ui.mjs';
 import { NODES } from './lib/tree.mjs';
+import { SHOT_V } from './lib/shot-v.mjs';
 
 export { h };
 export const en = lang === 'en';
@@ -43,7 +44,11 @@ export const appTitle = a => t(NODES.get(a.id).node.title);
 // A screenshot (shots/<app>/N): the set taken with the app in Chinese
 // (N.zh.webp) on the Chinese page, the English one otherwise; a day-one
 // picture (then-…) has one set.
-export const shotUrl = (f, zh = true) => `./shots/${f}${zh && !en && !f.startsWith('then-') ? '.zh' : ''}.webp`;
+// (?v=: its content stamp, so a retaken shot is never one the phone kept; scripts/shot-versions.mjs)
+export const shotUrl = (f, zh = true) => {
+  const name = `${f}${zh && !en && !f.startsWith('then-') ? '.zh' : ''}`;
+  return `./shots/${name}.webp${SHOT_V[name] ? `?v=${SHOT_V[name]}` : ''}`;
+};
 
 // Problem → idea → result, a tree card's three plain lines.
 export function pir(node) {
