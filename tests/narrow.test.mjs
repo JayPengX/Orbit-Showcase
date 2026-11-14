@@ -1,6 +1,6 @@
 // At 320: a phone demo's label beside 即時 and ↻ is never cut with …, and
-// the homepage's Orbit line never splits 法律 (2026-11-12: 「試玩 · 範例資料，什麼都…」;
-// 「法 / 律」 across two lines).
+// the homepage's Orbit card keeps its line and its ten icons inside (2026-11-12:
+// 「試玩 · 範例資料，什麼都…」).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
@@ -29,8 +29,9 @@ test('at 320 the phone demo label fits beside 即時 and ↻', async t => {
     const cut = await page.evaluate(() => [...document.querySelectorAll('.sc-player-name small')].filter(s => s.scrollWidth > s.clientWidth + 1).map(s => s.textContent));
     assert.deepEqual(cut, []);
     await page.setContent(home.replace(/<script[\s\S]*?<\/script>/g, ''));
-    const split = await page.evaluate(() => { const nb = document.querySelector('.nb'); return nb.getClientRects().length; });
-    assert.equal(split, 1, '法律⋯⋯ on one line');
+    const fit = await page.evaluate(() => { const sub = document.querySelector('.f-sub'), row = document.querySelector('.f-apps'), card = document.querySelector('.feature'); return { lines: Math.round(sub.getBoundingClientRect().height / parseFloat(getComputedStyle(sub).lineHeight)), over: row.scrollWidth > card.clientWidth - 40 + 1 }; });
+    assert.equal(fit.lines, 1, "Orbit's line on one line");
+    assert.equal(fit.over, false, "every app's icon fits on Orbit's card");
     // 整個系統's branch rail: the family mark and every branch on one row (eleven of them now).
     await page.setViewportSize({ width: 320, height: 700 });
     await page.setContent(`<style>${css}</style><main class="page" style="padding:0 16px"><nav class="sc-rail">${'<button class="sc-rail-b">●</button>'.repeat(11)}</nav></main>`);
