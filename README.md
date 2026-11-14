@@ -15,6 +15,8 @@
 
 The Orbit family of apps, shown the way a page does better than a PDF: the structure, the numbers, and the apps themselves running. Open to everyone, on phones and computers, with no sign-in.
 
+To use the apps themselves, add **[Orbit](https://orbit.jaypengx.com/app/)** to your home screen: every Orbit app in one.
+
 <p align="center">
   <img src="docs/screenshots/home-desktop.webp" width="71%" alt="The showcase's first screen, on a computer">
   <img src="docs/screenshots/home-phone.webp" width="19%" alt="The showcase's first screen, on a phone">
@@ -112,6 +114,8 @@ The deploy records every demo again by itself. By hand: `node scripts/demo/refre
 Push to `main`. GitHub Actions recounts the numbers, runs the tests, stamps every file with its content hash (so a phone downloads only what changed) and publishes `public/` to Cloudflare at its jaypengx.com address (Orbit-Core `deploy/cf-site.mjs`). It also runs daily. There are no pull requests or release branches.
 
 ## Part of Orbit
+
+Every app below is in **[Orbit](https://orbit.jaypengx.com/app/)**, one home-screen app for them all; each also works on its own.
 
 | App | What it is |
 | --- | --- |

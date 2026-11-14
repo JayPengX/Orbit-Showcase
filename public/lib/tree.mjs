@@ -10,7 +10,7 @@ const n = (id, icon, title, line, more = {}) => ({ id, icon, title, line, ...mor
 const apps = n('apps', 'grid', ['十個 App', 'Ten apps'], ['你手上真正會用到的東西', 'What you actually hold'], {
   p: ['每天要用的東西散在一堆 App 和網站裡，很多還不是為台灣做的。', 'Everyday things are spread over many apps and sites, many not made for Taiwan.'],
   i: ['十個各回答一個問題的 App：看比賽、搭車、天氣、課表、記帳、新聞、單字、音樂、法律、投資；長得像同一家人。', 'Ten apps, each answering one question: games, trips, weather, classes, money, news, words, music, law, investing, all looking like one family.'],
-  r: ['每個都是網頁，加到主畫面就像原生 App。', 'Each is a web page that works like a native app from the home screen.'],
+  r: ['十個都在 Orbit 一個 App 裡，加到主畫面就像原生 App；也能單獨加其中一個。', 'All ten live in one app, Orbit, that works like a native app from the home screen; each can also be added on its own.'],
   kids: APP_BRANCHES
 });
 
