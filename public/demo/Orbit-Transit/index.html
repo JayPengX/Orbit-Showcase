@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
-<meta name="build-version" content="dev" />
+<meta name="build-version" content="demo-1794670052419" />
 <!-- brand: Orbit-Core/brand/generate.mjs writes this block -->
 <title>Orbit Transit</title>
 <meta name="description" content="台灣大眾運輸：地圖與路線導航、公車到站、火車與高鐵轉乘、捷運路網，加上 YouBike。" />
@@ -21,12 +21,12 @@
 <meta property="og:url" content="https://orbit.jaypengx.com/transit/" />
 <meta property="og:locale" content="zh_TW" />
 <meta property="og:locale:alternate" content="en_US" />
-<meta property="og:image" content="https://orbit.jaypengx.com/transit/share/og.jpg?v=10117474" />
+<meta property="og:image" content="https://orbit.jaypengx.com/transit/share/og.jpg?v=d64cc8e2" />
 <meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="Orbit Transit — 全台公車、火車、捷運與 YouBike，一次規劃" />
-<meta property="og:image" content="https://orbit.jaypengx.com/transit/share/square.jpg?v=4aa0b572" />
+<meta property="og:image" content="https://orbit.jaypengx.com/transit/share/square.jpg?v=fb4d9398" />
 <meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="1200" />
@@ -34,14 +34,13 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Orbit Transit" />
 <meta name="twitter:description" content="台灣大眾運輸：地圖與路線導航、公車到站、火車與高鐵轉乘、捷運路網，加上 YouBike。" />
-<meta name="twitter:image" content="https://orbit.jaypengx.com/transit/share/x.jpg?v=f650e036" />
+<meta name="twitter:image" content="https://orbit.jaypengx.com/transit/share/x.jpg?v=02eefd5e" />
 <meta name="twitter:image:alt" content="Orbit Transit — 全台公車、火車、捷運與 YouBike，一次規劃" />
 <!-- /brand -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <link rel="manifest" href="./manifest.webmanifest" />
-<link rel="preconnect" href="https://orbit-workers-proxy.pengzjay.workers.dev" crossorigin />
 <!-- kit:head: where the app's stylesheets end, before any module. The kit
      comes from one place for every app (Orbit-Core's GitHub Pages, same
      site as the apps), each file at the hash this device last saw (orbit.kit
@@ -51,15 +50,79 @@
      to Orbit-Core and a phone downloads only the files it changed. A kit
      file newer than the app's deploy (not in its list) is mapped from those
      hashes too, never left at a bare address the browser keeps 10 minutes. -->
-<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['brand.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','domain.mjs','f1live.mjs','feedback.mjs','flight.mjs','format.mjs','gov.mjs','help.mjs','hold-place.mjs','holidays.mjs','lang.mjs','logos.mjs','mirror.mjs','names.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','qrcode.mjs','share.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Orbit-Core/kit/',null)</script>
+<script>!function(b,d,v,h,n,m,f,i,u){try{v=localStorage.getItem('orbit.kit')||'';h=JSON.parse(localStorage.getItem('orbit.kitFiles')||'null')}catch(e){v=''}n=!!v;if(!n&&d){v=d.version;h=d}h=h&&h.version===v?h.files:null;u=function(x){var k=h&&h[x];return b+x+(k?'?v='+k:v?'?v='+encodeURIComponent(v):'')};m={'#kit/':b};f=['ai.mjs','ask-orbit.mjs','brand.mjs','catalog.mjs','dayoff.mjs','devconfig.mjs','domain.mjs','ebus-read.mjs','ebus.mjs','f1live.mjs','family.mjs','feedback.mjs','flight.mjs','format.mjs','gov.mjs','help.mjs','hold-place.mjs','holidays.mjs','lang.mjs','logos.mjs','mirror.mjs','names.mjs','news-outlets.mjs','orbit.mjs','pass-sync.mjs','pass.mjs','passkey.mjs','pay.mjs','photo-urls.mjs','photos.mjs','postseason.mjs','qrcode.mjs','rain-now.mjs','share.mjs','source-watch.mjs','sources.mjs','sports-broadcast.mjs','sports-espn.mjs','sports-highlights.mjs','sports-winprob.mjs','steady-pics.mjs','stock-access.mjs','stock-account.mjs','stock-bonds.mjs','stock-codec.mjs','stock-credit.mjs','stock-hk-lots.mjs','stock-holidays.mjs','stock-ipo.mjs','stock-jp-lists.mjs','stock-markets.mjs','stock-quotes.mjs','stock-savings.mjs','today.mjs','ui.mjs'];for(i=0;i<f.length;i++)m['#kit/'+f[i]]=u(f[i]);if(h)for(i in h)/\.mjs$/.test(i)&&(m['#kit/'+i]=u(i));window.ORBIT_KIT={base:b,version:v,noted:n,url:u};document.write('<script type="import'+'map">'+JSON.stringify({imports:m})+'<\/script><link rel="stylesheet" href="'+u('orbit.css')+'"><link rel="modulepreload" href="'+u('orbit.mjs')+'"><link rel="modulepreload" href="'+u('brand.mjs')+'">')}('../Orbit-Core/kit/',{"version":"kb162b4af86c2","files":{}})</script>
 <!-- /kit:head -->
-<link rel="stylesheet" href="./transit.css" />
+<script>['act.mjs','ai.mjs','ask-orbit.mjs','dayoff.mjs','domain.mjs','family.mjs','feedback.mjs','format.mjs','gov.mjs','hold-place.mjs','holidays.mjs','lang.mjs','orbit-mine.mjs','passkey.mjs','pay.mjs','source-watch.mjs','steady-pics.mjs','suite.mjs','testtools.mjs','today.mjs','ui.mjs','usage.mjs'].forEach(function(f){document.write('<link rel="modulepreload" href="'+ORBIT_KIT.url(f)+'">')})</script>
+<link rel="stylesheet" href="./transit.css?v=47b75c1a7cdd" />
 <!-- Orbit's own look for 交通 (lib/board.mjs), after the app's own stylesheet. -->
-<link rel="stylesheet" href="./board.css" />
+<link rel="stylesheet" href="./board.css?v=8c07d80f3c2b" />
 <!-- The map's library, asked as the page opens (the provider kept from the
      last opening: map.mjs loadGoogle / loadLeaflet take it over), not a second later
      once the app's code has loaded; and its tiles' servers connected to. -->
 <script>!function(c,g,s){try{c=(JSON.parse(localStorage.getItem('orbit-transit.v1')||'{}').cfg||{}).map||{}}catch(e){c={}}s=document.createElement('script');s.async=true;(c.provider==='google'&&c.key?['https://maps.googleapis.com','https://maps.gstatic.com']:['https://wmts.nlsc.gov.tw']).forEach(function(h){var p=document.createElement('link');p.rel='preconnect';p.href=h;p.crossOrigin='';document.head.appendChild(p)});if(c.provider==='google'&&c.key){window.__otMapsEarly=new Promise(function(r){window.__otMaps=r});s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(c.key)+'&v=weekly&language=zh-TW&region=TW&loading=async&callback=__otMaps'}else{g='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';var l=document.createElement('link');l.rel='stylesheet';l.href=g+'leaflet.min.css';document.head.appendChild(l);window.__otLeafletEarly=new Promise(function(r,j){s.onload=r;s.onerror=j});s.src=g+'leaflet.min.js'}document.head.appendChild(s)}()</script>
+<link rel="modulepreload" href="./lib/api.mjs?v=c79c274a3ef5" />
+<link rel="modulepreload" href="./lib/util.mjs?v=e9f898aae6f9" />
+<link rel="modulepreload" href="./lib/store.mjs?v=281769dd3eef" />
+<link rel="modulepreload" href="./lib/city.mjs?v=6f5ebd1778e0" />
+<link rel="modulepreload" href="./lib/raildata.mjs?v=0f4bb135dfca" />
+<link rel="modulepreload" href="./lib/rail.mjs?v=25e4d21be1d8" />
+<link rel="modulepreload" href="./lib/metro.mjs?v=2169da9a9515" />
+<link rel="modulepreload" href="./lib/service.mjs?v=ce5eea8fbefe" />
+<link rel="modulepreload" href="./lib/alerts.mjs?v=6949ee4bbe46" />
+<link rel="modulepreload" href="./lib/bus.mjs?v=8834b9b763" />
+<link rel="modulepreload" href="./lib/packs.mjs?v=b9b0c01e493c" />
+<link rel="modulepreload" href="./lib/near.mjs?v=8834b9b763" />
+<link rel="modulepreload" href="./lib/bike.mjs?v=7ee49b675fcb" />
+<link rel="modulepreload" href="./lib/busgps.mjs?v=345def435a3f" />
+<link rel="modulepreload" href="./lib/shapes.mjs?v=04397629ede9" />
+<link rel="modulepreload" href="./lib/buzz.mjs?v=d2e8ab148051" />
+<link rel="modulepreload" href="./lib/underway.mjs?v=41d34c98f022" />
+<link rel="modulepreload" href="./lib/nav.mjs?v=5d78748a5d58" />
+<link rel="modulepreload" href="./lib/look.mjs?v=98403e83095f" />
+<link rel="modulepreload" href="./lib/ui.mjs?v=fbcb44f64e82" />
+<link rel="modulepreload" href="./lib/live.mjs?v=8834b9b763" />
+<link rel="modulepreload" href="./lib/plan.mjs?v=651f8719bf97" />
+<link rel="modulepreload" href="./lib/rivers.mjs?v=f7f643965c57" />
+<link rel="modulepreload" href="./lib/navlive.mjs?v=d8328d4b10a5" />
+<link rel="modulepreload" href="./lib/rain.mjs?v=e9830f39efe0" />
+<link rel="modulepreload" href="./lib/trouble.mjs?v=ec0bb401a2d3" />
+<link rel="modulepreload" href="./lib/aboard.mjs?v=7ac7ba181ed0" />
+<link rel="modulepreload" href="./lib/rental.mjs?v=ed5caec5dfa6" />
+<link rel="modulepreload" href="./lib/links.mjs?v=ef24360ecf2b" />
+<link rel="modulepreload" href="./lib/family-share.mjs?v=bf57fd3ea9e1" />
+<link rel="modulepreload" href="./lib/tab-map.mjs?v=195f86e62012" />
+<link rel="modulepreload" href="./lib/map.mjs?v=75b9ca90e962" />
+<link rel="modulepreload" href="./lib/compass.mjs?v=2b08bd81397e" />
+<link rel="modulepreload" href="./lib/book.mjs?v=fd6d5c29501d" />
+<link rel="modulepreload" href="./lib/metro-ui.mjs?v=cd5ff2410b3c" />
+<link rel="modulepreload" href="./lib/planner.mjs?v=f698a25898dd" />
+<link rel="modulepreload" href="./lib/metroroute.mjs?v=e45989e4df02" />
+<link rel="modulepreload" href="./lib/chase.mjs?v=f91dfcc2402d" />
+<link rel="modulepreload" href="./lib/tpass.mjs?v=cf69f03f6627" />
+<link rel="modulepreload" href="./lib/ticket.mjs?v=fce87fe32473" />
+<link rel="modulepreload" href="./lib/near-ui.mjs?v=e2aad8425eea" />
+<link rel="modulepreload" href="./lib/bus-ui.mjs?v=fa4106444002" />
+<link rel="modulepreload" href="./lib/fare.mjs?v=f97d2d7c1e4f" />
+<link rel="modulepreload" href="./lib/steady.mjs?v=8ddabdf2ef0e" />
+<link rel="modulepreload" href="./lib/learn.mjs?v=056c02b25d6f" />
+<link rel="modulepreload" href="./lib/suggest.mjs?v=a84a2b997552" />
+<link rel="modulepreload" href="./lib/said.mjs?v=b495de335fea" />
+<link rel="modulepreload" href="./lib/sheet.mjs?v=cf0e0cb31eb1" />
+<link rel="modulepreload" href="./lib/detents.mjs?v=b3911559226d" />
+<link rel="modulepreload" href="./lib/home.mjs?v=aed7f4a6560d" />
+<link rel="modulepreload" href="./lib/tab-go.mjs?v=d31da748ff08" />
+<link rel="modulepreload" href="./lib/slow.mjs?v=8d4b605d96b1" />
+<link rel="modulepreload" href="./lib/board.mjs?v=226713f4dc04" />
+<link rel="modulepreload" href="./lib/tab-times.mjs?v=c758fce6b715" />
+<link rel="modulepreload" href="./lib/tab-train.mjs?v=ed04b0d6395f" />
+<link rel="modulepreload" href="./lib/linemap.mjs?v=fe7a9a565aa1" />
+<link rel="modulepreload" href="./lib/tra-map.mjs?v=33b0beed76d2" />
+<link rel="modulepreload" href="./lib/tab-metro.mjs?v=e17749cabe50" />
+<link rel="modulepreload" href="./lib/metromap.mjs?v=71ab7e633785" />
+<link rel="modulepreload" href="./lib/metro-drawings.mjs?v=5b15635c1b4d" />
+<link rel="modulepreload" href="./lib/tab-me.mjs?v=902e41ee885d" />
+<link rel="modulepreload" href="./lib/testing.mjs?v=7e42b6ad3e15" />
+<link rel="modulepreload" href="./lib/tripsim.mjs?v=5161f79b3c5f" />
 </head>
 <body class="tab-map">
 <div id="loading" data-title="Orbit Transit"></div>
@@ -122,6 +185,6 @@
 </main>
 <!-- Navigating, shrunk or on another tab: the step you're on, a tap goes back (nav.mjs). -->
 <div id="nav-mini" class="ot-nav-mini q-foot"></div>
-<script type="module" src="./app.mjs" onerror="window.__fxFail()"></script>
+<script type="module" src="./app.mjs?v=e3406f708721" onerror="window.__fxFail()"></script>
 </body>
 </html>

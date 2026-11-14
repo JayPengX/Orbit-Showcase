@@ -1,1 +1,1 @@
-import{proxyJson}from"#kit/orbit.mjs";import{useQuotesReader}from"#kit/stock-quotes.mjs";useQuotesReader((url,o)=>proxyJson(url,o));export*from"#kit/stock-quotes.mjs";
+import{proxyJson}from"#kit/orbit.mjs";import{useQuotesReader,fetchQuotes as readQuotes}from"#kit/stock-quotes.mjs";useQuotesReader((url,o)=>proxyJson(url,o));export*from"#kit/stock-quotes.mjs";export const fetchQuotes=(...a)=>globalThis.ORBIT_TEST?.flags?.quotesFail?Promise.reject(new Error("test: quotes failing")):readQuotes(...a);
