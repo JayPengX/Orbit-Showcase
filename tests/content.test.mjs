@@ -71,7 +71,7 @@ test('tree cards: every picture on a real node, both languages, icons drawn', ()
 test('the chapters draw their icons; every highlight opens a real card', () => {
   const main = readFileSync(new URL('../public/views/main.mjs', import.meta.url), 'utf8');
   const chapters = [...main.matchAll(/\{ id: '(\w+)', icon: '(\w+)', label:/g)];
-  assert.deepEqual(chapters.map(m => m[1]), ['apps', 'wow', 'made']);
+  assert.deepEqual(chapters.map(m => m[1]), ['apps', 'wow', 'made', 'system']);
   for (const [, id, icon] of chapters) assert.ok(icons[icon], `chapter ${id}: icon ${icon}`);
   const wow = [...main.matchAll(/\{ id: '([\w-]+)', app: (?:'(\w+)'|null), fig:/g)];
   assert.equal(wow.length, 6);

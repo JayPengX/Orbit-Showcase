@@ -9,7 +9,9 @@
 import { h, t, ico, appImg, num, shotUrl, appTitle, daysBetween, twToday, fmtDayYear, en } from '../shell.mjs';
 import { APPS } from '../lib/apps.mjs';
 import { hasDemo, openDemo } from './demo.mjs';
-import { openCard } from './how.mjs';
+import { openCard, TOP, hue, shortName } from './how.mjs';
+import { SHOW } from '../lib/tree-show.mjs';
+import { BRANDS } from '#kit/brand.mjs';
 import { heatmap, hours, churn } from './numbers.mjs';
 import { askOrbit } from './ask.mjs';
 
@@ -18,7 +20,8 @@ import { askOrbit } from './ask.mjs';
 export const CHAPTERS = [
   { id: 'apps', icon: 'grid', label: ['App', 'Apps'] },
   { id: 'wow', icon: 'spark', label: ['亮點', 'Highlights'] },
-  { id: 'made', icon: 'pencil', label: ['怎麼做的', 'How it’s made'] }
+  { id: 'made', icon: 'pencil', label: ['怎麼做的', 'How it’s made'] },
+  { id: 'system', icon: 'list', label: ['整個系統', 'The system'] }
 ];
 
 const appName = a => appTitle(a).replace(/^Orbit /, '');
@@ -94,7 +97,7 @@ function top(stats) {
 // ---- 1. The ten apps: each one's question, its page, its demo ----
 // A question breaks after its own commas (with keep-all in the CSS), never
 // mid-word (「今晚有什 / 麼比賽」 at 320 in Safari).
-const phrased = s => s.replace(/([，、？；])(?=.)/g, '$1\u200b');
+const phrased = s => (en ? [s] : s.split(/(?<=[，、？；])(?=.)/).map(p => h('span', { class: 'sc-ph', text: p })));
 
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
@@ -106,7 +109,7 @@ function apps() {
         h('li', { class: 'sc-app', 'data-brand': a.brand }, [
           h('a', { class: 'sc-app-main', href: `#apps/${a.id}` }, [
             appImg(a.brand, 48),
-            h('span', { class: 'sc-app-text' }, [h('small', {}, [appName(a), ico('chevron', 'sc-app-chev')]), h('strong', { text: phrased(t(a.q)) })])
+            h('span', { class: 'sc-app-text' }, [h('small', {}, [appName(a), ico('chevron', 'sc-app-chev')]), h('strong', {}, phrased(t(a.q)))])
           ]),
           hasDemo(a.id)
             ? h('button', { class: 'sc-trypill', type: 'button', 'aria-label': `${t(['試玩', 'Try'])} ${appTitle(a)}`, onclick: () => tryApp(a) }, [
@@ -123,6 +126,8 @@ function apps() {
 // ---- 2. Six things people don't expect ----
 // Each a figure the tree's own card states (lib/tree-show.mjs, tree.mjs,
 // tree-apps.mjs: none made up), in one line; a tap opens its whole story.
+// The figure wears its app's colour (the one coloured thing on the card); on
+// a wide page the first one is the big card of the six.
 const WOW = [
   { id: 'weather-typhoon', app: 'weather', fig: '68', say: ['個颱風，教它算出放颱風假的機率', 'typhoons taught it the chance of a typhoon day off'] },
   { id: 'law-links', app: 'law', fig: ['約 99%', '~99%'], say: ['法條裡約 28,000 個「第幾條」，點了就到那一條', 'of the ~28,000 article numbers in the law open that very article'] },
@@ -131,18 +136,25 @@ const WOW = [
   { id: 'words-memory', app: 'words', fig: '20', say: ['個字一天，挑的都是你快忘記的', 'words a day, each just as you’re about to forget it'] },
   { id: 'beats-game', app: 'beats', fig: ['±45 毫秒', '±45 ms'], say: ['以內才算打中節拍：每首歌都是一關節奏遊戲', 'is how close a tap must land: every song is a rhythm-game level'] }
 ];
+const brandOf = a => BRANDS[a?.brand] || null;
 function wow() {
   return h('section', { class: 'sc-sec', id: 'wow' }, [
-    head(['你可能沒想到的事', 'Things you might not expect'], ['點一張，看完整的故事：問題、想法、結果。', 'Tap one for the whole story: problem, idea, result.']),
+    head(['你可能沒想到的事', 'Things you might not expect'], ['點一張，看它怎麼做到。', 'Tap one to see how it’s done.']),
     h(
       'div',
       { class: 'sc-wow' },
-      WOW.map(w => {
+      WOW.map((w, i) => {
         const a = APPS.find(x => x.id === w.app);
-        return h('button', { class: 'sc-wowcard', type: 'button', onclick: () => openCard(w.id) }, [
+        const b = brandOf(a);
+        return h('button', { class: `sc-wowcard${i === 0 ? ' big' : ''}`, type: 'button', style: b ? `--w-c:${b.color};--w-ink:${b.ink};--w-from:${b.from}` : '', onclick: () => openCard(w.id) }, [
+          h('span', { class: 'sc-wow-from' }, [appImg(a?.brand || null, 22), h('span', { class: 'sc-wow-name' }, a ? [h('span', { class: 'sc-wow-orbit', text: 'Orbit ' }), appName(a)] : [t(['整個 Orbit', 'All of Orbit'])])]),
           h('strong', { class: 'sc-wow-fig', text: t(w.fig) }),
           h('span', { class: 'sc-wow-say', text: t(w.say) }),
-          h('span', { class: 'sc-wow-from' }, [appImg(a?.brand || null, 20), h('span', { class: 'sc-wow-name' }, a ? [h('span', { class: 'sc-wow-orbit', text: 'Orbit ' }), appName(a)] : [t(['整個 Orbit', 'All of Orbit'])]), ico('chevron', 'sc-wow-chev')])
+          // (the big card: the rest of its card's numbers, beside the line)
+          i === 0 && SHOW[w.id]?.nums?.length > 1
+            ? h('span', { class: 'sc-wow-more' }, SHOW[w.id].nums.slice(1).map(([v, l]) => h('span', {}, [h('strong', { text: t(v) }), h('small', { text: t(l) })])))
+            : null,
+          h('span', { class: 'sc-wow-go' }, [t(['怎麼做到的', 'How it works']), ico('chevron')])
         ]);
       })
     )
@@ -150,24 +162,27 @@ function wow() {
 }
 
 // ---- 3. How it was made ----
-function role(icon, who, does, fig) {
-  return h('div', { class: 'sc-role' }, [
-    h('div', { class: 'sc-role-head' }, [h('span', { class: 'sc-glyph' }, [ico(icon)]), h('strong', { text: who })]),
+// Two people's parts side by side, each with the one number that proves it;
+// one problem's trip from Jay's phone back to it; then the numbers, each card
+// led by what it says in one figure.
+function role(who, mark, does, fig) {
+  return h('div', { class: `sc-role sc-role-${who.toLowerCase()}` }, [
+    h('div', { class: 'sc-role-head' }, [mark, h('span', {}, [h('strong', { text: who }), h('small', { text: t(who === 'Jay' ? ['決定、把關', 'Decides, checks'] : ['動手做', 'Builds']) })])]),
+    fig ? h('p', { class: 'sc-role-fig' }, [h('strong', { text: num(fig[0]) }), h('span', { text: t(fig[1]) })]) : null,
     h(
       'ul',
       { class: 'sc-role-does' },
-      does.map(d => h('li', { text: t(d) }))
-    ),
-    fig ? h('p', { class: 'sc-role-fig' }, [h('strong', { text: num(fig[0]) }), h('span', { text: t(fig[1]) })]) : null
+      does.map(d => h('li', {}, [ico('check'), h('span', { text: t(d) })]))
+    )
   ]);
 }
 
 // One problem, from Jay's phone to everyone's (the tree's team-loop, in four steps).
 const LOOP = [
-  ['user', ['Jay 發現問題', 'Jay spots a problem']],
-  ['camera', ['截圖給 Claude', 'Sends Claude a screenshot']],
-  ['check', ['找原因、修好、測試', 'The cause found, fixed, tested']],
-  ['send', ['幾分鐘後上線', 'Live minutes later']]
+  ['user', ['Jay 發現問題', 'Jay spots a problem'], ['在自己的 iPhone 上', 'on his own iPhone']],
+  ['camera', ['截圖給 Claude', 'Sends Claude a screenshot'], ['說哪裡不對', 'says what’s wrong']],
+  ['check', ['找原因、修好、測試', 'Cause found, fixed, tested'], ['自動檢查全過', 'every check passes']],
+  ['send', ['幾分鐘後上線', 'Live minutes later'], ['每支手機自己更新', 'every phone updates itself']]
 ];
 
 function made(stats) {
@@ -175,8 +190,8 @@ function made(stats) {
     head(['怎麼做出來的', 'How it was made'], ['Jay 不寫程式：他是老闆，也是最挑剔的使用者。', 'Jay doesn’t write code: he is the boss and the pickiest user.']),
     h('div', { class: 'sc-roles' }, [
       role(
-        'user',
         'Jay',
+        h('span', { class: 'sc-role-mark jay' }, [ico('user')]),
         [
           ['決定要做什麼', 'Decides what to build'],
           ['定標準、做取捨', 'Sets the bar, makes the calls'],
@@ -185,8 +200,8 @@ function made(stats) {
         stats?.rules ? [stats.rules, ['條他定下的規則', 'rules he has set']] : null
       ),
       role(
-        'spark',
         'Claude',
+        h('span', { class: 'sc-role-mark claude' }, [ico('spark')]),
         [
           ['寫程式', 'Writes the code'],
           ['測試，看截圖自己檢查', 'Tests it, checks the screens'],
@@ -199,7 +214,7 @@ function made(stats) {
     h(
       'ol',
       { class: 'sc-cycle', style: `--n:${LOOP.length}` },
-      LOOP.map(([icon, say]) => h('li', {}, [h('span', { class: 'sc-glyph' }, [ico(icon)]), h('span', { text: t(say) })]))
+      LOOP.map(([icon, say, sub], i) => h('li', { style: `--i:${i}` }, [h('span', { class: 'sc-cycle-dot' }, [ico(icon)]), h('span', { class: 'sc-cycle-t' }, [h('strong', { text: t(say) }), h('small', { text: t(sub) })])]))
     ),
     stats?.days
       ? h('div', { class: 'sc-made-nums', id: 'numbers' }, [
@@ -207,18 +222,37 @@ function made(stats) {
           h('div', { class: 'sc-made-cards' }, [heatmap(stats), hours(stats)]),
           churn(stats)
         ])
-      : null,
-    askOrbit(),
-    h('div', { class: 'sc-deeper' }, [
-      h('a', { class: 'q-more q-more-go', href: '#how' }, [
-        h('span', { text: t(['整個系統怎麼運作', 'How the whole system works']) }),
-        h('span', { class: 'q-more-chev', 'aria-hidden': 'true', text: '›' })
-      ]),
-      h('a', { class: 'q-more q-more-go', href: '#how/map' }, [
-        h('span', { text: t(['按一下，背後發生什麼事', 'What happens behind one tap']) }),
-        h('span', { class: 'q-more-chev', 'aria-hidden': 'true', text: '›' })
-      ])
-    ])
+      : null
+  ]);
+}
+
+// ---- 4. The whole system, at a glance ----
+// Its ten parts as tiles (each opens that part of the tree), and the journey
+// of one tap across them; the tree and the journeys are a tap deeper (#how).
+function system() {
+  const cloud = SHOW.cloud?.flow || [];
+  return h('section', { class: 'sc-sec', id: 'system' }, [
+    head(['整個系統，|十塊拼起來', 'The whole system, in ten parts'], ['每一塊用白話說：點開看問題、想法和結果。', 'Each part in plain words: open one for the problem, the idea, the result.']),
+    h(
+      'div',
+      { class: 'sc-sys' },
+      TOP.map(b =>
+        h('a', { class: 'sc-sys-b', href: `#how/${b.id}`, style: `--c:${hue(b.id)}` }, [
+          h('span', { class: 'sc-sys-i' }, [ico(b.icon)]),
+          h('span', { class: 'sc-sys-t' }, [h('strong', { text: shortName(b) }), h('small', { text: t(b.line) })])
+        ])
+      )
+    ),
+    h('a', { class: 'sc-journey', href: '#how/map' }, [
+      h('span', { class: 'sc-journey-t' }, [h('strong', { text: t(['按一下，背後發生什麼事', 'What happens behind one tap']) }), h('small', { text: t(['五個日常的例子，一步一步走過整個系統', 'Five everyday stories, step by step across the system']) })]),
+      h(
+        'span',
+        { class: 'sc-journey-flow', 'aria-hidden': 'true' },
+        cloud.flatMap(([icon], i) => [i ? h('span', { class: 'sc-journey-arrow' }) : null, h('span', { class: 'sc-journey-i' }, [ico(icon)])])
+      ),
+      ico('chevron', 'sc-journey-chev')
+    ]),
+    askOrbit()
   ]);
 }
 
@@ -236,5 +270,5 @@ function foot() {
 }
 
 export function renderMain(box, stats) {
-  box.replaceChildren(top(stats), apps(), wow(), made(stats), foot());
+  box.replaceChildren(top(stats), apps(), wow(), made(stats), system(), foot());
 }

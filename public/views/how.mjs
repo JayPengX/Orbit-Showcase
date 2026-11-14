@@ -13,6 +13,7 @@ import { h, t, ico, appImg, go, reduced, wide, pir, en } from '../shell.mjs';
 import { ROOT, NODES, pathTo } from '../lib/tree.mjs';
 import { ROWS, STORIES } from '../lib/stories.mjs';
 import { SHOW } from '../lib/tree-show.mjs';
+import { openAsk, setAskContext, askContextFor } from './ask.mjs';
 
 const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 'orbit', money: 'money', news: 'news', words: 'vocab', beats: 'beats', law: 'law', securities: 'stock' };
 
@@ -23,7 +24,7 @@ const BRAND = { sports: 'match', transit: 'transit', weather: 'weather', class: 
 // the previous and next beside its name, then its parts as rows that open to
 // show their own parts. The picked part's card sits beside them on a
 // computer and comes up in a sheet on a phone.
-const TOP = ROOT.kids;
+export const TOP = ROOT.kids;
 let branch = null; // the open branch's id; null shows the overview
 const open = new Set(); // rows opened inside the branch
 let picked = null;
@@ -34,7 +35,7 @@ let anchor = null; // the key of the button just tapped, kept where it was throu
 
 // Each top branch its own colour, carried down to everything under it.
 const HUE = { apps: 'var(--q-orange)', ai: 'var(--q-purple)', kit: 'var(--q-indigo)', pass: 'var(--q-brown)', cloud: 'var(--q-cyan)', store: 'var(--q-green)', fast: 'var(--q-red)', cheap: 'var(--q-yellow)', ship: 'var(--q-blue)', team: 'var(--q-pink)' };
-const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
+export const hue = id => HUE[pathTo(id)[1]?.id] || 'var(--sc-ac)';
 const mark = node => (BRAND[node.id] ? appImg(BRAND[node.id], 30, 'sc-node-app') : h('span', { class: 'sc-dot', style: `--c:${hue(node.id)}` }, [ico(node.icon)]));
 const icon = (node, size = 30) => (BRAND[node.id] ? appImg(BRAND[node.id], size) : h('span', { class: 'sc-tn-i' }, [ico(node.icon)]));
 
@@ -93,7 +94,7 @@ const SHORT = {
   'ship-tools': ['Claude 看畫面', 'Claude sees it'],
   'team-memory': ['記憶和規則', 'Memory and rules']
 };
-const shortName = node => t(SHORT[node.id] || node.title).replace(/^Orbit /, '');
+export const shortName = node => t(SHORT[node.id] || node.title).replace(/^Orbit /, '');
 
 function overview() {
   return h(
@@ -274,7 +275,15 @@ function nodeView(id, inside = true) {
           )
         ])
       : null,
-    related.length ? h('div', { class: 'sc-sub' }, [h('h3', { class: 'sc-h3', text: t(['相關', 'Related']) }), chipsOf(related)]) : null
+    related.length ? h('div', { class: 'sc-sub' }, [h('h3', { class: 'sc-h3', text: t(['相關', 'Related']) }), chipsOf(related)]) : null,
+    // 問 Orbit about this card: its questions ready in the conversation
+    node.id === 'orbit'
+      ? null
+      : h('button', { class: 'sc-ask-this', type: 'button', onclick: () => (closeCard(), setAskContext(askContextFor('card', id)), openAsk()) }, [
+          h('span', { class: 'sc-ask-mark', 'aria-hidden': 'true' }, [ico('ai')]),
+          h('span', {}, [h('strong', { text: t(['問 Orbit', 'Ask Orbit']) }), h('small', { text: t([`「${t(node.title)}」還想知道什麼？`, `More about “${t(node.title)}”?`]) })]),
+          ico('chevron')
+        ])
   ]);
 }
 

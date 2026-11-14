@@ -33,6 +33,7 @@ export function heatmap(stats) {
   const legend = h('div', { class: 'sc-legend' }, [t(['少', 'Fewer']), ...[0, 1, 2, 3, 4].map(l => h('span', { class: `sc-cell l${l}` })), t(['多', 'More'])]);
   return h('div', { class: 'sc-card' }, [
     h('h3', { class: 'sc-h3', text: t(['每一天', 'Every day']) }),
+    h('p', { class: 'sc-numfig' }, [h('strong', { text: `${active}/${total}` }), h('span', { text: t(['天有更新', 'days with updates']) })]),
     h('div', { class: 'sc-heatbox' }, [
       h(
         'div',
@@ -58,6 +59,7 @@ export function hours(stats) {
   const peak = hs.indexOf(max);
   return h('div', { class: 'sc-card' }, [
     h('h3', { class: 'sc-h3', text: t(['一天裡的什麼時候', 'What time of day']) }),
+    h('p', { class: 'sc-numfig' }, [h('strong', { text: `${peak}:00` }), h('span', { text: t(['最忙的一小時', 'the busiest hour']) })]),
     h(
       'div',
       { class: 'sc-hours', role: 'img', 'aria-label': t(['每個小時的更新次數', 'Updates by hour of day']) },

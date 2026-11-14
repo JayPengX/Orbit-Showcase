@@ -18,6 +18,7 @@ import { renderMain, CHAPTERS, tryApp } from './views/main.mjs';
 import { renderApp } from './views/apps.mjs';
 import { renderHow, leaveHow, closeCard } from './views/how.mjs';
 import { hasDemo } from './views/demo.mjs';
+import { askDock, setAskContext, askContextFor } from './views/ask.mjs';
 
 window.__fxStarted = true;
 document.documentElement.lang = en ? 'en' : 'zh-Hant';
@@ -61,8 +62,7 @@ const side = h('aside', { class: 'sc-side', 'aria-label': t(['導覽', 'Navigati
   h('nav', { class: 'sc-side-nav' }, [
     chApps,
     sideApps,
-    ...chRest,
-    h('a', { class: 'sc-side-chap sc-side-how', href: '#how', 'data-view': 'how' }, [ico('list'), h('span', { text: t(['整個系統', 'The whole system']) })])
+    ...chRest
   ]),
   h('div', { class: 'sc-side-foot' }, [
     h('div', { class: 'sc-side-btns' }, [shareBtn()]),
@@ -89,6 +89,7 @@ function subBar(view, app) {
 // ---- Where the page is: the chapter on screen lit in both bars ----
 let lit = null;
 function light(id) {
+  if (current === 'main') setAskContext(askContextFor(id || 'home'));
   if (id === lit) return;
   lit = id;
   document.querySelectorAll('[data-chapter]').forEach(a => {
@@ -148,16 +149,17 @@ function route(first = false) {
   document.documentElement.dataset.view = r.view;
   nav.hidden = r.view !== 'main';
   sub.hidden = r.view === 'main';
-  side.querySelector('.sc-side-how').classList.toggle('on', r.view === 'how');
   sideApps.querySelectorAll('[data-app]').forEach(a => a.classList.toggle('on', r.view === 'app' && a.dataset.app === r.what));
 
   if (r.view === 'main') {
     document.title = 'Orbit Showcase';
+    setAskContext(askContextFor(lit || 'home'));
     if (first || viaLink || was === 'main') requestAnimationFrame(() => jump(r.at, !first && was === 'main'));
     else requestAnimationFrame(() => window.scrollTo({ top: mainY, behavior: 'instant' }));
     return;
   }
-  light(r.view === 'app' ? 'apps' : null);
+  light(r.view === 'app' ? 'apps' : 'system');
+  setAskContext(r.view === 'app' ? askContextFor('app', r.what) : askContextFor('system'));
   if (r.view === 'app') {
     if (drawnApp !== r.what || was !== 'app') drawnApp = renderApp(VIEWS.app, stats, r.what).id;
     const app = APPS.find(a => a.id === drawnApp);
@@ -198,6 +200,7 @@ kitUI.ready(
     stats = s;
     renderMain(VIEWS.main, stats);
     watchChapters();
+    askDock();
     route(true);
     window.addEventListener('hashchange', () => route());
   }),
