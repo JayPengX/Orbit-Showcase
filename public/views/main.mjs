@@ -66,7 +66,7 @@ function top(stats) {
     : [];
   return h('section', { class: 'sc-intro', id: 'home' }, [
     h('div', { class: 'sc-intro-text' }, [
-      h('p', { class: 'sc-kicker', text: t(['高中自主學習作品', 'A high-school self-directed learning project']) }),
+      h('p', { class: 'sc-kicker', text: t(['Orbit 作品展示', 'The Orbit project']) }),
       h('h1', { class: 'sc-headline' }, [line(['十個|每天在用的 App，', 'Ten apps used every day, ']), line(['一位高中生|帶著 AI| 做出來。', 'made by a high-school student directing an AI.'])]),
       h('p', {
         class: 'sc-intro-lede',
@@ -224,7 +224,7 @@ function made(stats) {
 
 function foot() {
   return h('footer', { class: 'sc-foot' }, [
-    h('p', {}, [appImg(null, 24), h('span', { text: t(['Jay 的自主學習作品，和 Claude 一起做。', 'Jay’s self-directed learning project, made with Claude.']) })]),
+    h('p', {}, [appImg(null, 24), h('span', { text: t(['Orbit，Jay 和 Claude 一起做。', 'Orbit, made by Jay with Claude.']) })]),
     h('p', {
       class: 'sc-foot-small',
       text: t([

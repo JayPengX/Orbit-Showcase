@@ -2,7 +2,7 @@
 
 Orbit explained for anyone, in what a page does better than a PDF: the structure, the numbers
 and the apps themselves, running.
-Jay's 自主學習 portfolio. Live at https://jaypengx.com/showcase/.
+Jay's showcase of the Orbit project. Live at https://jaypengx.com/showcase/.
 
 Open to everyone: no Orbit Pass and no Add to Home Screen step. It works on phones and on
 computers, either way up, in Safari and Chrome. The page lays itself out by its own width
@@ -20,6 +20,7 @@ Jay's, dated (Taiwan day), newest wins; the family's are in Orbit-Core `docs/RUL
 - 10-30 Demos may run the real apps on live data, read-only behind a short showcase pass (`showcase.js`: from the showcase's address only, per-address and daily caps; past any limit the recording plays); full screen on phones, bug-free, small coach-mark tours.
 - 11-04 One page a reader with a few minutes (a teacher, a professor) reads top to bottom; keep the demos and screenshots.
 - Content changes only when Jay says "catch up the showcase"; the deploy recounts the numbers and re-records the demos daily by itself.
+- 11-14 A showcase of the Orbit project, never named a school or 自主學習 piece; no language switch (the browser's language picks it, as on the homepage and the Pass site).
 
 ## One page, then one tap deeper
 
