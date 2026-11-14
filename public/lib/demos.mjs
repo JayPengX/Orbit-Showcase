@@ -14,10 +14,19 @@ export const DEMOS = {
   class: { repo: 'Orbit-Class' },
   beats: { repo: 'Orbit-Beats' },
   law: { repo: 'Orbit-Law', real: true },
-  transit: { repo: 'Orbit-Transit', real: true, live: true }
+  transit: { repo: 'Orbit-Transit', real: true, live: true },
+  news: { repo: 'Orbit-News', real: true }
 };
 
 export const TOURS = {
+  news: [
+    { tap: '.nw-card', say: ['點一則新聞，看各家怎麼報', 'Tap a story to see how every outlet tells it'] },
+    { tap: 'dialog[open] .q-close', say: ['關掉', 'Close it'] },
+    { tap: '#tab-tw', say: ['台灣新聞，照主題分', 'Taiwan’s news, by topic'] },
+    { tap: '#tab-side', say: ['只有一邊在報的新聞', 'Stories only one side carries'] },
+    { tap: '#tab-outlets', say: ['每家媒體的立場，都有出處', 'Every outlet’s place, with its source'] },
+    { tap: '.nw-chip', say: ['點一家，看它為什麼在那裡', 'Tap one to see why it sits there'] }
+  ],
   law: [
     { say: ['台灣的法律、判決和立法院，都在這裡，用白話看懂。', 'Taiwan’s laws, rulings and Legislative Yuan, in plain words.'] },
     { tap: '.nv-topic', wait: 2500, say: ['依生活的事找：勞動', 'Find by what it’s about: work'] },
