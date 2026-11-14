@@ -33,7 +33,7 @@ minutes"; keep the demos and screenshots).
 | --- | --- | --- |
 | `#home` the top | One sentence on what Orbit is and who does what, four numbers from git, three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
 | `#apps` | The ten apps, each its question; 試玩 runs the real app at once (News has no demo yet) | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
-| `#wow` | Six things people don't expect: a figure the tree's own card states, in its app's colour (on a wide page the first is the big card); a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
+| `#wow` | One thing per app people don't expect, plus the whole of Orbit (eleven, so rows stay even): a figure the tree's own card states, in its app's colour (on a wide page the first is the big card); a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
 | `#made` | Jay's part and Claude's (each led by its number), one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`, each card led by one figure) | `views/main.mjs` `made`, `views/numbers.mjs` |
 | `#system` | The whole system's ten parts as tiles (each opens it in the tree), the journey of one tap, and 問 Orbit's box where the page ends | `views/main.mjs` `system`, `views/ask.mjs` |
 | `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |

@@ -74,7 +74,9 @@ test('the chapters draw their icons; every highlight opens a real card', () => {
   assert.deepEqual(chapters.map(m => m[1]), ['apps', 'wow', 'made', 'system']);
   for (const [, id, icon] of chapters) assert.ok(icons[icon], `chapter ${id}: icon ${icon}`);
   const wow = [...main.matchAll(/\{ id: '([\w-]+)', app: (?:'(\w+)'|null), fig:/g)];
-  assert.equal(wow.length, 6);
+  // (one per app, plus the whole of Orbit: eleven, so the rows stay even)
+  assert.deepEqual(wow.map(m => m[2]).filter(Boolean).sort(), APPS.map(a => a.id).sort());
+  assert.equal(wow.length, APPS.length + 1);
   for (const [, id, app] of wow) {
     assert.ok(NODES.has(id) && SHOW[id], `highlight ${id}: a tree card with its picture`);
     if (app) assert.ok(APPS.some(a => a.id === app), `highlight ${id}: app ${app}`);

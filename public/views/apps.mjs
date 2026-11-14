@@ -18,15 +18,17 @@ const shot = (app, f) => shotUrl(f, Boolean(app.zh));
 
 // The screens the way an app store shows them: each on the app's own
 // colour under a one-line headline, a row you swipe (the next one peeks in),
-// light and dark mixed as the app looks either way.
+// in the app's own dark look; a phone's, an iPad's or a computer's screen.
 function ads(app) {
   const [hi, mid, lo] = BRANDS[app.brand].paint;
   const row = h('div', { class: 'sc-ads', tabindex: '0', 'aria-label': t(['截圖', 'Screens']) });
-  app.shots.forEach(([f, c], i) =>
+  // (a shot taken on an iPad or a computer, its third field, keeps that screen's shape)
+  const SIZE = { phone: [375, 812], tablet: [820, 1180], computer: [1440, 900] };
+  app.shots.forEach(([f, c, dev = 'phone'], i) =>
     row.append(
-      h('figure', { class: 'sc-ad' }, [
+      h('figure', { class: `sc-ad dev-${dev}` }, [
         h('figcaption', { text: t(c) }),
-        h('div', { class: 'sc-ad-screen' }, [h('img', { src: shot(app, f), alt: t(c), loading: i > 1 ? 'lazy' : 'eager', decoding: 'async', width: 375, height: 812 })])
+        h('div', { class: 'sc-ad-screen' }, [h('img', { src: shot(app, f), alt: t(c), loading: i > 1 ? 'lazy' : 'eager', decoding: 'async', width: SIZE[dev][0], height: SIZE[dev][1] })])
       ])
     )
   );
