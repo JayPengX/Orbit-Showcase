@@ -18,7 +18,9 @@ export const APPS = [
       ['sports/5', ['積分榜與爭冠形勢', 'The table and the title race']],
       ['sports/6', ['每位球員的數據，一頁看完', 'Every player’s numbers on one page']],
       ['sports/7', ['F1 每一站，倒數到起跑', 'Every F1 weekend, counted down']]
-    ]
+    ],
+    now: 'sports/1',
+    then: ['then-sports', ['第一天叫 Match Find：一個網頁，推薦今天最值得看的一場', 'Day one was Match Find: one page recommending the game worth watching']]
   },
   {
     id: 'transit', brand: 'transit', repo: 'Orbit-Transit', zh: true,
@@ -119,7 +121,9 @@ export const APPS = [
       ['law/5', ['白話問，答案附上條文', 'Ask in plain words, every point cited']],
       ['law/6', ['立法院近 8 千案，走到哪一步', 'Nearly 8,000 bills, each one’s stage']],
       ['law/7', ['22 縣市議會和代表會，影音都在', 'Every council, down to the townships']]
-    ]
+    ],
+    now: 'law/1',
+    then: ['then-law', ['第一天：一個法規閱讀器，1,351 部法律', 'Day one: a law reader, 1,351 laws']]
   },
   {
     id: 'securities', brand: 'stock', repo: 'Orbit-Securities', zh: true,
