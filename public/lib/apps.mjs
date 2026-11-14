@@ -31,7 +31,9 @@ export const APPS = [
       ['transit/4', ['公車還要等幾分鐘', 'Minutes until your bus']],
       ['transit/5', ['YouBike 車位，即時', 'YouBike docks, live']],
       ['transit/6', ['全台捷運，照真的路線畫', 'Every metro, drawn true to its lines']]
-    ]
+    ],
+    now: 'transit/1',
+    then: ['then-transit', ['第一天：一張地圖，標出附近的 YouBike、公車站和火車站', 'Day one: a map of the YouBikes, bus stops and stations nearby']]
   },
   {
     id: 'weather', brand: 'weather', repo: 'Orbit-Weather', zh: true,
@@ -71,7 +73,9 @@ export const APPS = [
       ['money/4', ['銀行、信用卡、悠遊卡，全都管', 'Banks, cards and EasyCard, all in one']],
       ['money/5', ['一整年，每個月比一比', 'The whole year, month by month'], 'tablet'],
       ['money/6', ['問你的帳，答案畫成圖', 'Ask your books, see the answer']]
-    ]
+    ],
+    now: 'money/1',
+    then: ['then-money', ['第一天：一本金色的月曆帳本，還沒有一筆帳', 'Day one: a gold calendar book, not one entry yet']]
   },
   {
     id: 'news', brand: 'news', repo: 'Orbit-News', zh: true,
