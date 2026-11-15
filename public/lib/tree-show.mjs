@@ -416,7 +416,7 @@ const S = {
   // ---- How it was made ----
   'team-jay': {
     flow: [['user', ['在 iPhone 上試', 'Tries it on his iPhone']], ['camera', ['截圖給 Claude', 'Sends a screenshot']], ['flag', ['做決定', 'Decides']], ['list', ['變成全家族的規則', 'A rule for every app']]],
-    rules: [['只放台灣看得到的比賽', 'Only games Taiwan can watch'], ['券商規則跟真的一樣', 'Broker rules as real as the real thing'], ['只做手機', 'Phones only'], ['颱風假在每個 App 都是假日', 'A typhoon day off is a holiday everywhere']]
+    rules: [['只放台灣看得到的比賽', 'Only games Taiwan can watch'], ['券商規則跟真的一樣', 'Broker rules as real as the real thing'], ['每種螢幕都排好', 'Every screen laid out'], ['颱風假在每個 App 都是假日', 'A typhoon day off is a holiday everywhere']]
   },
   'team-coordinator': {
     flow: [['user', ['Jay 說一句', 'Jay says it']], ['grid', ['協調者拆開', 'The coordinator splits it']], ['list', ['交給工作串', 'Hands it to a thread']], ['clock', ['每小時檢查', 'Checks hourly']]]
@@ -435,10 +435,12 @@ const S = {
   'team-lessons': {
     pairs: [
       [['從舊副本推上去，清空 21,927 筆裁判', 'A push from an old copy wiped 21,927 rulings'], ['推之前一定先同步', 'Always sync before a push']],
-      [['iPad 和電腦版面一直壞', 'iPad and desktop layouts kept breaking'], ['只做手機', 'Phones only']],
+      [['平板和電腦上只剩一條窄窄的畫面', 'A narrow strip on tablets and computers'], ['每種螢幕都排好、上線前檢查', 'Every screen laid out, checked before a push']],
       [['ESPN 的排名太慢', 'ESPN’s tables lagged'], ['自己算', 'Count them ourselves']],
       [['新零件讓舊手機掛掉', 'A new part broke older phones'], ['新零件一律有後備', 'Every new part has a fallback']],
-      [['讀取失敗被當成沒資料', 'A failed read taken as no data'], ['失敗不是空的', 'A failure isn’t empty']]
+      [['讀取失敗被當成沒資料', 'A failed read taken as no data'], ['失敗不是空的', 'A failure isn’t empty']],
+      [['手做的回彈怎麼調都不像', 'A hand-made bounce never felt right'], ['捲動交給手機原生的', 'Scrolling is the phone’s own']],
+      [['一個共同的詞就湊成一則新聞', 'One shared word made one story'], ['至少兩個詞才算同一件事', 'Two words at least']]
     ]
   },
   // ---- More pictures for the app branches ----

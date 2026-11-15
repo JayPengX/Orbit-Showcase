@@ -154,9 +154,12 @@
   };
 
   // ---- No Orbit Pass button (no sign-out or pass sheet in a demo) ----
+  // Nor the account's quiet asks (the privacy notice, add an email, try
+  // Orbit, turn on notices: Jay 11-15, "demo has notice like Privacy Policy,
+  // add email… it shouldn't"); the kit's quietTip also stands down for __DEMO.
   document.addEventListener('DOMContentLoaded', () => {
     const style = document.createElement('style');
-    style.textContent = '.q-account{display:none!important}';
+    style.textContent = '.q-account,.q-orbit-tip,.q-banner-ask{display:none!important}';
     document.head.append(style);
   });
 

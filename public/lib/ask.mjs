@@ -1,7 +1,10 @@
-// 問 Orbit on the showcase (views/ask.mjs): the structure tree's cards that
-// share a question's words, picked by code (no AI): CJK pairs of characters
-// and English words, a card's title counting double. The AI (`showcase-ask`)
-// answers only from the cards picked here; without it, these are the answer.
+// 問 Orbit on the showcase (views/ask.mjs): the cards a question needs,
+// picked by code (no AI): the structure tree's (its plain words and its 技術細節)
+// and what scripts/know.mjs read from the repos (every feature, every dated
+// rule of Jay's, the numbers from git: data/know.json), matched by CJK pairs
+// of characters and English words, rare words counting more and a title
+// double. The AI (`showcase-ask`) answers only from the cards picked here;
+// without it, the tree's among them are the answer.
 import { NODES } from './tree.mjs';
 
 const pick = (pair, en) => (Array.isArray(pair) ? pair[en ? 1 : 0] : pair || '');
@@ -29,28 +32,41 @@ function stem(w) {
   return w.length > 2 && w.endsWith('e') ? w.slice(0, -1) : w;
 }
 
-// A card as the AI reads it: { id, title, text } (problem, idea, result; no technical names).
+// A card as the AI reads it: { id, title, text } (problem, idea, result, then
+// how it's built: the AI words that plainly, views/ask.mjs).
 export function cardOf(id, en = false) {
   const n = NODES.get(id)?.node;
   if (!n) return null;
   const parts = [n.line, n.p, n.i, n.r].map(x => pick(x, en)).filter(Boolean);
-  return { id, title: pick(n.title, en), text: parts.join(' ') };
+  const tech = pick(n.tech, en);
+  return { id, title: pick(n.title, en), text: `${parts.join(' ')}${tech ? ` (How: ${tech})` : ''}` };
 }
 
 // The cards for a question, best first: [{ id, title, text, score }].
-export function cardsFor(q, { en = false, most = 6 } = {}) {
+// `more`: know.json's cards ({ id, kind, app, title, text }). A word in many
+// cards says little (log of how rare it is), a title's counts double, a long
+// card a little less.
+export function cardsFor(q, { en = false, most = 6, more = [] } = {}) {
   const want = wordsOf(q);
   if (!want.size) return [];
-  const out = [];
+  const all = [];
   for (const [id, { depth }] of NODES) {
     if (!depth) continue;
     const c = cardOf(id, en) || cardOf(id, !en);
     const other = cardOf(id, !en);
-    const title = wordsOf(c.title);
-    const body = wordsOf(`${c.text} ${other?.title || ''} ${other?.text || ''}`);
+    all.push({ ...c, tree: true, head: wordsOf(c.title), body: wordsOf(`${c.text} ${other?.title || ''} ${other?.text || ''}`) });
+  }
+  for (const k of more) if (k?.id && k.text) all.push({ id: k.id, title: k.title, text: k.text, head: wordsOf(`${k.app} ${k.title}`), body: wordsOf(k.text) });
+  const df = new Map();
+  for (const c of all) for (const w of new Set([...c.head, ...c.body])) if (want.has(w)) df.set(w, (df.get(w) || 0) + 1);
+  const out = [];
+  for (const c of all) {
     let score = 0;
-    for (const w of want) score += title.has(w) ? 2 : body.has(w) ? 1 : 0;
-    if (score > 0) out.push({ ...c, score: score / Math.sqrt(1 + body.size / 60) });
+    for (const w of want) {
+      const idf = Math.log(1 + all.length / (df.get(w) || 1));
+      score += c.head.has(w) ? 2 * idf : c.body.has(w) ? idf : 0;
+    }
+    if (score > 0) out.push({ id: c.id, title: c.title, text: c.text, tree: Boolean(c.tree), score: score / Math.sqrt(1 + c.body.size / 60) });
   }
   return out.sort((a, b) => b.score - a.score).slice(0, most);
 }

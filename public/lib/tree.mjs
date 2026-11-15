@@ -236,7 +236,7 @@ const cloud = n('cloud', 'cloud', ['雲端小幫手', 'The helper in the cloud']
       p: ['雲端用量暴增會收到意外的帳單。', 'A usage spike means a surprise bill.'],
       i: ['另一個小程式每 5 分鐘讀一次用量，照免費方案每天的額度慢慢放慢，真的用到才放慢，不是用預估；Jay 的手機在 50/75/90% 收到通知。', 'Another small program reads usage every 5 minutes and paces things through the free plan’s day, slowing only on real use, never on a forecast; Jay’s phone hears at 50/75/90%.'],
       r: ['在免費方案上不會收任何錢：用多了只會慢一點，不會壞。', 'On the free plan nothing is ever billed: heavy use only slows things a little, nothing breaks.'],
-      tech: ['quota-guard（guard.js、Durable Object 鬧鐘）；pace.js；PLAN 列出每種 Cloudflare 產品的額度。', 'quota-guard (guard.js, a Durable Object alarm); pace.js; PLAN lists every Cloudflare product’s allowance.'],
+      tech: ['quota-guard（guard.js、Durable Object 鬧鐘）；pace.js；PLAN 列出每種 Cloudflare 產品的額度。另外每 3 小時一次「免費方案巡邏」（free-watch.yml）打開每個頁面和路線、看每個排程有沒有跑、每種額度用了幾成；AI 預付額度只寫在報告裡，不寄信。', 'quota-guard (guard.js, a Durable Object alarm); pace.js; PLAN lists every Cloudflare product’s allowance. And every 3 hours the free plans’ watch (free-watch.yml) opens every page and route, checks every scheduled job ran and how much of each allowance is used; the AI makers’ prepaid balances are only noted in its report, never mailed.'],
       links: ['cheap-guard']
     })
   ]
@@ -389,7 +389,7 @@ const ship = n('ship', 'send', ['改好之後怎麼到你手機', 'From a change
       links: ['kit']
     }),
     n('ship-tests', 'check', ['測試只測會默默出錯的地方', 'Tests for the silent bugs'], ['錢、資料、排名、結算', 'Money, data, ranking, settling'], {
-      tech: ['測試寫給「錯了也不會被看出來」的邏輯：錢、資料合併、排名、行程規劃、結算；版面和文字不寫測試，用截圖看。Transit 用 Jay 的真實行程當判決。', 'Tests are for logic whose bugs are silent: money, merging, ranking, planning, settling; layout and wording are checked by screenshots instead. Transit uses Jay’s real trips as verdicts.'],
+      tech: ['測試寫給「錯了也不會被看出來」的邏輯：錢、資料合併、排名、行程規劃、結算；版面不寫測試，但每次上線前，一個工具在手機、平板、電腦三種大小拍下每個分頁和重要視窗，版面縮成一條、半邊空白、會橫向滑動就不准上線（11-15 起每張等畫面不再變動就拍，快了一倍）。Transit 用 Jay 的真實行程當判決。', 'Tests are for logic whose bugs are silent: money, merging, ranking, planning, settling; layout has no tests, but before every push a tool shoots every tab and key sheet on a phone, a tablet and a computer, and a page squeezed into a strip, half empty or sliding sideways is never pushed (from 11-15 each shot is taken once the page stops changing, twice as fast). Transit uses Jay’s real trips as verdicts.'],
       links: ['transit-rank']
     }),
     n('ship-tools', 'camera', ['Claude 看得到手機畫面', 'Claude sees the phone screen'], ['截圖工具和品質關卡', 'A screenshot tool and a quality gate'], {
@@ -429,7 +429,7 @@ const team = n('team', 'user', ['怎麼做出來的', 'How it was made'], ['Jay 
       links: ['ship-tools', 'kit-rec']
     }),
     n('team-lessons', 'flag', ['學到的教訓', 'Lessons learned'], ['每個錯誤變成一條規則', 'Every mistake became a rule'], {
-      tech: ['① 一次從舊副本推上去，把 21,927 筆最高法院裁判清空 → 每次推之前一定先同步最新版本。② 十月新增的排程從沒執行 → 只用現有的排程。③ iPad 和電腦版面一直壞 → 只做手機。④ ESPN 的排名太慢 → 自己算。⑤ 新零件讓舊手機整個掛掉 → 新零件一律加後備。⑥ 讀取失敗被當成沒資料 → 失敗不是空的。', '① A push from an old copy wiped 21,927 top-court rulings → always sync right before pushing. ② New schedules added in October never ran → use the existing ones. ③ iPad and desktop layouts kept breaking → phones only. ④ ESPN’s tables lagged → count them ourselves. ⑤ A new kit piece crashed older phones → every new piece gets a fallback. ⑥ A failed read was taken as no data → a failure is never “nothing”.'],
+      tech: ['① 一次從舊副本推上去，把 21,927 筆最高法院裁判清空 → 每次推之前一定先同步最新版本。② 十月新增的排程從沒執行 → 只用現有的排程。③ 只照手機做，平板和電腦上只剩中間一條窄窄的畫面 → 每種螢幕都排好，每次上線前檢查（10-31）。④ ESPN 的排名太慢 → 自己算。⑤ 新零件讓舊手機整個掛掉 → 新零件一律加後備。⑥ 讀取失敗被當成沒資料 → 失敗不是空的。⑦ 手做的回彈怎麼調都不像 → 捲動一律交給手機原生的（11-15）。⑧ 一個共同的詞（「工程師」）就把不相干的新聞湊在一起 → 至少要兩個詞才算同一件事（11-15）。', '① A push from an old copy wiped 21,927 top-court rulings → always sync right before pushing. ② New schedules added in October never ran → use the existing ones. ③ Made for phones only, a tablet or computer showed a narrow strip → every screen laid out, and checked before each push (10-31). ④ ESPN’s tables lagged → count them ourselves. ⑤ A new kit piece crashed older phones → every new piece gets a fallback. ⑥ A failed read was taken as no data → a failure is never “nothing”. ⑦ A hand-made bounce never felt right → scrolling is always the phone’s own (11-15). ⑧ One shared word (“engineer”) lumped unrelated stories together → two words at least make one story (11-15).'],
       links: ['store-fail', 'sports-table', 'cloud-cron']
     })
   ]

@@ -83,6 +83,8 @@ jobs:
           if [ "$ok" = 1 ] && TZ=Asia/Taipei node scripts/stats.mjs .family > /tmp/stats.json; then
             mv /tmp/stats.json public/data/stats.json
             node -e "const s=require('./public/data/stats.json');console.log(s.apps+' apps, '+s.commits+' updates, '+s.lines+' lines, '+s.tests+' checks')"
+            # (What 問 Orbit knows besides the tree: every feature, Jay's dated rules, the numbers.)
+            node scripts/know.mjs .family public/data/stats.json > /tmp/know.json && mv /tmp/know.json public/data/know.json || echo "::warning::問 Orbit's knowledge not refreshed"
           else
             echo "::warning::Counts not refreshed; the last committed ones are published."
           fi

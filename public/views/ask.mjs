@@ -62,7 +62,7 @@ async function passNow() {
   pass = await r.json();
   return pass.qt;
 }
-const KEPT = 'orbitShowcase.asked';
+const KEPT = 'orbitShowcase.asked2';
 const keyOf = (q, cards) => `${en ? 'en' : 'zh'}|${q.trim().toLowerCase()}|${cards.map(c => c.id).join(',')}`;
 function kept(k) {
   try {
@@ -88,7 +88,7 @@ async function askAi(q, cards) {
   const r = await fetch(`${API}/ai?qt=${encodeURIComponent(qt)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feature: 'showcase-ask', input: { q, cards: cards.map(({ id, title, text }) => ({ id, title, text })), lang: en ? 'en' : 'zh' } })
+    body: JSON.stringify({ feature: 'showcase-ask', input: { q, cards, lang: en ? 'en' : 'zh' } })
   });
   const j = await r.json().catch(() => null);
   const out = r.ok && j?.out ? j.out : null;
@@ -97,11 +97,19 @@ async function askAi(q, cards) {
 }
 // The cards for a question: the ones sharing its words, those of what's on
 // screen next when they share any, six at most.
-export function cardsAbout(q, ids = []) {
-  const found = cardsFor(q, { en });
+// What the repos say besides the tree (scripts/know.mjs: every feature, Jay's
+// dated rules, the numbers from git), read once, the first time anyone asks.
+let knowing = null;
+const knowNow = () => (knowing ||= fetch('./data/know.json').then(r => (r.ok ? r.json() : null)).then(k => k?.cards || []).catch(() => []));
+// The cards for a question (Jay 11-15: "make it smarter … it should know the
+// project deeply"): those sharing its words, the tree's and the repos', those
+// of what's on screen, and Orbit's numbers always: twelve at most.
+export function cardsAbout(q, ids = [], more = []) {
+  const found = cardsFor(q, { en, more, most: 10 });
   const seen = new Set(found.map(c => c.id));
   const near = ids.filter(id => !seen.has(id)).map(id => cardOf(id, en)).filter(Boolean);
-  return (found.length ? [...found.slice(0, 4), ...near] : near).slice(0, 6);
+  const facts = more.find(c => c.id === 'facts');
+  return [...found, ...near.slice(0, 2), ...(facts && !seen.has('facts') ? [facts] : [])].slice(0, 12).map(({ id, title, text }) => ({ id, title, text }));
 }
 
 const rowOf = id => {
@@ -113,19 +121,23 @@ const rowOf = id => {
 function exchange(q, ids) {
   const out = h('div', { class: 'sc-ask-a', 'aria-live': 'polite' });
   const box = h('div', { class: 'sc-ask-x' }, [h('p', { class: 'sc-ask-q', text: q }), out]);
-  const cards = cardsAbout(q, ids);
-  out.replaceChildren(aiAnswerWait({ rows: Math.min(3, Math.max(1, cards.length)), pics: true, text: t(['翻一下 Orbit 的說明…', 'Looking through Orbit’s story…']) }));
+  out.replaceChildren(aiAnswerWait({ rows: 3, pics: true, text: t(['翻一下 Orbit 的說明…', 'Looking through Orbit’s story…']) }));
   const done = (async () => {
+    const cards = cardsAbout(q, ids, await knowNow());
     let ans = null;
     if (cards.length) {
       try {
         ans = await askAi(q, cards);
       } catch {}
     }
-    const picked = ans?.ids?.length ? ans.ids : ans ? [] : cards.slice(0, 3).map(c => c.id);
+    // (Only the tree's cards open: the repos' are what the answer was read from.)
+    const tree = cards.filter(c => NODES.has(c.id));
+    const picked = ans?.ids?.length ? ans.ids.filter(id => NODES.has(id)) : ans ? [] : tree.slice(0, 3).map(c => c.id);
     const rows = picked.map(rowOf).filter(Boolean);
     const line = ans?.line || (rows.length ? t(['這幾張卡片可能有答案：', 'These cards may answer it:']) : t(['Orbit 的說明裡沒有提到這個。換個說法試試？', 'Orbit’s story doesn’t cover that. Try other words?']));
-    out.replaceChildren(aiAnswer({ line, sections: [{ rows }] }));
+    // (What else it knows that answers it: a point a row, before the cards to open.)
+    const points = (ans?.points || []).filter(Boolean).map(p => ({ lead: ico('spark'), label: p }));
+    out.replaceChildren(aiAnswer({ line, sections: [...(points.length ? [{ rows: points }] : []), ...(rows.length ? [{ title: t(['打開來看', 'Read more']), rows }] : [])] }));
   })();
   return { box, done };
 }

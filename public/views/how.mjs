@@ -106,6 +106,8 @@ function overview() {
     TOP.map(b =>
       h('section', { class: 'sc-ov-b', style: `--c:${hue(b.id)}` }, [
         h('button', { class: 'sc-ov-head', type: 'button', 'data-key': `ov:${b.id}`, onclick: () => tap(b.id) }, [icon(b), h('span', { class: 'sc-ov-t', text: shortName(b) }), h('span', { class: 'sc-ov-n', 'aria-label': t([`${b.kids.length} 項`, `${b.kids.length} inside`]), text: String(b.kids.length) })]),
+        // (What the branch does for you, in a line, before its parts' names: Jay 11-15, the tree "easier to understand".)
+        h('p', { class: 'sc-ov-line', text: t(b.line) }),
         h(
           'div',
           { class: 'sc-ov-kids' },
