@@ -19,6 +19,8 @@ const opt = (name, fallback) => {
   return i < 0 ? fallback : args.splice(i, 2)[1];
 };
 const repos = resolve(opt('repos', new URL('../../..', import.meta.url).pathname));
+// (Chinese in Taiwan's shapes in the recordings: Orbit-Core tools/fonts.mjs.)
+await import(join(repos, 'Orbit-Core/tools/fonts.mjs')).catch(() => {});
 const shots = opt('shots', '');
 const strict = args.includes('--strict') && (args.splice(args.indexOf('--strict'), 1), true);
 let broke = 0;

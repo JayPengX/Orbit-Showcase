@@ -93,7 +93,7 @@ jobs:
         timeout-minutes: 40
         run: |
           if [ -d .family/Orbit-Core ] && [ -d .family/Orbit-Class ]; then
-            npm i --no-save --no-audit --no-fund playwright@1.63.0 && npx playwright install --with-deps chromium && ln -sfn "$PWD/node_modules" .family/node_modules || echo "::warning::No browser for the demos"
+            npm i --no-save --no-audit --no-fund playwright@1.63.0 && npx playwright install --with-deps chromium && (sudo apt-get install -y -qq fonts-noto-cjk >/dev/null 2>&1 || true) && ln -sfn "$PWD/node_modules" .family/node_modules || echo "::warning::No browser for the demos"
             (cd .family/Orbit-Class && npm ci --no-audit --no-fund && npm run build) || echo "::warning::Class didn't build; its demo stays as committed"
             node scripts/demo/refresh.mjs --repos .family || echo "::warning::The demos weren't refreshed; the committed ones are published."
           else
