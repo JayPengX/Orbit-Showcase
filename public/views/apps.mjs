@@ -152,7 +152,7 @@ export function renderApp(box, stats, id) {
         clever(app)
       ]),
       thenNow(app, stats),
-      h('p', { class: 'sc-note', text: t(['截圖用的是範例資料，不是任何人真正的資料。', 'Every screenshot uses sample data, never anyone’s own.']) }),
+      h('p', { class: 'sc-note', text: t(['截圖用的是真的公開資料；要帳號的地方，用虛構的帳號，不是任何人自己的資料。', 'Screenshots show real public data; where an account is needed, a made-up one, never anyone’s own.']) }),
       nextApp(app)
     ])
   );

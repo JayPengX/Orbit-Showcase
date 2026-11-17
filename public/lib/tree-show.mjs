@@ -23,13 +23,13 @@ const S = {
   },
   'ai-ahead': {
     flow: [['user', ['你按了、你問了', 'You tap or ask']], ['ai', ['這時才做', 'Made then']], ['check', ['程式先檢查', 'Checked by code']]],
-    nums: [['0', ['先替大家做好的 AI', 'AI answers made ahead']]]
   },
   'orbit-app': {
     tags: [['grid', ['分頁切換', 'Tabs']], ['live', ['進行中', 'Under way']], ['pencil', ['自訂名稱和圖示', 'Your name and icon']], ['star', ['好幾個 Orbit', 'Several Orbits']]]
   },
   'pass-levels': {
-    pairs: [[['基本：自己建立', 'Basic: made yourself'], ['每個 App，不含花錢的 AI', 'Every app, no paid AI']], [['完整：Jay 給的', 'Full: from Jay'], ['加上 Orbit AI 額度', 'Plus an Orbit AI allowance']]]
+    // (two levels side by side, not a before → after: each its name and what it has)
+    nums: [[['基本', 'Basic'], ['自己建立：每個 App，不含花錢的 AI', 'Made yourself: every app, no paid AI']], [['完整', 'Full'], ['Jay 給的：再加 Orbit AI 額度', 'From Jay: plus an Orbit AI allowance']]]
   },
   'ai-backup': {
     flow: [['ai', ['一家忙', 'One maker busy']], ['swap', ['同等級的另一家', 'Its class at another']], ['check', ['照樣回答', 'Still answers']]]
@@ -86,10 +86,8 @@ const S = {
   },
   fast: {
     // (The second: tools/speed.mjs, one person using all nine apps on a slow network, 2026-11-05 morning → 11-06.)
-    pairs: [
-      [['以前在 3G 上要 20–70 秒', 'Once 20–70 s on 3G'], ['現在 Jay 的 4G 上也很快', 'Quick on Jay’s 4G now']],
-      [['九個 App 各用一輪：24.8 MB', 'Nine apps once each: 24.8 MB'], ['15.2 MB', '15.2 MB']]
-    ],
+    // (before and after on the same test only: 3G then against 4G now would not be a fair pair)
+    pairs: [[['九個 App 各用一輪：24.8 MB', 'Nine apps once each: 24.8 MB'], ['15.2 MB', '15.2 MB']]],
     nums: [['12 Mbps', ['Jay 的 4G', 'Jay’s 4G']], ['300–470', ['毫秒延遲', 'ms of delay']]]
   },
   cheap: {
@@ -415,7 +413,7 @@ const S = {
   },
   'ship-tests': {
     tags: [['coin', ['錢', 'Money']], ['swap', ['資料合併', 'Merges']], ['trophy', ['排名', 'Rankings']], ['map', ['行程規劃', 'Trip plans']], ['check', ['結算', 'Settling']]],
-    pairs: [[['版面和文字', 'Layout and words'], ['需要時用截圖檢查', 'checked by screenshot when wanted']]]
+    rules: [['版面和文字：需要時用截圖檢查', 'Layout and words: checked by screenshot when wanted']]
   },
   'ship-update': {
     flow: [['play', ['打開', 'Open']], ['search', ['比對版本', 'Compare versions']], ['swap', ['有新版就重載一次', 'Reload once if newer']]]

@@ -1,9 +1,10 @@
 // Orbit Showcase: Orbit explained for anyone with a few minutes, open to all
 // (no Orbit Pass, no home-screen step: teachers open it on a laptop or a
 // phone). One page read top to bottom (views/main.mjs): what Orbit is, the
-// ten apps, six things people don't expect, how it was made. Each app has
-// its own page (screens, the real app to try, its clever parts), and the
-// whole system its own (the tree and the journeys), each one tap deeper.
+// ten apps, four things that set it apart, the problems solved, how it was
+// made. Each app has its own page (screens, the real app to try, its clever
+// parts, day one beside today), and the whole system its own (the tree and
+// the journeys), each one tap deeper.
 // The frame: a bar along the top naming the page's chapters (on a phone its
 // first row scrolls away and the chapters stay), and on a computer a side
 // bar instead; on an app's page or the system's, the bar says where back is.
