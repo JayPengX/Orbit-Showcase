@@ -43,17 +43,16 @@
 <link rel="stylesheet" href="./showcase.css" />
 </head>
 <body>
-<div id="loading" data-title="Orbit Showcase"></div>
-<!-- kit:boot: right after <div id="loading">. -->
-<script>document.write('<script src="'+ORBIT_KIT.url('boot.js')+'"><\/script>')</script>
-<!-- /kit:boot -->
-<!-- The frame (app.mjs draws it): a bar along the top (a computer: the side bar) and the views. -->
+<!-- The frame (app.mjs draws it): a bar along the top (a computer: the side bar) and the views.
+     No loading screen (Jay 11-17: the apps' one, drawn here, showed Orbit's logo
+     from an address only orbit.jaypengx.com has, a broken picture): the page
+     shows as soon as its numbers come, on the background the stylesheets set. -->
 <div id="bar" class="sc-bar"></div>
 <main class="page">
   <div id="view-main" class="sc-view"></div>
   <div id="view-app" class="sc-view" hidden></div>
   <div id="view-how" class="sc-view" hidden></div>
 </main>
-<script type="module" src="./app.mjs" onerror="window.__fxFail&&window.__fxFail()"></script>
+<script type="module" src="./app.mjs"></script>
 </body>
 </html>

@@ -10,7 +10,6 @@
 //   #home #apps #wow #solved #made   the page, at that chapter (#numbers, #story: the numbers in #made; #system its end)
 //   #apps/<app>              an app's page
 //   #how[/<node> | /map[-<story>]]  the whole system
-import * as kitUI from '#kit/ui.mjs';
 import { watchUpdates, keepOffline } from '#kit/orbit.mjs';
 import { h, t, ico, appImg, appTitle, en, reduced } from './shell.mjs';
 import { APPS } from './lib/apps.mjs';
@@ -20,7 +19,6 @@ import { renderHow, leaveHow, closeCard } from './views/how.mjs';
 import { hasDemo } from './views/demo.mjs';
 import { askDock, setAskContext, askContextFor } from './views/ask.mjs';
 
-window.__fxStarted = true;
 document.documentElement.lang = en ? 'en' : 'zh-Hant';
 
 const $ = id => document.getElementById(id);
@@ -203,17 +201,14 @@ document.addEventListener(
   true
 );
 
-kitUI.ready(
-  statsReady.then(s => {
-    stats = s;
-    renderMain(VIEWS.main, stats);
-    watchChapters();
-    askDock();
-    route(true);
-    window.addEventListener('hashchange', () => route());
-  }),
-  { max: 3000 }
-);
+statsReady.then(s => {
+  stats = s;
+  renderMain(VIEWS.main, stats);
+  watchChapters();
+  askDock();
+  route(true);
+  window.addEventListener('hashchange', () => route());
+});
 
 const VERSION = document.querySelector('meta[name="build-version"]')?.content || 'dev';
 watchUpdates({ current: VERSION, key: 'orbitShowcase', cachePrefix: 'orbit-showcase-' });
