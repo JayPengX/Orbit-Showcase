@@ -58,9 +58,11 @@ export function setAskContext(c) {
 
 // ---- The answer: code's cards, then one AI line (kept once given) ----
 let pass = null;
+// (Never a wait for ever on a stuck connection: past these, the cards code picked, as they are.)
+const within = ms => ({ signal: AbortSignal.timeout?.(ms) });
 async function passNow() {
   if (pass && pass.e - Date.now() > 60_000) return pass.qt;
-  const r = await fetch(`${API}/showcase/pass`, { method: 'POST' });
+  const r = await fetch(`${API}/showcase/pass`, { method: 'POST', ...within(10_000) });
   if (!r.ok) throw new Error('pass');
   pass = await r.json();
   return pass.qt;
@@ -91,7 +93,8 @@ async function askAi(q, cards) {
   const r = await fetch(`${API}/ai?qt=${encodeURIComponent(qt)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feature: 'showcase-ask', input: { q, cards, lang: en ? 'en' : 'zh' } })
+    body: JSON.stringify({ feature: 'showcase-ask', input: { q, cards, lang: en ? 'en' : 'zh' } }),
+    ...within(30_000)
   });
   const j = await r.json().catch(() => null);
   const out = r.ok && j?.out ? j.out : null;
@@ -103,7 +106,7 @@ async function askAi(q, cards) {
 // What the repos say besides the tree (scripts/know.mjs: every feature, Jay's
 // dated rules, the numbers from git), read once, the first time anyone asks.
 let knowing = null;
-const knowNow = () => (knowing ||= fetch('./data/know.json').then(r => (r.ok ? r.json() : null)).then(k => k?.cards || []).catch(() => []));
+const knowNow = () => (knowing ||= fetch('./data/know.json', within(10_000)).then(r => (r.ok ? r.json() : null)).then(k => k?.cards || []).catch(() => ((knowing = null), [])));
 // The cards for a question (Jay 11-15: "make it smarter … it should know the
 // project deeply"): those sharing its words, the tree's and the repos', those
 // of what's on screen, and Orbit's numbers always: twelve at most.
