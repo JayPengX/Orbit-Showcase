@@ -1,11 +1,16 @@
 // The App tab: each app's screens, the README's own six posters (shots/<app>/N.webp,
 // made by Orbit-Core tools/store-shots.mjs: real data, made-up accounts, light and
-// dark mixed, Chinese and English the same screen), `now`, the bare first screen
-// (shots/<app>/screen.webp) the day-one picture is compared with, what it is in
-// one line, the question it answers, its tree branch, and how it looked on its
-// first day where that first version still runs. `brand` is the kit's BRANDS
-// id, `repo` matches scripts/stats.mjs. In the family's order (Orbit-Core
-// kit/brand.mjs APP_ORDER): the everyday apps first, Securities last.
+// dark mixed, Chinese and English the same screen), what it is in one line, the
+// question it answers, its tree branch, and `then`: the app on its first day beside
+// today, both whole, side by side (Jay 11-17: a slider showing half of two different
+// screens was a bad picture). `day1` is its first day's code run again (shots/<app>/day1:
+// served as it was, on that run's real data, in the language it spoke),
+// `now` today's screen doing the same job, in the same theme, on the same phone: the
+// first poster's bare screen (<app>/screen), or one shot for the pair (<app>/now: Weather
+// at the same place and Securities on the same account, at the same moment; Money in
+// light, as its first day was); `was` and `is` say what each shows. `brand` is the kit's BRANDS id, `repo` matches
+// scripts/stats.mjs. In the family's order (Orbit-Core kit/brand.mjs APP_ORDER): the
+// everyday apps first, Securities last.
 export const APPS = [
   {
     id: 'sports', brand: 'match', repo: 'Orbit-Sports', zh: true,
@@ -18,8 +23,7 @@ export const APPS = [
       ['sports/5', ['比賽一結束，積分榜馬上更新', 'The table updates the moment a game ends'], 'tablet'],
       ['sports/6', ['每位球員的數據，一頁看完', 'Every player’s numbers on one page']]
     ],
-    now: 'sports/screen',
-    then: ['then-sports', ['第一天叫 Match Find：一個網頁，推薦今天最值得看的一場', 'Day one was Match Find: one page recommending the game worth watching']]
+    then: { day1: 'sports/day1', was: ['Match Find：一個網頁，只挑一場比賽', 'Match Find: one page picking one game'], now: 'sports/screen', is: ['你追的比賽、在哪一台播，一打開就看到', 'Your games and their channels, the moment you open it'] }
   },
   {
     id: 'transit', brand: 'transit', repo: 'Orbit-Transit', zh: true,
@@ -32,8 +36,7 @@ export const APPS = [
       ['transit/5', ['全台捷運，照真的路線畫', 'Every metro, drawn true to its lines'], 'tablet'],
       ['transit/6', ['YouBike 車位，即時', 'YouBike docks, live']]
     ],
-    now: 'transit/screen',
-    then: ['then-transit', ['第一天：一張地圖，標出附近的 YouBike、公車站和火車站', 'Day one: a map of the YouBikes, bus stops and stations nearby']]
+    then: { day1: 'transit/day1', was: ['一張地圖，標出附近的 YouBike、公車站和車站', 'A map of the YouBikes, bus stops and stations nearby'], now: 'transit/screen', is: ['捷運、公車、YouBike，一次排好', 'Metro, bus and YouBike in one plan'] }
   },
   {
     id: 'weather', brand: 'weather', repo: 'Orbit-Weather', zh: true,
@@ -46,8 +49,7 @@ export const APPS = [
       ['weather/5', ['每小時的溫度和雨，一眼看懂', 'Every hour’s temperature and rain, at a glance'], 'tablet'],
       ['weather/6', ['空氣品質，每小時都看得到', 'Air quality, hour by hour']]
     ],
-    now: 'weather/screen',
-    then: ['then-weather', ['第一天：一個簡單的預報頁（這張截圖的位置是伺服器所在地）', 'Day one: a simple forecast page (placed where the screenshot server is)']]
+    then: { day1: 'weather/day1', was: ['你所在地方的預報，提醒排成一串小標籤', 'The forecast where you are, its tips a row of tags'], now: 'weather/now', is: ['同一個地方、同一刻：重點一張卡看完，下面每小時', 'Same place, same moment: the gist on one card, then each hour'] }
   },
   {
     id: 'class', brand: 'orbit', repo: 'Orbit-Class', zh: true,
@@ -60,8 +62,7 @@ export const APPS = [
       ['class/5', ['專心讀書，跟著一班真的飛機', 'Study along with a real flight in the sky'], 'tablet'],
       ['class/6', ['待辦和作業，跟課表放一起', 'To-dos and homework, beside your timetable']]
     ],
-    now: 'class/screen',
-    then: ['then-class', ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use']]
+    then: { day1: 'class/day1', was: ['上 GitHub 那天的 Orbit Color：一個 4,102 行的網頁檔，那時已經用了好幾個月', 'Orbit Color the day it reached GitHub: one 4,102-line page, already months in use'], now: 'class/screen', is: ['現在上什麼、還剩幾分鐘、下一節是什麼', 'What’s on, how long is left, and what’s next'] }
   },
   {
     id: 'money', brand: 'money', repo: 'Orbit-Money', zh: true,
@@ -74,8 +75,7 @@ export const APPS = [
       ['money/5', ['一整年，每個月比一比', 'The whole year, month by month'], 'tablet'],
       ['money/6', ['問你的帳，答案畫成圖', 'Ask your books, see the answer']]
     ],
-    now: 'money/screen',
-    then: ['then-money', ['第一天：一本金色的月曆帳本，還沒有一筆帳', 'Day one: a gold calendar book, not one entry yet']]
+    then: { day1: 'money/day1', was: ['一本金色的月曆帳本，還沒有一筆帳', 'A gold calendar book, not one entry yet'], now: 'money/now', is: ['這個月還能花多少、每天能花多少，一眼看', 'What’s left this month, and per day, at a glance'] }
   },
   {
     id: 'news', brand: 'news', repo: 'Orbit-News', zh: true,
@@ -100,8 +100,7 @@ export const APPS = [
       ['words/5', ['8 種練習方式，記得更牢', '8 ways to practise'], 'tablet'],
       ['words/6', ['搞混過的字，下次直接提醒你', 'Your mix-ups, shown to you next time']]
     ],
-    now: 'words/screen',
-    then: ['then-words', ['第一天：高中英文參考詞彙表 Level 4–6', 'Day one: the high-school word list, Levels 4–6']]
+    then: { day1: 'words/day1', was: ['高中英文參考詞彙表 Level 4–6，自己選範圍練習', 'The high-school word list, Levels 4–6: pick a range and practise'], now: 'words/screen', is: ['今天該背哪些字，一打開就知道', 'Today’s words, the moment you open it'] }
   },
   {
     id: 'beats', brand: 'beats', repo: 'Orbit-Beats', zh: true,
@@ -114,8 +113,7 @@ export const APPS = [
       ['beats/5', ['喜歡就收藏，首首都有封面', 'Keep favorites, each with its own cover'], 'tablet'],
       ['beats/6', ['每首歌都能玩節奏遊戲', 'A rhythm game for any song']]
     ],
-    now: 'beats/screen',
-    then: ['then-beats', ['第一天叫 Passion Beats：用錄音切成的節拍做歌', 'Day one was Passion Beats: songs from a recording cut into beats']]
+    then: { day1: 'beats/day1', was: ['Passion Beats：用一段錄音切成的節拍做歌', 'Passion Beats: songs from a recording cut into beats'], now: 'beats/screen', is: ['手機現做的音樂，首首不重複', 'Endless music, made on your phone'] }
   },
   {
     id: 'law', brand: 'law', repo: 'Orbit-Law', zh: true,
@@ -128,8 +126,7 @@ export const APPS = [
       ['law/5', ['立法院近 8 千案，走到哪一步', 'Nearly 8,000 bills, each one’s stage'], 'tablet'],
       ['law/6', ['22 縣市議會和代表會，影音都在', 'Every council, down to the townships']]
     ],
-    now: 'law/screen',
-    then: ['then-law', ['第一天：一個法規閱讀器，1,351 部法律', 'Day one: a law reader, 1,351 laws']]
+    then: { day1: 'law/day1', was: ['一個法規閱讀器，1,351 部法律', 'A law reader, 1,351 laws'], now: 'law/screen', is: ['有法律問題用白話問，答案附上條文', 'Ask in plain words; every answer cites the law'] }
   },
   {
     id: 'securities', brand: 'stock', repo: 'Orbit-Securities', zh: true,
@@ -142,7 +139,6 @@ export const APPS = [
       ['securities/5', ['換匯照銀行牌價', 'Exchange at the bank’s rates'], 'tablet'],
       ['securities/6', ['今天誰漲誰跌，一頁看完', 'Today’s movers, on one page']]
     ],
-    now: 'securities/screen',
-    then: ['then-securities', ['第一天叫 Stock Study：開一個模擬帳戶', 'Day one was Stock Study: open a practice account']]
+    then: { day1: 'securities/day1', was: ['Stock Study：總資產和它的走勢', 'Stock Study: your net worth and its line'], now: 'securities/now', is: ['同一個帳戶、同一刻：持股和關注的股票，即時漲跌', 'Same account, same moment: holdings and watchlist, live'] }
   }
 ];

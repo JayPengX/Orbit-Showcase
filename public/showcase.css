@@ -223,84 +223,57 @@
   margin: 0;
   font: 400 15px/1.55 var(--q-font);
 }
-.sc-compare {
-  position: relative;
-  width: min(300px, 100%);
-  aspect-ratio: 375 / 812;
-  margin: 0 auto;
-  border-radius: 30px;
-  overflow: hidden;
-  background: var(--q-fill-2);
-  box-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.4);
-  user-select: none;
-  -webkit-user-select: none;
-}
-.sc-compare img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-}
-.sc-cmp-then {
-  position: absolute;
-  inset: 0;
-  clip-path: inset(0 calc(100% - var(--k)) 0 0);
-}
-.sc-cmp-line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--k);
-  width: 3px;
-  margin-left: -1.5px;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
-  pointer-events: none;
-}
-.sc-cmp-knob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+/* Day one and now: two phones, each whole, side by side, the same size (Jay 11-17: a slider
+   showed half of two different screens). Each in a dark bezel with a faint rim, so a dark
+   screen still reads as a phone on the dark page; a tap shows it full size. */
+.sc-tn {
   display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fff;
-  color: #111;
-  font-size: 20px;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  grid-template-columns: repeat(2, minmax(0, 250px));
+  justify-content: center;
+  gap: 14px;
 }
-.sc-cmp-tag {
-  position: absolute;
-  z-index: 1;
-  bottom: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font: 600 12px/1.3 var(--q-font);
-  pointer-events: none;
-}
-.sc-cmp-tag-l {
-  left: 12px;
-}
-.sc-cmp-tag-r {
-  right: 12px;
-}
-.sc-cmp-range {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
+.sc-tn-side {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
   margin: 0;
-  opacity: 0;
-  cursor: ew-resize;
-  touch-action: pan-y;
+}
+.sc-tn-k {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  font: 600 15px/1.35 var(--q-font);
+}
+.sc-tn-k span {
+  color: var(--q-label-2);
+  font: 400 12px/1.35 var(--q-font);
+}
+.sc-tn-phone {
+  display: block;
+  width: 100%;
+  padding: 5px;
+  border: 0;
+  border-radius: 27px;
+  background: #0b0b0f;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.14), 0 14px 34px -16px rgba(0, 0, 0, 0.45);
+  cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-tn-phone img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 22px;
+  background: var(--q-fill-2);
+}
+.sc-tn-said {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 400 13px/1.45 var(--q-font);
+  text-wrap: pretty;
 }
 /* ---- 架構: the tree ---- */
 .sc-segbox {
@@ -1155,8 +1128,10 @@
     justify-items: start;
     margin: 0 -16px 28px;
   }
-  .sc-compare {
-    margin: 0;
+  .sc-tn {
+    grid-template-columns: repeat(2, minmax(0, 280px));
+    justify-content: start;
+    gap: 24px;
   }
   .sc-treewrap.branch {
     display: grid;

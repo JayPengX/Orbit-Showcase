@@ -3,8 +3,8 @@
 // shows them (swipe), its story in three lines (problem → idea → result),
 // its clever parts (each opens its card: the tree's leaves under the app,
 // the first few shown, the rest behind the kit's quiet more bar), its age
-// and updates from data/stats.json, its first day beside today where that
-// first version still runs (a slider between them), and the next app.
+// and updates from data/stats.json, its first day beside today (both phones
+// whole, side by side), and the next app.
 import { h, t, ico, appImg, num, fmtDayYear, daysBetween, twToday, reduced, zoom, shotUrl, appTitle, pir, en } from '../shell.mjs';
 import * as kitUI from '#kit/ui.mjs';
 import { BRANDS } from '#kit/brand.mjs';
@@ -15,6 +15,11 @@ import { openCard } from './how.mjs';
 import { tryApp } from './main.mjs';
 
 const shot = (app, f) => shotUrl(f, Boolean(app.zh));
+
+// The screens row's arrows follow the window's size: one listener for the
+// page, pointed at the row drawn last (each app page draws a new one).
+let adEnds = null;
+addEventListener('resize', () => adEnds?.(), { passive: true });
 
 // The screens the way an app store shows them: the README's posters, a row
 // you swipe (the next one peeks in); a phone's, an iPad's or a computer's.
@@ -37,28 +42,34 @@ function ads(app) {
   };
   requestAnimationFrame(ends);
   row.addEventListener('scroll', ends, { passive: true });
-  addEventListener('resize', ends, { passive: true });
+  adEnds = ends;
   return h('div', { class: 'sc-adbox', style: `--ad-hi:${hi};--ad-mid:${mid};--ad-lo:${lo}` }, [
     h('div', { class: 'sc-adrow' }, [row, arrow(-1, ['上一張', 'Previous']), arrow(1, ['下一張', 'Next'])])
   ]);
 }
 
-// Day one and today, one over the other, a handle between them.
-function thenNow(app) {
+// Day one beside today, each phone whole, side by side (lib/apps.mjs `then`): the same
+// phone, the same theme, the same job, a line under each on what it shows. A tap shows
+// either one full size.
+function thenNow(app, stats) {
   if (!app.then) return null;
-  const [f, c] = app.then;
-  const now = app.now || `${app.shots[0][0].split('/')[0]}/screen`;
-  const box = h('div', { class: 'sc-compare', style: '--k:50%' }, [
-    h('img', { class: 'sc-cmp-now', src: shot(app, now), alt: t(['現在', 'Now']), loading: 'lazy', decoding: 'async' }),
-    h('div', { class: 'sc-cmp-then' }, [h('img', { src: shot(app, f), alt: t(c), loading: 'lazy', decoding: 'async' })]),
-    h('span', { class: 'sc-cmp-tag sc-cmp-tag-l', text: t(['第一天', 'Day one']) }),
-    h('span', { class: 'sc-cmp-tag sc-cmp-tag-r', text: t(['現在', 'Now']) }),
-    h('span', { class: 'sc-cmp-line', 'aria-hidden': 'true' }, [h('span', { class: 'sc-cmp-knob' }, [ico('swap')])])
+  const { day1, was, now, is } = app.then;
+  const first = stats?.repos?.find(x => x.repo === app.repo)?.first;
+  const side = (f, label, when, said) => {
+    const src = shot(app, f);
+    return h('figure', { class: 'sc-tn-side' }, [
+      h('div', { class: 'sc-tn-k' }, [h('strong', { text: t(label) }), when ? h('span', { text: when }) : null]),
+      h('button', { class: 'sc-tn-phone', type: 'button', 'aria-label': t(['放大看', 'See it full size']), onclick: () => zoom(src, t(said)) }, [
+        h('img', { src, alt: '', loading: 'lazy', decoding: 'async', width: 750, height: 1624 })
+      ]),
+      h('figcaption', { class: 'sc-tn-said', text: t(said) })
+    ]);
+  };
+  return h('section', { class: 'sc-part sc-then' }, [
+    h('h3', { class: 'sc-subhead', text: t(['第一天和現在', 'Day one and now']) }),
+    h('div', { class: 'sc-tn' }, [side(day1, ['第一天', 'Day one'], first ? fmtDayYear(first) : '', was), side(now, ['現在', 'Now'], '', is)]),
+    h('p', { class: 'sc-note', text: t(['第一天的畫面，是把它第一天的程式重新跑一次拍下的，不是想像圖。', 'Day one is its first day’s own code, run again and shot: not a mock-up.']) })
   ]);
-  const range = h('input', { type: 'range', min: '0', max: '100', value: '50', class: 'sc-cmp-range', 'aria-label': t(['拖動比較第一天和現在', 'Drag to compare day one and now']) });
-  range.addEventListener('input', () => box.style.setProperty('--k', `${range.value}%`));
-  box.append(range);
-  return h('section', { class: 'sc-part sc-then' }, [h('h3', { class: 'sc-subhead', text: t(['第一天和現在', 'Day one and now']) }), box, h('p', { class: 'sc-note', text: t(c) })]);
 }
 
 function facts(app, stats) {
@@ -140,11 +151,11 @@ export function renderApp(box, stats, id) {
         h('section', { class: 'sc-part' }, [h('h3', { class: 'sc-subhead', text: t(['為什麼做它', 'Why it exists']) }), h('div', { class: 'sc-pir' }, pir(node)), facts(app, stats)]),
         clever(app)
       ]),
-      thenNow(app),
+      thenNow(app, stats),
       h('p', { class: 'sc-note', text: t(['截圖用的是範例資料，不是任何人真正的資料。', 'Every screenshot uses sample data, never anyone’s own.']) }),
       nextApp(app)
     ])
   );
-  box.querySelectorAll('.sc-compare img, .sc-ad img').forEach(img => img.addEventListener('dblclick', () => zoom(img.src, img.alt)));
+  box.querySelectorAll('.sc-ad img').forEach(img => img.addEventListener('dblclick', () => zoom(img.src, img.alt)));
   return app;
 }

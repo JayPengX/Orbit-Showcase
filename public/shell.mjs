@@ -42,11 +42,11 @@ export const appImg = (brand, size = 44, cls = '') => h('img', { class: `sc-appi
 export const appTitle = a => t(NODES.get(a.id).node.title);
 
 // A screenshot (shots/<app>/N): the set taken with the app in Chinese
-// (N.zh.webp) on the Chinese page, the English one otherwise; a day-one
-// picture (then-…) has one set.
+// (N.zh.webp) on the Chinese page, the English one otherwise (a day-one
+// picture of an app that spoke one language: the same picture twice).
 // (?v=: its content stamp, so a retaken shot is never one the phone kept; scripts/shot-versions.mjs)
 export const shotUrl = (f, zh = true) => {
-  const name = `${f}${zh && !en && !f.startsWith('then-') ? '.zh' : ''}`;
+  const name = `${f}${zh && !en ? '.zh' : ''}`;
   return `./shots/${name}.webp${SHOT_V[name] ? `?v=${SHOT_V[name]}` : ''}`;
 };
 

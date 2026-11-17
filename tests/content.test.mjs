@@ -35,9 +35,11 @@ test('apps: a tree branch, screenshots on disk, captions in both languages', () 
   for (const a of APPS) {
     assert.ok(NODES.has(a.id), a.id);
     assert.ok(pair(a.q), `${a.id}.q`);
-    for (const [f, c] of [...a.shots, ...(a.then ? [a.then] : [])]) {
+    // (day one beside today: both pictures, each in both languages, both said in both)
+    const then = a.then ? [[a.then.day1, a.then.was], [a.then.now, a.then.is]] : [];
+    for (const [f, c] of [...a.shots, ...then]) {
       assert.ok(existsSync(shot(f)), `${f}.webp`);
-      if (a.zh && !f.startsWith('then-')) assert.ok(existsSync(shot(`${f}.zh`)), `${f}.zh.webp`);
+      if (a.zh) assert.ok(existsSync(shot(`${f}.zh`)), `${f}.zh.webp`);
       assert.ok(pair(c), `${f} caption`);
     }
   }
