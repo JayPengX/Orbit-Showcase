@@ -24,8 +24,11 @@ document.documentElement.lang = en ? 'en' : 'zh-Hant';
 
 const $ = id => document.getElementById(id);
 
-// The real numbers, recounted by the deploy every day.
-const statsReady = fetch('./data/stats.json', { cache: 'no-cache' })
+// The real numbers, recounted by the deploy every day (index.html asks for
+// them at once, beside the modules; the server has them checked every time).
+// The page never waits on them long: past 2.5 s (a slow or stuck connection;
+// it waited for ever, 11-17) it is drawn without them, and again when they come.
+const statsReady = fetch('./data/stats.json')
   .then(r => (r.ok ? r.json() : null))
   .catch(() => null);
 let stats = null;
@@ -107,6 +110,7 @@ function light(id) {
 let spy = null;
 function watchChapters() {
   if (typeof IntersectionObserver === 'undefined') return;
+  spy?.disconnect();
   const seen = new Map();
   spy = new IntersectionObserver(
     entries => {
@@ -202,14 +206,29 @@ document.addEventListener(
   true
 );
 
-statsReady.then(s => {
+let started = false;
+function start(s) {
   stats = s;
+  if (started) {
+    // (drawn without them: drawn again with them, the chapter on screen kept where it is)
+    const at = current === 'main' ? $(lit || 'home') : null;
+    const was = at?.getBoundingClientRect().top;
+    renderMain(VIEWS.main, stats);
+    watchChapters();
+    const now = at && $(at.id)?.getBoundingClientRect().top;
+    if (now != null && was != null) window.scrollBy({ top: now - was, behavior: 'instant' });
+    if (current === 'app') renderApp(VIEWS.app, stats, drawnApp);
+    return;
+  }
+  started = true;
   renderMain(VIEWS.main, stats);
   watchChapters();
   askDock();
   route(true);
   window.addEventListener('hashchange', () => route());
-});
+}
+Promise.race([statsReady, new Promise(done => setTimeout(done, 2500, null))]).then(start);
+statsReady.then(s => s && started && !stats && start(s));
 
 const VERSION = document.querySelector('meta[name="build-version"]')?.content || 'dev';
 watchUpdates({ current: VERSION, key: 'orbitShowcase', cachePrefix: 'orbit-showcase-' });
