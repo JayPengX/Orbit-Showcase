@@ -12,7 +12,7 @@
 // Each app's page and the whole system are one tap deeper; every figure is
 // one the code, its history or a tree card states (none made up).
 import { h, t, ico, appImg, num, shotUrl, appTitle, daysBetween, twToday, fmtDay, fmtDayYear, en } from '../shell.mjs';
-import { APPS } from '../lib/apps.mjs';
+import { APPS, phrases } from '../lib/apps.mjs';
 import { hasDemo, openDemo } from './demo.mjs';
 import { openCard, TOP, hue, shortName } from './how.mjs';
 import { SHOW } from '../lib/tree-show.mjs';
@@ -48,7 +48,8 @@ const line = pair => {
 // question marks, and at a | (「今晚有什麼|比賽值得看？」), never mid-word
 // (「今晚有什 / 麼比賽」 at 320 in Safari) nor leaving a mark alone on a line
 // (「，」 at 320, 11-17: keep-all made a long phrase break at its last character).
-const phrased = s => (en ? [s] : s.split(/\||(?<=[，、？；：])(?=.)/).map(p => h('span', { class: 'sc-ph', text: p })));
+// (lib/apps.mjs phrases.)
+const phrased = s => (en ? [s] : phrases(s).map(p => h('span', { class: 'sc-ph', text: p })));
 // 「怎麼做到的 ›」 under a block that opens a tree card.
 const howLink = id => h('button', { class: 'sc-howgo', type: 'button', onclick: () => openCard(id) }, [t(['怎麼做到的', 'How it works']), ico('chevron')]);
 

@@ -143,3 +143,9 @@ export const APPS = [
     then: { day1: 'securities/day1', was: ['Stock Study：總資產和它的走勢', 'Stock Study: your net worth and its line'], now: 'securities/now', is: ['同一個帳戶、同一刻：持股和關注的股票，即時漲跌', 'Same account, same moment: holdings and watchlist, live'] }
   }
 ];
+
+// A line cut into the phrases it may break between: at a |, and after its own
+// commas and question marks (the mark stays with the words before it).
+// (Without a look-behind in the pattern: Safari before 16.4 can't read one,
+// and a page module it can't read leaves the whole page blank, 11-18.)
+export const phrases = s => s.split('|').flatMap(p => p.match(/[^，、？；：]*[，、？；：]|[^，、？；：]+$/g) || [p]);
