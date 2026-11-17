@@ -32,7 +32,7 @@ minutes"; keep the demos and screenshots).
 
 | Where | What it shows | Code, data |
 | --- | --- | --- |
-| `#home` the top | One sentence on what Orbit is and who does what, four numbers from git (apps, days, data sources, updates), three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
+| `#home` the top | One sentence on what Orbit is and who does what, four numbers from git (apps, days, data sources, updates; asked for at once by `index.html`, never waited on past 2.5 s: drawn without them, then with them), three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
 | `#apps` | The ten apps, each its question and its cleverest part (`BEST`, as its tree card states it); 試玩 runs the real app at once | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
 | `#wow` | Four things that set Orbit apart, each a card in its own colour: what it means for you, a small picture of how (the phone → locked → the cloud; each app's sources → one answer; four ways to say or snap it, each a real feature; one app → another), its numbers, its tree card | `views/main.mjs` `pillar`, `MERGES`, `ASKS`, `TOGETHER`; `lib/tree-show.mjs` |
 | `#solved` | Problems solved, before → after: the old number struck, the new one large; each measured around its change and stated on its tree card; the ones Jay raised carry his day | `views/main.mjs` `SOLVED`, `lib/tree-show.mjs` |
@@ -61,14 +61,15 @@ The views are `public/views/*.mjs`; `public/shell.mjs` holds what they share (la
 A reader's question about how Orbit was made (the AI plan, 2026-11-11), asked from anywhere
 (2026-11-14): a pill along the bottom (`askDock`) names a question about what's on screen
 (`setAskContext`: the chapter, an app's page, the system; every tree card ends on its own ask) and
-opens the conversation in a sheet. Code first: `lib/ask.mjs`
+opens the conversation in a sheet. On a short screen it waits until the first screen's numbers and
+button have scrolled above it (11-17: it covered them on a 320 phone and one on its side). Code first: `lib/ask.mjs`
 `cardsFor` picks the structure tree's cards that share its words (pairs of Chinese characters,
 English words; a title counts double). Then one AI call, `showcase-ask` (Orbit-Core
 `ai-features.js`: Haiku, Luna next), on the showcase's own pass (`/showcase/pass`, as the demos
 take theirs; 20 a day an address) says the answer from those cards only and names the ones to
-open, drawn by the kit's `aiAnswer` (rows open the card). No pass, the day's answers spent or
-offline: the cards code picked, as they are. An answer once given is kept on the device
-(localStorage `orbitShowcase.asked`, 40 at most) and never asked again; the cards of what's on
+open, drawn by the kit's `aiAnswer` (rows open the card). No pass, the day's answers spent,
+offline or a stuck connection (each call has a time limit): the cards code picked, as they are. An
+answer once given is kept on the device (localStorage `orbitShowcase.asked2`, 40 at most) and never asked again; the cards of what's on
 screen join the ones code picked. Nothing new is written about Orbit for it: it reads
 the tree as it stands.
 
