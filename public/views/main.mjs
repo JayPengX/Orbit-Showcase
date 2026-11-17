@@ -44,9 +44,11 @@ const line = pair => {
   if (!s.includes('|')) return h('span', {}, [s]);
   return h('span', {}, s.split('|').flatMap((p, i) => [i && p.startsWith(' ') ? ' ' : null, h('span', { class: 'sc-ph', text: p.trim() })]));
 };
-// A line that breaks after its own commas (with keep-all in the CSS), never
-// mid-word (「今晚有什 / 麼比賽」 at 320 in Safari).
-const phrased = s => (en ? [s] : s.split(/(?<=[，、？；：])(?=.)/).map(p => h('span', { class: 'sc-ph', text: p })));
+// A line that breaks only between its phrases: after its own commas and
+// question marks, and at a | (「今晚有什麼|比賽值得看？」), never mid-word
+// (「今晚有什 / 麼比賽」 at 320 in Safari) nor leaving a mark alone on a line
+// (「，」 at 320, 11-17: keep-all made a long phrase break at its last character).
+const phrased = s => (en ? [s] : s.split(/\||(?<=[，、？；：])(?=.)/).map(p => h('span', { class: 'sc-ph', text: p })));
 // 「怎麼做到的 ›」 under a block that opens a tree card.
 const howLink = id => h('button', { class: 'sc-howgo', type: 'button', onclick: () => openCard(id) }, [t(['怎麼做到的', 'How it works']), ico('chevron')]);
 

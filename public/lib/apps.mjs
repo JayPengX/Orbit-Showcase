@@ -1,7 +1,8 @@
 // The App tab: each app's screens, the README's own six posters (shots/<app>/N.webp,
 // made by Orbit-Core tools/store-shots.mjs: real data, made-up accounts, light and
 // dark mixed, Chinese and English the same screen), what it is in one line, the
-// question it answers, its tree branch, and `then`: the app on its first day beside
+// question it answers (a | in its Chinese: where a narrow phone may break the line, as
+// after its own commas, so it never breaks mid-word), its tree branch, and `then`: the app on its first day beside
 // today, both whole, side by side (Jay 11-17: a slider showing half of two different
 // screens was a bad picture). `day1` is its first day's code run again (shots/<app>/day1:
 // served as it was, on that run's real data, in the language it spoke),
@@ -14,7 +15,7 @@
 export const APPS = [
   {
     id: 'sports', brand: 'match', repo: 'Orbit-Sports', zh: true,
-    q: ['今晚有什麼比賽值得看？在哪一台？', 'Which games tonight are worth it, and on which channel?'],
+    q: ['今晚有什麼|比賽值得看？在哪一台？', 'Which games tonight are worth it, and on which channel?'],
     shots: [
       ['sports/1', ['你的比賽，一打開就看到', 'Your games, the moment you open it']],
       ['sports/2', ['台灣轉播的 15 項賽事，全在這', 'All 15 competitions on TV in Taiwan'], 'computer'],
@@ -66,7 +67,7 @@ export const APPS = [
   },
   {
     id: 'money', brand: 'money', repo: 'Orbit-Money', zh: true,
-    q: ['這個月的錢花到哪裡去了？', 'Where did this month’s money go?'],
+    q: ['這個月的錢|花到哪裡去了？', 'Where did this month’s money go?'],
     shots: [
       ['money/1', ['一整個月，花多少一眼看', 'Your month, at a glance']],
       ['money/2', ['錢花到哪裡，一圈看懂', 'Where the money went'], 'computer'],

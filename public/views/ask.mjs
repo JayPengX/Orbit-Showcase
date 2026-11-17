@@ -208,10 +208,25 @@ export function askDock() {
     h('span', { class: 'sc-dock-t' }, [h('strong', { text: t(['問 Orbit', 'Ask Orbit']) }), say]),
     h('span', { class: 'sc-dock-go', 'aria-hidden': 'true' }, [ico('send')])
   ]);
-  let away = 0; // reasons it steps aside: the top's own buttons, the inline box, an open sheet
+  let away = 0; // reasons it steps aside: the first screen's numbers or button under it, the inline box
   let turn = 0;
   let timer = 0;
+  let frame = 0;
   const show = () => el.classList.toggle('away', Boolean(away) || Boolean(open));
+  // A short screen (a small phone, one on its side) has the first screen's numbers and its button where the
+  // pill sits: it waits until they have scrolled above it (11-17: it covered 59 sources and 6,955 updates).
+  const clear = () => {
+    frame = 0;
+    const top = innerHeight - el.offsetHeight - 28;
+    const under = [...document.querySelectorAll('.sc-figs, .sc-intro-go')].some(x => {
+      const r = x.getBoundingClientRect();
+      return r.height > 0 && r.bottom > top && r.top < innerHeight;
+    });
+    dock.hide(under, AWAY.top);
+  };
+  const soon = () => (frame ||= requestAnimationFrame(clear));
+  addEventListener('scroll', soon, { passive: true });
+  addEventListener('resize', soon, { passive: true });
   dock = {
     el,
     hide(on, why) {
@@ -233,6 +248,7 @@ export function askDock() {
           });
         }, 4200);
       show();
+      soon();
     }
   };
   document.body.append(el);

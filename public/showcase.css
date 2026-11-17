@@ -2634,7 +2634,6 @@ html.q-tabrail {
 .sc-app-text strong {
   font: 600 16px/1.35 var(--q-font);
   text-wrap: balance;
-  word-break: keep-all;
   overflow-wrap: anywhere;
 }
 /* A narrow phone: 試玩 is its play mark alone (its name stays in aria-label), so the question has the room */
@@ -2790,14 +2789,18 @@ html.q-tabrail {
 }
 /* Its numbers: light numerals in a row over a hairline. */
 .sc-pnums {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px 20px;
   padding-top: 12px;
   box-shadow: inset 0 0.5px 0 var(--q-sep);
 }
+/* (Flex, not a grid of equal columns: a number never gets less room than it takes, so 600,000 and 0 can't run
+   into one, nor 22 + 204 past the card's edge; one that can't fit goes to the next row.) */
 .sc-pnums > div {
   display: grid;
+  flex: 1 1 92px;
+  align-content: start;
   gap: 2px;
 }
 .sc-pnums strong {
@@ -2810,6 +2813,7 @@ html.q-tabrail {
 .sc-pnums small {
   color: var(--q-label-2);
   font: 400 13px/1.3 var(--q-font);
+  text-wrap: balance;
 }
 /* Steps joined by arrows: your phone → locked → the cloud. */
 .sc-pflow {
@@ -3780,7 +3784,7 @@ html[data-view='how'] .sc-dock.how-off {
 .sc-ask-foot {
   position: sticky;
   bottom: 0;
-  padding: 10px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-top: 10px;
   background: inherit;
 }
 /* A card's own ask (the tree's cards). */

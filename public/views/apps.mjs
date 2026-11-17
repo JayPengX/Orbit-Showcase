@@ -138,7 +138,7 @@ export function renderApp(box, stats, id) {
       h('a', { class: 'sc-back', href: '#apps' }, [ico('chevron'), t(['十個 App', 'Ten apps'])]),
       h('header', { class: 'sc-ahead' }, [
         appImg(app.brand, 64),
-        h('div', {}, [h('h1', { text: appTitle(app) }), h('p', { class: 'sc-appq', text: `「${t(app.q)}」` }), h('p', { class: 'sc-appline', text: t(node.line) })]),
+        h('div', {}, [h('h1', { text: appTitle(app) }), h('p', { class: 'sc-appq', text: `「${t(app.q).replaceAll('|', '')}」` }), h('p', { class: 'sc-appline', text: t(node.line) })]),
         demo
           ? h('div', { class: 'sc-apptry' }, [
               h('button', { class: 'sc-cta', type: 'button', onclick: () => tryApp(app) }, [ico('play'), t(['試玩真的 App', 'Try the real app'])]),
