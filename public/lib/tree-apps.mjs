@@ -292,7 +292,7 @@ const weather = n('weather', 'cloud', ['Orbit Weather', 'Orbit Weather'], ['一�
         n('weather-blend', 'cloud', ['多個來源混成一個答案', 'Many sources, one answer'], ['還會自己打分數', 'And it grades them'], {
           p: ['Google、中央氣象署、環境部的數字常不一樣。', 'Google, CWA and MOENV often disagree.'],
           i: ['雲端把它們和測站的實際讀數混在一起，每小時拿實測對答案，學會誰在哪裡比較準。', 'The cloud blends them with real station readings and checks against what happened every hour, learning who is right where.'],
-          r: ['App 只顯示一個值，也從不寫來源。', 'The app shows one value and never names a source.'],
+          r: ['App 只顯示一個值，也從不寫來源；每個地方的溫度平常偏多少，顯示前先扣掉（試了三天，6 小時以後的預報平均差 0.86 度變成 0.59 度）。', 'The app shows one value and never names a source; each place’s usual temperature error is taken off before it’s shown (tried over three days, forecasts more than 6 hours ahead went from 0.86° off on average to 0.59°).'],
           tech: ['weather.js 混合約 1 公里格子；weather-skill.js 每小時評分；有測試會擋住來源名出現在畫面上。', 'weather.js blends a ~1 km cell; weather-skill.js scores hourly; a test fails if a source name reaches the screen.']
         }),
         n('weather-typhoon', 'wind', ['颱風停班停課機率', 'Typhoon day-off chance'], ['用過去 68 個颱風學出來', 'Learnt from 68 past storms'], {
@@ -657,7 +657,7 @@ const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞�
     n('news-sides', 'flag', ['媒體的立場從哪裡來', 'Where an outlet’s place comes from'], ['照研究和公開評等，不是我們自己判', 'From research and public ratings, never our own reading'], {
       p: ['自己判斷哪家媒體偏哪邊，很容易變成自己的偏見。', 'Judging each outlet’s lean ourselves would just be our own bias.'],
       i: ['台灣媒體照已發表的研究（例如台灣選舉與民主化調查），新的網路媒體照老闆和公開立場（標成較弱）；英文媒體照 AllSides，沒有的再看 Media Bias/Fact Check。', 'Taiwan’s outlets by published research (such as TEDS), newer web outlets by owner and stated stance (marked weaker); English outlets by AllSides, else Media Bias/Fact Check.'],
-      r: ['每家媒體的卡片都寫著為什麼放在那裡。', 'Every outlet’s card says why it sits where it does.'],
+      r: ['每家媒體的卡片都寫著為什麼放在那裡；每則新聞的色條，兩邊照各自有幾家媒體來算，不會因為一邊的媒體比較多，就讓每則新聞看起來都偏那邊。', 'Every outlet’s card says why it sits where it does; a story’s colour bar weighs each side by how many outlets that side has, so the side with more outlets doesn’t make every story look like it leans its way.'],
       tech: ['Orbit-Core kit/news-outlets.mjs：OUTLETS（118 家新聞媒體，另有 7 家體育）、BASIS（每個依據的出處）、藍綠和統獨兩條軸；沒有任何研究把一家媒體放在白色，所以只列新聞提到哪些政黨。', 'Orbit-Core kit/news-outlets.mjs: OUTLETS (118 news outlets, plus 7 sports), BASIS (the source of each place), the green–blue and unification–independence axes; no study places an outlet as TPP-leaning, so stories list the parties their headlines name.']
     }),
     n('news-stories', 'grid', ['依重要程度排，不是依時間', 'By importance, not by time'], ['大新聞留好幾週，一直長大', 'Big stories stay for weeks and grow'], {

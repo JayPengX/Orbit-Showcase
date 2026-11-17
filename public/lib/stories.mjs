@@ -103,7 +103,7 @@ export const STORIES = [
   },
   {
     id: 'news', app: 'news', icon: 'list',
-    title: ['打開一則新聞，看各家怎麼報', 'Opening a story in News'],
+    title: ['打開一則新聞，看各家怎麼報', 'Opening a story in News: how each outlet tells it'],
     short: ['新聞', 'News'],
     steps: [
       ['cron', ['每 10 分鐘，排程輪流讀各家媒體的新聞。', 'Every 10 minutes a schedule reads the outlets’ feeds in turn.']],

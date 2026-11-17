@@ -37,13 +37,15 @@ export function askContextFor(kind, id) {
   const node = NODES.get(id)?.node;
   if (!node) return CONTEXTS.home;
   const name = t(node.title);
+  // (An app by its own name, as the bar above shows it: Securities, not Orbit Securities.)
+  const app = name.replace(/^Orbit\s+/, '');
   if (kind === 'app')
     return {
       ids: [id, ...(node.kids || []).slice(0, 2).map(k => k.id)],
       qs: [
-        [`${name} 最聰明的地方是什麼？`, `What’s cleverest about ${name}?`],
-        [`${name} 的資料從哪裡來？`, `Where does ${name} get its data?`],
-        [`${name} 用到 AI 嗎？`, `Does ${name} use AI?`]
+        [`${app} 最聰明的地方是什麼？`, `What’s cleverest about ${app}?`],
+        [`${app} 的資料從哪裡來？`, `Where does ${app} get its data?`],
+        [`${app} 用到 AI 嗎？`, `Does ${app} use AI?`]
       ]
     };
   return { ids: [id], qs: [[`「${name}」是怎麼做到的？`, `How does “${name}” work?`], ['為什麼要這樣做？', 'Why do it this way?']] };

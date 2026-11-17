@@ -91,7 +91,7 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
     }),
     n('kit-screens', 'grid', ['每種螢幕都排好', 'Every screen laid out'], ['直的、橫的、平板、電腦', 'Upright, sideways, tablet, computer'], {
       p: ['原本只照手機直拿來做：手機一橫過來，或在平板、電腦上打開，就只是中間一條窄窄的手機畫面。', 'The apps were made for a phone held upright: turned sideways, or opened on a tablet or computer, they were a narrow phone column in the middle.'],
-      i: ['共用零件先看螢幕多大：橫拿和電腦上，分頁列變成左邊一條細細的直欄；平板和電腦上，滑出來的視窗變成置中的卡片；頁面夠寬就排成兩到三欄，由左到右讀起來和手機的順序一樣。', 'The shared pieces read the screen first: sideways and on a computer the tab bar becomes a slim rail down the left; on a tablet or computer sheets become cards in the middle; a wide page becomes two or three columns, read in the phone’s order.'],
+      i: ['共用零件先看螢幕多大：橫拿和電腦上，分頁列變成左邊一條細細的直欄，每個分頁都留著名字；平板和電腦上，滑出來的視窗變成置中的卡片；頁面夠寬就排成兩到三欄，由左到右讀起來和手機的順序一樣。', 'The shared pieces read the screen first: sideways and on a computer the tab bar becomes a slim rail down the left, every tab keeping its name; on a tablet or computer sheets become cards in the middle; a wide page becomes two or three columns, read in the phone’s order.'],
       r: ['每個 App 在手機、平板、電腦上，直的橫的都好用（Jay 2026-10-31 的要求）。', 'Every app works on a phone, tablet or computer, either way up (Jay’s ask, 2026-10-31).'],
       tech: ['orbit.mjs 的 screenFit()／onScreen()；html 上的 q-tabrail（直欄 60 寬）、q-float、q-wide、q-w3；Orbit-Core docs/DESIGN.md §10。', 'orbit.mjs screenFit()/onScreen(); the html marks q-tabrail (a 60-wide rail), q-float, q-wide, q-w3; Orbit-Core docs/DESIGN.md §10.']
     }),
