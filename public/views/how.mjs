@@ -547,7 +547,8 @@ let built = null;
 let seg = null;
 let mode = '';
 
-export function renderHow(panel, what = '') {
+// (viaLink: a link was tapped to get here, not the browser's back or forward.)
+export function renderHow(panel, what = '', viaLink = false) {
   if (what.startsWith('sys')) what = what.slice(4);
   const view = what.startsWith('map') ? 'map' : 'tree';
   if (!built) {
@@ -585,7 +586,10 @@ export function renderHow(panel, what = '') {
   }
   mode = 'tree';
   const id = what === 'tree' ? '' : what;
-  if (id && id === picked && from === 'tree') return;
+  // Back at the part already open (the browser's back): the tree as it was left.
+  // A link to it opens its card again: on a phone a card's chip to the part
+  // read last time landed on the tree with no card at all (11-18).
+  if (id && id === picked && from === 'tree' && !viaLink) return;
   requestAnimationFrame(() => pick(id || ROOT.id, Boolean(id)));
 }
 

@@ -185,7 +185,7 @@ function route(first = false) {
   document.title = `${t(['整個系統', 'The whole system'])} · Orbit Showcase`;
   subBar('how');
   if (was !== 'how') window.scrollTo({ top: 0, behavior: 'instant' });
-  renderHow(VIEWS.how, r.what);
+  renderHow(VIEWS.how, r.what, viaLink);
 }
 
 // A link to a chapter on the page already open scrolls there (the address
@@ -205,6 +205,10 @@ document.addEventListener(
       return;
     }
     jumping = href;
+    // (The address the page already has: no hashchange follows, so the route is
+    // run from here. On a phone a search hit in 整個系統, tapped again after its
+    // card was closed, did nothing, 11-18.)
+    if (href === location.hash && current !== 'main') (e.preventDefault(), route());
   },
   true
 );
