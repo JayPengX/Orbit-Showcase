@@ -14,7 +14,7 @@ const apps = n('apps', 'grid', ['十個 App', 'Ten apps'], ['你手上真正會�
   kids: [
     n('orbit-app', 'grid', ['Orbit：十個 App 在一個裡面', 'Orbit: ten apps in one'], ['分頁切換，不用回主畫面', 'Tabs, no trip back to the home screen'], {
       p: ['十個 App 就是主畫面上十個圖示，換一個 App 要回主畫面再找、重新載入；公車還在路上，看一下天氣就找不回來了。', 'Ten apps meant ten icons: switching meant the home screen, a hunt and a reload, and a glance at the weather lost the bus trip under way.'],
-      i: ['一個 Orbit 圖示裝著所有 App：上方的 ⌄ 和分頁像瀏覽器一樣切換，回到原本的畫面、捲到的位置；正在進行的（路線導航、YouBike、公車提醒、專注飛行、Beats 播放）標「進行中」，一點就回去。加到主畫面前可以自己取名、挑 App 和圖示，一個主畫面可以放好幾個 Orbit，也可以只放一個 App。', 'One Orbit icon holds every app: the ⌄ and tabs at the top switch like a browser, back to the same screen and scroll; what’s under way (a trip, a YouBike ride, a bus alert, a focus flight, Beats playing) says Live and is one tap away. Before adding it you can name it and pick its apps and icon; a home screen can hold several Orbits, or one with a single app.'],
+      i: ['一個 Orbit 圖示裝著所有 App：上方的 ⌄ 和分頁像瀏覽器一樣切換，回到原本的畫面、捲到的位置；正在進行的（路線導航、YouBike、公車提醒、專注飛行、Beats 播放）標「進行中」，一點就回去。加到主畫面前可以自己取名、挑 App 和圖示，一個主畫面可以放好幾個 Orbit，也可以只放一個 App。任何一個 App 的網址、通知或舊的主畫面圖示，都會在 Orbit 裡打開那個 App。', 'One Orbit icon holds every app: the ⌄ and tabs at the top switch like a browser, back to the same screen and scroll; what’s under way (a trip, a YouBike ride, a bus alert, a focus flight, Beats playing) says Live and is one tap away. Before adding it you can name it and pick its apps and icon; a home screen can hold several Orbits, or one with a single app. Any app’s address, notice or old home-screen icon opens that app inside Orbit.'],
       r: ['切換不重新載入、不閃白，正在做的事一直都在。', 'Switching never reloads or flashes white, and what’s under way stays with you.'],
       tech: ['orbit.jaypengx.com/app/：Orbit-Core site/app/index.html、kit suite.mjs；每個 Orbit 的設定寫在它的網址（/app/?o=…）和自己的 manifest（/api/orbit-manifest）；行為的每一種情況寫在 docs/ORBIT.md。', 'orbit.jaypengx.com/app/: Orbit-Core site/app/index.html, the kit’s suite.mjs; each Orbit’s setup lives in its address (/app/?o=…) and its own manifest (/api/orbit-manifest); every case of its behaviour is in docs/ORBIT.md.'],
       links: ['pass', 'kit-boot']
@@ -23,10 +23,10 @@ const apps = n('apps', 'grid', ['十個 App', 'Ten apps'], ['你手上真正會�
   ]
 });
 
-const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你的話，但先讓程式做', 'Every app takes plain words, code first'], {
+const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['九個 App 聽得懂你的話，但先讓程式做', 'Nine apps take plain words, code first'], {
   p: ['很多 App 加 AI 只是多一個聊天框：答案是一大段字，還常常編造。', 'Many apps bolt on a chat box: answers in paragraphs, often made up.'],
-  i: ['程式讀得懂、算得出來的就由程式做；AI 只拿到程式先整理好的一小份事實，寫一句話、挑出要畫哪幾張表。答案一定畫成圖：隊徽、大頭照、分類圖示、長條；等待時先畫出答案的形狀。凡是聰明的地方都標 Orbit AI 的記號。', 'What code can read or add up, code does; AI gets only a small digest of facts that code picked, writes one line and picks which tables to draw. Answers are always drawn: logos, faces, category tiles, bars; while waiting, the answer’s shape shimmers. Every smart thing carries the Orbit AI mark.'],
-  r: ['十個 App 都能用說的，答案一眼看懂，數字都是 App 自己讀到的。', 'All ten apps take plain words, answers read at a glance, and every number is one the app itself read.'],
+  i: ['程式讀得懂、算得出來的就由程式做；AI 只拿到程式先整理好的一小份事實，寫一句話、挑出要畫哪幾張表。AI 可以算出占多少、加起來多少、差多少、平均多少，但每個數字程式都會再算一次，對不上就不給。答案一定畫成圖：隊徽、大頭照、分類圖示、長條；等待時先畫出答案的形狀。凡是聰明的地方都標 Orbit AI 的記號。', 'What code can read or add up, code does; AI gets only a small digest of facts that code picked, writes one line and picks which tables to draw. AI may work out a share, a total, a gap or an average, but code works out every such number again and drops an answer that doesn’t match. Answers are always drawn: logos, faces, category tiles, bars; while waiting, the answer’s shape shimmers. Every smart thing carries the Orbit AI mark.'],
+  r: ['九個 App 都能用說的（News 完全不用 AI），答案一眼看懂，每個數字都是 App 自己讀到或程式驗算過的。', 'Nine apps take plain words (News uses no AI at all), answers read at a glance, and every number is one the app read or code checked.'],
   kids: [
     n('ai-door', 'chat', ['一個 AI 門口', 'One AI door'], ['每個功能有固定的題目和上限', 'Each feature a fixed prompt and a cap'], {
       p: ['如果手機自己送題目給 AI，任何人都能拿我們的 AI 免費用，費用也可能失控。', 'If phones sent their own prompts, anyone could use our AI for free, and the bill could run away.'],
@@ -35,11 +35,11 @@ const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你�
       tech: ['Orbit-Core ai.js、ai-features.js（固定題目、maxIn、上限、反問）；kit ai.mjs（aiCall、aiFlow、aiAnswer、aiAnswerWait、aiMark）；D1 gemini_call 每次呼叫一列；管理頁 AI 錢包。', 'Orbit-Core ai.js, ai-features.js (fixed prompts, maxIn, caps, asking back); kit ai.mjs (aiCall, aiFlow, aiAnswer, aiAnswerWait, aiMark); D1 gemini_call, a row a call; the admin AI wallet.'],
       links: ['cheap-caps']
     }),
-    n('ai-ahead', 'history', ['點了才做，做一次大家共用', 'Made on the first tap, kept for all'], ['沒人看的不花錢', 'Nothing spent on what nobody opens'], {
+    n('ai-ahead', 'history', ['按了才做，不先替你做', 'Made on a tap, never ahead'], ['沒人看的不花錢', 'Nothing spent on what nobody opens'], {
       p: ['先替每則新聞、每場比賽、每個單字都做好 AI，大部分根本沒人打開：11 月有四天就花掉了一大筆。', 'Making AI ahead for every story, game and word paid for things nobody opened: four days in November ran up a real bill.'],
-      i: ['第一個人打開時才做（例如一則新聞的重點整理和各方怎麼說、一場比賽的看點和賽後一句話），做好就留給之後的每個人；等的時候先畫出答案的形狀，幾秒就到。沒有任何一個是先做好的。程式做得到的（讀標題、分類）就不用 AI。', 'Made when the first person opens it (a story’s brief and each side’s angle, a game’s preview and why-it-ended line), then kept for everyone after; while it’s made, the answer’s shape shows, and it arrives in seconds. Nothing is made ahead of a tap. Whatever code can do (reading a title, sorting) never uses AI.'],
-      r: ['錢只花在有人看的東西上，多一個人看也不多花一毛錢。', 'Money goes only on what someone reads, and one more reader costs nothing.'],
-      tech: ['Orbit-Core ai-open.js（/ai/open：news-brief、news-sides、sports-recap、sports-preview）、kept-store.js；ai.js BULK_PAUSED 停掉整批預先做的；每家 AI 每天的上限（PROVIDER_DAY）只是安全網。', 'Orbit-Core ai-open.js (/ai/open: news-brief, news-sides, sports-recap, sports-preview), kept-store.js; ai.js BULK_PAUSED stops making things ahead; each maker’s day cap (PROVIDER_DAY) is only a safety net.']
+      i: ['每個 AI 功能都是一顆安靜的按鈕：你按了、你問了，才做。打開一則新聞、一場比賽、一條法律都不會跑 AI；以前先替大家做好的 AI 內容，11-17 全部拿掉，不是暫停。有些答案做一次就留給之後的每個人，例如一則重大訊息的白話說明。程式做得到的（讀標題、分類、加總）就不用 AI。', 'Every AI feature is a quiet button: it runs when you tap or ask. Opening a story, a game or a law never runs AI; everything AI used to make ahead for everyone was taken out for good on 11-17, not paused. Some answers are kept for everyone once made, such as a company filing’s plain line. Whatever code can do (reading a title, sorting, adding up) never uses AI.'],
+      r: ['錢只花在有人按、有人問的東西上。', 'Money goes only on what someone taps or asks.'],
+      tech: ['kit ai.mjs 的 aiTap（按鈕）、aiAnswer；Orbit-Core ai.js 每個功能每天的上限；ai-allow.js 決定每個帳號能用幾次；每家 AI 每天的上限（PROVIDER_DAY）只是安全網。只剩兩個是排程做的：管理頁的除錯紀錄週報和 Law 的法案週報。', 'The kit’s ai.mjs aiTap (the button) and aiAnswer; Orbit-Core ai.js caps each feature a day; ai-allow.js sets how many each account may have; each maker’s day cap (PROVIDER_DAY) is only a safety net. Only two are made on a schedule: the admin’s weekly debug-log report and Law’s weekly bill report.']
     }),
     n('ai-backup', 'shield', ['一家忙，換另一家', 'One maker busy, another answers'], ['同等級、不同公司', 'Same class, another maker'], {
       p: ['11-10 免費的 Gemini 排隊超過 20 秒、常常答不出來，問法律三題只答一題。', 'On 11-10 free Gemini queued for over 20 seconds and often failed; Ask the law answered one question in three.'],
@@ -50,9 +50,9 @@ const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['每個 App 都聽得懂你�
     }),
     n('ai-family', 'share', ['App 之間互相幫忙', 'Apps that help each other'], ['只在你的手機上', 'Only on your phone'], {
       p: ['每個 App 只知道自己：交通不知道會下雨，新聞不知道你持有哪些股票。', 'Each app knew only itself: Transit didn’t know it would rain, News didn’t know what you hold.'],
-      i: ['手機上有一本家族筆記：天氣寫下哪裡會下雨，課表寫下接下來的課，股票寫下持有的名稱（不含金額），單字寫下正在背的字。於是交通下雨時改搭車、新聞先放你關心的、Pass 的「今天」一次看完；在 Pass 上「問 Orbit」，它會打開能回答的那個 App 並幫你問。', 'A family notebook on the phone: Weather notes where rain is due, Class the next classes, Securities the names held (never amounts), Words the words being learned. So Transit avoids rain, News leads with what you care about, the Pass’s Today sums up the day; Ask Orbit on the Pass opens the app that can answer and asks there.'],
+      i: ['手機上有一本家族筆記：天氣寫下哪裡會下雨，課表寫下接下來的課，股票寫下持有的名稱（不含金額），單字寫下今天該複習幾個字，Sports 寫下追蹤的球隊。於是交通下雨時改搭車、新聞先放你持有和追蹤的、課表下課時提醒背五個字、Pass 的「今天」一次看完。', 'A family notebook on the phone: Weather notes where rain is due, Class the next classes, Securities the names held (never amounts), Words how many words are due today, Sports the teams followed. So Transit avoids rain, News leads with what you hold and follow, Class offers five words at the break, and the Pass’s Today sums up the day.'],
       r: ['十個 App 像一個，而且這些都不會傳到雲端。', 'Ten apps that feel like one, with none of it sent to the cloud.'],
-      tech: ['kit family.mjs（tell、heard）、today.mjs、ask-orbit.mjs（#ask=）。', 'kit family.mjs (tell, heard), today.mjs, ask-orbit.mjs (#ask=).']
+      tech: ['kit family.mjs（tell、heard）、today.mjs；每個 App 只寫自己的事，讀別人的從不改它。', 'The kit’s family.mjs (tell, heard) and today.mjs; each app writes only its own facts and never changes another’s.']
     })
   ]
 });
@@ -141,8 +141,8 @@ const kit = n('kit', 'backpack', ['共用零件', 'Shared parts'], ['像樂高�
 
 const pass = n('pass', 'key', ['一張通行證', 'One pass'], ['Orbit Pass：一組碼，所有 App', 'Orbit Pass: one code, every app'], {
   p: ['十個 App 要十組帳號密碼，資料也分散。', 'Ten apps would mean ten logins and scattered data.'],
-  i: ['一組 10 個字的通行碼（也能用 Face ID 的通行金鑰）；任何人都能用收得到驗證碼的信箱自己建立，一個人一個帳號；登入一次，Orbit 和每個 App 都登入了，資料存在雲端。', 'One 10-character pass (or a passkey with Face ID); anyone can make one with an email that receives a code, one account a person; sign in once and Orbit and every app follow, data kept in the cloud.'],
-  r: ['換手機也什麼都不會少。', 'A new phone loses nothing.'],
+  i: ['一組 10 個字的通行碼（也能用 Face ID 的通行金鑰）；任何人都能用收得到驗證碼的信箱自己建立，一個人一個帳號；登入一次，Orbit 和每個 App 都登入了，資料先在手機上鎖好再存到雲端。', 'One 10-character pass (or a passkey with Face ID); anyone can make one with an email that receives a code, one account a person; sign in once and Orbit and every app follow, data locked on the phone before it’s kept in the cloud.'],
+  r: ['換手機也什麼都不會少，雲端卻看不懂你存了什麼。', 'A new phone loses nothing, yet the cloud can’t read what you keep.'],
   tech: ['Orbit-Core eco.js（/eco）；D1 資料庫 orbit-store。', 'Orbit-Core eco.js (/eco); the D1 database orbit-store.'],
   kids: [
     n('pass-code', 'lock', ['通行碼不會外洩', 'The code never leaks'], ['伺服器只存指紋', 'The server keeps only a fingerprint'], {
@@ -150,6 +150,19 @@ const pass = n('pass', 'key', ['一張通行證', 'One pass'], ['Orbit Pass：�
       i: ['伺服器只存通行碼的「指紋」；手機也不存通行碼，只存一張 60 天的更新票和一張短效的通行票。登出時把手機上的資料清乾淨。', 'The server keeps only the code’s fingerprint; phones keep only a 60-day refresh ticket and a short session ticket. Signing out wipes the device.'],
       r: ['就算資料外洩，也拿不到通行碼。', 'Even a leak doesn’t reveal a pass.'],
       tech: ['SHA-256；orbit-token.js 以 ECO_TOKEN_SECRET 做 HMAC；wipeDevice。', 'SHA-256; orbit-token.js HMAC under ECO_TOKEN_SECRET; wipeDevice.']
+    }),
+    n('pass-vault', 'lock', ['資料在手機上先上鎖', 'Locked on your phone first'], ['我們的資料庫看不懂你的資料', 'Our database can’t read your data'], {
+      p: ['資料存在雲端，管理的人、或任何看到資料庫和備份的人，都讀得到裡面寫了什麼：記帳的真實金額、課表、追蹤的球隊。', 'Data kept in the cloud can be read by whoever runs it, or anyone who sees the database or a backup: real spending, a timetable, the teams you follow.'],
+      i: ['每個帳號有一把自己的鑰匙。App 的資料在你的手機上先用它鎖起來，才送到雲端；鑰匙放在你登入過的裝置上，雲端只存鎖住的鑰匙。新手機輸入一次通行碼就打開；忘了通行碼，用信箱找回，資料一樣全部回來。', 'Each account has a key of its own. An app’s data is locked with it on your phone before it goes to the cloud; the key stays on your signed-in devices, and the cloud keeps it only locked. A new phone opens it with your pass typed once; forget the pass and recover by email, and everything comes back.'],
+      r: ['從 2026-11-15 起，存進資料庫和每晚備份的都是鎖住的資料，Jay 的管理頁也只看到一個鎖；只有雲端一定要讀的才不上鎖，例如 Securities 的模擬交易、要送的通知、分享給同學的課表。', 'From 2026-11-15 what goes into the database and its nightly backups is locked, and Jay’s admin page sees only a lock; only what the cloud must read stays open, such as Securities’ practice trades, notices to send and a timetable shared with a classmate.'],
+      tech: ['kit vault.mjs：每個帳號一把 AES-256-GCM 鑰匙，用通行碼經 PBKDF2-SHA256 600,000 次做出的鑰匙包起來放在 Pass；裝置放在 IndexedDB；設定和數字也逐項上鎖（sealParts）；給信箱找回用的備用鑰匙由 Worker 的祕密（HKDF）鎖住，不在資料庫裡；排程每 10 分鐘把還沒上鎖的舊資料鎖好；之前的舊備份到期就刪。完整設計在 Orbit-Core docs/PRIVACY.md。', 'The kit’s vault.mjs: one AES-256-GCM key an account, wrapped by a key made from the pass with PBKDF2-SHA256 at 600,000 rounds and kept on the Pass; devices hold it in IndexedDB; settings and figures are locked one by one too (sealParts); the copy kept for email recovery is sealed by a Worker secret (HKDF), never in the database; a job every 10 minutes locks older data still open; backups from before age out. The whole design: Orbit-Core docs/PRIVACY.md.'],
+      links: ['pass-code', 'pass-safe']
+    }),
+    n('pass-count', 'chart', ['只數次數，不認人', 'Counted, never who'], ['用得怎樣，只看總數', 'How it’s used, in totals only'], {
+      p: ['想知道哪裡慢、哪裡壞、大家卡在哪一步，又不想知道是誰。', 'Jay wanted to know what’s slow, what breaks and where people get stuck, without knowing who.'],
+      i: ['手機只送匿名的次數：打開了哪個 App 和分頁、快不快、有沒有出錯、什麼大小的螢幕；不送你是誰、在哪裡、打了什麼或存了什麼。Pass 的「隱私 › 使用統計」一鍵關掉，瀏覽器說不要追蹤也照做。不賣資料、沒有廣告、沒有第三方追蹤碼；要下載或刪除自己的資料，寫信到 privacy@，系統自動處理。', 'The phone sends only anonymous counts: which apps and tabs opened, how fast, what broke, what size of screen; never who you are, where you are, or what you type or keep. Pass › Privacy › Usage stats turns it off, and a browser asking not to be tracked is obeyed. No data sold, no ads, no third-party trackers; to download or delete your data, write to privacy@ and it’s handled automatically.'],
+      r: ['Jay 看得到哪裡要修，卻不知道是誰在用。', 'Jay sees what needs fixing, never who is using it.'],
+      tech: ['kit usage.mjs（一次幾百 bytes、最多 30 秒一次、沒有帳號或裝置編號）、代理的 usage.js；Global Privacy Control；隱私權政策在 /privacy/；privacy-mail.js 自動處理資料請求。', 'The kit’s usage.mjs (a few hundred bytes, at most every 30 s, no account or device id), the proxy’s usage.js; Global Privacy Control; the policy at /privacy/; privacy-mail.js handles data requests by itself.']
     }),
     n('pass-levels', 'user', ['基本和完整', 'Basic and full'], ['會花錢的功能另外給', 'What costs money is given separately'], {
       p: ['任何人都能建立帳號以後，如果新帳號也能無限用 AI，帳單就會失控，也會鼓勵一個人開很多個帳號。', 'Once anyone can make an account, new accounts with unlimited AI would run up the bill and invite people to make several.'],
@@ -215,7 +228,7 @@ const cloud = n('cloud', 'cloud', ['雲端小幫手', 'The helper in the cloud']
       p: ['網頁 App 關掉就什麼都不知道了。', 'A closed web app knows nothing.'],
       i: ['App 先把「之後要提醒的事」交給雲端；時間到了雲端先確認（比賽真的結束了嗎、公車真的快到了嗎、價格到了嗎），再加密送到手機。一次性的消息只說一次。', 'Apps hand coming notices to the cloud; when due, it checks first (is the game over, is the bus near, did the price hit) and sends them encrypted. One-off news is told once.'],
       r: ['課前提醒、公車到站、比賽結果、股價提醒都準時。', 'Class reminders, bus alerts, results and price alerts arrive on time.'],
-      tech: ['push.js；Web Push（RFC 8291/8292，用 WebCrypto 加密）；每人每個 App 一台裝置；偶數分鐘的排程。', 'push.js; Web Push (RFC 8291/8292, WebCrypto); one device per person per app; the even-minute cron.'],
+      tech: ['push.js；Web Push（RFC 8291/8292，用 WebCrypto 加密）；每台裝置只收一次，有 Orbit 的裝置在 Orbit 裡收到、點了就在 Orbit 打開；偶數分鐘的排程。', 'push.js; Web Push (RFC 8291/8292, WebCrypto); each device gets a notice once, a device with Orbit gets it in Orbit and a tap opens it there; the even-minute cron.'],
       links: ['sports-push', 'class-swap']
     }),
     n('cloud-relay', 'send', ['台灣的 AI 中繼站', 'The AI relay in Taiwan'], ['固定在台灣的機房', 'Pinned to a Taiwan data centre'], {
@@ -265,11 +278,11 @@ const store = n('store', 'backpack', ['資料放在哪裡', 'Where data lives'],
       links: ['fast-sw']
     }),
     n('store-d1', 'list', ['資料庫（D1）', 'The database (D1)'], ['Pass 和每個 App 的資料', 'The Pass and each app’s data'], {
-      tech: ['D1 orbit-store：錢包（entries、snap、settings、inbox）、每個 App 一個集合、history 舊版本表；合併時檢查版本。', 'D1 orbit-store: the wallet (entries, snap, settings, inbox), one collection per app, the history table; merges under a version check.'],
-      links: ['pass-safe']
+      tech: ['D1 orbit-store：錢包（entries、snap、settings、inbox）、每個 App 一個集合、history 舊版本表；合併時檢查版本；11-15 起 App 的資料在手機上先上鎖，資料庫只存鎖住的那份。', 'D1 orbit-store: the wallet (entries, snap, settings, inbox), one collection per app, the history table; merges under a version check; from 11-15 apps’ data is locked on the phone first, and the database keeps only the locked copy.'],
+      links: ['pass-safe', 'pass-vault']
     }),
     n('store-r2', 'backpack', ['雲端倉庫（R2）', 'Cloud storage (R2)'], ['做好的資料包和永久保存的', 'Ready packs and things kept for good'], {
-      tech: ['R2 orbit-data：球季和比賽日、轉播精華、勝率、球員照片、公車包和路線形狀、永久保存的比賽和 F1 賽段、每晚備份（private/ 不公開）。一個球季保留到下個球季第一場比賽。', 'R2 orbit-data: seasons and game days, watch links, win chances, photos, bus packs and shapes, games and F1 sessions kept for good, nightly backups (private/ never served). A season stays until the next one’s first game.'],
+      tech: ['R2 orbit-data：球季和比賽日、轉播精華、球員照片、公車包和路線形狀、永久保存的比賽和 F1 賽段、每晚備份（private/ 不公開）。一個球季保留到下個球季第一場比賽。', 'R2 orbit-data: seasons and game days, watch links, photos, bus packs and shapes, games and F1 sessions kept for good, nightly backups (private/ never served). A season stays until the next one’s first game.'],
       links: ['sports-kept', 'transit-packs', 'pass-safe']
     }),
     n('store-kv', 'grid', ['快速小抽屜（KV）', 'Quick drawers (KV)'], ['短時間共用的答案', 'Answers shared for a while'], {
@@ -389,7 +402,7 @@ const ship = n('ship', 'send', ['改好之後怎麼到你手機', 'From a change
       links: ['kit']
     }),
     n('ship-tests', 'check', ['測試只測會默默出錯的地方', 'Tests for the silent bugs'], ['錢、資料、排名、結算', 'Money, data, ranking, settling'], {
-      tech: ['測試寫給「錯了也不會被看出來」的邏輯：錢、資料合併、排名、行程規劃、結算；版面不寫測試，但每次上線前，一個工具在手機、平板、電腦三種大小拍下每個分頁和重要視窗，版面縮成一條、半邊空白、會橫向滑動就不准上線（11-15 起每張等畫面不再變動就拍，快了一倍）。Transit 用 Jay 的真實行程當判決。', 'Tests are for logic whose bugs are silent: money, merging, ranking, planning, settling; layout has no tests, but before every push a tool shoots every tab and key sheet on a phone, a tablet and a computer, and a page squeezed into a strip, half empty or sliding sideways is never pushed (from 11-15 each shot is taken once the page stops changing, twice as fast). Transit uses Jay’s real trips as verdicts.'],
+      tech: ['測試寫給「錯了也不會被看出來」的邏輯：錢、資料合併、排名、行程規劃、結算；版面不寫測試，而是一個工具在手機、平板、電腦三種大小拍下每個分頁和重要視窗，找出縮成一條、半邊空白、會橫向滑動的地方；11-15 起為了推得快，它改成需要時手動跑，每次推上去只跑那個 repo 自己的測試。Transit 用 Jay 的真實行程當判決。', 'Tests are for logic whose bugs are silent: money, merging, ranking, planning, settling; layout has no tests: a tool shoots every tab and key sheet on a phone, a tablet and a computer and finds a page squeezed into a strip, half empty or sliding sideways; from 11-15, for fast pushes, it runs by hand when wanted, and a push runs only its repo’s own tests. Transit uses Jay’s real trips as verdicts.'],
       links: ['transit-rank']
     }),
     n('ship-tools', 'camera', ['Claude 看得到手機畫面', 'Claude sees the phone screen'], ['截圖工具和品質關卡', 'A screenshot tool and a quality gate'], {

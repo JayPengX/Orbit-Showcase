@@ -98,21 +98,34 @@ export const STORIES = [
       ['ai', ['AI 讀出金額、日期、店名和品項，分類只能從你自己的清單裡選。', 'AI reads the amount, day, store and items; the category can only come from your own list.']],
       ['proxy', ['回來之前先檢查：日期是真的、金額是整數。', 'Before it comes back it’s checked: a real day, a whole amount.']],
       ['phone', ['你看到一筆填好的帳，看一眼再存；一樣的帳記過了，它會問要不要合併。', 'You see a filled-in entry to check before saving; if it’s already logged, it asks to merge.']],
-      ['d1', ['帳本跟著你的 Pass 存在資料庫，換手機也在。', 'The books are saved with your Pass, there on any phone.']]
+      ['d1', ['帳本先在手機上鎖好，才跟著你的 Pass 存進資料庫：換手機也在，雲端卻看不懂。', 'The books are locked on the phone, then saved with your Pass: there on any phone, unreadable to the cloud.']]
     ]
   },
   {
-    id: 'news', app: 'news', icon: 'news',
-    title: ['打開一則新聞，看各方怎麼說', 'Opening a story in News'],
+    id: 'news', app: 'news', icon: 'list',
+    title: ['打開一則新聞，看各家怎麼報', 'Opening a story in News'],
     short: ['新聞', 'News'],
     steps: [
       ['cron', ['每 10 分鐘，排程輪流讀各家媒體的新聞。', 'Every 10 minutes a schedule reads the outlets’ feeds in turn.']],
       ['src', ['118 家新聞媒體自己的標題、連結和摘要。', 'The 118 outlets’ own headlines, links and summaries.']],
       ['r2', ['程式把同一件事的報導放在一起、分好主題，寫成一個檔案，不用 AI。', 'Code groups reports of the same event and sorts them by topic into one file, no AI.']],
-      ['phone', ['你打開 News 讀這個檔，點開一則。', 'You open News, which reads that file, and tap a story.']],
-      ['d1', ['如果有人看過這則，各方怎麼說已經做好，直接給你。', 'If someone already opened it, each side’s angle is ready and comes straight to you.']],
-      ['ai', ['你是第一個？這時才請 AI 只從各家的標題寫出差別；等的時候先畫出答案的形狀。', 'First to open it? Only now is AI asked to write the difference from the outlets’ own headlines, its shape showing while you wait.']],
-      ['d1', ['做好就留給之後的每個人，多一個人看不多花錢。', 'It’s kept for everyone after, so one more reader costs nothing.']]
+      ['phone', ['你打開 News 讀這個檔，沒看過的排在前面，點開一則。', 'You open News, which reads that file with what you haven’t seen first, and tap a story.']],
+      ['phone', ['偏綠、中間、偏藍各有幾家在報，各家的標題並排，還有這件事的來龍去脈。', 'How many outlets on each side carry it, their headlines side by side, and how the story unfolded.']],
+      ['proxy', ['國際新聞的標題，只翻你正在看的那幾則，一次一批，翻好的留在手機上。', 'World headlines are translated only as they’re shown, one batch at a time, and kept on the phone.']],
+      ['phone', ['點一個標題，就到那家媒體自己的網站讀全文。', 'Tap a headline to read the full piece on the outlet’s own site.']]
+    ]
+  },
+  {
+    id: 'lock', icon: 'lock',
+    title: ['你的資料，先在手機上鎖好', 'Your data, locked on your phone first'],
+    short: ['上鎖', 'Locked'],
+    steps: [
+      ['phone', ['你在 Money 記了一筆早餐。', 'You log a breakfast in Money.']],
+      ['phone', ['存之前，手機用你帳號的鑰匙把它鎖起來；這把鑰匙只放在你登入過的裝置上。', 'Before saving, the phone locks it with your account’s key, kept only on your signed-in devices.']],
+      ['gate', ['雲端確認你的 Pass，收到的是一串鎖住的字。', 'The cloud checks your Pass and receives only locked text.']],
+      ['d1', ['資料庫和每晚的備份存的都是鎖住的那份；Jay 的管理頁也只看到一個鎖。', 'The database and its nightly backups keep only the locked copy; Jay’s admin page sees just a lock.']],
+      ['phone', ['換一支新手機，輸入一次通行碼，鑰匙打開，帳本全部回來。', 'On a new phone you type your pass once, the key opens, and the books are all back.']],
+      ['gate', ['忘了通行碼？用信箱找回，雲端用自己的祕密鎖著的備用鑰匙只在這時打開一次，資料一樣全部回來。', 'Forgot the pass? Recover by email: a spare key the cloud keeps sealed by its own secret opens just this once, and everything comes back.']]
     ]
   },
   {

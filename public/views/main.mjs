@@ -123,12 +123,14 @@ function apps() {
   ]);
 }
 
-// ---- 2. Six things people don't expect ----
+// ---- 2. Things people don't expect ----
 // Each a figure the tree's own card states (lib/tree-show.mjs, tree.mjs,
 // tree-apps.mjs: none made up), in one line; a tap opens its whole story.
-// The figure wears its app's colour (the one coloured thing on the card); on
-// a wide page the first one is the big card of the six.
+// The figure wears its app's colour (the one coloured thing on the card).
+// One for each app and two for the whole of Orbit: the first is the big
+// card (your data locked on your phone, 11-15), the last runs the whole row.
 const WOW = [
+  { id: 'pass-vault', app: null, fig: ['9 個 App', '9 apps'], say: ['的資料，在你的手機上先上鎖才同步：我們的資料庫只看得到一個鎖', 'lock their data on your phone before it syncs: our database sees only a lock'] },
   { id: 'weather-typhoon', app: 'weather', fig: '68', say: ['個颱風，教它算出放颱風假的機率', 'typhoons taught it the chance of a typhoon day off'] },
   { id: 'law-links', app: 'law', fig: ['約 99%', '~99%'], say: ['法條裡約 28,000 個「第幾條」，點了就到那一條', 'of the ~28,000 article numbers in the law open that very article'] },
   { id: 'transit-fast', app: 'transit', fig: ['快 2–5 倍', '2–5× faster'], say: ['規劃路線：台北從 7 到 10 秒，變成 1 到 2 秒', 'to plan a trip: Taipei went from 7–10 s to 1–2 s'] },
@@ -151,7 +153,7 @@ function wow() {
       WOW.map((w, i) => {
         const a = APPS.find(x => x.id === w.app);
         const b = brandOf(a);
-        return h('button', { class: `sc-wowcard${i === 0 ? ' big' : ''}`, type: 'button', style: b ? `--w-c:${b.color};--w-ink:${b.ink};--w-from:${b.from}` : '', onclick: () => openCard(w.id) }, [
+        return h('button', { class: `sc-wowcard${i === 0 ? ' big' : i === WOW.length - 1 ? ' wide' : ''}`, type: 'button', style: b ? `--w-c:${b.color};--w-ink:${b.ink};--w-from:${b.from}` : '', onclick: () => openCard(w.id) }, [
           h('span', { class: 'sc-wow-from' }, [appImg(a?.brand || null, 22), h('span', { class: 'sc-wow-name' }, a ? [h('span', { class: 'sc-wow-orbit', text: 'Orbit ' }), appName(a)] : [t(['整個 Orbit', 'All of Orbit'])])]),
           h('strong', { class: 'sc-wow-fig', text: t(w.fig) }),
           h('span', { class: 'sc-wow-say' }, phrased(t(w.say))),

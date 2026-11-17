@@ -2752,6 +2752,10 @@ html.q-tabrail {
 .sc-wowcard.big {
   grid-column: span 2;
 }
+/* (the last card: the whole row, so the grid ends even at two columns and three) */
+.sc-wowcard.wide {
+  grid-column: 1 / -1;
+}
 .sc-wowcard.big .sc-wow-fig {
   font-size: clamp(48px, 17cqi, 72px);
 }

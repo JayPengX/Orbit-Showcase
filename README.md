@@ -30,7 +30,7 @@ One page, read top to bottom in a few minutes:
 | --- | --- |
 | The top | What Orbit is in one sentence, its numbers counted from git, three real screens |
 | 十個 App Apps | Each app's question, with 試玩 (Try) to run the real app at once |
-| 亮點 Highlights | Six things people don't expect, each opening its whole story (problem, idea, result) |
+| 亮點 Highlights | Twelve things people don't expect, each opening its whole story (problem, idea, result) |
 | 怎麼做的 How it's made | Jay's part and Claude's, one problem from spotted to fixed, and the numbers from the code |
 
 Each app has its own page (`#apps/<app>`: its screens, the real app to try, its clever parts, day one beside today), and the whole system its own (`#how`: the structure tree and the journeys), one tap deeper.

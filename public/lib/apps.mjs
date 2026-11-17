@@ -25,7 +25,7 @@ export const APPS = [
     id: 'transit', brand: 'transit', repo: 'Orbit-Transit', zh: true,
     q: ['怎麼去最實際？公車還要等多久？', 'What’s the practical way there, and how long for the bus?'],
     shots: [
-      ['transit/1', ['火車、公車、YouBike，一次排好', 'Train, bus and YouBike in one plan']],
+      ['transit/1', ['捷運、公車、YouBike，一次排好', 'Metro, bus and YouBike in one plan']],
       ['transit/2', ['每個車站的下一班，即時', 'Every station’s next train, live'], 'computer'],
       ['transit/3', ['兩站之間，每一班車', 'Every train between two stations']],
       ['transit/4', ['公車還要等幾分鐘', 'Minutes until your bus']],
@@ -55,7 +55,7 @@ export const APPS = [
     shots: [
       ['class/1', ['現在上什麼、還剩幾分鐘', 'What’s on now, and how long is left']],
       ['class/2', ['整週課表，單雙週都對', 'Your whole week, odd and even weeks'], 'computer'],
-      ['class/3', ['考前讀書計畫，照範圍排好', 'A study plan for every exam']],
+      ['class/3', ['點一科，下次幾點上、一週幾節', 'Tap a class: when it’s next, how many a week']],
       ['class/4', ['調課，幾秒完成', 'Swap a class in seconds']],
       ['class/5', ['跟著一班真的飛機專注', 'Focus along a real flight'], 'tablet'],
       ['class/6', ['待辦和作業，跟課表放一起', 'To-dos and homework, beside your timetable']]

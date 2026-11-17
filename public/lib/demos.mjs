@@ -23,7 +23,7 @@ export const TOURS = {
     { tap: '.nw-card', say: ['點一則新聞，看各家怎麼報', 'Tap a story to see how every outlet tells it'] },
     { tap: 'dialog[open] .q-close', say: ['關掉', 'Close it'] },
     { tap: '#tab-tw', say: ['台灣新聞，照主題分', 'Taiwan’s news, by topic'] },
-    { tap: '#tab-side', say: ['只有一邊在報的新聞', 'Stories only one side carries'] },
+    { tap: '#tab-intl', say: ['國際新聞，也看台灣媒體怎麼報', 'World news, and how Taiwan’s outlets tell it'] },
     { tap: '#tab-outlets', say: ['每家媒體的立場，都有出處', 'Every outlet’s place, with its source'] },
     { tap: '.nw-chip', say: ['點一家，看它為什麼在那裡', 'Tap one to see why it sits there'] }
   ],

@@ -16,14 +16,14 @@ const S = {
   },
   ai: {
     flow: [['chat', ['你說一句', 'You say it']], ['list', ['程式先整理', 'Code sorts it']], ['ai', ['AI 寫一句', 'AI writes a line']], ['chart', ['畫成圖', 'Drawn']]],
-    nums: [['10', ['個 App 都有', 'apps have it']], ['1', ['個 AI 門口', 'AI door']]]
+    nums: [['9', ['個 App 都有', 'apps have it']], ['1', ['個 AI 門口', 'AI door']]]
   },
   'ai-door': {
     flow: [['user', ['手機只說功能名', 'The phone names a feature']], ['lock', ['題目在雲端', 'Prompts in the cloud']], ['check', ['答案被檢查', 'Answers checked']]]
   },
   'ai-ahead': {
-    flow: [['user', ['第一個人打開', 'The first person opens it']], ['ai', ['這時才做', 'Made then']], ['grid', ['大家共用', 'Kept for everyone']]],
-    nums: [['0', ['多一個人看多花的錢', 'extra cost per reader']]]
+    flow: [['user', ['你按了、你問了', 'You tap or ask']], ['ai', ['這時才做', 'Made then']], ['check', ['程式先檢查', 'Checked by code']]],
+    nums: [['0', ['先替大家做好的 AI', 'AI answers made ahead']]]
   },
   'orbit-app': {
     tags: [['grid', ['分頁切換', 'Tabs']], ['live', ['進行中', 'Under way']], ['pencil', ['自訂名稱和圖示', 'Your name and icon']], ['star', ['好幾個 Orbit', 'Several Orbits']]]
@@ -35,7 +35,7 @@ const S = {
     flow: [['ai', ['一家忙', 'One maker busy']], ['swap', ['同等級的另一家', 'Its class at another']], ['check', ['照樣回答', 'Still answers']]]
   },
   'sports-ai': {
-    tags: [['ai', ['問比賽', 'Ask about games']], ['list', ['賽後三句話', 'Three lines after']], ['flag', ['F1 勝負關鍵', 'What decided the race']]]
+    flow: [['chat', ['湖人排第幾', 'Where are the Lakers?']], ['list', ['手機排好表', 'The phone lays out tables']], ['ai', ['AI 挑表、寫一句', 'AI picks, writes a line']], ['check', ['數字程式再算', 'Code rechecks numbers']]]
   },
   'transit-ai': {
     flow: [['chat', ['明天八點到台北101', '8am tomorrow to Taipei 101']], ['ai', ['讀成起點、終點、時間', 'Read into from, to, when']], ['map', ['看路線', 'The routes']]]
@@ -44,7 +44,7 @@ const S = {
     flow: [['chat', ['明天竹北會下雨嗎', 'Rain in 竹北 tomorrow?']], ['cloud', ['程式讀預報', 'Code reads the forecast']], ['sun', ['畫出那天', 'That day, drawn']]]
   },
   'class-more': {
-    tags: [['bell', ['學校公告', 'School news']], ['check', ['待辦', 'To-dos']], ['book', ['讀書計畫', 'Study plans']], ['ai', ['問我的課表', 'Ask your timetable']]]
+    tags: [['bell', ['學校公告', 'School news']], ['check', ['待辦', 'To-dos']], ['ai', ['問我的課表', 'Ask your timetable']], ['bus', ['上學路線', 'The trip to school']], ['book', ['下課背五個字', 'Five words at the break']]]
   },
   'words-ai': {
     tags: [['chat', ['用新字聊天', 'Chat with new words']], ['camera', ['拍照找單字', 'Words from a photo']], ['pencil', ['用它造句', 'Make a sentence']]]
@@ -56,10 +56,10 @@ const S = {
     flow: [['chat', ['用 5 萬買台積電零股', '50,000 of TSMC odd lots']], ['list', ['程式算股數', 'Code counts shares']], ['check', ['填好的單，你確認', 'A filled ticket to confirm']]]
   },
   'money-ai': {
-    flow: [['chat', ['這個月吃飯花多少', 'Food this month?']], ['chart', ['手機加總', 'The phone adds up']], ['ai', ['AI 挑表、寫一句', 'AI picks, writes a line']]]
+    flow: [['chat', ['這個月吃飯花多少', 'Food this month?']], ['chart', ['手機加總', 'The phone adds up']], ['ai', ['AI 挑表、寫一句', 'AI picks, writes a line']], ['check', ['數字程式再算', 'Code rechecks numbers']]]
   },
   'news-more': {
-    tags: [['flag', ['各方怎麼說', 'Each side’s angle']], ['star', ['今天五則', 'Today’s five']], ['user', ['你關心的', 'What you follow']], ['book', ['看法案', 'The laws named']]]
+    tags: [['star', ['今天五則', 'Today’s five']], ['user', ['你關心的', 'What you follow']], ['history', ['沒看過的先看', 'Unseen first']], ['book', ['提到的法案', 'The bills named']]]
   },
   'ai-family': {
     flow: [['rain', ['天氣：會下雨', 'Weather: rain']], ['bus', ['交通：改搭車', 'Transit: take the bus']], ['user', ['只在手機上', 'Only on the phone']]]
@@ -110,7 +110,7 @@ const S = {
     tags: [['ball', 'ESPN'], ['ball', 'MLB'], ['ball', ['中華職棒', 'CPBL']], ['list', 'TheSportsDB'], ['flag', ['F1 即時計時', 'F1 live timing']], ['flag', 'Jolpica'], ['ball', 'FotMob'], ['tv', ['愛爾達', 'ELTA']], ['tv', 'NBA.com'], ['tv', 'Apple TV'], ['play', 'YouTube'], ['user', 'RotoWire']]
   },
   'sports-calls': {
-    rules: [['只放台灣看得到的聯賽', 'Only leagues Taiwan can watch'], ['球隊用中文，球員用英文原名', 'Teams in Chinese, players by their own names'], ['不放新聞，也不放 AI', 'No news, no AI'], ['延期的比賽點了不開', 'A postponed game doesn’t open'], ['過去的比賽只顯示那一刻', 'A past game shows only its moment']]
+    rules: [['只放台灣看得到的聯賽', 'Only leagues Taiwan can watch'], ['球隊用中文，球員用英文原名', 'Teams in Chinese, players by their own names'], ['比賽頁不放新聞和 AI', 'Game pages: no news, no AI'], ['延期的比賽點了不開', 'A postponed game doesn’t open'], ['過去的比賽只顯示那一刻', 'A past game shows only its moment']]
   },
   'sports-table': {
     pairs: [[['ESPN：打完一陣子才更新', 'ESPN: updates a while later'], ['Orbit：終場就更新', 'Orbit: at the final whistle']]]
@@ -182,10 +182,6 @@ const S = {
   class: {
     flow: [['clock', ['每秒看時鐘', 'Reads the clock']], ['list', ['課表規則', 'The rules']], ['school', ['現在、下一節', 'Now and next']]],
     nums: [['300', ['AI 每天全站上限', 'AI asks a day, all users']], ['6', ['一次最多張照片', 'photos at once']]]
-  },
-  'class-cal': {
-    flow: [['school', ['課表', 'The timetable']], ['calendar', ['手機行事曆', 'The phone’s Calendar']], ['swap', ['調課跟著變', 'Swaps follow']]],
-    nums: [['4', ['週的課先放進去', 'weeks ahead']]]
   },
   'class-calls': {
     nums: [['2026-08-26', ['第一個上 GitHub 的 App', 'the first app on GitHub']], [['8 碼', '8'], ['分享碼，24 小時有效', 'characters in a share key, 24 h']]],
@@ -282,6 +278,13 @@ const S = {
   },
 
   // ---- The pass ----
+  'pass-vault': {
+    flow: [['user', ['你的手機', 'Your phone']], ['lock', ['先上鎖', 'Locked first']], ['cloud', ['雲端只存鎖住的', 'The cloud keeps it locked']]],
+    nums: [['9', ['個 App 的資料上鎖', 'apps’ data locked']], ['600,000', ['次運算，從通行碼做出鑰匙', 'rounds to make the key from your pass']], ['0', ['你要多做的一步', 'extra steps for you']]]
+  },
+  'pass-count': {
+    rules: [['只送匿名的次數', 'Anonymous counts only'], ['不知道你是誰、在哪裡', 'Never who or where you are'], ['一鍵關掉', 'Off in one tap'], ['沒有廣告、沒有第三方追蹤', 'No ads, no third-party trackers']]
+  },
   'pass-code': {
     nums: [[['60 天', '60 days'], ['手機上的更新票', 'the phone’s refresh ticket']], ['0', ['伺服器存的通行碼', 'passes the server keeps']]]
   },
@@ -328,7 +331,7 @@ const S = {
     flow: [['flame', ['記憶體', 'Memory']], ['backpack', ['快取', 'Cache Storage']], ['list', ['設定和最近的資料', 'Settings, recent data']], ['play', ['Beats 的歌', 'Beats’ songs']]]
   },
   'store-d1': {
-    tags: [['wallet', ['錢包', 'The wallet']], ['grid', ['每個 App 的資料', 'Each app’s data']], ['history', ['舊版本', 'Old versions']]],
+    tags: [['wallet', ['錢包', 'The wallet']], ['lock', ['每個 App 鎖住的資料', 'Each app’s data, locked']], ['history', ['舊版本', 'Old versions']]],
     nums: [[['30 天', '30 days'], ['任何一分鐘都回得去', 'any minute can come back']]]
   },
   'store-r2': {
@@ -404,7 +407,7 @@ const S = {
   },
   'ship-tests': {
     tags: [['coin', ['錢', 'Money']], ['swap', ['資料合併', 'Merges']], ['trophy', ['排名', 'Rankings']], ['map', ['行程規劃', 'Trip plans']], ['check', ['結算', 'Settling']]],
-    pairs: [[['版面和文字', 'Layout and words'], ['用截圖看', 'checked by screenshot']]]
+    pairs: [[['版面和文字', 'Layout and words'], ['需要時用截圖檢查', 'checked by screenshot when wanted']]]
   },
   'ship-update': {
     flow: [['play', ['打開', 'Open']], ['search', ['比對版本', 'Compare versions']], ['swap', ['有新版就重載一次', 'Reload once if newer']]]

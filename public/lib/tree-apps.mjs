@@ -12,14 +12,14 @@ const n = (id, icon, title, line, more = {}) => ({ id, icon, title, line, ...mor
 const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣看得到的比賽：比分、賽程、哪一台在播', 'Games you can watch in Taiwan: scores, schedules, which channel'], {
   app: 'match',
   p: ['比賽資訊散在十幾個網站，而且很多比賽台灣根本看不到。', 'Game info is spread over a dozen sites, and many games can’t even be watched in Taiwan.'],
-  i: ['只放愛爾達和 Apple TV 有轉播的聯賽，比分、排名、轉播台放在同一個地方，還幫你排好今晚要看哪幾場。', 'Only leagues on ELTA or Apple TV here, with scores, tables and channels in one place, plus a plan for tonight.'],
+  i: ['只放愛爾達和 Apple TV 有轉播的聯賽，比分、排名、轉播台放在同一個地方，還幫你排好今晚要看哪幾場；「轉播」列出每天在台灣播的比賽，今天打完的附上比分，點一下就打開愛爾達或 Apple TV（還沒開始的開節目表）。', 'Only leagues on ELTA or Apple TV here, with scores, tables and channels in one place, plus a plan for tonight; On TV lists each day’s games shown in Taiwan, today’s finished ones with their scores, and a tap opens ELTA or Apple TV (its timetable for a game still to come).'],
   r: ['打開就知道現在有什麼好看、在哪一台。', 'Open it and you know what’s worth watching and where.'],
   kids: [
-    n('sports-ai', 'ai', ['問比賽、賽後三句話', 'Ask, and three lines after'], ['AI 只說卡片上沒有的', 'AI says only what the card doesn’t'], {
-      p: ['比分卡片已經寫了誰贏、誰得最多分，AI 再講一次只是浪費時間。', 'The score card already says who won and who scored most; AI saying it again wastes your time.'],
-      i: ['程式先讀出比賽的故事（逆轉、連續得分、哪一節拉開），AI 只用三句話講卡片上沒有的；F1 每場正賽的勝負關鍵，一列一圈，配車手的臉；「問比賽」讓 AI 從 App 讀到的排名、賽程和比分裡挑表回答，數字都是 App 的。', 'Code reads the game’s story first (comebacks, runs, the period that broke it open), and AI writes three lines on what the card doesn’t show; each F1 race’s deciding moments, a row a lap with the driver’s face; “Ask about your teams” lets AI pick from the tables the app read (places, next and last games, today) and every number is the app’s.'],
-      r: ['看完比分就懂這場為什麼這樣打，球員是大頭照、球隊有隊徽，點了就打開。', 'After the score you know why it went that way; players as faces and teams with logos, each opening its page.'],
-      tech: ['賽後一句話和看點在第一個人打開時才做（Orbit-Core ai-open.js），之後大家共用；/ai 的 sports-ask；kit aiAnswer 把答案畫成列。', 'The why-it-ended line and the preview are made when the first person opens the game (Orbit-Core ai-open.js), then shared; /ai’s sports-ask; kit aiAnswer draws answers as rows.'],
+    n('sports-ai', 'ai', ['問比賽', 'Ask about your teams'], ['AI 從 App 讀到的表裡挑', 'AI picks from the tables the app read'], {
+      p: ['想知道「湖人排第幾」「這週有誰比賽」，要自己翻好幾頁。', 'To know where the Lakers stand or who plays this week, you flipped through several pages.'],
+      i: ['在「追蹤」問一句，手機先把讀到的東西排成幾張表（你的球隊排第幾、上一場和下一場、追蹤聯賽的排名、今天的比賽），AI 只挑哪幾張回答、寫一句話；要算勝場差、占多少，AI 可以算，但每個數字程式都會再算一次。說「追蹤湖人」這種話，程式自己讀懂，不用 AI。', 'Ask on Following: the phone lays out what it read as a few tables (your teams’ places, last and next games, followed leagues’ tables, today’s games), and AI only picks which answer and writes one line; it may work out a gap or a share, but code works out every such number again. Saying “follow the Lakers” is read by code, no AI.'],
+      r: ['答案畫成有隊徽的列，點了就打開那隊或那場；比賽頁本身不放 AI。', 'Answers are rows with each team’s logo, each opening the team or game; game pages themselves carry no AI.'],
+      tech: ['/ai 的 sports-ask；Orbit-Core ai-util.js 的 numbersWorked 驗算每個數字；kit aiAnswer 把答案畫成列；lib/ask.mjs askTables。', '/ai’s sports-ask; Orbit-Core ai-util.js numbersWorked checks every number; the kit’s aiAnswer draws the rows; lib/ask.mjs askTables.'],
       links: ['ai']
     }),
     n('sports-own', 'spark', ['比原始資料更快、更準', 'Better than the raw feed'], ['我們自己算的部分', 'What we work out ourselves'], {
@@ -145,7 +145,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
       links: ['cloud-proxy', 'store-r2']
     }),
     n('sports-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['像真的觀眾一樣想', 'Thinking like a real viewer'], {
-      tech: ['只放台灣看得到的聯賽；球隊用中文、球員和車手用英文原名（機器翻的「勒布朗·詹姆斯」很怪）；不放新聞也不放 AI；延期的比賽點了不開；過去的比賽頁只顯示那一刻。', 'Only leagues Taiwan can watch; teams in Chinese, players and drivers in their own English names (a machine’s Chinese spelling of LeBron James reads oddly); no news and no AI; a postponed game opens nothing; a past game shows only its own moment.']
+      tech: ['只放台灣看得到的聯賽；球隊用中文、球員和車手用英文原名（機器翻的「勒布朗·詹姆斯」很怪）；比賽頁不放新聞也不放 AI；延期的比賽點了不開；過去的比賽頁只顯示那一刻。', 'Only leagues Taiwan can watch; teams in Chinese, players and drivers in their own English names (a machine’s Chinese spelling of LeBron James reads oddly); a game’s page carries no news and no AI; a postponed game opens nothing; a past game shows only its own moment.']
     })
   ]
 });
@@ -349,11 +349,11 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
   i: ['每秒照時鐘重算現在第幾節，一張卡片回答「今天還剩什麼」。', 'Work out the period from the clock every second; one card answers “what’s left today”.'],
   r: ['打開就知道現在、下一節、幾點放學。', 'Open it to see now, next and when school’s out.'],
   kids: [
-    n('class-more', 'ai', ['學校公告、待辦和讀書計畫', 'School news, to-dos, study plans'], ['和課表放在一起', 'Kept with the timetable'], {
-      p: ['學校網站的公告一大堆，真正跟你有關的很難找；聯絡簿和考試範圍要自己抄。', 'A school site’s notices are endless and the ones that matter are hard to find; homework and exam scopes had to be copied by hand.'],
-      i: ['學校公告每小時讀學校自己的網站，分成考試、升學、活動、獎助，「跟你有關」放最前面，轉知的另放；拍聯絡簿變待辦；考前讀書計畫由程式排、AI 只負責講清楚；「問我的課表」在課表編輯器裡直接問；上課前一鍵打開到學校的路線，下課提醒背五個單字。', 'School news reads the school’s own site every hour, sorted into exams, admissions, events and awards, what concerns you first and notices passed on kept apart; a photo of the homework book becomes to-dos; an exam study plan is laid out by code and only worded by AI; ask your timetable in its editor; before class, one tap opens the trip to school, and a break offers five words to review.'],
+    n('class-more', 'ai', ['學校公告、待辦和問課表', 'School news, to-dos, ask your timetable'], ['和課表放在一起', 'Kept with the timetable'], {
+      p: ['學校網站的公告一大堆，真正跟你有關的很難找；作業和要帶的東西也要另外記。', 'A school site’s notices are endless and the ones that matter are hard to find; homework and things to bring were kept somewhere else.'],
+      i: ['學校公告每小時讀學校自己的網站，分成考試、升學、活動、獎助，「跟你有關」放最前面，轉知的另放；待辦自己打進去，作業、考試、要帶的東西跟課表放一起；「問我的課表」在課表編輯器裡直接問；上課前一鍵打開到學校的路線，下課提醒背五個單字。', 'School news reads the school’s own site every hour, sorted into exams, admissions, events and awards, what concerns you first and notices passed on kept apart; to-dos are typed in, homework, tests and things to bring beside the timetable; ask your timetable in its editor; before class, one tap opens the trip to school, and a break offers five words to review.'],
       r: ['每天要看的東西都在一個 App 裡。', 'What you check every school day, in one app.'],
-      tech: ['Orbit-Core class-news.js（R2，45 天）；/ai 的 class-book、class-plan、class-ask；家族筆記把下兩週的課告訴其他 App。', 'Orbit-Core class-news.js (R2, 45 days); /ai’s class-book, class-plan, class-ask; the family notebook tells the other apps the next two weeks of classes.'],
+      tech: ['Orbit-Core class-news.js（R2，45 天）；/ai 的 class-ask；src/todos.js；家族筆記把下兩週的課告訴其他 App。', 'Orbit-Core class-news.js (R2, 45 days); /ai’s class-ask; src/todos.js; the family notebook tells the other apps the next two weeks of classes.'],
       links: ['ai', 'ai-family']
     }),
     n('class-own', 'spark', ['自己算的部分', 'What it works out'], ['規則都在一個地方', 'Every rule in one place'], {
@@ -392,12 +392,6 @@ const classApp = n('class', 'school', ['Orbit Class', 'Orbit Class'], ['現在�
           links: ['cloud-push']
         })
       ]
-    }),
-    n('class-cal', 'calendar', ['課表放進手機行事曆', 'The timetable in your Calendar'], ['訂閱一次，一直是最新的', 'Subscribe once, always current'], {
-      p: ['手機的行事曆看不到課表，調課了也要自己改。', 'The phone’s Calendar didn’t know the timetable, and a swap had to be copied by hand.'],
-      i: ['「加到行事曆」給一個訂閱連結，手機的行事曆自己去讀接下來四週的課，調了課就跟著變。', '“Add to Calendar” gives a subscription link: the phone’s Calendar reads the next four weeks of classes itself and follows every swap.'],
-      r: ['不用打開 App，行事曆和小工具上就看得到下一節課。', 'The next class shows in Calendar and its widgets without opening the app.'],
-      tech: ['src/calendar.js 做出 .ics；Orbit-Core cal.js 存在 KV、用 webcal 給行事曆訂閱。', 'src/calendar.js builds the .ics; Orbit-Core cal.js keeps it in KV and serves it as a webcal subscription.']
     }),
     n('class-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['Orbit 的第一個 App', 'Orbit’s first app'], {
       tech: ['2026-08-26 Jay 上傳的第一個 App；AI 匯入不能改單雙週；分享金鑰 8 碼、24 小時，讓同學拿到一份自己的課表；離線也能打開。', 'Jay’s first app, uploaded 2026-08-26; AI import never changes the odd/even switch; an 8-character share key (24 h) gives a classmate their own copy; opens offline.']
@@ -617,7 +611,7 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
   kids: [
     n('money-ai', 'ai', ['問我的帳、車資記帳', 'Ask your books, rides logged'], ['手機算，AI 只挑表', 'The phone adds up, AI picks the tables'], {
       p: ['想知道「這個月吃飯花了多少」，要自己翻統計、加總。', 'To know “how much did I spend on food this month” you dug through stats and added it up.'],
-      i: ['問一句，手機先把帳本整理成幾張小表（花在哪、怎麼付、比上個月），AI 只挑哪幾張回答並寫一句話，畫成有分類圖示和長條的列；每月回顧由程式算、AI 給一句建議；Orbit Transit 規劃好的車資，月曆上一點就記成一筆交通。', 'Ask a sentence: the phone sums the books into small tables (where it went, how it was paid, against last month), AI only picks which answer and writes one line, drawn as rows with category tiles and bars; the monthly review is added up by code with one AI suggestion; a fare Orbit Transit planned is one tap from an entry on the calendar.'],
+      i: ['問一句，手機先把帳本整理成幾張小表（花在哪、怎麼付、比上個月），AI 只挑哪幾張回答並寫一句話（像「餐飲占這個月花費的 63%」這種占比、總和、差距，AI 可以算，但程式都會再算一次），畫成有分類圖示和長條的列；每月回顧由程式算、AI 給一句建議；Orbit Transit 規劃好的車資，月曆上一點就記成一筆交通。', 'Ask a sentence: the phone sums the books into small tables (where it went, how it was paid, against last month), AI only picks which answer and writes one line (a share, a total or a gap, such as food being 63% of the month’s spending, AI may work out, but code works each out again), drawn as rows with category tiles and bars; the monthly review is added up by code with one AI suggestion; a fare Orbit Transit planned is one tap from an entry on the calendar.'],
       r: ['答案一眼看懂，帳本內容不會整本送給 AI。', 'Answers at a glance, and the whole book is never handed to AI.'],
       tech: ['/ai 的 money-ask、money-month、money-say；只送整理過的事實；家族筆記 transit.ride。', '/ai’s money-ask, money-month, money-say; only the digest is sent; the family notebook’s transit.ride.'],
       links: ['ai', 'ai-family']
@@ -649,20 +643,20 @@ const money = n('money', 'wallet', ['Orbit Money', 'Orbit Money'], ['記自己�
 
 const news = n('news', 'list', ['Orbit News', 'Orbit News'], ['同一則新聞，各家怎麼報', 'One story, every side'], {
   app: 'news',
-  p: ['台灣的媒體各有立場，只看一家，很難知道另一邊怎麼說，也不知道哪些新聞只有一邊在報。', 'Taiwan’s outlets each lean a way: read one and you can’t tell what the other side says, or which stories only one side carries.'],
+  p: ['台灣的媒體各有立場，只看一家，很難知道另一邊怎麼說。', 'Taiwan’s outlets each lean a way: read one and you can’t tell what the other side says.'],
   i: ['把同一件事的報導收成一則新聞，算出偏綠、中間、偏藍（英文新聞是左、中、右）各有幾家在報，標題並排。', 'Gather every report of the same event into one story, count how many outlets lean green, centre or blue (left, centre or right for English news) carry it, and set their headlines side by side.'],
-  r: ['一眼看出一件事各邊怎麼報、哪一邊沒報。', 'At a glance, how each side tells it and which side left it out.'],
+  r: ['一眼看出一件事各邊怎麼報、各有幾家在報；整個 App 不用 AI。', 'At a glance, how each side tells it and how many outlets each side has; the whole app uses no AI.'],
   kids: [
-    n('news-more', 'ai', ['各方怎麼說、今天五則', 'Each side’s angle, today’s five'], ['只講差在哪', 'Only where they differ'], {
-      p: ['標題並排還是要自己讀出各家的角度；重要的新聞不一定是你關心的。', 'Headlines side by side still left you to read each side’s angle; the biggest news isn’t always what you care about.'],
-      i: ['政治和國際大新聞上，AI 只從各家自己的標題寫出每一邊的角度，和最重要的一個差別，從不判斷誰對；每天早上挑五則給你；你在 Securities 持有的股票、在 Sports 追蹤的球隊排在「你關心的」；新聞提到的法律一點就在 Orbit Law 打開，英文新聞裡正在背的單字畫底線。', 'On big political and world stories, AI writes each side’s angle and the one difference that matters, from their own headlines only, never who’s right; five stories picked for you each morning; what you hold in Securities and follow in Sports leads “What you follow”; laws a story names open in Orbit Law, and words you’re learning are underlined in English stories.'],
-      r: ['看懂各邊怎麼說，也看到跟你有關的事。', 'See how each side tells it, and what concerns you.'],
-      tech: ['各方怎麼說在第一個人打開那則新聞時才做（Orbit-Core ai-open.js），頭條例外；news-laws.js 對照 Law 的法案；家族筆記（只在手機上）。', 'Each side’s angle is made when the first person opens the story (Orbit-Core ai-open.js), the lead stories excepted; news-laws.js matches Law’s bills; the family notebook (on the phone only).'],
-      links: ['ai', 'ai-family']
+    n('news-more', 'star', ['今天五則、你關心的', 'Today’s five, what you follow'], ['沒看過的先看', 'What you haven’t seen first'], {
+      p: ['重要的新聞不一定是你關心的，看過的又一直排在最上面。', 'The biggest news isn’t always what you care about, and what you’ve read kept sitting on top.'],
+      i: ['每天早上挑五則給你；你在 Securities 持有的股票、在 Sports 追蹤的球隊排在「你關心的」；沒看過的排前面，看過的往下沉；新聞提到的法案一點就在 Orbit Law 打開。全部由程式做，沒有 AI。', 'Five stories picked for you each morning; what you hold in Securities and follow in Sports leads “What you follow”; what you haven’t seen comes first and what you’ve read sinks; a bill a story names opens in Orbit Law. All done by code, no AI.'],
+      r: ['看到跟你有關的事，也不會一直看到同一則。', 'You see what concerns you, never the same story over and over.'],
+      tech: ['lib/brief.mjs、lib/follows.mjs、lib/reading.mjs（讀過的紀錄跟著 Pass，先在手機上上鎖）；Orbit-Core builders/news-laws.js 由程式對照 Law 的法案；家族筆記（只在手機上）。', 'lib/brief.mjs, lib/follows.mjs, lib/reading.mjs (the reading log travels with the Pass, locked on the phone first); Orbit-Core builders/news-laws.js matches Law’s bills by code; the family notebook (on the phone only).'],
+      links: ['ai-family', 'pass-vault']
     }),
     n('news-sides', 'flag', ['媒體的立場從哪裡來', 'Where an outlet’s place comes from'], ['照研究和公開評等，不是我們自己判', 'From research and public ratings, never our own reading'], {
       p: ['自己判斷哪家媒體偏哪邊，很容易變成自己的偏見。', 'Judging each outlet’s lean ourselves would just be our own bias.'],
-      i: ['台灣媒體照已發表的研究（例如台灣選舉與民主化調查），新的網路媒體照老闆和公開立場（標成較弱）；英文媒體照 AllSides，沒有的再看 Media Bias/Fact Check；中國官媒另外列。', 'Taiwan’s outlets by published research (such as TEDS), newer web outlets by owner and stated stance (marked weaker); English outlets by AllSides, else Media Bias/Fact Check; China’s state media apart.'],
+      i: ['台灣媒體照已發表的研究（例如台灣選舉與民主化調查），新的網路媒體照老闆和公開立場（標成較弱）；英文媒體照 AllSides，沒有的再看 Media Bias/Fact Check。', 'Taiwan’s outlets by published research (such as TEDS), newer web outlets by owner and stated stance (marked weaker); English outlets by AllSides, else Media Bias/Fact Check.'],
       r: ['每家媒體的卡片都寫著為什麼放在那裡。', 'Every outlet’s card says why it sits where it does.'],
       tech: ['Orbit-Core kit/news-outlets.mjs：OUTLETS（118 家新聞媒體，另有 7 家體育）、BASIS（每個依據的出處）、藍綠和統獨兩條軸；沒有任何研究把一家媒體放在白色，所以只列新聞提到哪些政黨。', 'Orbit-Core kit/news-outlets.mjs: OUTLETS (118 news outlets, plus 7 sports), BASIS (the source of each place), the green–blue and unification–independence axes; no study places an outlet as TPP-leaning, so stories list the parties their headlines name.']
     }),
