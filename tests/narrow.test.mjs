@@ -1,6 +1,6 @@
-// At 320: a phone demo's label beside 即時 and ↻ is never cut with …, and
-// the homepage's Orbit card keeps its line and its ten icons inside (2026-11-12:
-// 「試玩 · 範例資料，什麼都…」).
+// At 320: a phone demo's label beside 即時 and ↻ is never cut with …, the
+// homepage's Orbit card keeps its line and its ten icons inside (2026-11-12:
+// 「試玩 · 範例資料，什麼都…」), and 成果's numbers stay in their cards.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
@@ -49,12 +49,11 @@ test('at 320 the phone demo label fits beside 即時 and ↻', async t => {
     await page.setContent(`<style>${css}</style><main class="page"><ul class="sc-applist">${'<li class="sc-app"><a class="sc-app-main"><span class="sc-app-text"><strong>q</strong></span></a><button class="sc-trypill">試玩</button></li>'.repeat(10)}</ul></main>`);
     const widths = await page.evaluate(() => [...document.querySelectorAll('.sc-app')].map(e => Math.round(e.getBoundingClientRect().width)));
     assert.ok(widths[9] > widths[0] * 2.5, `the last ${widths[9]} beside the others ${widths[0]}`);
-    // 亮點's card foot: on a narrow page the app's own name (「Orbit / Weather」 ran to two lines at 320).
-    for (const [w, shown] of [[320, false], [700, true]]) {
-      await page.setViewportSize({ width: w, height: 700 });
-      await page.setContent(`<style>${css}</style><main class="page"><span class="sc-wow-from"><span class="sc-wow-name"><span class="sc-wow-orbit">Orbit </span>Weather</span></span></main>`);
-      assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.sc-wow-orbit')).display !== 'none'), shown, `${w}: Orbit shown ${!shown}`);
-    }
+    // 成果's rows at 320: the new number and its words stay inside the card (「~99% one tap away」 ran out, 11-17).
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.setContent(`<style>${css}</style><main class="page" style="padding:0 16px"><div class="sc-solved"><button class="sc-fix"><span class="sc-fix-nums"><s class="sc-fix-was">Plain text</s><span class="sc-fix-arrow">›</span><strong class="sc-fix-now">~99%</strong><small class="sc-fix-tail">open the very article</small></span></button><button class="sc-fix"><span class="sc-fix-nums"><s class="sc-fix-was">15 分鐘以上</s><span class="sc-fix-arrow">›</span><strong class="sc-fix-now">約 2 分鐘</strong></span></button></div></main>`);
+    const out = await page.evaluate(() => [...document.querySelectorAll('.sc-fix')].filter(b => [...b.querySelectorAll('*')].some(e => e.getBoundingClientRect().right > b.getBoundingClientRect().right + 1)).length);
+    assert.equal(out, 0, 'a problem row runs out of its card at 320');
   } finally {
     await browser.close();
   }

@@ -11,6 +11,8 @@
  "reverts": 12,
  "tests": 4113,
  "rules": 294,
+ "sources": 59,
+ "outlets": 118,
  "first": "2026-08-26",
  "days": {
   "2026-08-26": 6,

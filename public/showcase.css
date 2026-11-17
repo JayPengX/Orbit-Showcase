@@ -2125,8 +2125,25 @@ html.q-tabrail {
   text-decoration: none;
   transition: color 160ms;
 }
-.sc-chap .sc-ico {
+.sc-chap .sc-ico,
+.sc-chap-s {
   display: none;
+}
+/* A phone under 360 wide: a chapter's short name where it has one, so all four stay on one row. */
+@media (max-width: 359px) {
+  .sc-chap {
+    padding: 0 8px;
+  }
+  .sc-chap.on::after {
+    right: 8px;
+    left: 8px;
+  }
+  .sc-chap:has(.sc-chap-s) .sc-chap-t {
+    display: none;
+  }
+  .sc-chap .sc-chap-s {
+    display: inline;
+  }
 }
 .sc-chap.on {
   color: var(--q-label);
@@ -2711,157 +2728,516 @@ html.q-tabrail {
   }
 }
 
-/* ---- 2. Things people don't expect ----
-   Six cards, each one figure in its app's colour (the only colour on the
-   card, with a faint wash of it from the corner) and one line. A wide page:
-   the first is the big one, two by two, the rest around it. */
-.sc-wow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+/* The apps' cleverest part, a quiet third line under each question. */
+.sc-app-best {
+  margin-top: 2px;
+  color: var(--q-label-2);
+  font: 400 14px/1.4 var(--q-font);
+  text-wrap: pretty;
 }
-.sc-wowcard {
-  --w-c: var(--sc-ac);
+
+/* A block's way into its tree card: 「怎麼做到的 ›」. */
+.sc-howgo {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 3px;
+  margin: 2px 0 -4px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--p-c, var(--sc-ac));
+  font: 600 14px/1 var(--q-font);
+  cursor: pointer;
+}
+.sc-howgo .sc-ico {
+  font-size: 10px;
+  transition: transform 200ms var(--sc-spring);
+}
+@media (hover: hover) {
+  .sc-howgo:hover .sc-ico {
+    transform: translateX(3px);
+  }
+}
+
+/* ---- 2. Four things that set it apart ----
+   Each a card in its own colour (a faint wash from the corner, its mark,
+   its numbers): what it means for you, a small picture of how, the numbers. */
+.sc-pillars {
+  display: grid;
+  gap: 12px;
+}
+.sc-pillar {
+  --p-c: var(--sc-ac);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  border-radius: var(--q-r-card);
+  background: radial-gradient(120% 70% at 100% 0%, color-mix(in srgb, var(--p-c) 13%, transparent), transparent 60%), var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+}
+.sc-pillar-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sc-pillar-i {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--p-c) 16%, transparent);
+  color: var(--p-c);
+  font-size: 22px;
+}
+.sc-pillar-head h3 {
+  margin: 0;
+  font: 700 20px/1.25 var(--q-font);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.sc-pillar-say {
+  margin: 0;
+  color: var(--q-text-2, var(--q-label));
+  font: 400 15px/1.55 var(--q-font);
+  text-wrap: pretty;
+}
+.sc-pillar-more {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 400 14px/1.5 var(--q-font);
+  text-wrap: pretty;
+}
+/* Its numbers: light numerals in a row over a hairline. */
+.sc-pnums {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px 20px;
+  padding-top: 12px;
+  box-shadow: inset 0 0.5px 0 var(--q-sep);
+}
+.sc-pnums > div {
+  display: grid;
+  gap: 2px;
+}
+.sc-pnums strong {
+  color: var(--p-c);
+  font: 300 28px/1.05 var(--nv-display, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.sc-pnums small {
+  color: var(--q-label-2);
+  font: 400 13px/1.3 var(--q-font);
+}
+/* Steps joined by arrows: your phone → locked → the cloud. */
+.sc-pflow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-pflow li {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+}
+.sc-pflow li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  right: calc(18px - 50%);
+  left: calc(50% + 30px);
+  height: 2px;
+  border-radius: 1px;
+  background: repeating-linear-gradient(90deg, var(--p-c) 0 5px, transparent 5px 9px);
+  opacity: 0.55;
+}
+.sc-pflow-i {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--p-c) 15%, transparent);
+  color: var(--p-c);
+  font-size: 20px;
+}
+.sc-pflow li:last-child .sc-pflow-i {
+  background: var(--p-c);
+  color: #fff;
+}
+.sc-pflow-t {
+  color: var(--q-label-2);
+  font: 500 13px/1.3 var(--q-font);
+  text-wrap: balance;
+}
+/* Many sources, one answer: an app's sources as tags → what you see. */
+.sc-merge {
+  display: grid;
+  gap: 8px;
+}
+.sc-merge-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--p-c) 8%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms var(--sc-spring);
+}
+.sc-merge-row:active {
+  transform: scale(0.98);
+}
+.sc-merge-in {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.sc-src {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+  font: 500 12px/1.2 var(--q-font);
+  white-space: nowrap;
+}
+.sc-merge-to {
+  display: inline-flex;
+  grid-column: 2;
+  align-items: center;
+  gap: 4px;
+  color: var(--p-c);
+}
+.sc-merge-to .sc-ico {
+  font-size: 10px;
+}
+.sc-merge-to strong {
+  font: 600 14px/1.2 var(--q-font);
+  white-space: nowrap;
+}
+@container page (min-width: 480px) {
+  .sc-merge-row {
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+  }
+  .sc-merge-to {
+    grid-column: auto;
+  }
+}
+/* Say it or snap it: four ways in, each what you give → what you get. */
+.sc-dos {
+  display: grid;
+  gap: 8px;
+}
+.sc-do {
+  display: grid;
+  align-content: start;
   gap: 6px;
   min-width: 0;
-  padding: 14px 14px 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--p-c) 8%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms var(--sc-spring);
+}
+.sc-do:active {
+  transform: scale(0.98);
+}
+.sc-do-verb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--p-c);
+  font: 700 13px/1.2 var(--q-font);
+}
+.sc-do-verb > .sc-ico {
+  font-size: 15px;
+}
+.sc-do-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: var(--q-label-2);
+  font: 500 12px/1 var(--q-font);
+  white-space: nowrap;
+}
+.sc-do-say {
+  font: 600 16px/1.4 var(--q-font);
+  text-wrap: balance;
+}
+.sc-do-got {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: var(--q-label-2);
+  font: 400 14px/1.4 var(--q-font);
+}
+.sc-do-got .sc-ico {
+  flex: none;
+  margin-top: 4px;
+  color: var(--p-c);
+  font-size: 10px;
+}
+@container page (min-width: 480px) {
+  .sc-dos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Ten apps helping each other: one app → another, and what happens. */
+.sc-tog {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-tog li {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.sc-tog li + li {
+  box-shadow: inset 0 0.5px 0 var(--q-sep);
+}
+.sc-tog li:first-child {
+  padding-top: 2px;
+}
+.sc-tog-apps {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.sc-tog-arrow {
+  color: var(--q-label-3);
+  font-size: 10px;
+}
+.sc-tog-say {
+  font: 400 15px/1.4 var(--q-font);
+  text-wrap: pretty;
+}
+@container page (min-width: 760px) {
+  .sc-pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .sc-pillar {
+    padding: 24px 26px 20px;
+  }
+  .sc-pillar-head h3 {
+    font-size: 22px;
+  }
+  .sc-dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@container page (min-width: 1000px) {
+  .sc-dos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- 3. Problems solved, before → after ----
+   A card each: the problem, the old number struck through, the new one
+   large in the accent; the ones Jay raised himself carry his day. */
+.sc-solved {
+  display: grid;
+  gap: 10px;
+}
+.sc-fix {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
   border: 0;
   border-radius: var(--q-r-card);
-  background: radial-gradient(130% 90% at 100% 0%, color-mix(in srgb, var(--w-c) 15%, transparent), transparent 62%), var(--nv-card, var(--sc-card));
+  background: var(--nv-card, var(--sc-card));
   box-shadow: var(--sc-edge);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  overflow: hidden;
-  transition: transform 220ms var(--sc-spring), box-shadow 220ms;
+  transition:
+    transform 220ms var(--sc-spring),
+    box-shadow 220ms;
 }
-.sc-wowcard:active {
+.sc-fix:active {
   transform: scale(0.98);
 }
-@media (hover: hover) {
-  .sc-wowcard:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--sc-edge), 0 10px 28px -12px color-mix(in srgb, var(--w-c) 45%, transparent);
-  }
-}
-.sc-wowcard.big {
-  grid-column: span 2;
-}
-/* (the last card: the whole row, so the grid ends even at two columns and three) */
-.sc-wowcard.wide {
-  grid-column: 1 / -1;
-}
-.sc-wowcard.big .sc-wow-fig {
-  font-size: clamp(48px, 17cqi, 72px);
-}
-.sc-wow-from {
+.sc-fix-what {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font: 500 15px/1.35 var(--q-font);
+  text-wrap: pretty;
+}
+.sc-fix-what .sc-appicon {
+  flex: none;
+}
+.sc-fix-nums {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+}
+.sc-fix-was {
+  color: var(--q-label-3);
+  font: 400 18px/1.2 var(--nv-display, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  text-decoration-thickness: 1.5px;
+  white-space: nowrap;
+}
+.sc-fix-arrow {
+  display: inline-flex;
+  color: var(--q-label-3);
+  font-size: 11px;
+}
+.sc-fix-now {
+  color: var(--sc-ac);
+  font: 400 30px/1.1 var(--nv-display, var(--q-font));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.sc-fix-tail {
+  color: var(--q-label-2);
+  font: 400 14px/1.3 var(--q-font);
+}
+.sc-fix-jay {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px 4px 7px;
+  border-radius: 999px;
+  background: var(--q-fill-3);
   color: var(--q-label-2);
   font: 500 12px/1.2 var(--q-font);
 }
-.sc-wow-name {
-  white-space: nowrap;
-}
-/* (A narrow page: the app's own name, its icon beside it says Orbit: 「Orbit / Weather」 ran to two lines at 320.) */
-@container page (max-width: 379px) {
-  .sc-wow-orbit {
-    display: none;
-  }
-}
-.sc-wow-fig {
-  margin-top: 6px;
-  color: var(--w-c);
-  font: 300 clamp(24px, 8cqi, 38px) / 1.05 var(--nv-display, var(--q-font));
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-.sc-wow-say {
-  flex: 1;
-  font: 400 15px/1.45 var(--q-font);
-  text-wrap: pretty;
-}
-.sc-wow-go {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-top: 6px;
-  color: var(--q-label-2);
-  font: 500 13px/1 var(--q-font);
-}
-.sc-wow-go .sc-ico {
-  font-size: 10px;
-  transition: transform 200ms var(--sc-spring);
-}
-@media (hover: hover) {
-  .sc-wowcard:hover .sc-wow-go .sc-ico {
-    transform: translateX(3px);
-  }
+.sc-fix-jay .sc-ico {
+  font-size: 12px;
 }
 @container page (min-width: 640px) {
-  .sc-wow {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .sc-solved {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
-  .sc-wowcard {
-    padding: 18px 20px 16px;
+  .sc-fix {
+    padding: 18px 20px;
   }
-  .sc-wowcard.big {
-    padding: 24px 28px 22px;
-    background: radial-gradient(90% 110% at 100% 0%, color-mix(in srgb, var(--w-c) 24%, transparent), transparent 64%), var(--nv-card, var(--sc-card));
+  .sc-fix-now {
+    font-size: 34px;
   }
-  .sc-wowcard.big .sc-wow-from {
-    font-size: 14px;
+}
+@media (hover: hover) {
+  .sc-fix:hover,
+  .sc-call:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sc-edge), 0 10px 26px -14px rgba(0, 0, 0, 0.35);
   }
-  .sc-wowcard.big .sc-wow-fig {
-    font-size: clamp(72px, 10cqi, 112px);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-  }
-  .sc-wowcard.big .sc-wow-say {
-    flex: none;
-    max-width: 26em;
-    font-size: 20px;
-    line-height: 1.4;
-  }
-  .sc-wow-fig {
-    font-size: clamp(32px, 4cqi, 44px);
-  }
-  .sc-wow-say {
-    font-size: 16px;
+  .sc-merge-row:hover,
+  .sc-do:hover {
+    background: color-mix(in srgb, var(--p-c) 13%, transparent);
   }
 }
 
-.sc-wow-more {
-  display: none;
+/* ---- 4. Jay's calls: what a person decided, each opening its story ---- */
+.sc-subhead.first {
+  margin-top: 4px;
 }
-@container page (min-width: 640px) {
-  .sc-wowcard.big .sc-wow-more {
-    display: flex;
-    gap: 28px;
-    margin-top: 14px;
-    padding-top: 14px;
-    box-shadow: inset 0 0.5px 0 var(--q-sep);
+.sc-calls {
+  display: grid;
+  gap: 10px;
+}
+.sc-call {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--q-r-card);
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 220ms var(--sc-spring),
+    box-shadow 220ms;
+}
+.sc-call:active {
+  transform: scale(0.98);
+}
+.sc-call-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.sc-call-i {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--sc-ac-soft);
+  color: var(--sc-ac);
+  font-size: 17px;
+}
+.sc-call-head strong {
+  font: 600 16px/1.3 var(--q-font);
+}
+.sc-call-head small {
+  color: var(--q-label-3);
+  font: 500 12px/1 var(--q-font);
+  white-space: nowrap;
+}
+.sc-call-say {
+  color: var(--q-text-2, var(--q-label));
+  font: 400 15px/1.5 var(--q-font);
+  text-wrap: pretty;
+}
+@container page (min-width: 560px) {
+  .sc-calls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
-  .sc-wow-more > span {
-    display: grid;
-    gap: 2px;
+  .sc-call {
+    padding: 18px 20px;
   }
-  .sc-wow-more strong {
-    font: 400 24px/1.1 var(--nv-display, var(--q-font));
-    font-variant-numeric: tabular-nums;
+}
+@container page (min-width: 960px) {
+  .sc-calls {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .sc-wow-more small {
-    color: var(--q-label-2);
-    font: 400 13px/1.3 var(--q-font);
-  }
+}
+.sc-system {
+  scroll-margin-top: var(--sc-stick);
 }
 
 /* ---- 3. How it was made ----
@@ -3281,6 +3657,11 @@ html.q-tabrail {
 }
 .sc-ask-chips .q-chip {
   max-width: 100%;
+  height: auto;
+  min-height: 34px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  line-height: 1.3;
   white-space: normal;
   text-align: left;
 }

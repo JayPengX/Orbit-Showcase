@@ -7,7 +7,7 @@
 // The frame: a bar along the top naming the page's chapters (on a phone its
 // first row scrolls away and the chapters stay), and on a computer a side
 // bar instead; on an app's page or the system's, the bar says where back is.
-//   #home #apps #wow #made   the page, at that chapter (#numbers, #story: the numbers in #made)
+//   #home #apps #wow #solved #made   the page, at that chapter (#numbers, #story: the numbers in #made; #system its end)
 //   #apps/<app>              an app's page
 //   #how[/<node> | /map[-<story>]]  the whole system
 import * as kitUI from '#kit/ui.mjs';
@@ -42,7 +42,14 @@ const shareBtn = () => h('button', { class: 'sc-share', type: 'button', onclick:
 const brand = () => h('a', { class: 'sc-brand', href: '#home', 'data-jump': 'home' }, [appImg(null, 30), h('span', {}, [h('strong', { text: 'Orbit' }), h('small', { text: 'Showcase' })])]);
 
 // The chapters, as links (the bar's and the side bar's).
-const chapterLinks = cls => CHAPTERS.map(c => h('a', { class: cls, href: `#${c.id}`, 'data-jump': c.id, 'data-chapter': c.id }, [ico(c.icon), h('span', { text: t(c.label) })]));
+const chapterLinks = cls =>
+  CHAPTERS.map(c =>
+    h('a', { class: cls, href: `#${c.id}`, 'data-jump': c.id, 'data-chapter': c.id }, [
+      ico(c.icon),
+      h('span', { class: 'sc-chap-t', text: t(c.label) }),
+      c.short && t(c.short) !== t(c.label) ? h('span', { class: 'sc-chap-s', text: t(c.short) }) : null
+    ])
+  );
 
 // The bar along the top: its brand row, then the chapters (or, on an app's
 // page and the system's, the way back and what's here).
@@ -77,7 +84,7 @@ function subBar(view, app) {
   const back =
     view === 'app'
       ? h('a', { class: 'sc-sub-back', href: '#apps', 'data-jump': 'apps' }, [ico('chevron'), h('span', { text: t(['十個 App', 'Ten apps']) })])
-      : h('a', { class: 'sc-sub-back', href: '#made', 'data-jump': 'made' }, [ico('chevron'), h('span', { text: t(['首頁', 'Start']) })]);
+      : h('a', { class: 'sc-sub-back', href: '#system', 'data-jump': 'system' }, [ico('chevron'), h('span', { text: t(['首頁', 'Start']) })]);
   const here =
     view === 'app'
       ? h('span', { class: 'sc-sub-here' }, [appImg(app.brand, 24), h('strong', { text: appTitle(app).replace(/^Orbit /, '') })])
@@ -126,6 +133,7 @@ function parse() {
   if (a === 'apps' && what) return { view: 'app', what };
   if (a === 'how') return { view: 'how', what };
   if (a === 'numbers' || a === 'story') return { view: 'main', at: 'numbers' };
+  if (a === 'system') return { view: 'main', at: 'system' };
   return { view: 'main', at: CHAPTERS.some(c => c.id === a) ? a : '' };
 }
 
@@ -158,7 +166,7 @@ function route(first = false) {
     else requestAnimationFrame(() => window.scrollTo({ top: mainY, behavior: 'instant' }));
     return;
   }
-  light(r.view === 'app' ? 'apps' : 'system');
+  light(r.view === 'app' ? 'apps' : 'made');
   setAskContext(r.view === 'app' ? askContextFor('app', r.what) : askContextFor('system'));
   if (r.view === 'app') {
     if (drawnApp !== r.what || was !== 'app') drawnApp = renderApp(VIEWS.app, stats, r.what).id;

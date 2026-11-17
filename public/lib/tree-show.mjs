@@ -85,10 +85,16 @@ const S = {
     flow: [['flame', ['口袋：記憶體', 'Pocket: memory']], ['user', ['書包：手機', 'Backpack: the phone']], ['backpack', ['倉庫：雲端', 'Store: the cloud']], ['book', ['圖書館：來源', 'Library: the source']]]
   },
   fast: {
-    pairs: [[['以前在 3G 上要 20–70 秒', 'Once 20–70 s on 3G'], ['現在 Jay 的 4G 上也很快', 'Quick on Jay’s 4G now']]],
+    // (The second: tools/speed.mjs, one person using all nine apps on a slow network, 2026-11-05 morning → 11-06.)
+    pairs: [
+      [['以前在 3G 上要 20–70 秒', 'Once 20–70 s on 3G'], ['現在 Jay 的 4G 上也很快', 'Quick on Jay’s 4G now']],
+      [['九個 App 各用一輪：24.8 MB', 'Nine apps once each: 24.8 MB'], ['15.2 MB', '15.2 MB']]
+    ],
     nums: [['12 Mbps', ['Jay 的 4G', 'Jay’s 4G']], ['300–470', ['毫秒延遲', 'ms of delay']]]
   },
   cheap: {
+    // (Before 2026-11-06: Cloudflare's US$5 plan and TDX's 銅級 NT$200, about NT$390 a month with the domain.)
+    pairs: [[['以前每月約 NT$390', 'Once ~NT$390 a month'], ['NT$0，只付網域', 'NT$0, the domain aside']]],
     nums: [['NT$0', ['雲端一個月', 'the cloud, a month']], ['1', ['樣要付錢的：網域', 'thing paid for: the domain']]]
   },
   ship: {
@@ -235,6 +241,8 @@ const S = {
     nums: [[['90 秒', '90 s'], ['看一次哪場在直播', 'between live checks']]]
   },
   'law-ai': {
+    // (Measured: 9.5–11.9 s a question before 2026-10-30, nothing shown until done; the first words 3.4–4.3 s after, streamed, on Sonnet 11-11.)
+    pairs: [[['以前 10–12 秒才看到回答', 'Once 10–12 s before any answer'], ['3–4 秒就開始出現', 'Now it starts in 3–4 s']]],
     nums: [['30', ['每人每天能問的次數', 'asks a person a day']], ['14', ['每次最多引用的條文', 'articles at most a chat']]]
   },
 

@@ -48,11 +48,11 @@ const ai = n('ai', 'ai', ['Orbit AI', 'Orbit AI'], ['九個 App 聽得懂你的�
       tech: ['Claude Sonnet ↔ GPT 同級、小模型 ↔ 小模型、Gemini Flash 只用在照片；ai-other.js 透過台灣的中繼站呼叫；預付額度，用完就停。', 'Claude Sonnet ↔ a GPT of its class, small ↔ small, Gemini Flash only for photos; ai-other.js calls through the Taiwan relay; prepaid credit with a hard stop.'],
       links: ['cloud-relay']
     }),
-    n('ai-family', 'share', ['App 之間互相幫忙', 'Apps that help each other'], ['只在你的手機上', 'Only on your phone'], {
+    n('ai-family', 'share', ['App 之間互相幫忙', 'Apps that help each other'], ['一本只寫你自己的事的筆記', 'A notebook of your own facts'], {
       p: ['每個 App 只知道自己：交通不知道會下雨，新聞不知道你持有哪些股票。', 'Each app knew only itself: Transit didn’t know it would rain, News didn’t know what you hold.'],
       i: ['手機上有一本家族筆記：天氣寫下哪裡會下雨，課表寫下接下來的課，股票寫下持有的名稱（不含金額），單字寫下今天該複習幾個字，Sports 寫下追蹤的球隊。於是交通下雨時改搭車、新聞先放你持有和追蹤的、課表下課時提醒背五個字、Pass 的「今天」一次看完。', 'A family notebook on the phone: Weather notes where rain is due, Class the next classes, Securities the names held (never amounts), Words how many words are due today, Sports the teams followed. So Transit avoids rain, News leads with what you hold and follow, Class offers five words at the break, and the Pass’s Today sums up the day.'],
-      r: ['十個 App 像一個，而且這些都不會傳到雲端。', 'Ten apps that feel like one, with none of it sent to the cloud.'],
-      tech: ['kit family.mjs（tell、heard）、today.mjs；每個 App 只寫自己的事，讀別人的從不改它。', 'The kit’s family.mjs (tell, heard) and today.mjs; each app writes only its own facts and never changes another’s.']
+      r: ['十個 App 像一個：筆記只寫你自己的事，跟著你的帳號到你的每一台裝置。', 'Ten apps that feel like one: the notebook holds only your own facts, and follows your account to each of your devices.'],
+      tech: ['kit family.mjs（tell、heard，2026-11-13 起跟著帳號同步：mergeHeard）、today.mjs；每個 App 只寫自己的事，讀別人的從不改它。', 'The kit’s family.mjs (tell, heard; with the account since 2026-11-13: mergeHeard) and today.mjs; each app writes only its own facts and never changes another’s.']
     })
   ]
 });

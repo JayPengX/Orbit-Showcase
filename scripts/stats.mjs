@@ -5,11 +5,15 @@
 // hour of the day, plus the churn: code lines written and later taken out
 // again, and the updates that were undone outright (reverts), and the
 // rules Jay has set (each dated line of Orbit-Core's docs/RULEBOOK.md before
-// its "Replaced" part, and of each repo's MAP.md "Rules" part). Run by the deploy (daily too) with the repos beside this one:
+// its "Replaced" part, and of each repo's MAP.md "Rules" part), and the
+// outside data sources the apps merge (the kit's SOURCES, sources.mjs,
+// without the AI makers, the tools and the markets) and the news outlets
+// Orbit News reads (news-outlets.mjs). Run by the deploy (daily too) with the repos beside this one:
 //   node scripts/stats.mjs [folder holding the repos] > public/data/stats.json
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 // The family, in the order the showcase lists it; `app` is the brand id.
 export const REPOS = [
@@ -95,6 +99,21 @@ export function countMapRules(text) {
   return part ? (part.split(/^## /m)[0].match(/^- \d{1,2}-\d{2} /gm) || []).length : 0;
 }
 
+// The data the apps merge: every row of the kit's SOURCES but the AI makers
+// (they write, they aren't data), the tools behind the scenes (GitHub, the
+// mail sender, the translator) and the two markets (never on the showcase).
+const NOT_DATA = new Set(['gemini', 'claude', 'openai', 'github', 'resend', 'google-translate', 'polymarket', 'kambi']);
+export function countSources(text) {
+  const ids = [...text.matchAll(/^\s*\{ id: '([\w-]+)'/gm)].map(m => m[1]);
+  return ids.filter(id => !NOT_DATA.has(id)).length;
+}
+// Orbit News' outlets, each placed by published research (the sports desks,
+// on no scale, aside).
+export async function countOutlets(root) {
+  const { OUTLETS, SPORTS_OUTLETS } = await import(pathToFileURL(join(root, 'Orbit-Core', 'kit', 'news-outlets.mjs')).href);
+  return Object.keys(OUTLETS).filter(id => !SPORTS_OUTLETS.has(id)).length;
+}
+
 export function collect(root) {
   const repos = [];
   const days = {};
@@ -128,6 +147,7 @@ export function collect(root) {
         const map = join(root, r.repo, 'MAP.md');
         return n + (existsSync(map) ? countMapRules(readFileSync(map, 'utf8')) : 0);
       }, 0),
+    sources: countSources(readFileSync(join(root, 'Orbit-Core', 'kit', 'sources.mjs'), 'utf8')),
     first,
     days: Object.fromEntries(Object.entries(days).sort()),
     hours,
@@ -137,5 +157,7 @@ export function collect(root) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const root = resolve(process.argv[2] || new URL('../..', import.meta.url).pathname);
-  process.stdout.write(`${JSON.stringify(collect(root), null, 1)}\n`);
+  const out = collect(root);
+  out.outlets = await countOutlets(root);
+  process.stdout.write(`${JSON.stringify(out, null, 1)}\n`);
 }

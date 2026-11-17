@@ -22,6 +22,7 @@ Jay's, dated (Taiwan day), newest wins; the family's are in Orbit-Core `docs/RUL
 - Content changes only when Jay says "catch up the showcase"; the deploy recounts the numbers and re-records the demos daily by itself.
 - 11-14 A showcase of the Orbit project, never named a school or 自主學習 piece; no language switch (the browser's language picks it, as on the homepage and the Pass site).
 - 11-14 It is Jay's representative piece: the design bar is high, still quick to scan for a professor with minutes. 問 Orbit is everywhere on the page (a pill along the bottom asking about what's on screen), lean on AI (asked only when sent, an answer kept on the device). Demos run in a phone, tablet or computer frame on a computer; while a guided tour runs only its step's target answers a tap (scrolling stays free).
+- 11-17 Redone for a busy professor who knows nothing about code ("show actual good point that make sense to a professor"): what's impressive, never our plumbing. Four things that set Orbit apart (your data locked on your phone, many sources made one answer, AI inside what the apps do with code checking it, ten apps helping each other), the problems solved before → after with measured numbers (the ones Jay raised carry his day), Jay's own calls. AI is shown as what it does for you, never as a cost rule ("AI only on a tap" is not a selling point). Screenshots and demos sell one clear point each.
 
 ## One page, then one tap deeper
 
@@ -31,16 +32,17 @@ minutes"; keep the demos and screenshots).
 
 | Where | What it shows | Code, data |
 | --- | --- | --- |
-| `#home` the top | One sentence on what Orbit is and who does what, four numbers from git, three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
-| `#apps` | The ten apps, each its question; 試玩 runs the real app at once | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
-| `#wow` | One thing per app people don't expect, plus two for the whole of Orbit (twelve): the first the big card (data locked on the phone), the last a whole row, so rows stay even at two columns and three; a figure the tree's own card states, in its app's colour; a tap opens that card | `views/main.mjs` `WOW`, `lib/tree-show.mjs` |
-| `#made` | Jay's part and Claude's (each led by its number), one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`, each card led by one figure) | `views/main.mjs` `made`, `views/numbers.mjs` |
-| `#system` | The whole system's ten parts as tiles (each opens it in the tree), the journey of one tap, and 問 Orbit's box where the page ends | `views/main.mjs` `system`, `views/ask.mjs` |
+| `#home` the top | One sentence on what Orbit is and who does what, four numbers from git (apps, days, data sources, updates), three real screens fanned | `views/main.mjs` `top`, `public/data/stats.json` |
+| `#apps` | The ten apps, each its question and its cleverest part (`BEST`, as its tree card states it); 試玩 runs the real app at once | `views/main.mjs` `apps`, `views/demo.mjs`, `lib/demos.mjs`, `public/demo/` |
+| `#wow` | Four things that set Orbit apart, each a card in its own colour: what it means for you, a small picture of how (the phone → locked → the cloud; each app's sources → one answer; four ways to say or snap it, each a real feature; one app → another), its numbers, its tree card | `views/main.mjs` `pillar`, `MERGES`, `ASKS`, `TOGETHER`; `lib/tree-show.mjs` |
+| `#solved` | Problems solved, before → after: the old number struck, the new one large; each measured around its change and stated on its tree card; the ones Jay raised carry his day | `views/main.mjs` `SOLVED`, `lib/tree-show.mjs` |
+| `#made` | Jay's calls (a blind test, a bus ride, data locked, leans from research, as real as Taiwan, stop and test), Jay's part and Claude's (each led by its number), one problem from spotted to fixed, every day / the hours / code rewritten (`#numbers`), then the whole system (`#system`: its ten parts as tiles, the journey of one tap, 問 Orbit's box where the page ends) | `views/main.mjs` `CALLS`, `made`, `system`; `views/numbers.mjs`, `views/ask.mjs` |
 | `#apps/<app>` | An app's page: its question, 試玩, its screens (swipe; the README's own posters, each URL stamped by `scripts/shot-versions.mjs` so no phone shows a kept old one), why it exists, its clever parts (the tree's leaves), day one beside today, the next app | `views/apps.mjs`, `lib/apps.mjs` |
 | `#how`, `#how/<node>`, `#how/map[-<story>]` | The whole system: the structure tree (each card a small picture first, then problem → idea → result, technical names folded away) and the journeys (opening Orbit, one for every app, a fix) | `views/how.mjs`, `lib/tree.mjs`, `tree-apps.mjs`, `tree-show.mjs`, `stories.mjs` |
 
 The frame (`app.mjs`): a bar along the top with the brand and share, and the page's
-four chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay).
+four chapters (lit as you scroll; on a phone the brand row scrolls away and the chapters stay;
+under 360 wide a chapter's short name where it has one).
 On an app's page or the system's, the bar's second row is the way back, where you are and 試玩.
 On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the ten
 apps by name, the whole system. A link to a chapter on the page scrolls there; back and forward
@@ -85,8 +87,14 @@ the tree as it stands.
   Nothing in the pages is typed in.
 - **Everything else changes only when Jay says "catch up the showcase".** At that point, update the
   data files above from the repos' own history, with real dates.
-- Screenshots use made-up data only, never anyone's own. The pre-GitHub versions were drawn from
+- Screenshots use public or sample data only, never anyone's own. The pre-GitHub versions were drawn from
   Jay's saved copies with a sample timetable.
+- **The data sources and news outlets are counted too** (`scripts/stats.mjs` `countSources`: the kit's
+  `sources.mjs` without the AI makers, the tools and the markets; `countOutlets`: `news-outlets.mjs`
+  without the sports desks).
+- **A before → after** on `#solved` is a measurement around a change, written on its tree card
+  (`lib/tree-show.mjs` `pairs`, with where it was measured in a comment); a new one goes on its card
+  first.
 - Nothing about betting appears anywhere. A test enforces it.
 
 ## Run it

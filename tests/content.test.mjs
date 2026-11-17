@@ -66,30 +66,31 @@ test('tree cards: every picture on a real node, both languages, icons drawn', ()
   for (const [id, { node }] of NODES) if (!node.kids?.length) assert.ok(SHOW[id], `${id}: a leaf card needs a picture`);
 });
 
-// The page's chapters and its six highlights (views/main.mjs, read as text:
-// it draws on import): icons the kit draws, each highlight a real tree card
-// on a real app.
-test('the chapters draw their icons; every highlight opens a real card', () => {
+// The page's chapters, its four big ideas, the problems solved and Jay's
+// calls (views/main.mjs, read as text: it draws on import): icons the kit
+// draws, every card a block opens a real tree card with its picture, and
+// each app's cleverest part on its row (Jay 11-14: any per-app list covers all ten).
+test('the chapters draw their icons; every block opens a real card; every app has its best part', () => {
   const main = readFileSync(new URL('../public/views/main.mjs', import.meta.url), 'utf8');
   const chapters = [...main.matchAll(/\{ id: '(\w+)', icon: '(\w+)', label:/g)];
-  assert.deepEqual(chapters.map(m => m[1]), ['apps', 'wow', 'made', 'system']);
+  assert.deepEqual(chapters.map(m => m[1]), ['apps', 'wow', 'solved', 'made']);
   for (const [, id, icon] of chapters) assert.ok(icons[icon], `chapter ${id}: icon ${icon}`);
-  const wow = [...main.matchAll(/\{ id: '([\w-]+)', app: (?:'(\w+)'|null), fig:/g)];
-  // (one per app, plus two for the whole of Orbit: the big first card and the
-  // last, a whole row, so the rows stay even at two columns and three)
-  assert.deepEqual(wow.map(m => m[2]).filter(Boolean).sort(), APPS.map(a => a.id).sort());
-  assert.equal(wow.length, APPS.length + 2);
-  assert.equal(wow[0][2], undefined);
-  assert.equal(wow.at(-1)[2], undefined);
-  for (const [, id, app] of wow) {
-    assert.ok(NODES.has(id) && SHOW[id], `highlight ${id}: a tree card with its picture`);
-    if (app) assert.ok(APPS.some(a => a.id === app), `highlight ${id}: app ${app}`);
-  }
+  const cards = [...main.matchAll(/(?:card: |openCard\()'([\w-]+)'/g)].map(m => m[1]);
+  assert.ok(cards.length >= 20, `${cards.length} cards`);
+  for (const id of cards) assert.ok(NODES.has(id) && SHOW[id], `${id}: a tree card with its picture`);
+  for (const [, icon] of main.matchAll(/icon: '(\w+)'/g)) assert.ok(icons[icon], `icon ${icon}`);
+  const best = main.slice(main.indexOf('const BEST = {'), main.indexOf('};', main.indexOf('const BEST = {')));
+  assert.deepEqual([...best.matchAll(/^ {2}(\w+): \[/gm)].map(m => m[1]).sort(), APPS.map(a => a.id).sort());
+  // Each problem solved: a number before and after, and its card.
+  const solved = main.slice(main.indexOf('const SOLVED = ['), main.indexOf('];', main.indexOf('const SOLVED = [')));
+  const rows = solved.split('\n').filter(l => l.includes('card:'));
+  assert.ok(rows.length >= 6, `${rows.length} problems`);
+  for (const r of rows) assert.ok(/was: /.test(r) && /now: /.test(r), r.slice(0, 60));
 });
 
 test('stats.json has what the pages read', () => {
   const s = JSON.parse(readFileSync(new URL('../public/data/stats.json', import.meta.url), 'utf8'));
-  for (const k of ['apps', 'commits', 'claude', 'copilot', 'lines', 'tests', 'rules', 'added', 'removed', 'reverts']) assert.ok(Number.isInteger(s[k]) && s[k] >= 0, k);
+  for (const k of ['apps', 'commits', 'claude', 'copilot', 'lines', 'tests', 'rules', 'added', 'removed', 'reverts', 'sources', 'outlets']) assert.ok(Number.isInteger(s[k]) && s[k] >= 0, k);
   assert.ok(s.claude <= s.commits);
   assert.ok(s.removed <= s.added);
   assert.match(s.first, /^\d{4}-\d\d-\d\d$/);
