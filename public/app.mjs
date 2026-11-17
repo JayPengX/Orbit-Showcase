@@ -28,7 +28,10 @@ const $ = id => document.getElementById(id);
 // them at once, beside the modules; the server has them checked every time).
 // The page never waits on them long: past 2.5 s (a slow or stuck connection;
 // it waited for ever, 11-17) it is drawn without them, and again when they come.
-const statsReady = fetch('./data/stats.json')
+// (A name, not fetch('…') itself: the deploy stamps a fetched file's address
+// with its content hash, and then it wasn't the one index.html had asked for.)
+const STATS = './data/stats.json';
+const statsReady = fetch(STATS)
   .then(r => (r.ok ? r.json() : null))
   .catch(() => null);
 let stats = null;
