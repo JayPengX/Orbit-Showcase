@@ -458,12 +458,6 @@ const S = {
   'sports-final': {
     flow: [['ball', ['九局下', 'Bottom of the 9th']], ['flag', ['主隊領先', 'Home side ahead']], ['check', ['就是結束了', 'It’s over']]]
   },
-  'sports-soccer': {
-    pairs: [[['85 分鐘 1 比 1，還寫 77%', '1–1 at 85 min, still 77%'], ['晚段平手偏向和局', 'A late draw leans to a draw']]]
-  },
-  'sports-chance': {
-    flow: [['chart', ['外界預估', 'Wider estimates']], ['ball', ['沒有才用 ESPN', 'ESPN only if none']], ['target', ['足球加自己的', 'Soccer: our own too']]]
-  },
   'sports-lineups': {
     flow: [['user', ['RotoWire 預計先發', 'RotoWire’s lineups']], ['history', ['上一場的先發', 'Last game’s five']], ['list', ['球隊深度表', 'The depth chart']]]
   },
@@ -474,7 +468,7 @@ const S = {
     tags: [['star', ['選秀', 'Draft']], ['calendar', ['初登場、年資', 'Debut, years']], ['list', ['生涯球隊', 'Every team']], ['trophy', ['榮譽', 'Honours']], ['chart', ['歷年數據', 'Each season']]]
   },
   'sports-f1': {
-    tags: [['map', ['賽道圖上的車', 'Cars on the map']], ['clock', ['圈速', 'Lap times']], ['target', ['輪胎', 'Tyres']], ['chart', ['勝率', 'Win chance']], ['flag', ['賽事指揮翻成中文', 'Race control in Chinese']]]
+    tags: [['map', ['賽道圖上的車', 'Cars on the map']], ['clock', ['圈速', 'Lap times']], ['target', ['輪胎', 'Tyres']], ['live', ['紅旗、安全車', 'Red flags, safety car']], ['flag', ['賽事指揮翻成中文', 'Race control in Chinese']]]
   },
   'sports-today': {
     pairs: [[['每個聯賽各問一次', 'One ask per league'], ['一天的比分一次給', 'A day’s scores in one']]]

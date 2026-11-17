@@ -11,6 +11,7 @@ import { ROOT, NODES } from '../public/lib/tree.mjs';
 import { APPS } from '../public/lib/apps.mjs';
 import { ROWS, STORIES } from '../public/lib/stories.mjs';
 import { SHOW } from '../public/lib/tree-show.mjs';
+import { OFF } from '../scripts/know.mjs';
 
 const shot = f => new URL(`../public/shots/${f}.webp`, import.meta.url);
 const pair = x => Array.isArray(x) && x.length === 2 && x.every(s => typeof s === 'string' && s.trim());
@@ -107,7 +108,11 @@ test('nothing about betting anywhere in the showcase', () => {
   for (const f of files) {
     const text = readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
     assert.doesNotMatch(text, BANNED, f);
+    // (The win chance neither: its prices come from betting markets, so the demos hide it too.)
+    if (!f.startsWith('public/demo/')) assert.doesNotMatch(text, /勝率|win chance|win[- ]prob/i, f);
   }
+  // What 問 Orbit knows, read from the repos (scripts/know.mjs leaves those lines out).
+  for (const c of JSON.parse(readFileSync(new URL('../public/data/know.json', import.meta.url), 'utf8')).cards) assert.doesNotMatch(c.text, OFF, c.id);
 });
 
 test('every demo is a frozen copy behind the sandbox, with a tour that says both languages', async () => {

@@ -2580,8 +2580,9 @@ html.q-tabrail {
   .sc-fig strong {
     font-size: clamp(28px, 3.6cqi, 40px);
   }
+  /* (The fan is 2.37 screens wide; its column 0.8 of 2 parts: 16cqi fits it.) */
   .sc-fan {
-    --fan-w: clamp(150px, 17cqi, 196px);
+    --fan-w: clamp(120px, 16cqi, 196px);
   }
 }
 /* A short screen (a phone on its side): the words first, the screens smaller. */

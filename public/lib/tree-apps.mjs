@@ -38,18 +38,6 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
           tech: ['kit 的 overByRule；推播檢查在規則說快結束時提早詢問。', 'The kit’s overByRule; the push check asks early when the rules say the end is near.'],
           links: ['sports-push']
         }),
-        n('sports-soccer', 'target', ['足球勝率模型', 'Our own soccer win chance'], ['每一場足球都有即時勝率', 'Every soccer game gets a live win chance'], {
-          p: ['冷門盃賽根本沒有任何勝率可看；有的勝率又會卡住：比賽 85 分鐘 1 比 1，還顯示一隊 77%。', 'Small cup games had no win chance at all, and some figures froze: 1–1 at 85 minutes still showed one side at 77%.'],
-          i: ['自己算：每隊剩下時間還會進幾球，用比分、比賽分鐘數和紅牌推算；賽前的外界預估只用來決定兩隊強弱。', 'Work it out ourselves: how many goals each side may still score in the time left, from the score, the minute and red cards; the pre-game estimate only sets how strong each side is.'],
-          r: ['每一場都有勝率走勢圖，晚段平手會合理地偏向和局。', 'Every game has a win-chance chart, and a late level game leans to a draw as it should.'],
-          tech: ['lib/soccerwp.mjs：剩餘時間的進球數用卜瓦松分布（Poisson），速率來自賽前的外界預估。', 'lib/soccerwp.mjs: goals left as a Poisson count, the rate from the pre-game estimate.']
-        }),
-        n('sports-chance', 'chart', ['勝率不只聽一家', 'A win chance from more than one voice'], ['跟外界看法一致', 'Agrees with the wider world'], {
-          p: ['ESPN 自己的模型在開季沒幾場時，會跟大家的看法唱反調（76人 59%，其實大家看好活塞）。', 'ESPN’s own model early in the season can disagree with everyone else (76ers 59% while the Pistons were the clear favourite).'],
-          i: ['先用外界的市場預估，沒有才用 ESPN 的模型；足球再加上我們自己的模型。', 'Use market estimates first, ESPN’s model only when there are none, and our own model for soccer.'],
-          r: ['看到的熱門隊伍跟真實世界一致。', 'The favourite you see is the real world’s favourite.'],
-          tech: ['espn.mjs parseSummary 的 predict；sheets.js winCard 依固定順序挑來源，最後才用 ESPN。', 'espn.mjs parseSummary predict; sheets.js winCard picks sources in a fixed order, ESPN last.']
-        }),
         n('sports-lineups', 'user', ['先發名單換來源', 'Starters from another source'], ['賽前就看得到先發', 'Starters before the game'], {
           p: ['ESPN 的資料介面拒絕我們的雲端伺服器，NBA 先發又要到開賽才標。', 'ESPN’s data API refuses our cloud server, and marks NBA starters only at tip-off.'],
           i: ['改讀 RotoWire 的預計先發；還沒公布就用上一場的先發，或球隊的深度表。', 'Read RotoWire’s expected lineups; before they post, last game’s five or the team’s depth chart.'],
@@ -83,7 +71,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
         }),
         n('sports-f1', 'flag', ['F1 即時看板', 'F1’s live board'], ['車子在賽道圖上跑', 'Cars moving on the track map'], {
           p: ['一般比分 App 只看得到名次。', 'Score apps only show positions.'],
-          i: ['讀 F1 官方的即時計時，每台車照自己的速度在賽道圖上移動，比較車手圈速、輪胎和勝率。賽事指揮的訊息照規則翻成中文。', 'Read F1’s own live timing: each car moves on the map at its own pace; compare drivers’ laps, tyres and win chance. Race control is put into Chinese by rule.'],
+          i: ['讀 F1 官方的即時計時，每台車照自己的速度在賽道圖上移動，比較車手圈速和輪胎。賽事指揮的訊息照規則翻成中文。', 'Read F1’s own live timing: each car moves on the map at its own pace; compare drivers’ laps and tyres. Race control is put into Chinese by rule.'],
           r: ['像看轉播的資訊圖一樣。', 'Like the broadcast’s own graphics.'],
           tech: ['代理的 f1-live.orbit（now/session/laps/circuit）、Durable Object F1Log 記每一圈；lib/carpace.mjs、racecontrol.mjs。', 'The proxy’s f1-live.orbit (now/session/laps/circuit), Durable Object F1Log logging laps; lib/carpace.mjs, racecontrol.mjs.']
         })
@@ -141,7 +129,7 @@ const sports = n('sports', 'ball', ['Orbit Sports', 'Orbit Sports'], ['在台灣
       links: ['fast-morph', 'cheap-speeds']
     }),
     n('sports-data', 'tv', ['資料從哪裡來', 'Where the data comes from'], ['十幾個來源', 'A dozen sources'], {
-      tech: ['ESPN（比分、球員、排名）、MLB 官方、中華職棒官網和 TheSportsDB、F1 即時計時、Jolpica（F1 歷史）、FotMob、外界勝率預估、愛爾達節目表、NBA.com 愛爾達轉播表、Apple TV、YouTube 精華、RotoWire。全部經過雲端代理。', 'ESPN (scores, players, tables), MLB, CPBL’s site and TheSportsDB, F1 live timing, Jolpica (F1 history), FotMob, outside win estimates, ELTA’s guide, NBA.com’s ELTA list, Apple TV, YouTube highlights, RotoWire. All through the cloud proxy.'],
+      tech: ['ESPN（比分、球員、排名）、MLB 官方、中華職棒官網和 TheSportsDB、F1 即時計時、Jolpica（F1 歷史）、FotMob、愛爾達節目表、NBA.com 愛爾達轉播表、Apple TV、YouTube 精華、RotoWire。全部經過雲端代理。', 'ESPN (scores, players, tables), MLB, CPBL’s site and TheSportsDB, F1 live timing, Jolpica (F1 history), FotMob, ELTA’s guide, NBA.com’s ELTA list, Apple TV, YouTube highlights, RotoWire. All through the cloud proxy.'],
       links: ['cloud-proxy', 'store-r2']
     }),
     n('sports-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['像真的觀眾一樣想', 'Thinking like a real viewer'], {

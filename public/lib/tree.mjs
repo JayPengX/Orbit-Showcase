@@ -215,7 +215,7 @@ const cloud = n('cloud', 'cloud', ['雲端小幫手', 'The helper in the cloud']
     }),
     n('cloud-proxy', 'swap', ['資料代理', 'The data proxy'], ['只讓清單上的網站通過', 'Only listed sites pass'], {
       p: ['手機直接讀別的網站會被瀏覽器擋，也會被來源限流。', 'Browsers block phones reading other sites directly, and sources limit them.'],
-      i: ['代理只轉送允許清單上的網站，依資料種類決定存多久：進行中 2 秒、勝率 10 秒、報價 30 秒、排名 30 分鐘、結束的比賽 24 小時；還能一次打包 24 個請求。', 'It passes only allowlisted sites, keeping each kind for its own time: live 2 s, win chances 10 s, quotes 30 s, tables 30 min, a finished game 24 h; up to 24 reads in one batch.'],
+      i: ['代理只轉送允許清單上的網站，依資料種類決定存多久：進行中 2 秒、報價 30 秒、排名 30 分鐘、結束的比賽 24 小時；還能一次打包 24 個請求。', 'It passes only allowlisted sites, keeping each kind for its own time: live 2 s, quotes 30 s, tables 30 min, a finished game 24 h; up to 24 reads in one batch.'],
       r: ['同時間一千個人打開，來源只被問一次。', 'A thousand people opening at once ask the source once.'],
       tech: ['/sports-proxy?url=&app=&qt=；SPORTS_PROXY_ALLOWED_HOSTS；X-Sports-Proxy-Cache 顯示 HIT/STALE/MISS/KEPT；兩個假網址：asia-baseball.orbit、f1-live.orbit。', '/sports-proxy?url=&app=&qt=; SPORTS_PROXY_ALLOWED_HOSTS; X-Sports-Proxy-Cache says HIT/STALE/MISS/KEPT; two made-up hosts: asia-baseball.orbit, f1-live.orbit.'],
       links: ['sports-trims', 'store-layers']
@@ -432,7 +432,7 @@ const team = n('team', 'user', ['怎麼做出來的', 'How it was made'], ['Jay 
       tech: ['在專案聊天室裡接 Jay 的話，把它拆成一個個工作串，附上 Jay 的原話；每小時檢查一次各工作串的進度。', 'Takes Jay’s messages in the project chat, splits them into work threads with Jay’s own words attached, and checks every lane hourly.']
     }),
     n('team-lanes', 'list', ['工作串', 'Work threads'], ['一串一個目標，同時十幾串', 'One goal each, a dozen at once'], {
-      tech: ['每個工作串是一個 Claude，負責一個目標（例如「颱風天交通」「F1 勝率」）；測試通過就直接上線，不用等 Jay 批准；不會互相等待。2026-10-23 同時有 13 個工作串在跑。', 'Each thread is one Claude with one goal (say, typhoon-day transit or F1 win chance); once tests pass it ships without waiting for approval, and never waits on another lane. On 2026-10-23, 13 ran at once.']
+      tech: ['每個工作串是一個 Claude，負責一個目標（例如「颱風天交通」「F1 即時看板」）；測試通過就直接上線，不用等 Jay 批准；不會互相等待。2026-10-23 同時有 13 個工作串在跑。', 'Each thread is one Claude with one goal (say, typhoon-day transit or F1’s live board); once tests pass it ships without waiting for approval, and never waits on another lane. On 2026-10-23, 13 ran at once.']
     }),
     n('team-memory', 'backpack', ['共同記憶和規則書', 'Shared memory and a rulebook'], ['新的 Claude 不用再問一次', 'A new Claude needn’t ask again'], {
       tech: ['專案記憶：一個主題一個檔案（例如「颱風假」「只做手機」），新的工作串一開始就讀；規則書 RULEBOOK.md 收齊家族的規則（每條有日期），每個 App 自己的規則寫在它的 MAP.md；額度用完時寫交接文件，讓別人接手。', 'Project memory, one file per subject (typhoon days off, phones only), read by every new thread; one rulebook, RULEBOOK.md, for the family’s rules (each dated), and each app’s own in its MAP.md; handoff notes when quota ran out.']

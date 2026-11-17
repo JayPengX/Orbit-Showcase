@@ -14,6 +14,9 @@ import { REPOS } from './stats.mjs';
 const NAME = { 'Orbit-Core': 'Orbit (shared)', 'Orbit-Showcase': 'Showcase' };
 const nameOf = repo => NAME[repo] || repo.replace('Orbit-', '');
 const MAX = 700;
+// Nothing about betting (Jay 10-27), the win chance included (its prices come
+// from betting markets): those lines stay out of what it knows.
+export const OFF = /longshot|sportsbook|betting|\bbets?\b|\bodds\b|lottery|polymarket|kambi|draftkings|運彩|彩券|樂透|刮刮樂|賠率|盤口|下注|投注|博弈|勝率|win chance|win[- ]prob/i;
 // A line as a reader takes it: no code marks, no file lists after " — ".
 export const plainLine = s =>
   String(s || '')
@@ -46,7 +49,7 @@ export function bullets(md, head = null) {
 
 export function knowOf(dir, stats = null) {
   const cards = [];
-  const add = (id, kind, app, title, text) => text && cards.push({ id, kind, app, title, text: plainLine(text) });
+  const add = (id, kind, app, title, text) => text && !OFF.test(text) && cards.push({ id, kind, app, title, text: plainLine(text) });
   for (const { repo } of REPOS) {
     const at = join(dir, repo);
     if (!existsSync(at)) continue;
