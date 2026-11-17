@@ -29,7 +29,9 @@ const repos = resolve(r < 0 ? new URL('../../..', import.meta.url).pathname : ar
 const ids = args.length ? args : Object.keys(DEMOS);
 const site = new URL('../../public/demo/', import.meta.url).pathname;
 const TOKEN = 'eyJkIjoiMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWYifQ.preview';
-const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'image/gif': 'gif', 'application/json': 'json', 'text/javascript': 'js', 'text/css': 'css', 'audio/mpeg': 'mp3' };
+// (A file is served by its name's type: a script kept as .bin is refused by the browser (nosniff), as
+// Transit's map library was (application/javascript), 11-17.)
+const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/avif': 'avif', 'image/svg+xml': 'svg', 'image/gif': 'gif', 'application/json': 'json', 'text/javascript': 'js', 'application/javascript': 'js', 'application/x-javascript': 'js', 'text/css': 'css', 'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/x-wav': 'wav' };
 
 // The kit, once, from the same repos the recordings were made with: its
 // source with the demo's two changes, then built as its own deploy builds it.
@@ -79,7 +81,7 @@ for (const id of ids) {
   const origin = new URL(rec.base).origin;
   for (const g of rec.got) {
     const body = Buffer.from(g.body, 'base64');
-    const type = g.type.split(';')[0].trim();
+    const type = g.type.split(/[;,]/)[0].trim(); // (some send theirs twice: 'application/json, application/json')
     let url = g.url;
     if (url.startsWith(origin)) {
       const path = new URL(url).pathname;
