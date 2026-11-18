@@ -48,7 +48,10 @@ jobs:
   build:
     needs: queue
     if: needs.queue.outputs.go == 'true'
-    runs-on: ubuntu-latest
+    # (Ubuntu 24.04 by name, not -latest: the demos' Playwright 1.63 installs its
+    # browser's system parts for the Ubuntu it knows, and -latest moves to a
+    # newer one by itself; 24.04's runners are GitHub's until about 2029.)
+    runs-on: ubuntu-24.04
     steps:
       # main as it is now, never the commit that started the run: GitHub can
       # deliver a push late (hours, out of order), and an old tree deployed
