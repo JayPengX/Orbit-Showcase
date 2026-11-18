@@ -2687,55 +2687,7 @@ html.q-tabrail {
   }
 }
 
-/* ---- 2. How Jay decides ----
-   Steps joined by arrows: a decision's route (a tree card's flow). */
-.sc-pflow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 2px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.sc-pflow li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-  text-align: center;
-}
-.sc-pflow li:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 22px;
-  right: calc(18px - 50%);
-  left: calc(50% + 30px);
-  height: 2px;
-  border-radius: 1px;
-  background: repeating-linear-gradient(90deg, var(--p-c) 0 5px, transparent 5px 9px);
-  opacity: 0.55;
-}
-.sc-pflow-i {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--p-c) 15%, transparent);
-  color: var(--p-c);
-  font-size: 20px;
-}
-.sc-pflow li:last-child .sc-pflow-i {
-  background: var(--p-c);
-  color: #fff;
-}
-.sc-pflow-t {
-  color: var(--q-label-2);
-  font: 500 13px/1.3 var(--q-font);
-  text-wrap: balance;
-}
-
+/* ---- 2. How Jay decides ---- */
 /* Four decisions, each in the same steps: the question, what was tried,
    what it showed, the call (the call in full weight). */
 .sc-decs {
@@ -2813,8 +2765,25 @@ html.q-tabrail {
   color: var(--q-label);
   font-weight: 600;
 }
-.sc-dec .sc-pflow {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.sc-dec-rules {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 14px;
+  border-radius: var(--q-r-cell);
+  background: var(--q-fill-4);
+  list-style: none;
+}
+.sc-dec-rules li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 15px/1.35 var(--q-font);
+}
+.sc-dec-rules .sc-ico {
+  flex: none;
+  color: var(--q-green);
+  font-size: 13px;
 }
 .sc-dec .sc-howgo {
   margin-top: auto;
@@ -2850,7 +2819,7 @@ html.q-tabrail {
     grid-area: how;
     align-self: end;
   }
-  .has-art > :is(.sc-pflow, .sc-lock) {
+  .has-art > :is(.sc-dec-rules, .sc-lock) {
     grid-area: art;
     align-self: center;
   }

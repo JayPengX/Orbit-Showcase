@@ -150,7 +150,6 @@ const S = {
     tags: [['bus', ['各縣市公車網站', 'Each city’s buses']], ['train', ['台鐵、高鐵、捷運', 'Rail, HSR, metro']], ['bike', 'YouBike'], ['cloud', ['TDX（備援）', 'TDX (backup)']], ['map', 'Google Maps'], ['map', ['國土測繪中心地圖', 'NLSC maps']], ['map', 'OpenStreetMap']]
   },
   'transit-calls': {
-    flow: [['pin', ['竹東南', 'Zhudong South']], ['bus', ['5608 公車', 'Bus 5608']], ['bike', ['YouBike 20 分', 'YouBike 20 min']], ['flag', ['綠41公園', 'Green 41 Park']]],
     rules: [['永遠有一個推薦', 'Always one pick'], ['不規劃計程車', 'No taxis'], ['不跟自己的火車賽跑', 'Never race your own train'], ['手指動過地圖就不再拉回', 'A map you moved stays put']]
   },
   'transit-fast': {

@@ -54,13 +54,8 @@ const phrased = s => (en ? [s] : phrases(s).map(p => h('span', { class: 'sc-ph',
 // 「怎麼做到的 ›」 under a block that opens a tree card.
 const howLink = id => h('button', { class: 'sc-howgo', type: 'button', onclick: () => openCard(id) }, [t(['怎麼做到的', 'How it works']), ico('chevron')]);
 
-// Steps joined by arrows (a tree card's flow, lib/tree-show.mjs).
-const flow = steps =>
-  h(
-    'ol',
-    { class: 'sc-pflow' },
-    steps.map(([icon, say]) => h('li', {}, [h('span', { class: 'sc-pflow-i' }, [ico(icon)]), h('span', { class: 'sc-pflow-t', text: t(say) })]))
-  );
+// A short checklist (a tree card's rules).
+const rules = list => h('ul', { class: 'sc-dec-rules' }, list.map(r => h('li', {}, [ico('check'), h('span', { text: t(r) })])));
 
 // ---- The top: the claim, in one look ----
 // Three real screens fanned out, the middle one in front; every few seconds
@@ -228,10 +223,10 @@ const DECISIONS = [
     day: '2026-11-03',
     title: ['親自搭公車驗證', 'Rode the bus to check'],
     q: ['路線該照時刻表，還是照即時預估？', 'Plan by the timetable, or by the live estimate?'],
-    tried: ['Jay 親自搭 5608 公車，把兩個時間跟真的公車比。', 'Jay rode bus 5608 and held both times up against the real bus.'],
+    tried: ['Jay 親自搭公車，把兩個時間跟真的公車比。', 'Jay rode the bus and held both times up against the real bus.'],
     saw: ['即時預估很準，紙本時刻表卻差很多。', 'The live estimate was right; the printed timetable was far off.'],
     call: ['照真實的通勤判斷，不照資料說的。', 'Real commutes decide, not what the data claims.'],
-    art: () => flow(SHOW['transit-calls'].flow)
+    art: () => rules(SHOW['transit-calls'].rules)
   },
   {
     card: 'pass-vault',

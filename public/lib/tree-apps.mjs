@@ -257,7 +257,7 @@ const transit = n('transit', 'bus', ['Orbit Transit', 'Orbit Transit'], ['全台
       links: ['cloud-proxy']
     }),
     n('transit-calls', 'pencil', ['Jay 的決定', 'Jay’s calls'], ['照真實的通勤判斷', 'Judged by real commutes'], {
-      tech: ['永遠有一個推薦；不規劃計程車；高鐵不算免費；不要跟自己的火車賽跑到下一站；地圖被手指動過就不再拉回；例：竹東南 → 綠41公園，5608 公車接 20 分鐘 YouBike。', 'There is always a recommendation; never taxis; HSR is never free; never race your own train to the next station; the map never pulls back once moved; e.g. Zhudong South → Green 41 Park: the 5608 then a 20-minute ride.']
+      tech: ['永遠有一個推薦；不規劃計程車；高鐵不算免費；不要跟自己的火車賽跑到下一站；地圖被手指動過就不再拉回。', 'There is always a recommendation; never taxis; HSR is never free; never race your own train to the next station; the map never pulls back once moved.']
     })
   ]
 });
