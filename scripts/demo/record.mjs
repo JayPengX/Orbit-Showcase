@@ -99,16 +99,22 @@ const base = `http://localhost:${port}/${demo.repo}/`;
 await page.goto(base + (demo.hash || ''));
 await page.waitForTimeout(demo.settle || 4000);
 let n = 0;
+// The apps' words for data that didn't come (each app's own, kept short).
+const DOWN = /暫時沒有回應|暫時無法取得|暫時查不到|讀取失敗|讀不到|連不上網路/;
 const snap = async label => shots && (mkdirSync(shots, { recursive: true }), await page.screenshot({ path: join(shots, `${id}-${String(n++).padStart(2, '0')}-${label}.png`) }));
 await snap('open');
 for (const step of [...(demo.tour || []), ...(demo.explore || [])]) {
   try {
     if (step.hash) await page.evaluate(h => (location.hash = h), step.hash);
-    if (step.tap) await page.locator(step.tap).locator('visible=true').first().click({ timeout: 5000 });
+    // (a tour step waits as long as a slow answer can take, 20 s: the trip plan came late, 11-18)
+    if (step.tap) await page.locator(step.tap).locator('visible=true').first().click({ timeout: (demo.tour || []).includes(step) ? 20000 : 5000 });
     if (step.type) await page.locator(step.type[0]).first().fill(step.type[1]);
     if (step.back) await page.goBack();
     await page.waitForTimeout(step.wait || 1500);
     await snap(String(step.tap || step.hash || step.type?.[0] || 'back').replace(/[^\w-]+/g, '_').slice(0, 40));
+    // A tour screen saying its data didn't come is a broken recording (Transit's bus sheet, 11-18): tried again.
+    const down = (demo.tour || []).includes(step) && (await page.locator('body').innerText().catch(() => '')).match(DOWN);
+    if (down) throw new Error(`the screen says: ${down[0]}`);
   } catch (e) {
     // (a tour step must work; an explore step is extra)
     if ((demo.tour || []).includes(step)) broke++;

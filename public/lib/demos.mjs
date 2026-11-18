@@ -37,7 +37,8 @@ export const TOURS = {
     { tap: 'dialog[open] .q-close', say: ['看完關掉', 'Close it'] },
     { tap: '#a-38 .lw-pending', wait: 3500, say: ['立法院正在提的修法，也連在這一條', 'Changes proposed in the legislature, linked right here'] },
     { tap: 'dialog[open] .q-close', say: ['關掉', 'Close'] },
-    { tap: '#tab-bills', wait: 4000, say: ['立法院的每個法案，走到哪一步', 'Every bill in the legislature, and how far it’s got'] }
+    { tap: '#tab-bills', wait: 4000, say: ['立法院的每個法案，走到哪一步', 'Every bill in the legislature, and how far it’s got'] },
+    { tap: '.lw-scope [data-id="local"]', wait: 4000, say: ['地方：22 個縣市議會和 204 個鄉鎮代表會', 'Local: 22 county councils and 204 township councils'] }
   ],
   beats: [
     { say: ['每一首歌都是手機當場做出來的，不會重複，也不用下載。', 'Every song is made on the phone as it plays: never repeated, nothing downloaded.'] },
@@ -82,8 +83,7 @@ export const TOURS = {
     { tap: '[data-action="place"]', say: ['手續費和稅已算好，送出', 'Fees and tax included: send'] },
     { tap: '.q-ask-actions .q-btn.primary', say: ['確認', 'Confirm'] },
     { tap: '.q-close', say: ['關掉這一檔', 'Close this stock'] },
-    { tap: '.q-tab[data-tab="portfolio"]', say: ['看你的資產', 'Your holdings'] },
-    { tap: '.q-tab[data-tab="history"]', say: ['剛才的委託在這裡', 'Your order is here'] }
+    { tap: '.q-tab[data-tab="history"]', say: ['剛才的委託在這裡，開盤就成交', 'Your order is here; it fills when the market opens'] }
   ],
   sports: [
     { say: ['第一次打開，先選你看的運動。', 'First time in: pick the sports you watch.'] },

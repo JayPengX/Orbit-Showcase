@@ -135,6 +135,11 @@ for (const id of ids) {
   if (built) writeFileSync(join(to, 'version.json'), `${JSON.stringify({ version: built })}\n`);
   const style = demo.css ? `<style>${demo.css}</style>` : '';
   writeFileSync(index, html.replace(/<head>/i, `<head><script src="../_demo/${id}.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">${style}`));
+  // Every file this demo is, listed: a later deploy whose recording fails takes
+  // these from the live site, so the demo stays today's, never git's older copy (refresh.mjs).
+  const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]));
+  const files = [...walk(to).map(f => f.slice(site.length + 1)), `_demo/${id}.js`, ...new Set(readFileSync(join(site, '_demo', `${id}.js`), 'utf8').match(/_x\/[\w.]+/g) || [])];
+  writeFileSync(join(site, '_demo', `${id}.files.json`), `${JSON.stringify(files)}\n`);
   console.log(`${id}: ${answers.length} answers, ${Object.keys(items).length} proxy reads, ${Object.keys(pics).length} pictures`);
 }
 
