@@ -1,32 +1,33 @@
 // The showcase's one page, for a busy reader who knows nothing about code
-// (Jay 2026-11-17: "show actual good points that make sense to a professor
-// who don't have much time"), read top to bottom:
-//   #home    what Orbit is: one sentence, its numbers counted from git, three real screens
-//   #apps    the ten apps: each one's question and its cleverest part; 試玩 runs the real app
-//   #wow     four things that set it apart: your data locked on your phone,
-//            many sources made one answer, say it or snap it and the app does
-//            it (AI inside the apps, code checking it), ten apps helping each other
-//   #solved  problems solved, before → after, each number measured
-//   #made    how it was made: Jay's calls, who does what, the loop, the
-//            numbers; then the whole system (#system) and 問 Orbit
+// (a professor with minutes; Jay 2026-11-18: the redo the showcase report
+// planned), read top to bottom, each part one point and one thing to do:
+//   #home    the claim: ten apps a student made with an AI, every decision
+//            proven; its numbers from git; the ten apps' screens in turn
+//   #apps    the ten apps as equals: each one's question and its special part; 試玩 runs the real app
+//   #decide  how Jay decides: four decisions, each question → what he tried →
+//            the evidence → the call; the data lock done for real in the page
+//   #proof   it got better: before → after, measured; the trip-planning wait felt
+//   #made    how it grew: from the first update to today (from git), the
+//            mistakes that became rules, who does what; then the system and 問 Orbit
 // Each app's page and the whole system are one tap deeper; every figure is
 // one the code, its history or a tree card states (none made up).
-import { h, t, ico, appImg, num, shotUrl, appTitle, daysBetween, twToday, fmtDay, fmtDayYear, en } from '../shell.mjs';
+import { moreToggle } from '#kit/ui.mjs';
+import { h, t, ico, appImg, num, shotUrl, appTitle, daysBetween, twToday, fmtDay, fmtDayYear, en, reduced } from '../shell.mjs';
 import { APPS, phrases } from '../lib/apps.mjs';
 import { hasDemo, openDemo } from './demo.mjs';
-import { openCard, TOP, hue, shortName } from './how.mjs';
+import { openCard } from './how.mjs';
 import { SHOW } from '../lib/tree-show.mjs';
-import { heatmap, hours, churn } from './numbers.mjs';
+import { heatmap } from './numbers.mjs';
 import { askOrbit } from './ask.mjs';
 
 // The page's chapters, as the bar along the top (the side bar on a
-// computer) names them. (The whole system closes 怎麼做的, inside it.)
+// computer) names them. (The whole system closes 成長, inside it.)
 // (short: the name on a phone under 360 wide, where four English names don't fit one row)
 export const CHAPTERS = [
   { id: 'apps', icon: 'grid', label: ['App', 'Apps'] },
-  { id: 'wow', icon: 'spark', label: ['亮點', 'Highlights'], short: ['亮點', 'Ideas'] },
-  { id: 'solved', icon: 'target', label: ['成果', 'Results'] },
-  { id: 'made', icon: 'pencil', label: ['怎麼做的', 'How it’s made'], short: ['怎麼做的', 'Making'] }
+  { id: 'decide', icon: 'target', label: ['決定', 'Decisions'], short: ['決定', 'Calls'] },
+  { id: 'proof', icon: 'chart', label: ['成果', 'Results'] },
+  { id: 'made', icon: 'pencil', label: ['成長', 'How it grew'], short: ['成長', 'Growth'] }
 ];
 
 const appName = a => appTitle(a).replace(/^Orbit /, '');
@@ -53,21 +54,65 @@ const phrased = s => (en ? [s] : phrases(s).map(p => h('span', { class: 'sc-ph',
 // 「怎麼做到的 ›」 under a block that opens a tree card.
 const howLink = id => h('button', { class: 'sc-howgo', type: 'button', onclick: () => openCard(id) }, [t(['怎麼做到的', 'How it works']), ico('chevron')]);
 
-// ---- The top: what it is, in one look ----
-// Three real screens fanned out (each app's first screenshot, in the page's
-// language; light and dark mixed), the middle one in front.
-const FAN = ['sports', 'weather', 'beats'];
-function fan() {
-  return h(
-    'div',
-    { class: 'sc-fan' },
-    FAN.map((id, i) => {
-      const a = appOf(id);
-      return h('a', { class: `sc-fan-p sc-fan-${i}`, href: `#apps/${id}`, 'aria-label': appTitle(a) }, [
-        h('img', { src: shotUrl(`${a.shots[0][0].split('/')[0]}/screen`, Boolean(a.zh)), alt: '', width: 375, height: 812, decoding: 'async', fetchpriority: i === 1 ? 'high' : 'auto' })
-      ]);
-    })
+// Steps joined by arrows (a tree card's flow, lib/tree-show.mjs).
+const flow = steps =>
+  h(
+    'ol',
+    { class: 'sc-pflow' },
+    steps.map(([icon, say]) => h('li', {}, [h('span', { class: 'sc-pflow-i' }, [ico(icon)]), h('span', { class: 'sc-pflow-t', text: t(say) })]))
   );
+
+// ---- The top: the claim, in one look ----
+// Three real screens fanned out, the middle one in front; every few seconds
+// the next app's turn, so all ten get the first screen (only while the fan is
+// on screen and the page is seen; held still for reduced motion).
+let fanStop = () => {};
+const screenOf = a => shotUrl(`${a.shots[0][0].split('/')[0]}/screen`, Boolean(a.zh));
+function fan() {
+  fanStop();
+  const box = h('div', { class: 'sc-fan' });
+  const slots = [0, 1, 2].map(i => {
+    const img = h('img', { alt: '', width: 375, height: 812, decoding: 'async', fetchpriority: i === 1 ? 'high' : 'auto' });
+    const a = h('a', { class: `sc-fan-p sc-fan-${i}` }, [img]);
+    box.append(a);
+    return { a, img };
+  });
+  let k = 0;
+  const show = () =>
+    slots.forEach(({ a, img }, i) => {
+      const app = APPS[(k + i) % APPS.length];
+      img.src = screenOf(app);
+      a.href = `#apps/${app.id}`;
+      a.setAttribute('aria-label', appTitle(app));
+    });
+  show();
+  let timer = 0;
+  let seen = false;
+  const step = () => {
+    k = (k + 1) % APPS.length;
+    // (the next screen read before the swap, so the fan never shows a blank phone)
+    const next = new Image();
+    next.src = screenOf(APPS[(k + 2) % APPS.length]);
+    box.classList.add('swap');
+    setTimeout(() => {
+      show();
+      box.classList.remove('swap');
+    }, 260);
+  };
+  const run = () => {
+    clearInterval(timer);
+    timer = 0;
+    if (seen && !reduced() && document.visibilityState === 'visible') timer = setInterval(step, 3600);
+  };
+  const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver(([e]) => ((seen = e.isIntersecting), run())) : null;
+  io?.observe(box);
+  document.addEventListener('visibilitychange', run);
+  fanStop = () => {
+    clearInterval(timer);
+    io?.disconnect();
+    document.removeEventListener('visibilitychange', run);
+  };
+  return box;
 }
 
 function top(stats) {
@@ -77,14 +122,15 @@ function top(stats) {
         // (The apps are the list's, as the headline counts them: stats.json was 9 before News.)
         [Math.max(stats.apps, APPS.length), ['個 App', 'apps']],
         [days, ['天', 'days']],
-        stats.sources ? [stats.sources, ['個資料來源', 'data sources']] : [stats.tests, ['個自動檢查', 'automatic checks']],
-        [stats.commits, ['次更新', 'updates']]
-      ]
+        [stats.sources, ['個資料來源', 'data sources']],
+        [stats.tests, ['個自動檢查', 'automatic checks']]
+      ].filter(([v]) => v != null)
     : [];
   return h('section', { class: 'sc-intro', id: 'home' }, [
     h('div', { class: 'sc-intro-text' }, [
       h('p', { class: 'sc-kicker', text: t(['Orbit 作品展示', 'The Orbit project']) }),
       h('h1', { class: 'sc-headline' }, [line(['十個|每天在用的 App，', 'Ten apps used every day, ']), line(['一位高中生|帶著 AI| 做出來。', 'made by a high-school student directing an AI.'])]),
+      h('p', { class: 'sc-claim' }, [line(['每個決定|都先量過，|改完再證明|它變好了。', 'Every decision measured, changed, and proven better.'])]),
       h('p', {
         class: 'sc-intro-lede',
         text: t([
@@ -101,14 +147,14 @@ function top(stats) {
         : null,
       h('div', { class: 'sc-intro-go' }, [
         h('a', { class: 'sc-cta', href: '#apps', 'data-jump': 'apps' }, [ico('play'), t(['試玩一個 App', 'Try an app'])]),
-        h('span', { class: 'sc-hint', text: t(['或往下滑，幾分鐘看完', 'or scroll on: a few minutes, all of it']) })
+        h('span', { class: 'sc-hint', text: t(['或往下滑，五分鐘看完', 'or scroll on: five minutes, all of it']) })
       ])
     ]),
     fan()
   ]);
 }
 
-// ---- 1. The ten apps: each one's question and its cleverest part ----
+// ---- 1. The ten apps, as equals: each one's question and its special part ----
 // The part is one the app's tree card states (lib/tree-apps.mjs, tree-show.mjs).
 const BEST = {
   sports: ['每一種中斷都有倒數：中場、暫停、局間。', 'A countdown for every break: half-time, timeouts, innings.'],
@@ -125,7 +171,7 @@ const BEST = {
 
 function apps() {
   return h('section', { class: 'sc-sec', id: 'apps' }, [
-    head(['十個 App，|各回答一個問題', 'Ten apps, one question each'], ['點一個看它的畫面和巧思；按「試玩」就用真的 App。', 'Tap one for its screens and clever parts; “Try” runs the real app.']),
+    head(['十個 App，|各有一個|別人沒有的地方', 'Ten apps, each with something no other has'], ['每一個都是真的 App，用真的資料；按「試玩」馬上用。', 'Each one is a real app on real data; “Try” runs it at once.']),
     h(
       'ul',
       { class: 'sc-applist' },
@@ -151,237 +197,250 @@ function apps() {
   ]);
 }
 
-// ---- 2. Four things that set it apart ----
-// Each: what it means for you in one line, a small picture of how, a few
-// numbers, and the tree card with the whole story.
-
-// Steps joined by arrows (a tree card's flow, lib/tree-show.mjs).
-const flow = steps =>
-  h(
-    'ol',
-    { class: 'sc-pflow' },
-    steps.map(([icon, say]) => h('li', {}, [h('span', { class: 'sc-pflow-i' }, [ico(icon)]), h('span', { class: 'sc-pflow-t', text: t(say) })]))
-  );
-const nums = list =>
-  h(
-    'div',
-    { class: 'sc-pnums' },
-    list.filter(([v]) => v != null).map(([v, label]) => h('div', {}, [h('strong', { text: typeof v === 'number' ? num(v) : t(v) }), h('small', { text: t(label) })]))
-  );
-
-// Many sources, one answer: each app's sources merged, a tap on a row opens its card.
-const MERGES = [
-  { app: 'transit', card: 'transit-data', from: [['各縣市公車', 'City buses'], ['台鐵', 'TRA'], ['高鐵', 'HSR'], ['捷運', 'Metro'], ['YouBike', 'YouBike']], to: ['一趟路線', 'One trip'] },
-  { app: 'weather', card: 'weather-blend', from: [['氣象署', 'CWA'], ['Google', 'Google'], ['環境部', 'MOENV'], ['測站實測', 'Stations']], to: ['一個預報', 'One forecast'] },
-  { app: 'law', card: 'law-three', from: [['法規', 'Laws'], ['判決', 'Rulings'], ['立法院', 'Legislature'], ['地方議會', 'Councils']], to: ['互相連結', 'All linked'] },
-  { app: 'news', card: 'news-sides', from: [['118 家媒體', '118 outlets']], to: ['同一件事放一起', 'One story, every side'] }
+// ---- 2. How Jay decides: four decisions, each in the same four steps ----
+// The question, what he tried, what it showed, the call; each opens the tree
+// card it comes from. (The two with a picture last: on a wide page each takes a
+// whole row, its picture beside its steps.) Every word is that card's (lib/tree*.mjs, tree-show.mjs).
+const DECISIONS = [
+  {
+    card: 'law-ai',
+    icon: 'target',
+    day: '2026-11-11',
+    title: ['用盲測選 AI', 'A blind test picked the AI'],
+    q: ['哪個 AI 最會回答法律問題？', 'Which AI answers legal questions best?'],
+    tried: ['五個 AI 回答同樣十個真實的法律問題，名字全部遮起來。', 'Five AIs answered the same ten real legal questions, every name hidden.'],
+    saw: ['Jay 一題一題比，不知道哪個答案是哪個 AI 寫的。', 'Jay compared them one by one, not knowing which AI wrote which.'],
+    call: ['選出最好的一個來回答「問法律」，每個引用都再由程式查過。', 'The best one answers Ask the law, and code checks every citation it makes.']
+  },
+  {
+    card: 'team-jay',
+    icon: 'check',
+    day: null,
+    title: ['停下來，全部測一遍', 'Stop, and test everything'],
+    q: ['截止前，該多加功能，還是求穩？', 'Before the deadline: more features, or steadier ones?'],
+    tried: ['Jay 讓 4,018 個項目一項一項測過。', 'Jay had 4,018 items tested, one by one.'],
+    saw: ['找出 419 個問題，全部修好。', '419 problems found, every one fixed.'],
+    call: ['停止加新功能，把還不夠穩的整個拿掉。', 'No new features; whole ones not yet steady were taken out.']
+  },
+  {
+    card: 'transit-calls',
+    icon: 'bus',
+    day: '2026-11-03',
+    title: ['親自搭公車驗證', 'Rode the bus to check'],
+    q: ['路線該照時刻表，還是照即時預估？', 'Plan by the timetable, or by the live estimate?'],
+    tried: ['Jay 親自搭 5608 公車，把兩個時間跟真的公車比。', 'Jay rode bus 5608 and held both times up against the real bus.'],
+    saw: ['即時預估很準，紙本時刻表卻差很多。', 'The live estimate was right; the printed timetable was far off.'],
+    call: ['照真實的通勤判斷，不照資料說的。', 'Real commutes decide, not what the data claims.'],
+    art: () => flow(SHOW['transit-calls'].flow)
+  },
+  {
+    card: 'pass-vault',
+    icon: 'lock',
+    day: '2026-11-15',
+    title: ['連我們的資料庫都讀不到', 'Not even our database can read it'],
+    q: ['誰應該讀得到你的帳本和課表？', 'Who should be able to read your books and timetable?'],
+    tried: ['存在雲端的資料，管理的人、看得到資料庫或備份的人都讀得到。', 'Data kept in the cloud can be read by whoever runs it, or anyone who sees the database or a backup.'],
+    saw: ['所以問題不在誰可信，而在雲端根本不該看得懂。', 'So the question isn’t who to trust: the cloud shouldn’t be able to read it at all.'],
+    call: ['先在你的手機上鎖好才上傳；連 Jay 的管理頁也只看到一個鎖。', 'Locked on your phone before it leaves; even Jay’s admin page sees only a lock.'],
+    art: () => lockDemo()
+  }
 ];
-const merges = () =>
-  h(
-    'div',
-    { class: 'sc-merge' },
-    MERGES.map(m => {
-      const a = appOf(m.app);
-      return h('button', { class: 'sc-merge-row', type: 'button', onclick: () => openCard(m.card), 'aria-label': `${appTitle(a)}: ${m.from.map(t).join('、')} → ${t(m.to)}` }, [
-        appImg(a.brand, 26),
-        h('span', { class: 'sc-merge-in' }, m.from.map(f => h('span', { class: 'sc-src', text: t(f) }))),
-        h('span', { class: 'sc-merge-to' }, [ico('chevron'), h('strong', { text: t(m.to) })])
-      ]);
-    })
-  );
 
-// Say it or snap it: four of the ways in, each from a real feature (FEATURES.md).
-const ASKS = [
-  { app: 'law', card: 'law-ai', icon: 'chat', verb: ['問一句', 'Ask'], say: ['「房東扣光押金合理嗎？」', '“Can my landlord keep my deposit?”'], got: ['回答附上條文和判決，每個引用都由程式查過', 'An answer citing the articles and rulings, every citation checked by code'] },
-  { app: 'transit', card: 'transit-ai', icon: 'chat', verb: ['說一句', 'Say'], say: ['「明天八點前到台大醫院」', '“To NTU Hospital by 8 tomorrow”'], got: ['路線排好，幾點出門也算好', 'The trip planned, and when to leave'] },
-  { app: 'money', card: 'money-photo', icon: 'camera', verb: ['拍一張', 'Snap'], say: ['收據、發票、App 截圖', 'A receipt, an invoice, a screenshot'], got: ['變成一筆帳，金額和分類都填好', 'One entry, amount and category filled in'] },
-  { app: 'securities', card: 'sec-ai', icon: 'book', verb: ['講白話', 'Explain'], say: ['公司的重大訊息', 'A company’s filing'], got: ['一句白話，加上它根據的數字', 'One plain line, and the figures it rests on'] }
+const STEPS = [
+  ['tried', ['試了什麼', 'Tried']],
+  ['saw', ['看到什麼', 'Found']],
+  ['call', ['決定', 'The call']]
 ];
-const asks = () =>
-  h(
-    'div',
-    { class: 'sc-dos' },
-    ASKS.map(x => {
-      const a = appOf(x.app);
-      return h('button', { class: 'sc-do', type: 'button', onclick: () => openCard(x.card) }, [
-        h('span', { class: 'sc-do-verb' }, [ico(x.icon), t(x.verb), h('span', { class: 'sc-do-app' }, [appImg(a.brand, 18), appName(a)])]),
-        h('span', { class: 'sc-do-say', text: t(x.say) }),
-        h('span', { class: 'sc-do-got' }, [ico('chevron'), h('span', { text: t(x.got) })])
-      ]);
-    })
-  );
 
-// Ten apps helping each other: what one app knows, another uses (each a
-// line of the apps' FEATURES.md, through the family's notebook, kit family.mjs).
-const TOGETHER = [
-  [['weather', 'transit'], ['快下雨時，路線改搭公車或捷運，不叫你騎 YouBike 淋雨', 'Rain due? The trip takes the bus or metro, not a wet YouBike ride']],
-  [['class', 'transit'], ['第一節課前，一點就排好怎麼去學校', 'Before first class, one tap plans the way to school']],
-  [['class', 'words'], ['下課時，背 5 個今天該複習的單字', 'At a break, five words due today']],
-  [['sports', 'transit'], ['去看中職：怎麼去球場、比賽時段會不會下雨', 'Off to a ballgame: how to get there, rain during it']],
-  [['transit', 'money'], ['下車後，這趟車資一點就記進帳本', 'After a ride, its fare is one tap into your books']],
-  [['securities', 'news'], ['你持有的股票上了新聞，新聞先告訴你', 'Your stocks in the news, shown to you first']]
-];
-const together = () =>
-  h(
-    'ul',
-    { class: 'sc-tog' },
-    TOGETHER.map(([ids, say]) =>
-      h('li', {}, [
-        h('span', { class: 'sc-tog-apps', 'aria-label': ids.map(id => appTitle(appOf(id))).join(' → ') }, ids.flatMap((id, i) => [i ? ico('chevron', 'sc-tog-arrow') : null, appImg(appOf(id).brand, 28)])),
-        h('span', { class: 'sc-tog-say', text: t(say) })
-      ])
-    )
-  );
-
-function pillar({ id, color, icon, title, say, art, list, card, more }) {
-  return h('article', { class: `sc-pillar sc-pillar-${id}`, style: `--p-c:${color}` }, [
-    h('header', { class: 'sc-pillar-head' }, [h('span', { class: 'sc-pillar-i' }, [ico(icon)]), h('h3', {}, [line(title)])]),
-    h('p', { class: 'sc-pillar-say', text: t(say) }),
-    art,
-    list ? nums(list) : null,
-    more || null,
-    card ? howLink(card) : null
+function decision(d) {
+  return h('article', { class: d.art ? 'sc-dec has-art' : 'sc-dec', 'data-card': d.card }, [
+    h('header', { class: 'sc-dec-head' }, [h('span', { class: 'sc-dec-i' }, [ico(d.icon)]), h('h3', { text: t(d.title) }), d.day ? h('small', { text: fmtDay(d.day) }) : null]),
+    h('p', { class: 'sc-dec-q', text: t(d.q) }),
+    h(
+      'ol',
+      { class: 'sc-dec-steps' },
+      STEPS.map(([k, label]) => h('li', { class: `sc-dec-${k}` }, [h('small', { text: t(label) }), h('span', { text: t(d[k]) })]))
+    ),
+    d.art ? d.art() : null,
+    howLink(d.card)
   ]);
 }
 
-function wow(stats) {
-  return h('section', { class: 'sc-sec', id: 'wow' }, [
-    head(['四個|讓它不一樣的地方', 'Four things that set it apart'], ['每一個都在十個 App 裡真的在跑。', 'Each one is running in the apps today.']),
-    h('div', { class: 'sc-pillars' }, [
-      pillar({
-        id: 'vault',
-        color: 'var(--q-green)',
-        icon: 'lock',
-        title: ['你的資料，|先在手機上鎖好|才上傳', 'Your data is locked on your phone before it leaves'],
-        say: [
-          '課表、帳本、單字進度……在你的手機上，用你的通行碼做出的鑰匙加密，才同步到雲端。我們的資料庫、備份和管理頁看到的，都只是一個鎖。',
-          'Your timetable, your books, your word progress: encrypted on your phone with a key made from your pass, then synced. Our database, its backups and the admin page see only a lock.'
-        ],
-        art: flow(SHOW['pass-vault'].flow),
-        list: [
-          ['9', ['個 App 的資料上鎖', 'apps’ data locked']],
-          ['600,000', ['次運算做出你的鑰匙', 'rounds to make your key']],
-          ['0', ['個廣告和第三方追蹤', 'ads or third-party trackers']]
-        ],
-        card: 'pass-vault'
-      }),
-      pillar({
-        id: 'merge',
-        color: 'var(--q-cyan)',
-        icon: 'grid',
-        title: ['很多來源，|合成一個答案', 'Many sources, one answer'],
-        say: [
-          '政府開放資料、業者自己的網站、國際的資料，各自格式都不一樣。Orbit 把它們讀進來、對齊、合併，你只看到一個清楚的答案。點一列看怎麼做到。',
-          'Open government data, operators’ own sites and global feeds, each in its own shape: Orbit reads them, lines them up and merges them, so you see one clear answer. Tap a row to see how.'
-        ],
-        art: merges(),
-        list: [
-          [stats?.sources ?? null, ['個資料來源', 'data sources']],
-          [stats?.outlets ?? null, ['家新聞媒體', 'news outlets']],
-          ['22 + 204', ['個縣市議會和鄉鎮代表會', 'county and township councils']]
-        ]
-      }),
-      pillar({
-        id: 'ai',
-        color: 'var(--q-purple)',
-        icon: 'ai',
-        title: ['說一句、拍一張，|App 就去做', 'Say it or snap it, and the app does it'],
-        say: [
-          'AI 不是一個聊天框，而是放進每個 App 的動作裡：程式先讀懂能讀的，其餘交給 AI；算出來的數字和引用都由程式再檢查一次，送出前一定先給你看。',
-          'The AI isn’t a chat box; it is built into what each app does. Code reads what it can and the AI the rest; every figure and citation is checked again by code, and nothing is done before you see it.'
-        ],
-        art: asks(),
-        list: [
-          ['9', ['個 App 用得到', 'apps use it']],
-          ['3', ['家 AI 互相備援', 'AI makers backing each other up']]
-        ],
-        more: h('p', {
-          class: 'sc-pillar-more',
-          text: t([
-            '還有：「用 5 萬買台積電零股」幫你填好下單單、拍課表照片匯入課表、用新學的單字聊天、用說的做一段節奏、問你追蹤的球隊、問「這個月吃飯花多少」畫成圖。',
-            'And more: “buy NT$50,000 of TSMC in odd lots” fills the order ticket, a photo of a timetable becomes yours, a chat that uses your new words, a beat made from a sentence, questions about your teams, “how much did I spend on food?” drawn as a chart.'
-          ])
-        }),
-        card: 'ai'
-      }),
-      pillar({
-        id: 'family',
-        color: 'var(--q-orange)',
-        icon: 'share',
-        title: ['十個 App| 互相幫忙', 'Ten apps that help each other'],
-        say: [
-          '一個帳號、一個 Orbit 就裝下全部十個。一個 App 知道的事，另一個拿來用：',
-          'One account, and one Orbit holding all ten. What one app knows, another puts to use:'
-        ],
-        art: together(),
-        card: 'ai-family'
-      })
-    ])
+function decide() {
+  return h('section', { class: 'sc-sec', id: 'decide' }, [
+    head(['Jay 怎麼|做決定', 'How Jay decides'], ['Jay 不寫程式；他提問題、親自試、看證據，再做取捨。', 'Jay doesn’t write code: he asks the question, tries it himself, looks at the evidence, then makes the call.']),
+    h('div', { class: 'sc-decs' }, DECISIONS.map(decision))
   ]);
 }
 
-// ---- 3. Problems solved, before → after ----
+// The data lock, done for real in this page: what you type is locked the way
+// Orbit locks an account's data (a key made from a pass with PBKDF2-SHA256 at
+// 600,000 rounds, then AES-256-GCM: kit vault.mjs), and the page shows what the
+// cloud would keep. Here the pass is a sample one; nothing leaves the page.
+const SAMPLE_PASS = 'orbit-showcase-sample';
+async function lock(text) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const base = await crypto.subtle.importKey('raw', enc.encode(SAMPLE_PASS), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 600_000 }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+  const sealed = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(text)));
+  return btoa(String.fromCharCode(...salt, ...iv, ...sealed));
+}
+
+function lockDemo() {
+  if (!globalThis.crypto?.subtle) return null;
+  const field = h('input', { class: 'q-field sc-lock-in', type: 'text', maxlength: 80, value: t(['午餐 NT$120，跟小明分', 'Lunch NT$120, split with Ming']), 'aria-label': t(['要上鎖的內容', 'What to lock']), autocomplete: 'off', enterkeyhint: 'done' });
+  const out = h('code', { class: 'sc-lock-out', 'aria-live': 'polite' });
+  const btn = h('button', { class: 'q-btn sc-lock-go', type: 'button' }, [ico('lock'), t(['鎖起來', 'Lock it'])]);
+  let n = 0;
+  const go = async () => {
+    const mine = ++n;
+    const text = field.value.trim();
+    if (!text) return;
+    btn.disabled = true;
+    out.classList.add('busy');
+    out.textContent = t(['做鑰匙中：600,000 次運算…', 'Making the key: 600,000 rounds…']);
+    try {
+      const sealed = await lock(text);
+      if (mine === n) out.textContent = sealed;
+    } catch {
+      if (mine === n) out.textContent = t(['這個瀏覽器做不到，請換一個試試。', 'This browser can’t do it; try another.']);
+    }
+    if (mine === n) {
+      out.classList.remove('busy');
+      btn.disabled = false;
+    }
+  };
+  btn.addEventListener('click', go);
+  field.addEventListener('keydown', e => e.key === 'Enter' && (e.preventDefault(), go()));
+  return h('div', { class: 'sc-lock' }, [
+    h('p', { class: 'sc-lock-label', text: t(['自己試：打一句，看雲端存到的是什麼', 'Try it: type a line and see what the cloud would keep']) }),
+    h('div', { class: 'sc-lock-row' }, [field, btn]),
+    out,
+    h('p', { class: 'sc-lock-note', text: t(['在這個頁面上用跟 Orbit 一樣的方法鎖住（範例通行碼），什麼都沒有送出。', 'Locked right here the way Orbit locks your data (a sample pass); nothing is sent.']) })
+  ]);
+}
+
+// ---- 3. It got better: before → after, measured ----
 // Each a number measured before and after the change, as its tree card
 // states it (lib/tree-show.mjs); the ones Jay raised himself carry his day.
 const SOLVED = [
   { card: 'transit-fast', app: 'transit', what: ['在台北規劃一趟路', 'Planning a trip in Taipei'], was: ['7–10 秒', '7–10 s'], now: ['1–2 秒', '1–2 s'] },
   { card: 'sports-push', app: 'sports', what: ['比賽結束到手機收到結果', 'Final whistle to the result on your phone'], was: ['15 分鐘以上', '15+ min'], now: ['約 2 分鐘', '~2 min'], jay: '2026-10-22' },
   { card: 'weather-blend', app: 'weather', what: ['6 小時以後的溫度預報，平均誤差', 'Temperature forecast 6+ hours ahead, average error'], was: '0.86°', now: '0.59°' },
+  { card: 'cheap', app: null, what: ['主機和交通資料，每個月的費用', 'Hosting and transit data, a month'], was: ['約 NT$390', '~NT$390'], now: 'NT$0', jay: '2026-11-06' },
   { card: 'law-ai', app: 'law', what: ['問法律，等到回答開始出現', 'Ask the law: until the answer starts'], was: ['10–12 秒', '10–12 s'], now: ['3–4 秒', '3–4 s'], jay: '2026-10-30' },
   { card: 'fast-lift', app: 'weather', what: ['打開天氣，到看見預報', 'Opening Weather to the forecast'], was: ['1.6 秒', '1.6 s'], now: ['0.09 秒', '0.09 s'] },
-  { card: 'fast', app: null, what: ['在慢網路上把九個 App 各用一輪', 'Nine apps used once each, on a slow network'], was: '24.8 MB', now: '15.2 MB', jay: '2026-11-05' },
-  { card: 'law-links', app: 'law', what: ['法條裡的約 28,000 個「第幾條」', 'The ~28,000 article numbers inside the laws'], was: ['只是文字', 'Plain text'], now: ['約 99%', '~99%'], tail: ['點了就到那一條', 'open the very article'] },
-  { card: 'cheap', app: null, what: ['主機和交通資料，每個月的費用', 'Hosting and transit data, a month'], was: ['約 NT$390', '~NT$390'], now: 'NT$0', jay: '2026-11-06' }
+  { card: 'fast', app: null, what: ['在慢網路上把九個 App 各用一輪', 'Nine apps used once each, on a slow network'], was: '24.8 MB', now: '15.2 MB', jay: '2026-11-05' }
 ];
+// (The first is the race; four rows lead, two more behind 「更多」: even rows in two columns.)
+const LEAD = 5;
 
-function solved() {
-  return h('section', { class: 'sc-sec', id: 'solved' }, [
-    head(['解決的問題，|前後對比', 'Problems solved, before and after'], ['每個數字都是改之前和改之後量的；有些是 Jay 自己在手機上發現的。點一列看怎麼做到。', 'Each number was measured before and after the change; some problems Jay found on his own phone. Tap a row to see how.']),
-    h(
-      'div',
-      { class: 'sc-solved' },
-      SOLVED.map(s => {
-        const a = s.app ? appOf(s.app) : null;
-        return h('button', { class: 'sc-fix', type: 'button', onclick: () => openCard(s.card) }, [
-          h('span', { class: 'sc-fix-what' }, [appImg(a?.brand || null, 24), h('span', { text: t(s.what) })]),
-          h('span', { class: 'sc-fix-nums' }, [
-            h('s', { class: 'sc-fix-was', text: t(s.was) }),
-            h('span', { class: 'sc-fix-arrow', 'aria-label': t(['變成', 'to']) }, [ico('chevron')]),
-            h('strong', { class: 'sc-fix-now', text: t(s.now) }),
-            s.tail ? h('small', { class: 'sc-fix-tail', text: t(s.tail) }) : null
-          ]),
-          s.jay ? h('span', { class: 'sc-fix-jay' }, [ico('user'), t([`Jay 提出 · ${fmtDay(s.jay)}`, `Raised by Jay · ${fmtDay(s.jay)}`])]) : null
-        ]);
-      })
-    )
+const fix = s => {
+  const a = s.app ? appOf(s.app) : null;
+  return h('button', { class: 'sc-fix', type: 'button', onclick: () => openCard(s.card) }, [
+    h('span', { class: 'sc-fix-what' }, [appImg(a?.brand || null, 24), h('span', { text: t(s.what) })]),
+    h('span', { class: 'sc-fix-nums' }, [
+      h('s', { class: 'sc-fix-was', text: t(s.was) }),
+      h('span', { class: 'sc-fix-arrow', 'aria-label': t(['變成', 'to']) }, [ico('chevron')]),
+      h('strong', { class: 'sc-fix-now', text: t(s.now) }),
+      s.tail ? h('small', { class: 'sc-fix-tail', text: t(s.tail) }) : null
+    ]),
+    s.jay ? h('span', { class: 'sc-fix-jay' }, [ico('user'), t([`Jay 提出 · ${fmtDay(s.jay)}`, `Raised by Jay · ${fmtDay(s.jay)}`])]) : null
+  ]);
+};
+
+// The trip-planning wait, felt: two bars filling side by side, each over its
+// measured time (the middle of each range: 8.5 s before, 1.5 s now).
+const RACE = [
+  ['was', ['以前', 'Before'], 8.5, ['7–10 秒', '7–10 s']],
+  ['now', ['現在', 'Now'], 1.5, ['1–2 秒', '1–2 s']]
+];
+function race() {
+  const rows = RACE.map(([k, label, secs, said]) => {
+    const bar = h('span', { class: 'sc-race-bar' }, [h('span', { class: 'sc-race-fill', style: `--s:${secs}s` })]);
+    const end = h('span', { class: 'sc-race-end', text: t(said) });
+    const row = h('div', { class: `sc-race-row ${k}` }, [h('span', { class: 'sc-race-label', text: t(label) }), bar, end]);
+    return { row, secs };
+  });
+  const box = h('div', { class: 'sc-race' });
+  let timers = [];
+  const play = () => {
+    timers.forEach(clearTimeout);
+    box.classList.remove('go');
+    rows.forEach(r => r.row.classList.remove('done'));
+    void box.offsetWidth; // (back to empty before they fill again)
+    box.classList.add('go');
+    timers = rows.map(r => setTimeout(() => r.row.classList.add('done'), reduced() ? 0 : r.secs * 1000));
+  };
+  const btn = h('button', { class: 'q-btn sc-race-go', type: 'button', onclick: play }, [ico('play'), t(['感受一下等待', 'Feel the wait'])]);
+  box.append(
+    h('div', { class: 'sc-race-head' }, [h('span', {}, [appImg(appOf('transit').brand, 24), h('strong', { text: t(['在台北規劃一趟路', 'Planning a trip in Taipei']) })]), btn]),
+    ...rows.map(r => r.row),
+    h('p', { class: 'sc-race-note', text: t(['照量到的時間播放（取中間值）。', 'Played at the measured times (the middle of each range).']) }),
+    howLink('transit-fast')
+  );
+  return box;
+}
+
+function proof() {
+  const rest = h('div', { class: 'sc-solved', hidden: true }, SOLVED.slice(LEAD).map(fix));
+  return h('section', { class: 'sc-sec', id: 'proof' }, [
+    head(['真的變好了：|前後對比', 'It really got better: before and after'], ['每個數字都是改之前和改之後量的；有些是 Jay 自己在手機上發現的。點一列看怎麼做到。', 'Each number was measured before and after the change; some problems Jay found on his own phone. Tap a row to see how.']),
+    race(),
+    h('div', { class: 'sc-solved' }, SOLVED.slice(1, LEAD).map(fix)),
+    rest,
+    moreToggle({ more: t([`再看 ${SOLVED.length - LEAD} 個`, `${SOLVED.length - LEAD} more`]), less: t(['收起', 'Show less']), onToggle: open => (rest.hidden = !open) })
   ]);
 }
 
-// ---- 4. How it was made ----
-// Jay's calls first (what a person decided, not what code did), then the
-// two parts side by side, one problem's trip from spotted to fixed, the
-// numbers, and the whole system to end.
-const CALLS = [
-  { card: 'law-ai', icon: 'target', day: '2026-11-11', title: ['用盲測選 AI', 'A blind test picked the AI'], say: ['五個 AI 回答十個真實的法律問題，Jay 不知道哪個是哪個，選出最好的一個來回答「問法律」。', 'Five AIs answered ten real legal questions; not knowing which was which, Jay picked the best one to answer Ask the law.'] },
-  { card: 'transit-calls', icon: 'bus', day: '2026-11-03', title: ['親自搭公車驗證', 'Rode the bus to check'], say: ['Jay 搭 5608 公車實測：即時預估很準，紙本時刻表卻差很多。照真實的通勤判斷，不照資料說的。', 'Jay rode bus 5608 to test it: the live estimate was right, the printed timetable far off. Real commutes decide, not what the data claims.'] },
-  { card: 'pass-vault', icon: 'lock', day: '2026-11-15', title: ['連我們的資料庫都讀不到', 'Not even our database can read it'], say: ['Jay 要每個人的資料，連自己的資料庫和備份都看不到內容：所以先在手機上加密才同步。', 'Jay wanted no one’s data readable even in our own database or its backups, so it is encrypted on the phone before it syncs.'] },
-  { card: 'news-sides', icon: 'flag', day: '2026-11-10', title: ['立場只看研究', 'Leans from research only'], say: ['每家媒體偏哪一邊，不由我們、也不由 AI 判斷，一律引用已發表的研究和評等。', 'Where an outlet leans is judged neither by us nor by an AI: always from published research and ratings.'] },
-  { card: 'sec-rules', icon: 'bank', day: null, title: ['跟真的台灣一樣', 'As real as Taiwan'], say: ['模擬投資照台灣券商的真規則，連開戶資格、當沖、零股和交割都照做；颱風假在每個 App 都算放假。', 'Practice investing follows a real Taiwan broker’s rules, down to account papers, day trading, odd lots and settlement; a typhoon day off counts in every app.'] },
-  { card: 'team-jay', icon: 'check', day: null, title: ['停下來，全部測一遍', 'Stop, and test everything'], say: ['截止前，Jay 讓 4,018 個項目一項一項測過（419 個問題修好），然後停止加新功能，把還不夠穩的整個拿掉。', 'Before the deadline Jay had 4,018 items tested one by one (419 problems fixed), then stopped new features and removed whole ones not yet steady.'] }
-];
-
-function calls() {
+// ---- 4. How it grew: from the first update to today ----
+// The milestones, every date from git (each repo's first update, Claude's
+// first) or a decision's own day; then the mistakes that became rules, and
+// who does what.
+function milestones(stats) {
+  const byBrand = new Map(APPS.map(a => [a.brand, a]));
+  const rows = [
+    stats.firstClaude && [stats.firstClaude, null, ['Claude 開始寫程式', 'Claude starts writing the code'], 'spark'],
+    ...(stats.repos || [])
+      .filter(r => r.first && byBrand.has(r.app))
+      .map(r => {
+        const n = appName(byBrand.get(r.app));
+        const its = n.endsWith('s') ? `${n}’` : `${n}’s`; // (Words’ first day, not Words’s)
+        return [r.first, byBrand.get(r.app), r.first === stats.first ? [`Orbit 從 ${n} 開始`, `Orbit begins, with ${n}`] : [`${n} 的第一天`, `${its} first day`]];
+      }),
+    ...(stats.repos || []).filter(r => r.repo === 'Orbit-Core' && r.first).map(r => [r.first, null, ['十個 App 共用的零件庫', 'The parts all ten apps share'], 'grid']),
+    ...DECISIONS.filter(d => d.day).map(d => [d.day, null, d.title, d.icon, true])
+  ]
+    .filter(Boolean)
+    .sort((a, b) => a[0].localeCompare(b[0]));
   return h(
-    'div',
-    { class: 'sc-calls' },
-    CALLS.map(c =>
-      h('button', { class: 'sc-call', type: 'button', onclick: () => openCard(c.card) }, [
-        h('span', { class: 'sc-call-head' }, [h('span', { class: 'sc-call-i' }, [ico(c.icon)]), h('strong', { text: t(c.title) }), c.day ? h('small', { text: fmtDay(c.day) }) : null]),
-        h('span', { class: 'sc-call-say', text: t(c.say) })
+    'ol',
+    { class: 'sc-tl' },
+    rows.map(([day, app, say, icon, call]) =>
+      h('li', { class: call ? 'sc-tl-call' : null }, [
+        h('time', { datetime: day, text: fmtDay(day) }),
+        h('span', { class: 'sc-tl-mark' }, [app ? appImg(app.brand, 22) : ico(icon)]),
+        h('span', { class: 'sc-tl-say', text: t(say) })
       ])
     )
   );
 }
+
+// The mistakes that became rules (the tree's team-lessons, four of its eight).
+const LESSONS = [
+  [['一次從舊副本推上去，清空了 21,927 筆最高法院裁判', 'A push from an old copy wiped 21,927 top-court rulings'], ['每次推之前一定先同步最新版本', 'Always sync right before pushing']],
+  [['只照手機做，平板和電腦上只剩中間一條窄窄的畫面', 'Made for phones only, a tablet showed a narrow strip'], ['每種螢幕都排好，上線前檢查', 'Every screen laid out, checked before each push']],
+  [['讀取失敗被當成沒資料', 'A failed read was taken as no data'], ['失敗不是空的', 'A failure is never “nothing”']],
+  [['一個共同的詞就把不相干的新聞湊在一起', 'One shared word lumped unrelated stories together'], ['至少兩個詞才算同一件事', 'Two words at least make one story']]
+];
+const lessons = () =>
+  h(
+    'ul',
+    { class: 'sc-lessons' },
+    LESSONS.map(([was, rule]) => h('li', {}, [h('span', { class: 'sc-lesson-was', text: t(was) }), h('span', { class: 'sc-lesson-rule' }, [ico('check'), h('strong', { text: t(rule) })])]))
+  );
 
 function role(who, mark, does, fig) {
   return h('div', { class: `sc-role sc-role-${who.toLowerCase()}` }, [
@@ -395,32 +454,13 @@ function role(who, mark, does, fig) {
   ]);
 }
 
-// One problem, from Jay's phone to everyone's (the tree's team-loop, in four steps).
-const LOOP = [
-  ['user', ['Jay 發現問題', 'Jay spots a problem'], ['在自己的 iPhone 上', 'on his own iPhone']],
-  ['camera', ['截圖給 Claude', 'Sends Claude a screenshot'], ['說哪裡不對', 'says what’s wrong']],
-  ['check', ['找原因、修好、測試', 'Cause found, fixed, tested'], ['自動檢查全過', 'every check passes']],
-  ['send', ['幾分鐘後上線', 'Live minutes later'], ['每支手機自己更新', 'every phone updates itself']]
-];
-
-// The whole system, at a glance: its ten parts as tiles (each opens that
-// part of the tree), the journey of one tap across them, and 問 Orbit.
+// The way into the whole system and 問 Orbit, where the page ends.
 function system() {
   const cloud = SHOW.cloud?.flow || [];
   return h('div', { class: 'sc-system', id: 'system' }, [
-    h('h3', { class: 'sc-subhead', text: t(['整個系統，十塊拼起來', 'The whole system, in ten parts']) }),
-    h(
-      'div',
-      { class: 'sc-sys' },
-      TOP.map(b =>
-        h('a', { class: 'sc-sys-b', href: `#how/${b.id}`, style: `--c:${hue(b.id)}` }, [
-          h('span', { class: 'sc-sys-i' }, [ico(b.icon)]),
-          h('span', { class: 'sc-sys-t' }, [h('strong', { text: shortName(b) }), h('small', { text: t(b.line) })])
-        ])
-      )
-    ),
+    h('h3', { class: 'sc-subhead', text: t(['想看更深？', 'Want to go deeper?']) }),
     h('a', { class: 'sc-journey', href: '#how/map' }, [
-      h('span', { class: 'sc-journey-t' }, [h('strong', { text: t(['按一下，背後發生什麼事', 'What happens behind one tap']) }), h('small', { text: t(['打開 Orbit、每個 App 各一個例子，一步一步走過整個系統', 'Opening Orbit and a story for every app, step by step across the system']) })]),
+      h('span', { class: 'sc-journey-t' }, [h('strong', { text: t(['按一下，背後發生什麼事', 'What happens behind one tap']) }), h('small', { text: t(['整個系統，一步一步走過：打開 Orbit、每個 App 各一個例子', 'The whole system step by step: opening Orbit, and a story for every app']) })]),
       h(
         'span',
         { class: 'sc-journey-flow', 'aria-hidden': 'true' },
@@ -434,9 +474,11 @@ function system() {
 
 function made(stats) {
   return h('section', { class: 'sc-sec', id: 'made' }, [
-    head(['怎麼做出來的', 'How it was made'], ['Jay 不寫程式：他決定做什麼、驗證、做取捨，也是最挑剔的使用者；寫程式的是 Claude。', 'Jay doesn’t write code: he decides, verifies and makes the calls, and is the pickiest user; Claude writes the code.']),
-    h('h3', { class: 'sc-subhead first', text: t(['Jay 做的決定', 'Jay’s calls']) }),
-    calls(),
+    head(['從第一天|到今天', 'From day one to today'], ['每個日期都從 git 讀出來；每次犯錯，都變成一條所有 App 一起守的規則。', 'Every date is read from git; every mistake became a rule all ten apps keep.']),
+    stats?.repos ? milestones(stats) : null,
+    h('h3', { class: 'sc-subhead', text: t(['犯過的錯，變成規則', 'Mistakes that became rules']) }),
+    lessons(),
+    stats?.rules ? h('p', { class: 'sc-lessons-sum' }, [h('strong', { text: num(stats.rules) }), h('span', { text: t(['條 Jay 定下、寫下來的規則，每一條都有日期', 'rules Jay has set and written down, each one dated']) })]) : null,
     h('h3', { class: 'sc-subhead', text: t(['誰做什麼', 'Who does what']) }),
     h('div', { class: 'sc-roles' }, [
       role(
@@ -447,7 +489,7 @@ function made(stats) {
           ['定標準、做取捨', 'Sets the bar, makes the calls'],
           ['每天在 iPhone 上試、挑毛病', 'Tries it on his iPhone daily, finds faults']
         ],
-        stats?.rules ? [stats.rules, ['條他定下的規則', 'rules he has set']] : null
+        stats?.tests ? [stats.tests, ['個自動檢查，守住他的標準', 'automatic checks hold his bar']] : null
       ),
       role(
         'Claude',
@@ -460,19 +502,7 @@ function made(stats) {
         stats?.claude ? [stats.claude, [`次更新是它寫的（共 ${num(stats.commits)} 次）`, `of the ${num(stats.commits)} updates are its work`]] : null
       )
     ]),
-    h('h3', { class: 'sc-subhead', text: t(['一個問題，從發現到修好', 'One problem, from spotted to fixed']) }),
-    h(
-      'ol',
-      { class: 'sc-cycle', style: `--n:${LOOP.length}` },
-      LOOP.map(([icon, say, sub], i) => h('li', { style: `--i:${i}` }, [h('span', { class: 'sc-cycle-dot' }, [ico(icon)]), h('span', { class: 'sc-cycle-t' }, [h('strong', { text: t(say) }), h('small', { text: t(sub) })])]))
-    ),
-    stats?.days
-      ? h('div', { class: 'sc-made-nums', id: 'numbers' }, [
-          h('h3', { class: 'sc-subhead', text: t(['從程式碼數出來的', 'Counted from the code']) }),
-          h('div', { class: 'sc-made-cards' }, [heatmap(stats), hours(stats)]),
-          churn(stats)
-        ])
-      : null,
+    stats?.days ? h('div', { class: 'sc-made-nums', id: 'numbers' }, [heatmap(stats)]) : null,
     system()
   ]);
 }
@@ -491,5 +521,5 @@ function foot() {
 }
 
 export function renderMain(box, stats) {
-  box.replaceChildren(top(stats), apps(), wow(stats), solved(), made(stats), foot());
+  box.replaceChildren(top(stats), apps(), decide(), proof(), made(stats), foot());
 }

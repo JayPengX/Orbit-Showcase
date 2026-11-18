@@ -28,11 +28,11 @@ One page, read top to bottom in a few minutes:
 
 | Part | What you see |
 | --- | --- |
-| The top | What Orbit is in one sentence, its numbers counted from git, three real screens |
-| 十個 App Apps | Each app's question and its cleverest part, with 試玩 (Try) to run the real app at once |
-| 亮點 Highlights | Four things that set Orbit apart: your data locked on your phone, many sources made one answer, say it or snap it and the app does it, ten apps helping each other |
-| 成果 Results | Problems solved, before and after, each number measured around its change |
-| 怎麼做的 How it's made | Jay's calls, his part and Claude's, one problem from spotted to fixed, the numbers from the code, and the whole system |
+| The top | Ten apps a student made directing an AI, every decision measured and proven better; its numbers counted from git; every app's screen in turn |
+| 十個 App Apps | Each app's question and its special part, with 試玩 (Try) to run the real app at once |
+| 決定 Decisions | How Jay decides: a blind test, stop and test everything, a bus ride, data locked; each question, what he tried, what it showed, the call (lock a line yourself, right in the page) |
+| 成果 Results | Before and after, each number measured around its change; the trip-planning wait, felt |
+| 成長 How it grew | From the first update to today (from git), the mistakes that became rules, Jay's part and Claude's |
 
 Each app has its own page (`#apps/<app>`: its screens, the real app to try, its clever parts, day one beside today), and the whole system its own (`#how`: the structure tree and the journeys), one tap deeper.
 

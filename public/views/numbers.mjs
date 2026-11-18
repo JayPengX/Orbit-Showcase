@@ -1,6 +1,5 @@
-// Orbit in numbers, all counted from git by the deploy (data/stats.json):
-// every day's updates, the hours they happen, and how much code was written
-// and rewritten. The main page's 怎麼做的 shows them (views/main.mjs).
+// Orbit in numbers, counted from git by the deploy (data/stats.json): every
+// day's updates, as squares. The main page's 成長 shows it (views/main.mjs).
 import { h, t, fmtDay, num, en } from '../shell.mjs';
 
 // Every day from the first commit to the last count, a square each, Monday
@@ -50,56 +49,5 @@ export function heatmap(stats) {
         `One square a day, darker for more updates. Updates on ${active} of ${total} days; the busiest was ${fmtDay(busiest[0])}, with ${num(busiest[1])}.`
       ])
     })
-  ]);
-}
-
-export function hours(stats) {
-  const hs = stats.hours || [];
-  const max = Math.max(1, ...hs);
-  const peak = hs.indexOf(max);
-  return h('div', { class: 'sc-card' }, [
-    h('h3', { class: 'sc-h3', text: t(['一天裡的什麼時候', 'What time of day']) }),
-    h('p', { class: 'sc-numfig' }, [h('strong', { text: `${peak}:00` }), h('span', { text: t(['最忙的一小時', 'the busiest hour']) })]),
-    h(
-      'div',
-      { class: 'sc-hours', role: 'img', 'aria-label': t(['每個小時的更新次數', 'Updates by hour of day']) },
-      hs.map((n, hr) => h('span', { class: `sc-hour${hr === peak ? ' peak' : ''}`, title: `${hr}:00 · ${num(n)}`, style: `--v:${(n / max).toFixed(3)}; --d:${hr * 25}ms` }))
-    ),
-    h(
-      'div',
-      { class: 'sc-hours-axis', 'aria-hidden': 'true' },
-      ['0', '6', '12', '18', '24'].map(x => h('span', { text: x }))
-    ),
-    h('p', {
-      class: 'sc-note',
-      text: t([
-        `台北時間。最多的是 ${peak} 點那一小時。白天和晚上是 Jay 在用、在挑；半夜的多半是 Claude 在 Jay 睡覺時照著交代繼續做。`,
-        `Taipei time; the busiest hour starts at ${peak}:00. Days and evenings are Jay using and picking at the apps; most of the small hours are Claude carrying on with what he asked while he sleeps.`
-      ])
-    })
-  ]);
-}
-
-// How much was written, and how much of it later came out (counted from git).
-export function churn(stats) {
-  if (!stats?.added) return null;
-  const share = stats.removed / stats.added;
-  return h('div', { class: 'sc-card sc-churn' }, [
-    h('h3', { class: 'sc-h3', text: t(['寫了又改', 'Written, then rewritten']) }),
-    h('div', { class: 'sc-churn-nums' }, [
-      h('div', {}, [h('strong', { text: num(stats.added) }), h('small', { text: t(['行程式寫過', 'lines of code written']) })]),
-      h('div', {}, [h('strong', { text: num(stats.removed) }), h('small', { text: t(['行後來刪掉或改寫', 'later removed or rewritten']) })]),
-      h('div', {}, [h('strong', { text: num(stats.reverts) }), h('small', { text: t(['次更新整個撤回', 'updates undone outright']) })])
-    ]),
-    h(
-      'div',
-      {
-        class: 'sc-churn-bar',
-        style: `--k:${Math.round(share * 1000) / 10}%`,
-        role: 'img',
-        'aria-label': t([`每 10 行約有 ${Math.round(share * 10)} 行後來被拿掉`, `About ${Math.round(share * 10)} in every 10 lines were later taken out`])
-      },
-      [h('span')]
-    )
   ]);
 }

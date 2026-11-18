@@ -25,9 +25,9 @@ const API = 'https://api.jaypengx.com';
 const CONTEXTS = {
   home: { ids: ['orbit', 'team'], qs: [['Orbit 是什麼？', 'What is Orbit?'], ['Jay 自己寫程式嗎？', 'Does Jay write the code?'], ['怎麼做到不花錢？', 'How does it stay free?']] },
   apps: { ids: ['apps', 'kit', 'pass'], qs: [['十個 App 怎麼共用一張通行證？', 'How do ten apps share one pass?'], ['資料從哪裡來？', 'Where does the data come from?'], ['為什麼打開很快？', 'Why does it open so fast?']] },
-  wow: { ids: ['pass-vault', 'ai', 'ai-family'], qs: [['我的資料怎麼上鎖？', 'How is my data locked?'], ['AI 在 App 裡做什麼？', 'What does the AI do in the apps?'], ['App 之間怎麼互相幫忙？', 'How do the apps help each other?']] },
-  solved: { ids: ['transit-fast', 'sports-push', 'fast'], qs: [['規劃路線怎麼變快的？', 'How did trip planning get faster?'], ['比賽結果怎麼這麼快就通知？', 'How do results arrive so fast?'], ['怎麼做到不花錢？', 'How does it stay free?']] },
-  made: { ids: ['team', 'law-ai'], qs: [['Jay 自己寫程式嗎？', 'Does Jay write the code?'], ['AI 是怎麼盲測選出來的？', 'How was the AI picked in a blind test?'], ['一個問題怎麼從發現到修好？', 'How does a problem get fixed?']] },
+  decide: { ids: ['law-ai', 'transit-calls', 'pass-vault'], qs: [['AI 是怎麼盲測選出來的？', 'How was the AI picked in a blind test?'], ['我的資料怎麼上鎖？', 'How is my data locked?'], ['Jay 怎麼決定路線怎麼排？', 'How did Jay decide how trips are planned?']] },
+  proof: { ids: ['transit-fast', 'sports-push', 'fast'], qs: [['規劃路線怎麼變快的？', 'How did trip planning get faster?'], ['比賽結果怎麼這麼快就通知？', 'How do results arrive so fast?'], ['怎麼做到不花錢？', 'How does it stay free?']] },
+  made: { ids: ['team', 'team-lessons'], qs: [['Jay 自己寫程式嗎？', 'Does Jay write the code?'], ['犯過哪些錯？', 'What mistakes were made?'], ['一個問題怎麼從發現到修好？', 'How does a problem get fixed?']] },
   system: { ids: ['cloud', 'store', 'ship'], qs: [['資料放在哪裡？', 'Where is the data kept?'], ['改好之後怎麼到手機？', 'How does a fix reach the phone?'], ['公車時間從哪裡來？', 'Where do the bus times come from?']] }
 };
 let ctx = CONTEXTS.home;

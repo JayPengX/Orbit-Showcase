@@ -65,9 +65,9 @@ test('on a phone: a search hit tapped twice opens its card twice; a chip to the 
     await shut();
     // From the page: a card's chip to another part, back, the same chip again.
     const viaChip = async () => {
-      await page.goto(`${url}#wow`);
-      await page.waitForSelector('.sc-pillar-vault .sc-howgo');
-      await page.click('.sc-pillar-vault .sc-howgo');
+      await page.goto(`${url}#decide`);
+      await page.waitForSelector('.sc-dec[data-card="pass-vault"] .sc-howgo');
+      await page.click('.sc-dec[data-card="pass-vault"] .sc-howgo');
       await page.waitForSelector('dialog[open] .sc-chip');
       await page.evaluate(() => document.querySelector('dialog[open] .sc-chip').click());
       await page.waitForFunction(() => document.documentElement.dataset.view === 'how');
