@@ -55,6 +55,10 @@
   <div id="view-app" class="sc-view" hidden></div>
   <div id="view-how" class="sc-view" hidden></div>
 </main>
+<!-- A browser too old for the page (it has no import maps: Safari before 16.4,
+     so iOS and iPadOS 16.3 or older) is told so, never left on a blank page.
+     Only once nothing has drawn after 3 s; the page drawing takes its place. -->
+<script>!function(o,t){try{o=HTMLScriptElement.supports&&HTMLScriptElement.supports('importmap')}catch(e){}o||setTimeout(function(){var b=document.getElementById('bar'),m=document.getElementById('view-main');if(!m||b&&b.firstChild)return;t=document.createElement('p');t.id='too-old';t.setAttribute('style','margin:0;padding:28vh 28px 0;text-align:center;font:17px/1.6 -apple-system,BlinkMacSystemFont,sans-serif');t.textContent=/^zh/i.test(navigator.language||'zh')?'這個瀏覽器的版本太舊，打不開這個頁面。請更新到 iOS 16.4 以上，或用電腦上新版的 Chrome、Safari、Edge 開啟。':'This browser is too old to open this page. Please update to iOS 16.4 or later, or open it in a current Chrome, Safari or Edge on a computer.';m.appendChild(t)},3000)}()</script>
 <script type="module" src="./app.mjs"></script>
 </body>
 </html>

@@ -47,6 +47,9 @@ On an app's page or the system's, the bar's second row is the way back, where yo
 On a computer (900 px wide and over 520 tall) a side bar replaces the bar: the chapters, the ten
 apps by name, the whole system. A link to a chapter on the page scrolls there; back and forward
 return to where the reader was.
+A browser too old for the page (no import maps: Safari before 16.4) reads a line saying so,
+from a plain script in `index.html` (`tests/too-old.test.mjs`). The apps' pages need import maps
+too and have no such line: there that Safari still sees a blank page.
 
 Jay's own homepage lives here too: `public/home/index.html`, one self-contained file (no kit,
 no betting, open to all) that the `orbit-home` Worker serves at https://jaypengx.com/ (published to Cloudflare by `deploy/cf-site.mjs`). It leads with Orbit (a card of its own, opening
