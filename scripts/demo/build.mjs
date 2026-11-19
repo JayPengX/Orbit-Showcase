@@ -59,6 +59,9 @@ execFileSync(process.execPath, [join(kitSrc, 'stamp.mjs'), join(site, 'Orbit-Cor
 const kitBuilt = JSON.parse(readFileSync(join(site, 'Orbit-Core/kit/version.json'), 'utf8'));
 const { stampApp } = await import(pathToFileURL(join(kitSrc, 'stamp-app.mjs')).href);
 mkdirSync(join(site, '_x'), { recursive: true });
+const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]));
+// (the demos' kit listed too: a night's deploy keeps the live one beside the live demos, refresh.mjs)
+writeFileSync(join(site, '_demo', 'kit.files.json'), `${JSON.stringify(walk(join(site, 'Orbit-Core')).map(f => f.slice(site.length + 1)))}\n`);
 
 for (const id of ids) {
   const demo = DEMOS[id];
@@ -137,7 +140,6 @@ for (const id of ids) {
   writeFileSync(index, html.replace(/<head>/i, `<head><script src="../_demo/${id}.js"></script><script src="../_demo/shim.js"></script><meta name="robots" content="noindex">${style}`));
   // Every file this demo is, listed: a later deploy whose recording fails takes
   // these from the live site, so the demo stays today's, never git's older copy (refresh.mjs).
-  const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]));
   const files = [...walk(to).map(f => f.slice(site.length + 1)), `_demo/${id}.js`, ...new Set(readFileSync(join(site, '_demo', `${id}.js`), 'utf8').match(/_x\/[\w.]+/g) || [])];
   writeFileSync(join(site, '_demo', `${id}.files.json`), `${JSON.stringify(files)}\n`);
   console.log(`${id}: ${answers.length} answers, ${Object.keys(items).length} proxy reads, ${Object.keys(pics).length} pictures`);

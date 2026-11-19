@@ -20,10 +20,7 @@ const ids = args.length ? args : Object.keys(DEMOS);
 const here = new URL('./', import.meta.url).pathname;
 const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: 'numeric', hourCycle: 'h23' }).format(new Date()));
 
-if (hour < 8 || hour >= 22) {
-  console.log('outside 08:00–22:00 in Taiwan: the committed demos stay');
-  process.exit(0);
-}
+const night = hour < 8 || hour >= 22;
 // Each app's .kit, as its own npm test makes it (record.mjs's helpers import it).
 for (const id of ids) {
   const link = join(repos, DEMOS[id].repo, '.kit');
@@ -32,7 +29,7 @@ for (const id of ids) {
 // A demo whose recording failed keeps the copy the site serves now (its files
 // listed by the deploy that built it, build.mjs), not git's, which no deploy updates.
 const LIVE = 'https://jaypengx.com/showcase/demo/';
-async function keepLive(id) {
+async function keepLive(id, dir = DEMOS[id]?.repo) {
   try {
     const list = await fetch(`${LIVE}_demo/${id}.files.json`, { signal: AbortSignal.timeout(20_000) });
     if (!list.ok) return false;
@@ -45,7 +42,7 @@ async function keepLive(id) {
       })
     );
     const site = new URL('../../public/demo/', import.meta.url).pathname;
-    rmSync(join(site, DEMOS[id].repo), { recursive: true, force: true });
+    rmSync(join(site, dir), { recursive: true, force: true });
     for (const [f, body] of got) (mkdirSync(dirname(join(site, f)), { recursive: true }), writeFileSync(join(site, f), body));
     writeFileSync(join(site, '_demo', `${id}.files.json`), `${JSON.stringify(files)}\n`);
     return true;
@@ -55,6 +52,12 @@ async function keepLive(id) {
   }
 }
 
+// At night nothing is recorded: every demo stays as the site serves it (git's copy only if that can't be read).
+if (night) {
+  console.log(`the demos' kit: ${(await keepLive('kit', 'Orbit-Core')) ? 'the live one stays' : 'the committed one stays'}`);
+  for (const id of ids) console.log(`${id}: outside 08:00–22:00 in Taiwan, ${(await keepLive(id)) ? 'the live copy stays' : 'the committed copy stays'}`);
+  process.exit(0);
+}
 const fresh = [];
 for (const id of ids) {
   // (twice at most: an outside source can be slow once)
