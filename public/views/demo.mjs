@@ -28,6 +28,8 @@ const DEV_ICONS = {
   computer: svg('<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8.5 20h7M12 16.5V20"/>')
 };
 let open = null;
+const LOST_MS = 6000; // a step's target this long not on screen: the bubble and 下一步 on a phone
+const QUIET_MS = 1500; // the reader's hands this long still: a target they scrolled away or under a bar is brought back
 
 export const hasDemo = id => Boolean(DEMOS[id]);
 
@@ -218,8 +220,9 @@ export function openDemo(app, title) {
       // (the app never hears it) and the step's ring and bubble nudge instead;
       // scrolling is the browser's own, so it stays free.
       const win = frame.contentWindow;
+      // (Between a step's tap and the next step too, all but the rest of that tap: a tap elsewhere there broke the tour, 11-19.)
       const gate = e => {
-        if (at < 0 || at >= tour.length || moving) return;
+        if (at < 0 || at >= tour.length) return;
         const s = tour[at];
         if (s?.tap && e.target.closest?.(s.tap)) return;
         if (e.type === 'touchstart' || e.type === 'pointerdown') felt?.();
@@ -227,7 +230,9 @@ export function openDemo(app, title) {
         if (e.type === 'click' || e.type === 'mousedown') e.preventDefault();
         if (e.type === 'click') nudge();
       };
-      const GATED = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click', 'dblclick', 'contextmenu'];
+      // (The moves of a drag too: an app's drag code that heard them without their start could take
+      // the next real tap for a drag's end and drop its click.)
+      const GATED = ['pointerdown', 'pointermove', 'pointerup', 'mousedown', 'mousemove', 'mouseup', 'touchstart', 'touchmove', 'touchend', 'click', 'dblclick', 'contextmenu'];
       for (const ev of GATED) win.addEventListener(ev, gate, true);
       doc.addEventListener('click', onTap, true);
       doc.addEventListener('focusin', onFocus, true);
@@ -298,7 +303,8 @@ export function openDemo(app, title) {
 
   function hidden(el, r) {
     const top = frame.contentDocument.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-    return Boolean(top) && top !== el && !el.contains(top) && !top.contains(el);
+    // (nothing there: its middle is just past the screen's edge, half of it showing: 11-19, Weather's rain card)
+    return !top || (top !== el && !el.contains(top) && !top.contains(el));
   }
   // The ring around the step's target, inside the app, kept on it while it moves.
   function track() {
@@ -321,21 +327,45 @@ export function openDemo(app, title) {
     // Light on the app: the target is looked up again only once it's gone,
     // the ring moved only when the target has, and a target off screen (or
     // under something) is brought into view, looked at again every 0.7 s
-    // (the app may still be laying out), until the reader touches or scrolls
-    // the app themselves: never pulled back while they scroll.
+    // (the app may still be laying out), but not while the reader touches or
+    // scrolls the app: never pulled back while they scroll, and brought back
+    // once they've stopped a moment (11-19: scrolled with the ring on a
+    // station chip under Beats' floating tab bar, the tap hit the tab).
     let el = null;
     let last = '';
     let shown = false;
     let brought = 0;
-    let touched = false;
+    let touched = 0; // (the reader's hands last: a touch, or a scroll still moving from one)
+    let hand = 0; // (their finger, wheel or key last)
+    // (When the target went: its sheet closed some other way moves the tour on; anything
+    // else, after a while, shows the bubble with 下一步 on a phone, so it's never stuck.)
+    let missing = performance.now();
+    let seen = false; // (the target was on screen once this step)
     unhands?.();
-    const hands = () => (touched = true);
+    const hands = () => (hand = touched = performance.now());
     felt = hands;
+    // (a scroll still moving after the finger is gone counts as theirs: not one the tour began,
+    // nor one the app makes by itself, a playing song's row)
+    // (only from a finger in the last 3 s: else an app nudging its own scroll kept the tour waiting for good)
+    const rolls = () => performance.now() - hand < 3000 && performance.now() - brought > 1000 && (touched = performance.now());
     const opts = { capture: true, passive: true };
     for (const ev of ['pointerdown', 'wheel', 'touchstart', 'keydown']) doc.addEventListener(ev, hands, opts);
-    unhands = () => ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => doc.removeEventListener(ev, hands, opts));
+    doc.addEventListener('scroll', rolls, opts);
+    unhands = () => (['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => doc.removeEventListener(ev, hands, opts)), doc.removeEventListener('scroll', rolls, opts));
     const loop = () => {
       if (!el?.isConnected || !el.getClientRects().length) el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length && real(x)) || null;
+      if (el) missing = 0;
+      else if (!moving) {
+        const now = performance.now();
+        missing ||= now;
+        const closed = seen && /^(dialog\[open\] )?\.q-close$/.test(s.tap) && !doc.querySelector('dialog[open]');
+        if (closed && now - missing > 1200) return step(at + 1);
+        if (full && now - missing > LOST_MS && coach.hidden) {
+          coach.hidden = false;
+          next.hidden = false;
+          place(null);
+        }
+      }
       if (el) {
         // A sheet sits in the top layer, over anything in the page: the ring goes in with it.
         const home = el.closest('dialog[open], [popover]') || doc.body;
@@ -352,15 +382,17 @@ export function openDemo(app, title) {
           const x = parseFloat(ring.style.left) || 0;
           const y = parseFloat(ring.style.top) || 0;
           Object.assign(ring.style, { left: `${x + r.left - 4 - o.left}px`, top: `${y + r.top - 4 - o.top}px`, width: `${r.width + 8}px`, height: `${r.height + 8}px` });
+          seen = true;
           if (full) {
             coach.hidden = false;
+            next.hidden = true;
             place(r);
           }
         }
         // (Off screen, off the side of a row that scrolls, or under something of the app's own such as
         // its floating tab bar: a tap on the ring would miss it, so the target is brought to the middle.)
         const now = performance.now();
-        if (!touched && now - brought > 700) {
+        if (now - touched > QUIET_MS && now - brought > 700) {
           const win = frame.contentWindow;
           const cx = r.left + r.width / 2;
           const cy = r.top + r.height / 2;
@@ -370,7 +402,7 @@ export function openDemo(app, title) {
       } else if (shown) {
         shown = false;
         ring.hidden = true;
-        if (full) coach.hidden = true;
+        if (full) (coach.hidden = true), (next.hidden = true);
       }
       watch = requestAnimationFrame(loop);
     };

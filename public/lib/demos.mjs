@@ -64,7 +64,7 @@ export const TOURS = {
     { tap: '#tab-times', wait: 3000, say: ['查時刻', 'Timetables'] },
     { tap: '[data-view="bus"]', wait: 7000, say: ['附近每一站的公車', 'Buses at every stop nearby'] },
     { tap: '.ot-bus-no', wait: 5000, say: ['點一路公車', 'Tap a bus'] },
-    { tap: '.q-close', say: ['每站幾分鐘到，都在這裡', 'Minutes to every stop'] }
+    { tap: '.q-close', say: ['每站還要幾分鐘到，都在這裡；看完關掉', 'Minutes to every stop, right here; close it when done'] }
   ],
   class: [
     { say: ['最上面是現在這節課，倒數到下課。', 'The class on now, counting down to the bell.'] },
@@ -83,15 +83,16 @@ export const TOURS = {
     { tap: '[data-action="place"]', say: ['手續費和稅已算好，送出', 'Fees and tax included: send'] },
     { tap: '.q-ask-actions .q-btn.primary', say: ['確認', 'Confirm'] },
     { tap: '.q-close', say: ['關掉這一檔', 'Close this stock'] },
-    { tap: '.q-tab[data-tab="history"]', say: ['剛才的委託在這裡，開盤就成交', 'Your order is here; it fills when the market opens'] }
+    { tap: '.q-tab[data-tab="history"]', say: ['紀錄：每一筆交易和委託', 'History: every trade and order'] },
+    { tap: '[data-action="hview"][data-view="orders"]', say: ['剛才送出的委託在這裡', 'The order you just placed is here'] }
   ],
   sports: [
     { say: ['第一次打開，先選你看的運動。', 'First time in: pick the sports you watch.'] },
     { tap: '.sport-grid > :nth-child(1)', say: ['先選最常看的運動', 'First the sport you watch most'] },
     { tap: '.sport-grid > :nth-child(2)', say: ['再選一個：數字就是先後', 'Then another: the number is the order'] },
     { tap: '.sport-grid > :nth-child(3)', say: ['想看的都選上', 'Pick every one you watch'] },
-    { tap: '.sp-done', wait: 6000, say: ['今天在台灣看得到的比賽，放在一起', 'Today’s games you can watch in Taiwan, together'] },
-    { tap: 'button.event-row:not(.wide)', wait: 5000, say: ['點一場推薦的比賽', 'Tap a top pick'] },
+    { tap: '.sp-done', wait: 6000, say: ['選好了：今天在台灣看得到的比賽，放在一起', 'Done: today’s games you can watch in Taiwan, together'] },
+    { tap: 'button.event-row:not(.wide)', wait: 5000, say: ['點一場比賽', 'Tap a game'] },
     { tap: '.match-tabs .q-seg button:last-child', wait: 3000, say: ['兩隊在聯賽排第幾', 'Where both sides stand in the league'] },
     { tap: '.q-close', say: ['看完關掉', 'Close it'] },
     { tap: '#tab-matches', wait: 5000, say: ['每個聯賽的賽程和排名', 'Every league’s games and table'] },
