@@ -5,7 +5,7 @@
 // a bubble that points at what to tap, in the app's own colour, gone the
 // moment it's tapped. While the tour runs, only the step's target answers a
 // tap (Jay 2026-11-14: a tap on another tab broke the tour); scrolling stays
-// free, and 略過 or the tour's end frees the whole app.
+// free, and 結束 or the tour's end frees the whole app.
 // On a computer the app sits in a device's frame with the tour beside it: a
 // phone, a tablet or a computer, picked in the head (Jay 2026-11-14), the
 // app laid out for that screen as it is on one.
@@ -46,6 +46,8 @@ export function openDemo(app, title) {
   const full = !framed();
   let frame = null;
   let at = -1;
+  let ahead = true; // (the last step change went forward: only then is a step already done passed over)
+  let passed = 0; // (steps passed over, out of the count)
   let ring = null;
   let watch = 0;
   let unhook = null;
@@ -65,7 +67,8 @@ export function openDemo(app, title) {
   // A phone: the coach mark. A computer: the card beside the phone.
   const say = h('p', { class: full ? 'sc-coach-say' : 'sc-player-say', 'aria-live': 'polite' });
   const n = h('span', { class: full ? 'sc-coach-n' : 'sc-player-n' });
-  const skip = h('button', { class: 'sc-coach-skip', type: 'button', onclick: () => finish() }, [t(['略過', 'Skip'])]);
+  // (結束, not 略過: it ends the tour, not the step, Jay 11-20)
+  const skip = h('button', { class: 'sc-coach-skip', type: 'button', onclick: () => finish() }, [t(['結束', 'End'])]);
   const next = h('button', { class: full ? 'sc-coach-next' : 'sc-btn sc-btn-main', type: 'button' }); // (its onclick is set by each step)
   const back = h('button', { class: 'sc-btn sc-icon sc-player-back', type: 'button', 'aria-label': t(['上一步', 'Back']), onclick: () => step(at - 1) }, [ico('chevron')]);
   // (each holds the same pieces, so only the one in use is made)
@@ -354,6 +357,8 @@ export function openDemo(app, title) {
     unhands = () => (['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => doc.removeEventListener(ev, hands, opts)), doc.removeEventListener('scroll', rolls, opts));
     const loop = () => {
       if (!el?.isConnected || !el.getClientRects().length) el = [...doc.querySelectorAll(s.tap)].find(x => x.getClientRects().length && real(x)) || null;
+      // (Already as the step asks, 台股 already chosen: never asked for, on to the next, Jay 11-20.)
+      if (el && !seen && !moving && ahead && el.closest('[aria-selected="true"], [aria-pressed="true"], [aria-current]:not([aria-current="false"])')) return (passed++, step(at + 1));
       if (el) missing = 0;
       else if (!moving) {
         const now = performance.now();
@@ -436,6 +441,8 @@ export function openDemo(app, title) {
 
   function step(i) {
     moving = false;
+    if (i <= 0) passed = 0;
+    ahead = i > at;
     at = Math.max(-1, Math.min(i, tour.length));
     back.disabled = at <= 0;
     coach.classList.remove('done', 'offer');
@@ -456,7 +463,9 @@ export function openDemo(app, title) {
       return;
     }
     const s = tour[at];
-    n.textContent = full ? `${at + 1}/${tour.length}` : t([`第 ${at + 1} 步，共 ${tour.length} 步`, `Step ${at + 1} of ${tour.length}`]);
+    const k = at + 1 - passed;
+    const of = tour.length - passed;
+    n.textContent = full ? `${k}/${of}` : t([`第 ${k} 步，共 ${of} 步`, `Step ${k} of ${of}`]);
     say.textContent = t(s.say);
     skip.hidden = false;
     if (full) {

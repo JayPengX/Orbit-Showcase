@@ -32,3 +32,10 @@ test('a tour is never stuck and never broken by a stray tap: held back between a
   // (a drag's moves held back too: heard alone, an app's drag code dropped the next tap's click)
   for (const ev of ['pointermove', 'touchmove', 'mousemove']) assert.match(demo, new RegExp(`const GATED = \\[[^\\]]*'${ev}'`));
 });
+
+// Jay 11-20: "you want me to click 台股 but it's already there", and 略過 read as skipping a step ended it all.
+test('a tour step whose target is already chosen is passed over; the end button says 結束', () => {
+  assert.match(demo, /if \(el && !seen && !moving && ahead && el\.closest\('\[aria-selected="true"\], \[aria-pressed="true"\], \[aria-current\]:not\(\[aria-current="false"\]\)'\)\) return \(passed\+\+, step\(at \+ 1\)\);/);
+  assert.match(demo, /\[t\(\['結束', 'End'\]\)\]/);
+  assert.doesNotMatch(demo, /'略過'/);
+});
