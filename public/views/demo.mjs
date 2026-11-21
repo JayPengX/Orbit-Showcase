@@ -224,10 +224,26 @@ export function openDemo(app, title) {
       // scrolling is the browser's own, so it stays free.
       const win = frame.contentWindow;
       // (Between a step's tap and the next step too, all but the rest of that tap: a tap elsewhere there broke the tour, 11-19.)
+      // (A finger lifted on the target with no click after it, the target drawn again under the
+      // finger: the tap is made again, once, so a tap never needs two; the app's guide alike, 11-20.)
+      let pressed = null;
       const gate = e => {
         if (at < 0 || at >= tour.length) return;
         const s = tour[at];
-        if (s?.tap && e.target.closest?.(s.tap)) return;
+        if (s?.tap && e.target.closest?.(s.tap)) {
+          if (e.type === 'pointerdown') pressed = { x: e.clientX, y: e.clientY, clicked: false };
+          else if (e.type === 'click' && pressed) pressed.clicked = true;
+          else if (e.type === 'pointerup' && pressed && !moving && Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) < 12) {
+            const p = pressed;
+            const was = at;
+            setTimeout(() => {
+              if (p.clicked || at !== was || moving || frame?.contentDocument !== doc) return;
+              const el = doc.elementFromPoint(p.x, p.y)?.closest?.(s.tap);
+              if (el && real(el)) el.click();
+            }, 450);
+          }
+          return;
+        }
         if (e.type === 'touchstart' || e.type === 'pointerdown') felt?.();
         e.stopPropagation();
         if (e.type === 'click' || e.type === 'mousedown') e.preventDefault();

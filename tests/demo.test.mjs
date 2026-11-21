@@ -25,7 +25,7 @@ test('a loading placeholder (.q-skel) is never a tour step\'s target: no ring on
 
 // Jay 2026-11-19: no tour stuck, none needing two taps, no way out by mistake.
 test('a tour is never stuck and never broken by a stray tap: held back between a tap and the next step too; its sheet closed another way moves it on; a target long gone shows 下一步', () => {
-  assert.match(demo, /if \(at < 0 \|\| at >= tour\.length\) return;\n\s+const s = tour\[at\];\n\s+if \(s\?\.tap && e\.target\.closest\?\.\(s\.tap\)\) return;/);
+  assert.match(demo, /if \(at < 0 \|\| at >= tour\.length\) return;\n\s+const s = tour\[at\];\n\s+if \(s\?\.tap && e\.target\.closest\?\.\(s\.tap\)\) \{/);
   assert.match(demo, /const closed = seen && \/\^\(dialog\\\[open\\\] \)\?\\\.q-close\$\/\.test\(s\.tap\) && !doc\.querySelector\('dialog\[open\]'\);/);
   assert.match(demo, /if \(closed && now - missing > 1200\) return step\(at \+ 1\);/);
   assert.match(demo, /if \(full && now - missing > LOST_MS && coach\.hidden\) \{\n\s+coach\.hidden = false;\n\s+next\.hidden = false;/);
@@ -38,4 +38,11 @@ test('a tour step whose target is already chosen is passed over; the end button 
   assert.match(demo, /if \(el && !seen && !moving && ahead && el\.closest\('\[aria-selected="true"\], \[aria-pressed="true"\], \[aria-current\]:not\(\[aria-current="false"\]\)'\)\) return \(passed\+\+, step\(at \+ 1\)\);/);
   assert.match(demo, /\[t\(\['結束', 'End'\]\)\]/);
   assert.doesNotMatch(demo, /'略過'/);
+});
+
+// The app's guide alike (kit coach.mjs, 11-20): a tap whose click never came is made again, once.
+test('a tour tap whose click never came (its target drawn again under the finger) is made again, once', () => {
+  assert.match(demo, /if \(e\.type === 'pointerdown'\) pressed = \{ x: e\.clientX, y: e\.clientY, clicked: false \};/);
+  assert.match(demo, /if \(p\.clicked \|\| at !== was \|\| moving \|\| frame\?\.contentDocument !== doc\) return;/);
+  assert.match(demo, /if \(el && real\(el\)\) el\.click\(\);/);
 });
