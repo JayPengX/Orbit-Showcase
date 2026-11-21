@@ -5,7 +5,9 @@
 // site's list can't be read), else `go=false`; with GITHUB_OUTPUT, writes it there.
 //   node scripts/demo/stale.mjs
 import { execFileSync } from 'node:child_process';
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { DEMOS } from './apps.mjs';
 
 const LIVE = 'https://jaypengx.com/showcase/demo/_demo/heads.json';
@@ -34,8 +36,17 @@ export async function stale({ live = null, mainOf = null, kitNow = null } = {}) 
 async function kitHead() {
   const headers = { accept: 'application/vnd.github+json', ...(process.env.GH_TOKEN ? { authorization: `Bearer ${process.env.GH_TOKEN}` } : {}) };
   const r = await fetch(`https://api.github.com/repos/${OWNER}/Orbit-Core/commits?path=kit&sha=main&per_page=1`, { headers, signal: AbortSignal.timeout(20_000) }).catch(() => null);
-  if (!r?.ok) return '';
-  return (await r.json())[0]?.sha || '';
+  if (r?.ok) return (await r.json())[0]?.sha || '';
+  // (The API turned it away, a shared address past its limit: the history itself, without its files.)
+  const dir = mkdtempSync(join(tmpdir(), 'orbit-core-'));
+  try {
+    execFileSync('git', ['clone', '--quiet', '--bare', '--filter=blob:none', '--single-branch', '--branch', 'main', `https://github.com/${OWNER}/Orbit-Core.git`, dir], { timeout: 120_000 });
+    return execFileSync('git', ['-C', dir, 'log', '-1', '--format=%H', 'main', '--', 'kit'], { encoding: 'utf8', timeout: 60_000 }).trim();
+  } catch {
+    return '';
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
