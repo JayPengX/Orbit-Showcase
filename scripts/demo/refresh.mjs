@@ -6,6 +6,10 @@
 // before 08:00 Taiwan's day isn't yet the world's (UTC's), so a recording
 // would ask for other days when played on a phone set to another zone. Nothing to catch up by hand:
 // the showcase's demos are the apps as they are on the day it deploys.
+// What each demo was recorded from (its app's main, and the kit) goes in
+// _demo/heads.json beside them: the deploy's hourly look (stale.mjs) records
+// again only once an app or the kit has moved on (Jay 11-21: "make sure demo
+// catch up the newest version").
 //   node scripts/demo/refresh.mjs --repos dir [id…]
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
@@ -52,19 +56,50 @@ async function keepLive(id, dir = DEMOS[id]?.repo) {
   }
 }
 
+// What the live demos were recorded from, and what this run's are.
+const site = new URL('../../public/demo/', import.meta.url).pathname;
+async function liveHeads() {
+  try {
+    const r = await fetch(`${LIVE}_demo/heads.json`, { signal: AbortSignal.timeout(20_000) });
+    return r.ok ? await r.json() : {};
+  } catch {
+    return {};
+  }
+}
+const head = (repo, path) => {
+  try {
+    return execFileSync('git', ['-C', join(repos, repo), 'log', '-1', '--format=%H', ...(path ? ['--', path] : [])], { encoding: 'utf8' }).trim();
+  } catch {
+    return '';
+  }
+};
+const writeHeads = h => (mkdirSync(join(site, '_demo'), { recursive: true }), writeFileSync(join(site, '_demo', 'heads.json'), `${JSON.stringify(h, null, 1)}\n`));
+
 // At night nothing is recorded: every demo stays as the site serves it (git's copy only if that can't be read).
 if (night) {
   console.log(`the demos' kit: ${(await keepLive('kit', 'Orbit-Core')) ? 'the live one stays' : 'the committed one stays'}`);
-  for (const id of ids) console.log(`${id}: outside 08:00–22:00 in Taiwan, ${(await keepLive(id)) ? 'the live copy stays' : 'the committed copy stays'}`);
+  const was = await liveHeads();
+  for (const id of ids) {
+    const kept = await keepLive(id);
+    console.log(`${id}: outside 08:00–22:00 in Taiwan, ${kept ? 'the live copy stays' : 'the committed copy stays'}`);
+    if (!kept) delete was[id];
+  }
+  writeHeads(was);
   process.exit(0);
 }
 const fresh = [];
+const heads = await liveHeads();
 for (const id of ids) {
   // (twice at most: an outside source can be slow once)
   let ok = false;
   for (let i = 0; i < 2 && !ok; i++) ok = spawnSync(process.execPath, [`${here}record.mjs`, id, '--repos', repos, '--strict'], { stdio: 'inherit', timeout: 300_000 }).status === 0;
   if (ok) fresh.push(id);
-  else console.log(`::warning::${id}: its recording failed; ${(await keepLive(id)) ? 'the live copy stays' : 'the committed copy stays'}`);
+  else {
+    const kept = await keepLive(id);
+    console.log(`::warning::${id}: its recording failed; ${kept ? 'the live copy stays' : 'the committed copy stays'}`);
+    // (git's copy is from no known day: tried again within the hour)
+    if (!kept) delete heads[id];
+  }
 }
 if (fresh.length) {
   const built = spawnSync(process.execPath, [`${here}build.mjs`, ...fresh, '--repos', repos], { stdio: 'inherit', timeout: 900_000 });
@@ -76,4 +111,7 @@ if (fresh.length) {
     throw new Error('build.mjs failed: the committed demos stay');
   }
 }
+for (const id of fresh) heads[id] = head(DEMOS[id].repo);
+if (fresh.length) heads.kit = head('Orbit-Core', 'kit');
+writeHeads(heads);
 console.log(`fresh: ${fresh.join(', ') || 'none'}`);
