@@ -20,11 +20,12 @@ test('nothing newer: no recording; an app or the kit newer, or the list unreadab
   assert.equal((await stale({ live: heads, mainOf: () => { throw new Error('down'); }, kitNow: 'kit-sha' })).go, true, 'an app that can’t be read: recorded, never left behind');
 });
 
-test('the deploy looks every hour in Taiwan’s day, and the demos say what they were recorded from', () => {
+test('the deploy looks when started with look=true (the proxy Worker, hourly in Taiwan’s day), and the demos say what they were recorded from', () => {
   const wf = readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8');
-  assert.match(wf, /- cron: '23 0-13 \* \* \*'/);
+  assert.match(wf, /workflow_dispatch:\n\s+inputs:\n\s+look:/);
+  assert.doesNotMatch(wf, /'23 0-13/, 'GitHub’s own hourly timer ran 2 or 3 of 14 a day: not relied on');
   assert.match(wf, /run: node scripts\/demo\/stale\.mjs/);
-  assert.match(wf, /go: \$\{\{ steps\.wait\.outputs\.go == 'true' && \(github\.event\.schedule != '23 0-13 \* \* \*' \|\| steps\.look\.outputs\.go == 'true'\) \}\}/);
+  assert.match(wf, /go: \$\{\{ steps\.wait\.outputs\.go == 'true' && \(inputs\.look != 'true' \|\| steps\.look\.outputs\.go == 'true'\) \}\}/);
   const refresh = readFileSync(new URL('../scripts/demo/refresh.mjs', import.meta.url), 'utf8');
   assert.match(refresh, /for \(const id of fresh\) heads\[id\] = head\(DEMOS\[id\]\.repo\);/);
   assert.match(refresh, /if \(fresh\.length\) heads\.kit = head\('Orbit-Core', 'kit'\);/);

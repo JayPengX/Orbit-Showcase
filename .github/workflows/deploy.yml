@@ -12,11 +12,17 @@ on:
   schedule:
     # 10:17 in Taipei, every day (daylight and open markets for the demos).
     - cron: '17 2 * * *'
-    # Every hour from 08:23 to 21:23 in Taipei, a look: the demos recorded again
-    # only when an app's main or the kit has moved on since (scripts/demo/stale.mjs;
-    # Jay 11-21: "make sure demo catch up the newest version"), else nothing runs.
-    - cron: '23 0-13 * * *'
+  # look=true: started by the proxy Worker every hour from 08:22 to 21:22 in Taipei
+  # (Orbit-Core ops.js startShowcaseLook; GitHub's own hourly timer ran 2 or 3 of 14 a
+  # day, 11-21 to 11-23): the demos recorded again only when an app's main or the kit
+  # has moved on since (scripts/demo/stale.mjs; Jay 11-21: "make sure demo catch up the
+  # newest version"), else nothing runs. Without it, by hand: the whole deploy.
   workflow_dispatch:
+    inputs:
+      look:
+        description: 'Only if an app or the kit is newer than the live demos'
+        required: false
+        default: 'false'
 
 permissions:
   contents: read
@@ -30,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
     outputs:
-      go: ${{ steps.wait.outputs.go == 'true' && (github.event.schedule != '23 0-13 * * *' || steps.look.outputs.go == 'true') }}
+      go: ${{ steps.wait.outputs.go == 'true' && (inputs.look != 'true' || steps.look.outputs.go == 'true') }}
     steps:
       - name: Wait for the earlier deploys; step aside for a newer one
         id: wait
@@ -49,9 +55,9 @@ jobs:
           done
           echo go=true >> "$GITHUB_OUTPUT"
       # The hourly look: on only when an app or the kit is newer than the live demos.
-      - if: github.event.schedule == '23 0-13 * * *' && steps.wait.outputs.go == 'true'
+      - if: inputs.look == 'true' && steps.wait.outputs.go == 'true'
         uses: actions/checkout@v4
-      - if: github.event.schedule == '23 0-13 * * *' && steps.wait.outputs.go == 'true'
+      - if: inputs.look == 'true' && steps.wait.outputs.go == 'true'
         id: look
         env:
           GH_TOKEN: ${{ github.token }}

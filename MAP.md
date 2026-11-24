@@ -85,7 +85,8 @@ the tree as it stands.
   files preloaded). A demo whose walk fails (a step not there within 20 s, or a tour screen saying its data didn't come) keeps the copy the site serves now (each build lists a demo's files in `_demo/<id>.files.json`), else the one committed in `public/demo/`; every
   demo and their kit stay as live when the deploy runs outside 08:00–22:00 in Taiwan (before 08:00, Taiwan's date isn't
   UTC's, and a recording played in another time zone asks for other days). A demo's kit is addressed by its build, not
-  file by file, so a copy kept from an older day still runs beside a rebuilt kit. Nobody catches the demos up by hand: every hour from 08:23 to 21:23 Taipei the deploy looks
+  file by file, so a copy kept from an older day still runs beside a rebuilt kit. Nobody catches the demos up by hand: every hour from 08:22 to 21:22 Taipei the proxy Worker starts the deploy
+  with look=true (Orbit-Core `ops.js` `startShowcaseLook`; GitHub's own hourly timer ran 2 or 3 of 14 a day) and it looks
   (`scripts/demo/stale.mjs`) and records again once an app's main or the kit is newer than what the live demos were recorded
   from (`_demo/heads.json`, written by `refresh.mjs`; 11-21); a tour step that no
   longer matches the app (`lib/demos.mjs` `TOURS`) shows as that demo's warning in the deploy.
