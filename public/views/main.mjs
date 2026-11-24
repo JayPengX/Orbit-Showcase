@@ -4,8 +4,8 @@
 //   #home    the claim: ten apps a student made with an AI, every decision
 //            proven; its numbers from git; the ten apps' screens in turn
 //   #apps    the ten apps as equals: each one's question and its special part; 試玩 runs the real app
-//   #decide  how Jay decides: four decisions, each question → what he tried →
-//            the evidence → the call; the data lock done for real in the page
+//   #decide  Jay at the helm: the team he runs, eight areas he decides (his words →
+//            what they became; the data lock done for real), the tools he made beyond Orbit
 //   #proof   it got better: before → after, measured; the trip-planning wait felt
 //   #made    how it grew: from the first update to today (from git), the
 //            mistakes that became rules, who does what; then the system and 問 Orbit
@@ -192,79 +192,164 @@ function apps() {
   ]);
 }
 
-// ---- 2. How Jay decides: four decisions, each in the same four steps ----
-// The question, what he tried, what it showed, the call; each opens the tree
-// card it comes from. (The two with a picture last: on a wide page each takes a
-// whole row, its picture beside its steps.) Every word is that card's (lib/tree*.mjs, tree-show.mjs).
-const DECISIONS = [
+// ---- 2. Jay at the helm: what he decides, across the whole project ----
+// Jay 11-24: the old four narrow decisions "make me feel useless". Now: the team
+// he runs (one coordinator, a dozen AI threads), then eight areas he owns, each
+// his own words (docs/RULEBOOK.md; in Chinese, translated) and what they became
+// (a tree card's facts, lib/tree*.mjs, tree-show.mjs); then the tools he made
+// outside Orbit, every fact from that tool's own repo.
+const CALLS = [
   {
-    card: 'law-ai',
-    icon: 'target',
-    day: '2026-11-11',
-    title: ['用盲測選 AI', 'A blind test picked the AI'],
-    q: ['哪個 AI 最會回答法律問題？', 'Which AI answers legal questions best?'],
-    tried: ['五個 AI 回答同樣十個真實的法律問題，名字全部遮起來。', 'Five AIs answered the same ten real legal questions, every name hidden.'],
-    saw: ['Jay 一題一題比，不知道哪個答案是哪個 AI 寫的。', 'Jay compared them one by one, not knowing which AI wrote which.'],
-    call: ['選出最好的一個來回答「問法律」，每個引用都再由程式查過。', 'The best one answers Ask the law, and code checks every citation it makes.']
-  },
-  {
+    area: ['產品', 'Product'],
+    icon: 'grid',
     card: 'team-jay',
+    title: ['每個 App 要什麼，他定', 'He defines every product'],
+    said: ['「一個 App 的連結也要在 Orbit 裡打開那個 App，不要再有單獨的 App。」', '“The link of an individual app should still open that app in Orbit… make standalone app no more.”'],
+    became: ['十個 App 收進一個 Orbit 圖示：切換不重新載入，路上的公車行程一直都在。', 'Ten apps in one Orbit icon: switching never reloads, and a bus trip under way stays with you.'],
+    art: () => rules(SHOW['team-jay'].rules)
+  },
+  {
+    area: ['品質', 'Quality'],
     icon: 'check',
-    day: null,
-    title: ['停下來，全部測一遍', 'Stop, and test everything'],
-    q: ['截止前，該多加功能，還是求穩？', 'Before the deadline: more features, or steadier ones?'],
-    tried: ['Jay 讓 4,018 個項目一項一項測過。', 'Jay had 4,018 items tested, one by one.'],
-    saw: ['找出 419 個問題，全部修好。', '419 problems found, every one fixed.'],
-    call: ['停止加新功能，把還不夠穩的整個拿掉。', 'No new features; whole ones not yet steady were taken out.']
+    card: 'team-jay',
+    title: ['穩定，靠刪減不靠加', 'Steady by cutting, not adding'],
+    said: ['截止前不再加功能，先把現有的做穩。', 'Before the deadline, no more features: make what’s there steady.'],
+    became: ['4,018 個項目一項一項測過，找出 419 個問題全部修好；還不夠穩的功能整個拿掉。', '4,018 items tested one by one, 419 problems found and all fixed; features not yet steady were taken out whole.']
   },
   {
-    card: 'transit-calls',
-    icon: 'bus',
-    day: '2026-11-03',
-    title: ['親自搭公車驗證', 'Rode the bus to check'],
-    q: ['路線該照時刻表，還是照即時預估？', 'Plan by the timetable, or by the live estimate?'],
-    tried: ['Jay 親自搭公車，把兩個時間跟真的公車比。', 'Jay rode the bus and held both times up against the real bus.'],
-    saw: ['即時預估很準，紙本時刻表卻差很多。', 'The live estimate was right; the printed timetable was far off.'],
-    call: ['照真實的通勤判斷，不照資料說的。', 'Real commutes decide, not what the data claims.'],
-    art: () => rules(SHOW['transit-calls'].rules)
+    area: ['證據', 'Evidence'],
+    icon: 'target',
+    card: 'law-ai',
+    title: ['先證明，再決定', 'Proof first, then the call'],
+    said: ['不信直覺，也不信資料說的：自己去試。', 'Not a hunch, not what the data claims: he tries it himself.'],
+    became: ['五個 AI 遮住名字盲測十個法律問題，選出最好的；親自搭公車，發現即時預估準、紙本時刻表差很多，路線就照即時的排。', 'Five AIs, names hidden, blind-tested on ten legal questions; he rode the bus, found the live estimate right and the timetable far off, so trips follow the live one.']
   },
   {
-    card: 'pass-vault',
+    area: ['錢', 'Cost'],
+    icon: 'coin',
+    card: 'cheap',
+    title: ['用多少，花多少', 'Spend only what’s used'],
+    said: ['「只在我用的時候花，但要夠快。」', '“Only spend it as I use it but kept fast enough.”'],
+    became: ['雲端從每月約 NT$390 降到 NT$0，只付網域；AI 只在你按了才做，沒人看的不花錢。', 'The cloud went from ~NT$390 a month to NT$0, the domain aside; AI runs only when you tap, so nothing is spent on what nobody opens.']
+  },
+  {
+    area: ['誠實', 'Honesty'],
+    icon: 'shield',
+    card: 'ai',
+    title: ['寧可不給，也不給錯的', 'Nothing, rather than wrong'],
+    said: ['數字要對，不然就別出現。', 'A number is right, or it isn’t shown.'],
+    became: ['AI 算的每個數字程式再算一次，對不上就不給；記帳從不自己生出帳目；新聞的預測市場比對 5 筆錯 1 筆，就整個拿掉。', 'Code works out every number AI gives again and drops it if it doesn’t match; Money never invents an entry; News’ prediction markets matched about 1 in 5 wrong, so they went.']
+  },
+  {
+    area: ['體驗', 'Feel'],
+    icon: 'phone',
+    card: null,
+    title: ['好用到感覺不到', 'So easy you don’t notice'],
+    said: ['「說明太多了，一句話就夠，或者一句都不用。」', '“It explains it too much, when all it needs is one sentence or none.”'],
+    became: ['說明減到一句話或不寫；捲動的回彈交給手機原生的；AI 是一顆安靜的按鈕，「感覺不到 AI 功能存在」。', 'Explanations cut to one line, or none; scrolling bounces the phone’s own way; AI is a quiet button: “should not even feel AI features existed.”']
+  },
+  {
+    area: ['規則與公平', 'Rules and fairness'],
+    icon: 'flag',
+    card: 'pass-count',
+    title: ['不違法，也不鼓勵鑽漏洞', 'Within the law, no loopholes'],
+    said: ['「收集資料要讓使用者同意條款，在哪裡都不違法」；也不能「不小心鼓勵大家開分身帳號」。', '“Collect data … have users sign a policy … so we don’t break laws anywhere”, and never “accidentally encourage duplicating accounts.”'],
+    became: ['只收匿名的使用次數，第一次打開就說明，一鍵關掉；沒有廣告和第三方追蹤；一人一個帳號，沒有任何地方引導你開第二個。', 'Only anonymous usage counts, explained on the first open and off in one tap; no ads, no third-party trackers; one account a person, and nothing nudges toward a second.']
+  },
+  {
+    area: ['隱私', 'Privacy'],
     icon: 'lock',
-    day: '2026-11-15',
-    title: ['連我們的資料庫都讀不到', 'Not even our database can read it'],
-    q: ['誰應該讀得到你的帳本和課表？', 'Who should be able to read your books and timetable?'],
-    tried: ['存在雲端的資料，管理的人、看得到資料庫或備份的人都讀得到。', 'Data kept in the cloud can be read by whoever runs it, or anyone who sees the database or a backup.'],
-    saw: ['所以問題不在誰可信，而在雲端根本不該看得懂。', 'So the question isn’t who to trust: the cloud shouldn’t be able to read it at all.'],
-    call: ['先在你的手機上鎖好才上傳；連 Jay 的管理頁也只看到一個鎖。', 'Locked on your phone before it leaves; even Jay’s admin page sees only a lock.'],
+    card: 'pass-vault',
+    title: ['連我們的雲端都讀不到', 'Not even our cloud can read it'],
+    said: ['「不要讓我們的雲端讀得到內容」，而且「除非通行碼真的丟了，資料不能有任何方式不見」。', '“Prevent from our cloud be able to read the detail”, and “no way to lose data unless the pass is actually lost.”'],
+    became: ['帳本和課表先在你的手機上鎖好才上傳；連 Jay 的管理頁也只看到一個鎖。', 'Books and timetables are locked on your phone before they leave; even Jay’s admin page sees only a lock.'],
     art: () => lockDemo()
   }
 ];
 
-const STEPS = [
-  ['tried', ['試了什麼', 'Tried']],
-  ['saw', ['看到什麼', 'Found']],
-  ['call', ['決定', 'The call']]
+// The decisions with their own day, for the timeline in 成長 (#made).
+const DATED = [
+  ['2026-11-03', ['親自搭公車驗證路線', 'Rode the bus to check the trips'], 'bus'],
+  ['2026-11-11', ['用盲測選 AI', 'A blind test picked the AI'], 'target'],
+  ['2026-11-15', ['資料先在手機上鎖', 'Data locked on the phone'], 'lock']
 ];
 
-function decision(d) {
-  return h('article', { class: d.art ? 'sc-dec has-art' : 'sc-dec', 'data-card': d.card }, [
-    h('header', { class: 'sc-dec-head' }, [h('span', { class: 'sc-dec-i' }, [ico(d.icon)]), h('h3', { text: t(d.title) }), d.day ? h('small', { text: fmtDay(d.day) }) : null]),
-    h('p', { class: 'sc-dec-q', text: t(d.q) }),
-    h(
-      'ol',
-      { class: 'sc-dec-steps' },
-      STEPS.map(([k, label]) => h('li', { class: `sc-dec-${k}` }, [h('small', { text: t(label) }), h('span', { text: t(d[k]) })]))
-    ),
-    d.art ? d.art() : null,
-    howLink(d.card)
+function call(c) {
+  return h('article', { class: c.art ? 'sc-dec has-art' : 'sc-dec', 'data-card': c.card }, [
+    h('header', { class: 'sc-dec-head' }, [h('span', { class: 'sc-dec-i' }, [ico(c.icon)]), h('small', { class: 'sc-dec-area', text: t(c.area) })]),
+    h('h3', { class: 'sc-dec-q', text: t(c.title) }),
+    h('blockquote', { class: 'sc-dec-said' }, [h('p', { text: t(c.said) })]),
+    h('p', { class: 'sc-dec-became' }, [ico('check'), h('span', { text: t(c.became) })]),
+    c.art ? c.art() : null,
+    c.card ? howLink(c.card) : null
   ]);
 }
 
-function decide() {
+// The team he runs: his words go to one coordinator, who splits them across
+// AI work threads that ship once their tests pass (tree team, team-lanes).
+function crew(stats) {
+  const figs = [
+    stats?.rules ? [num(stats.rules), ['條他定下的規則，每條都有日期', 'rules he set, each dated']] : null,
+    ['13', ['個 AI 工作串同時在跑（10-23）', 'AI work threads at once (10-23)']],
+    stats?.tests ? [num(stats.tests), ['個自動檢查守住他的標準', 'automatic checks hold his bar']] : null
+  ].filter(Boolean);
+  return h('div', { class: 'sc-crew' }, [
+    h('ol', { class: 'sc-crew-flow' }, (SHOW.team?.flow || []).map(([icon, say]) => h('li', {}, [ico(icon), h('span', { text: t(say) })]))),
+    h('div', { class: 'sc-crew-figs' }, figs.map(([v, label]) => h('p', {}, [h('strong', { text: v }), h('span', { text: t(label) })])))
+  ]);
+}
+
+// Tools Jay made outside Orbit, the same way (each repo's own README).
+const TOOLS = [
+  {
+    name: ['116 申請入學選系工具', 'Apply-116: picking university departments'],
+    icon: 'school',
+    tag: ['網頁，手機電腦都能用', 'A web page, phone or computer'],
+    p: ['申請大學時，要自己拿級分去對照上千個校系去年的篩選門檻。', 'Applying to university means checking your scores against last year’s cut-offs at thousands of departments, by hand.'],
+    i: ['輸入學測級分，逐關對照 64 校 2,240 個校系的 115 年門檻，判斷落點、排六個志願、列出二階要準備什麼。115 年的篩選結果官方只有圖片，2,398 列每一格都判讀兩次互相核對。', 'Type in your exam scores: it checks each screening stage against last year’s cut-offs for 2,240 departments at 64 universities, rates your chances, orders your six picks and lists what each second stage needs. Last year’s results were published only as images, so each of the 2,398 rows was read twice and cross-checked.'],
+    r: ['一個 HTML 檔，不用網路；成績只存在你的瀏覽器。', 'One HTML file, works offline; your scores stay in your browser.'],
+    go: [
+      ['https://jaypengx.github.io/Apply-116/', ['打開工具', 'Open it']],
+      ['https://github.com/JayPengX/Apply-116', ['GitHub', 'GitHub']]
+    ]
+  },
+  {
+    name: ['Folder-Link：搬資料夾，留下連結', 'Folder-Link: move a folder, leave a link'],
+    icon: 'wrench',
+    tag: ['Windows 10/11 小工具', 'A Windows 10/11 tool'],
+    p: ['資料夾一搬走，指向舊位置的捷徑、設定和程式就全壞了。', 'Move a folder and every shortcut, setting and program pointing at the old place breaks.'],
+    i: ['把資料夾裡的東西搬到新位置，在原處留一個連結，什麼都不會發現它搬過；不用打指令，一個檔案、不用安裝，中英文介面。', 'It moves a folder’s contents somewhere new and leaves a link at the old path, so nothing notices; no commands to type, one file, no installer, in Chinese or English.'],
+    r: ['在真的 Windows 上自動測試；附檢查碼可以驗證下載。', 'Tested automatically on real Windows; checksums to verify the download.'],
+    go: [['https://github.com/JayPengX/Folder-Link', ['GitHub', 'GitHub']]]
+  },
+  {
+    name: ['Per-User-Display：每個人自己的解析度', 'Per-User-Display: a resolution per person'],
+    icon: 'user',
+    tag: ['Windows 小工具', 'A Windows tool'],
+    p: ['家裡共用一台電腦，Windows 只記一種解析度，最後改的人說了算。', 'One shared family PC: Windows keeps one resolution for everyone, so whoever changed it last wins.'],
+    i: ['每個帳號有自己的解析度和更新率：登入或切換回自己的帳號時自動換好，不用管理員權限。', 'Each account gets its own resolution and refresh rate, set the moment you sign in or switch back; no admin rights needed.'],
+    r: ['只用螢幕自己列出的模式，先讓顯示卡測過才切換；不支援就不動。', 'Only modes the screen itself lists, tested by the graphics driver first; if yours isn’t offered, it leaves the screen alone.'],
+    go: [['https://github.com/JayPengX/Per-User-Display', ['GitHub', 'GitHub']]]
+  }
+];
+
+const tool = x =>
+  h('article', { class: 'sc-tool' }, [
+    h('header', { class: 'sc-tool-head' }, [h('span', { class: 'sc-dec-i' }, [ico(x.icon)]), h('span', {}, [h('h4', { text: t(x.name) }), h('small', { text: t(x.tag) })])]),
+    h('p', { class: 'sc-tool-p', text: t(x.p) }),
+    h('p', { text: t(x.i) }),
+    h('p', { class: 'sc-tool-r' }, [ico('check'), h('span', { text: t(x.r) })]),
+    h('div', { class: 'sc-tool-go' }, x.go.map(([href, label]) => h('a', { class: 'sc-howgo', href, target: '_blank', rel: 'noopener' }, [t(label), ico('chevron')])))
+  ]);
+
+function decide(stats) {
   return h('section', { class: 'sc-sec', id: 'decide' }, [
-    head(['Jay 怎麼|做決定', 'How Jay decides'], ['Jay 不寫程式；他提問題、親自試、看證據，再做取捨。', 'Jay doesn’t write code: he asks the question, tries it himself, looks at the evidence, then makes the call.']),
-    h('div', { class: 'sc-decs' }, DECISIONS.map(decision))
+    head(['Jay 掌舵：|方向都是|他定的', 'Jay at the helm: every direction is his'], ['Claude 寫程式。要解決什麼問題、做到多好、什麼不做、錢怎麼花、資料怎麼保護，是 Jay 決定，最後也是他在自己的手機上檢查。', 'Claude writes the code. Which problems to solve, how good is good enough, what to leave out, how money is spent and data kept: Jay decides, then checks it on his own phone.']),
+    crew(stats),
+    h('div', { class: 'sc-decs' }, CALLS.map(call)),
+    h('h3', { class: 'sc-subhead', text: t(['Orbit 以外，他也做工具', 'Beyond Orbit, more tools he made']) }),
+    h('p', { class: 'sc-tools-sub', text: t(['同樣的做法：從身邊真的問題出發，帶著 AI 做到能用。', 'The same way: a real problem close to home, built with an AI until it works.']) }),
+    h('div', { class: 'sc-tools' }, TOOLS.map(tool))
   ]);
 }
 
@@ -406,7 +491,7 @@ function milestones(stats) {
         return [r.first, byBrand.get(r.app), r.first === stats.first ? [`Orbit 從 ${n} 開始`, `Orbit begins, with ${n}`] : [`${n} 的第一天`, `${its} first day`]];
       }),
     ...(stats.repos || []).filter(r => r.repo === 'Orbit-Core' && r.first).map(r => [r.first, null, ['十個 App 共用的零件庫', 'The parts all ten apps share'], 'grid']),
-    ...DECISIONS.filter(d => d.day).map(d => [d.day, null, d.title, d.icon, true])
+    ...DATED.map(([day, say, icon]) => [day, null, say, icon, true])
   ]
     .filter(Boolean)
     .sort((a, b) => a[0].localeCompare(b[0]));
@@ -516,5 +601,5 @@ function foot() {
 }
 
 export function renderMain(box, stats) {
-  box.replaceChildren(top(stats), apps(), decide(), proof(), made(stats), foot());
+  box.replaceChildren(top(stats), apps(), decide(stats), proof(), made(stats), foot());
 }

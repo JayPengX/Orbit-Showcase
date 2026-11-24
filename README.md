@@ -30,7 +30,7 @@ One page, read top to bottom in a few minutes:
 | --- | --- |
 | The top | Ten apps a student made directing an AI, every decision measured and proven better; its numbers counted from git; every app's screen in turn |
 | 十個 App Apps | Each app's question and its special part, with 試玩 (Try) to run the real app at once |
-| 決定 Decisions | How Jay decides: a blind test, stop and test everything, a bus ride, data locked; each question, what he tried, what it showed, the call (lock a line yourself, right in the page) |
+| 決定 Decisions | Jay at the helm: the AI team he runs, eight areas he decides (product, quality, evidence, cost, honesty, feel, fairness, privacy) in his own words and what they became (lock a line yourself, right in the page), and the tools he made beyond Orbit |
 | 成果 Results | Before and after, each number measured around its change; the trip-planning wait, felt |
 | 成長 How it grew | From the first update to today (from git), the mistakes that became rules, Jay's part and Claude's |
 

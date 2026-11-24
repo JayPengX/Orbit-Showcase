@@ -2687,9 +2687,166 @@ html.q-tabrail {
   }
 }
 
-/* ---- 2. How Jay decides ---- */
-/* Four decisions, each in the same steps: the question, what was tried,
-   what it showed, the call (the call in full weight). */
+/* ---- 2. Jay at the helm ---- */
+/* The team he runs, then eight areas he decides: each his words, then what
+   they became (in full weight); then the tools he made beyond Orbit. */
+.sc-crew {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 16px 18px;
+  border-radius: var(--q-r-card);
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+}
+.sc-crew-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-crew-flow li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 14px/1.3 var(--q-font);
+}
+.sc-crew-flow li:not(:last-child)::after {
+  content: '›';
+  margin: 0 4px 0 2px;
+  color: var(--q-label-2);
+  font-weight: 400;
+}
+.sc-crew-flow .sc-ico {
+  color: var(--sc-ac);
+  font-size: 15px;
+}
+.sc-crew-figs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.sc-crew-figs p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.sc-crew-figs strong {
+  font: 700 24px/1.1 var(--q-font);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.sc-crew-figs span {
+  color: var(--q-label-2);
+  font: 500 13px/1.35 var(--q-font);
+}
+.sc-dec-area {
+  color: var(--sc-ac);
+  font: 700 13px/1 var(--q-font);
+  letter-spacing: 0.02em;
+}
+.sc-dec-said {
+  margin: 0;
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--sc-ac-soft);
+}
+.sc-dec-said p {
+  margin: 0;
+  color: var(--q-label-2);
+  font: 500 15px/1.5 var(--q-font);
+  text-wrap: pretty;
+}
+.sc-dec-became {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font: 500 15px/1.5 var(--q-font);
+  text-wrap: pretty;
+}
+.sc-dec-became .sc-ico {
+  flex: none;
+  margin-top: 4px;
+  color: var(--q-green);
+  font-size: 13px;
+}
+.sc-tools-sub {
+  margin: -4px 0 12px;
+  color: var(--q-label-2);
+  font: 400 15px/1.5 var(--q-font);
+}
+.sc-tools {
+  display: grid;
+  gap: 12px;
+}
+.sc-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px;
+  border-radius: var(--q-r-card);
+  background: var(--nv-card, var(--sc-card));
+  box-shadow: var(--sc-edge);
+}
+.sc-tool p {
+  margin: 0;
+  font: 400 15px/1.5 var(--q-font);
+  text-wrap: pretty;
+}
+.sc-tool-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sc-tool-head h4 {
+  margin: 0;
+  font: 600 16px/1.3 var(--q-font);
+}
+.sc-tool-head small {
+  color: var(--q-label-2);
+  font: 500 12px/1.3 var(--q-font);
+}
+.sc-tool .sc-tool-p {
+  font-weight: 600;
+}
+.sc-tool-r {
+  display: flex;
+  gap: 8px;
+  color: var(--q-label-2);
+}
+.sc-tool-r .sc-ico {
+  flex: none;
+  margin-top: 4px;
+  color: var(--q-green);
+  font-size: 13px;
+}
+.sc-tool-go {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: auto;
+}
+.sc-dec-i {
+  flex: none;
+}
+@container page (min-width: 760px) {
+  .sc-crew {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    padding: 18px 24px;
+  }
+  .sc-crew-figs {
+    grid-template-columns: repeat(3, auto);
+    gap: 24px;
+  }
+  .sc-tools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
 .sc-decs {
   display: grid;
   gap: 12px;
@@ -2707,7 +2864,7 @@ html.q-tabrail {
 }
 .sc-dec-head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 10px;
 }
@@ -2721,49 +2878,11 @@ html.q-tabrail {
   color: var(--sc-ac);
   font-size: 17px;
 }
-.sc-dec-head h3 {
-  margin: 0;
-  font: 600 16px/1.3 var(--q-font);
-}
-.sc-dec-head small {
-  color: var(--q-label-2);
-  font: 500 12px/1 var(--q-font);
-  white-space: nowrap;
-}
 .sc-dec-q {
   margin: 0;
   font: 600 20px/1.35 var(--q-font);
   letter-spacing: -0.01em;
   text-wrap: balance;
-}
-.sc-dec-steps {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.sc-dec-steps li {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 10px;
-}
-.sc-dec-steps small {
-  color: var(--q-label-2);
-  font: 600 12px/1.4 var(--q-font);
-}
-.sc-dec-steps span {
-  color: var(--q-text-2, var(--q-label));
-  font: 400 15px/1.5 var(--q-font);
-  text-wrap: pretty;
-}
-.sc-dec-call small {
-  color: var(--sc-ac);
-}
-.sc-dec-call span {
-  color: var(--q-label);
-  font-weight: 600;
 }
 .sc-dec-rules {
   display: grid;
@@ -2802,7 +2921,8 @@ html.q-tabrail {
     grid-template:
       'head art' auto
       'q art' auto
-      'steps art' auto
+      'said art' auto
+      'became art' auto
       'how art' 1fr / minmax(0, 1fr) minmax(0, 1fr);
     gap: 14px 32px;
   }
@@ -2812,8 +2932,11 @@ html.q-tabrail {
   .has-art > .sc-dec-q {
     grid-area: q;
   }
-  .has-art > .sc-dec-steps {
-    grid-area: steps;
+  .has-art > .sc-dec-said {
+    grid-area: said;
+  }
+  .has-art > .sc-dec-became {
+    grid-area: became;
   }
   .has-art > .sc-howgo {
     grid-area: how;

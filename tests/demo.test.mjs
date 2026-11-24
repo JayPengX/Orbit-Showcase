@@ -46,3 +46,13 @@ test('a tour tap whose click never came (its target drawn again under the finger
   assert.match(demo, /if \(p\.clicked \|\| at !== was \|\| moving \|\| frame\?\.contentDocument !== doc\) return;/);
   assert.match(demo, /if \(el && real\(el\)\) el\.click\(\);/);
 });
+
+// Jay 11-24: 決定 shows the whole of what he decides, and the tools he made beyond Orbit.
+test('決定: eight areas in his own words, and his three other tools linked', () => {
+  const main = readFileSync(new URL('../public/views/main.mjs', import.meta.url), 'utf8');
+  const calls = main.slice(main.indexOf('const CALLS'), main.indexOf('const DATED'));
+  assert.equal((calls.match(/area: \[/g) || []).length, 8);
+  assert.equal((calls.match(/said: \[/g) || []).length, 8);
+  for (const repo of ['Apply-116', 'Folder-Link', 'Per-User-Display']) assert.ok(main.includes(`https://github.com/JayPengX/${repo}`), repo);
+  assert.doesNotMatch(main, /Jay 不寫程式/);
+});
