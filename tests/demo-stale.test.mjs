@@ -30,3 +30,10 @@ test('the deploy looks when started with look=true (the proxy Worker, hourly in 
   assert.match(refresh, /for \(const id of fresh\) heads\[id\] = head\(DEMOS\[id\]\.repo\);/);
   assert.match(refresh, /if \(fresh\.length\) heads\.kit = head\('Orbit-Core', 'kit'\);/);
 });
+
+// A look that finds nothing newer deploys nothing: a push waiting behind it never steps aside for it.
+test('a deploy steps aside only for a newer push or schedule, never for a started look', () => {
+  const wf = readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8');
+  assert.match(wf, /started: \(\.event == \\"workflow_dispatch\\"\)/);
+  assert.match(wf, /select\(\.n > \$GITHUB_RUN_NUMBER and \(\.started \| not\)\)/);
+});
